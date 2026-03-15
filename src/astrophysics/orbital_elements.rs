@@ -47,7 +47,7 @@ impl OrbitalElements {
     }
 
     pub fn period(&self, mu: f64) -> f64 {
-        orbital_period(mu, self.semi_major_axis)
+        2.0 * PI * (self.semi_major_axis.powi(3) / mu).sqrt()
     }
 
     pub fn periapsis(&self) -> f64 {
@@ -92,10 +92,6 @@ pub fn semi_major_axis(mu: f64, energy: f64) -> f64 {
 
 pub fn semi_minor_axis(semi_major: f64, ecc: f64) -> f64 {
     semi_major * (1.0 - ecc * ecc).max(0.0).sqrt()
-}
-
-pub fn orbital_period(mu: f64, semi_major: f64) -> f64 {
-    2.0 * PI * (semi_major.powi(3) / mu).sqrt()
 }
 
 pub fn periapsis(semi_major: f64, ecc: f64) -> f64 {

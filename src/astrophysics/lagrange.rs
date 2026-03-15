@@ -55,13 +55,6 @@ pub fn lagrange_points(
     [l1, l2, l3, l4, l5]
 }
 
-pub fn escape_velocity(mu: f64, distance: f64) -> f64 {
-    if distance <= 0.0 {
-        return 0.0;
-    }
-    (2.0 * mu / distance).sqrt()
-}
-
 pub fn circular_velocity(mu: f64, distance: f64) -> f64 {
     if distance <= 0.0 {
         return 0.0;
@@ -131,7 +124,7 @@ mod tests {
     fn test_escape_vs_circular() {
         let mu = G * 1.989e30;
         let r = 1.496e11;
-        let v_esc = escape_velocity(mu, r);
+        let v_esc = (2.0 * mu / r).sqrt();
         let v_circ = circular_velocity(mu, r);
         assert!(approx(v_esc / v_circ, 2.0_f64.sqrt(), 1e-6));
     }

@@ -181,16 +181,6 @@ pub fn frequency_from_wavelength(wavelength: f64) -> f64 {
     constants::C / wavelength
 }
 
-/// Energy of a photon: E = h * f
-pub fn photon_energy(frequency: f64) -> f64 {
-    constants::H * frequency
-}
-
-/// Photon energy from wavelength: E = h * c / λ
-pub fn photon_energy_from_wavelength(wavelength: f64) -> f64 {
-    constants::H * constants::C / wavelength
-}
-
 /// Poynting vector magnitude (EM wave intensity): S = E * B / μ_0
 pub fn poynting_magnitude(e_field: f64, b_field: f64) -> f64 {
     e_field * b_field / constants::MU_0
@@ -381,13 +371,6 @@ mod tests {
     fn test_capacitor_energy() {
         let u = capacitor_energy(1e-6, 100.0);
         assert!(approx(u, 0.005, 1e-6));
-    }
-
-    #[test]
-    fn test_photon_energy() {
-        // Visible light ~5e14 Hz
-        let e = photon_energy(5e14);
-        assert!(approx_rel(e, 3.313e-19, 0.01));
     }
 
     #[test]

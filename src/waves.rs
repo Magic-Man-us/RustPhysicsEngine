@@ -92,11 +92,6 @@ pub fn relativistic_doppler(source_freq: f64, beta: f64) -> f64 {
     source_freq * ((1.0 + beta) / (1.0 - beta)).sqrt()
 }
 
-/// Mach number: M = v_object / v_sound
-pub fn mach_number(object_speed: f64, sound_speed: f64) -> f64 {
-    object_speed / sound_speed
-}
-
 /// Mach cone half-angle: sin(θ) = v_sound / v_object = 1/M
 pub fn mach_cone_angle(mach: f64) -> f64 {
     (1.0 / mach).asin()
