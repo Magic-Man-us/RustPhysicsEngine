@@ -1,0 +1,8 @@
+[package]
+name = "rust_physics_engine"
+version = "0.1.0"
+edition = "2021"
+description = "A comprehensive Rust physics engine covering classical mechanics, thermodynamics, electromagnetism, optics, relativity, quantum mechanics, and more"
+license = "MIT"
+
+[dependencies]
