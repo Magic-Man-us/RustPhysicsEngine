@@ -1,0 +1,570 @@
+use crate::math::constants::{AMU, C, E_CHARGE, H, PI};
+
+// ---------------------------------------------------------------------------
+// Length conversion factors
+// ---------------------------------------------------------------------------
+const FEET_PER_METER: f64 = 3.28084;
+const INCHES_PER_METER: f64 = 39.3701;
+const MILES_PER_KM: f64 = 0.621371;
+const METERS_PER_AU: f64 = 1.496e11;
+const METERS_PER_LIGHT_YEAR: f64 = 9.461e15;
+const METERS_PER_PARSEC: f64 = 3.086e16;
+const METERS_PER_ANGSTROM: f64 = 1e-10;
+const METERS_PER_NAUTICAL_MILE: f64 = 1852.0;
+
+// ---------------------------------------------------------------------------
+// Mass conversion factors
+// ---------------------------------------------------------------------------
+const LBS_PER_KG: f64 = 2.20462;
+const KG_PER_SOLAR_MASS: f64 = 1.989e30;
+
+// ---------------------------------------------------------------------------
+// Energy conversion factors
+// ---------------------------------------------------------------------------
+const JOULES_PER_CALORIE: f64 = 4.184;
+const JOULES_PER_KWH: f64 = 3.6e6;
+const JOULES_PER_BTU: f64 = 1055.06;
+
+// ---------------------------------------------------------------------------
+// Pressure conversion factors
+// ---------------------------------------------------------------------------
+const PA_PER_ATM: f64 = 101325.0;
+const PA_PER_BAR: f64 = 1e5;
+const PA_PER_PSI: f64 = 6894.76;
+const PA_PER_MMHG: f64 = 133.322;
+
+// ---------------------------------------------------------------------------
+// Speed conversion factors
+// ---------------------------------------------------------------------------
+const KMH_PER_MPS: f64 = 3.6;
+const MPH_PER_MPS: f64 = 2.23694;
+const KNOTS_PER_MPS: f64 = 1.94384;
+
+// ---------------------------------------------------------------------------
+// Time conversion factors
+// ---------------------------------------------------------------------------
+const SECONDS_PER_YEAR: f64 = 3.1557e7;
+
+// ===========================================================================
+// Length
+// ===========================================================================
+
+#[must_use]
+pub fn meters_to_feet(m: f64) -> f64 {
+    m * FEET_PER_METER
+}
+
+#[must_use]
+pub fn feet_to_meters(ft: f64) -> f64 {
+    ft / FEET_PER_METER
+}
+
+#[must_use]
+pub fn meters_to_inches(m: f64) -> f64 {
+    m * INCHES_PER_METER
+}
+
+#[must_use]
+pub fn inches_to_meters(i: f64) -> f64 {
+    i / INCHES_PER_METER
+}
+
+#[must_use]
+pub fn km_to_miles(km: f64) -> f64 {
+    km * MILES_PER_KM
+}
+
+#[must_use]
+pub fn miles_to_km(mi: f64) -> f64 {
+    mi / MILES_PER_KM
+}
+
+#[must_use]
+pub fn meters_to_au(m: f64) -> f64 {
+    m / METERS_PER_AU
+}
+
+#[must_use]
+pub fn au_to_meters(au: f64) -> f64 {
+    au * METERS_PER_AU
+}
+
+#[must_use]
+pub fn meters_to_light_years(m: f64) -> f64 {
+    m / METERS_PER_LIGHT_YEAR
+}
+
+#[must_use]
+pub fn light_years_to_meters(ly: f64) -> f64 {
+    ly * METERS_PER_LIGHT_YEAR
+}
+
+#[must_use]
+pub fn meters_to_parsec(m: f64) -> f64 {
+    m / METERS_PER_PARSEC
+}
+
+#[must_use]
+pub fn parsec_to_meters(pc: f64) -> f64 {
+    pc * METERS_PER_PARSEC
+}
+
+#[must_use]
+pub fn angstrom_to_meters(a: f64) -> f64 {
+    a * METERS_PER_ANGSTROM
+}
+
+#[must_use]
+pub fn meters_to_angstrom(m: f64) -> f64 {
+    m / METERS_PER_ANGSTROM
+}
+
+#[must_use]
+pub fn nautical_miles_to_meters(nm: f64) -> f64 {
+    nm * METERS_PER_NAUTICAL_MILE
+}
+
+#[must_use]
+pub fn meters_to_nautical_miles(m: f64) -> f64 {
+    m / METERS_PER_NAUTICAL_MILE
+}
+
+// ===========================================================================
+// Mass
+// ===========================================================================
+
+#[must_use]
+pub fn kg_to_lbs(kg: f64) -> f64 {
+    kg * LBS_PER_KG
+}
+
+#[must_use]
+pub fn lbs_to_kg(lbs: f64) -> f64 {
+    lbs / LBS_PER_KG
+}
+
+#[must_use]
+pub fn kg_to_solar_masses(kg: f64) -> f64 {
+    kg / KG_PER_SOLAR_MASS
+}
+
+#[must_use]
+pub fn solar_masses_to_kg(sm: f64) -> f64 {
+    sm * KG_PER_SOLAR_MASS
+}
+
+#[must_use]
+pub fn amu_to_kg(amu: f64) -> f64 {
+    amu * AMU
+}
+
+#[must_use]
+pub fn kg_to_amu(kg: f64) -> f64 {
+    kg / AMU
+}
+
+// ===========================================================================
+// Energy
+// ===========================================================================
+
+#[must_use]
+pub fn joules_to_ev(j: f64) -> f64 {
+    j / E_CHARGE
+}
+
+#[must_use]
+pub fn ev_to_joules(ev: f64) -> f64 {
+    ev * E_CHARGE
+}
+
+#[must_use]
+pub fn joules_to_calories(j: f64) -> f64 {
+    j / JOULES_PER_CALORIE
+}
+
+#[must_use]
+pub fn calories_to_joules(cal: f64) -> f64 {
+    cal * JOULES_PER_CALORIE
+}
+
+#[must_use]
+pub fn joules_to_kwh(j: f64) -> f64 {
+    j / JOULES_PER_KWH
+}
+
+#[must_use]
+pub fn kwh_to_joules(kwh: f64) -> f64 {
+    kwh * JOULES_PER_KWH
+}
+
+#[must_use]
+pub fn joules_to_btu(j: f64) -> f64 {
+    j / JOULES_PER_BTU
+}
+
+#[must_use]
+pub fn btu_to_joules(btu: f64) -> f64 {
+    btu * JOULES_PER_BTU
+}
+
+/// Converts photon energy in eV to wavelength in meters via λ = hc/E.
+#[must_use]
+pub fn ev_to_wavelength(ev: f64) -> f64 {
+    let energy_joules = ev * E_CHARGE;
+    (H * C) / energy_joules
+}
+
+/// Converts photon wavelength in meters to energy in eV via E = hc/λ.
+#[must_use]
+pub fn wavelength_to_ev(wavelength: f64) -> f64 {
+    let energy_joules = (H * C) / wavelength;
+    energy_joules / E_CHARGE
+}
+
+// ===========================================================================
+// Pressure
+// ===========================================================================
+
+#[must_use]
+pub fn pa_to_atm(pa: f64) -> f64 {
+    pa / PA_PER_ATM
+}
+
+#[must_use]
+pub fn atm_to_pa(atm: f64) -> f64 {
+    atm * PA_PER_ATM
+}
+
+#[must_use]
+pub fn pa_to_bar(pa: f64) -> f64 {
+    pa / PA_PER_BAR
+}
+
+#[must_use]
+pub fn bar_to_pa(bar: f64) -> f64 {
+    bar * PA_PER_BAR
+}
+
+#[must_use]
+pub fn pa_to_psi(pa: f64) -> f64 {
+    pa / PA_PER_PSI
+}
+
+#[must_use]
+pub fn psi_to_pa(psi: f64) -> f64 {
+    psi * PA_PER_PSI
+}
+
+#[must_use]
+pub fn pa_to_mmhg(pa: f64) -> f64 {
+    pa / PA_PER_MMHG
+}
+
+#[must_use]
+pub fn mmhg_to_pa(mmhg: f64) -> f64 {
+    mmhg * PA_PER_MMHG
+}
+
+// ===========================================================================
+// Angle
+// ===========================================================================
+
+#[must_use]
+pub fn degrees_to_radians(deg: f64) -> f64 {
+    deg * PI / 180.0
+}
+
+#[must_use]
+pub fn radians_to_degrees(rad: f64) -> f64 {
+    rad * 180.0 / PI
+}
+
+#[must_use]
+pub fn rpm_to_rad_per_sec(rpm: f64) -> f64 {
+    rpm * 2.0 * PI / 60.0
+}
+
+#[must_use]
+pub fn rad_per_sec_to_rpm(omega: f64) -> f64 {
+    omega * 60.0 / (2.0 * PI)
+}
+
+// ===========================================================================
+// Time
+// ===========================================================================
+
+#[must_use]
+pub fn seconds_to_years(s: f64) -> f64 {
+    s / SECONDS_PER_YEAR
+}
+
+#[must_use]
+pub fn years_to_seconds(yr: f64) -> f64 {
+    yr * SECONDS_PER_YEAR
+}
+
+// ===========================================================================
+// Speed
+// ===========================================================================
+
+#[must_use]
+pub fn mps_to_kmh(mps: f64) -> f64 {
+    mps * KMH_PER_MPS
+}
+
+#[must_use]
+pub fn kmh_to_mps(kmh: f64) -> f64 {
+    kmh / KMH_PER_MPS
+}
+
+#[must_use]
+pub fn mps_to_mph(mps: f64) -> f64 {
+    mps * MPH_PER_MPS
+}
+
+#[must_use]
+pub fn mph_to_mps(mph: f64) -> f64 {
+    mph / MPH_PER_MPS
+}
+
+#[must_use]
+pub fn mps_to_knots(mps: f64) -> f64 {
+    mps * KNOTS_PER_MPS
+}
+
+#[must_use]
+pub fn knots_to_mps(kt: f64) -> f64 {
+    kt / KNOTS_PER_MPS
+}
+
+#[must_use]
+pub fn mps_to_mach(mps: f64, speed_of_sound: f64) -> f64 {
+    mps / speed_of_sound
+}
+
+#[must_use]
+pub fn mach_to_mps(mach: f64, speed_of_sound: f64) -> f64 {
+    mach * speed_of_sound
+}
+
+// ===========================================================================
+// Tests
+// ===========================================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TOLERANCE: f64 = 1e-4;
+
+    fn approx(a: f64, b: f64) -> bool {
+        if b == 0.0 {
+            return a.abs() < TOLERANCE;
+        }
+        ((a - b) / b).abs() < TOLERANCE
+    }
+
+    // -- Length roundtrips --------------------------------------------------
+
+    #[test]
+    fn roundtrip_meters_feet() {
+        let m = 100.0;
+        assert!(approx(feet_to_meters(meters_to_feet(m)), m));
+    }
+
+    #[test]
+    fn roundtrip_meters_inches() {
+        let m = 2.5;
+        assert!(approx(inches_to_meters(meters_to_inches(m)), m));
+    }
+
+    #[test]
+    fn roundtrip_km_miles() {
+        let km = 42.195;
+        assert!(approx(miles_to_km(km_to_miles(km)), km));
+    }
+
+    #[test]
+    fn roundtrip_meters_au() {
+        let m = 1.496e11;
+        assert!(approx(au_to_meters(meters_to_au(m)), m));
+    }
+
+    #[test]
+    fn roundtrip_meters_light_years() {
+        let m = 9.461e15;
+        assert!(approx(light_years_to_meters(meters_to_light_years(m)), m));
+    }
+
+    #[test]
+    fn roundtrip_meters_parsec() {
+        let m = 3.086e16;
+        assert!(approx(parsec_to_meters(meters_to_parsec(m)), m));
+    }
+
+    #[test]
+    fn roundtrip_angstrom_meters() {
+        let a = 5.0;
+        assert!(approx(meters_to_angstrom(angstrom_to_meters(a)), a));
+    }
+
+    #[test]
+    fn roundtrip_nautical_miles_meters() {
+        let nm = 10.0;
+        assert!(approx(meters_to_nautical_miles(nautical_miles_to_meters(nm)), nm));
+    }
+
+    // -- Length spot checks -------------------------------------------------
+
+    #[test]
+    fn one_meter_in_feet() {
+        assert!(approx(meters_to_feet(1.0), 3.28084));
+    }
+
+    #[test]
+    fn one_km_in_miles() {
+        assert!(approx(km_to_miles(1.0), 0.621371));
+    }
+
+    // -- Mass roundtrips ----------------------------------------------------
+
+    #[test]
+    fn roundtrip_kg_lbs() {
+        let kg = 75.0;
+        assert!(approx(lbs_to_kg(kg_to_lbs(kg)), kg));
+    }
+
+    #[test]
+    fn roundtrip_kg_solar_masses() {
+        let kg = 1.989e30;
+        assert!(approx(solar_masses_to_kg(kg_to_solar_masses(kg)), kg));
+    }
+
+    #[test]
+    fn roundtrip_amu_kg() {
+        let amu_val = 12.0;
+        assert!(approx(kg_to_amu(amu_to_kg(amu_val)), amu_val));
+    }
+
+    // -- Energy roundtrips --------------------------------------------------
+
+    #[test]
+    fn roundtrip_joules_ev() {
+        let j = 1.602e-19;
+        assert!(approx(ev_to_joules(joules_to_ev(j)), j));
+    }
+
+    #[test]
+    fn roundtrip_joules_calories() {
+        let j = 4184.0;
+        assert!(approx(calories_to_joules(joules_to_calories(j)), j));
+    }
+
+    #[test]
+    fn roundtrip_joules_kwh() {
+        let j = 3.6e6;
+        assert!(approx(kwh_to_joules(joules_to_kwh(j)), j));
+    }
+
+    #[test]
+    fn roundtrip_joules_btu() {
+        let j = 1055.06;
+        assert!(approx(btu_to_joules(joules_to_btu(j)), j));
+    }
+
+    #[test]
+    fn roundtrip_ev_wavelength() {
+        let ev = 2.0;
+        assert!(approx(wavelength_to_ev(ev_to_wavelength(ev)), ev));
+    }
+
+    // -- Pressure roundtrips ------------------------------------------------
+
+    #[test]
+    fn roundtrip_pa_atm() {
+        let pa = 101325.0;
+        assert!(approx(atm_to_pa(pa_to_atm(pa)), pa));
+    }
+
+    #[test]
+    fn roundtrip_pa_bar() {
+        let pa = 1e5;
+        assert!(approx(bar_to_pa(pa_to_bar(pa)), pa));
+    }
+
+    #[test]
+    fn roundtrip_pa_psi() {
+        let pa = 6894.76;
+        assert!(approx(psi_to_pa(pa_to_psi(pa)), pa));
+    }
+
+    #[test]
+    fn roundtrip_pa_mmhg() {
+        let pa = 133.322;
+        assert!(approx(mmhg_to_pa(pa_to_mmhg(pa)), pa));
+    }
+
+    // -- Angle roundtrips ---------------------------------------------------
+
+    #[test]
+    fn roundtrip_degrees_radians() {
+        let deg = 180.0;
+        assert!(approx(radians_to_degrees(degrees_to_radians(deg)), deg));
+    }
+
+    #[test]
+    fn ninety_degrees_in_radians() {
+        assert!(approx(degrees_to_radians(90.0), PI / 2.0));
+    }
+
+    #[test]
+    fn roundtrip_rpm_rad_per_sec() {
+        let rpm = 60.0;
+        assert!(approx(rad_per_sec_to_rpm(rpm_to_rad_per_sec(rpm)), rpm));
+    }
+
+    #[test]
+    fn one_rpm_is_2pi_over_60() {
+        assert!(approx(rpm_to_rad_per_sec(1.0), 2.0 * PI / 60.0));
+    }
+
+    // -- Time roundtrips ----------------------------------------------------
+
+    #[test]
+    fn roundtrip_seconds_years() {
+        let s = 3.1557e7;
+        assert!(approx(years_to_seconds(seconds_to_years(s)), s));
+    }
+
+    // -- Speed roundtrips ---------------------------------------------------
+
+    #[test]
+    fn roundtrip_mps_kmh() {
+        let mps = 10.0;
+        assert!(approx(kmh_to_mps(mps_to_kmh(mps)), mps));
+    }
+
+    #[test]
+    fn roundtrip_mps_mph() {
+        let mps = 10.0;
+        assert!(approx(mph_to_mps(mps_to_mph(mps)), mps));
+    }
+
+    #[test]
+    fn roundtrip_mps_knots() {
+        let mps = 10.0;
+        assert!(approx(knots_to_mps(mps_to_knots(mps)), mps));
+    }
+
+    #[test]
+    fn roundtrip_mps_mach() {
+        let mps = 680.0;
+        let sos = 343.0;
+        assert!(approx(mach_to_mps(mps_to_mach(mps, sos), sos), mps));
+    }
+
+    #[test]
+    fn ten_mps_in_kmh() {
+        assert!(approx(mps_to_kmh(10.0), 36.0));
+    }
+}

@@ -223,6 +223,105 @@ pub fn shm_velocity(amplitude: f64, angular_freq: f64, time: f64, phase: f64) ->
     -amplitude * angular_freq * (angular_freq * time + phase).sin()
 }
 
+// ── Damped Oscillations ──
+
+/// Damped angular frequency: ωd = ω₀√(1 - ζ²), returns 0 if overdamped (ζ ≥ 1)
+pub fn damped_frequency(natural_freq: f64, damping_ratio: f64) -> f64 {
+    if damping_ratio >= 1.0 {
+        return 0.0;
+    }
+    natural_freq * (1.0 - damping_ratio * damping_ratio).sqrt()
+}
+
+/// Damped amplitude: A(t) = A₀ × e^(-γt)
+pub fn damped_amplitude(initial_amplitude: f64, damping_coeff: f64, time: f64) -> f64 {
+    initial_amplitude * (-damping_coeff * time).exp()
+}
+
+/// Damped oscillation position: x(t) = A₀e^(-γt)cos(ωdt + φ)
+pub fn damped_position(
+    amplitude: f64,
+    damping_coeff: f64,
+    angular_freq: f64,
+    time: f64,
+    phase: f64,
+) -> f64 {
+    amplitude * (-damping_coeff * time).exp() * (angular_freq * time + phase).cos()
+}
+
+/// Damping ratio: ζ = c / (2√(mk))
+pub fn damping_ratio(damping_coeff: f64, mass: f64, spring_constant: f64) -> f64 {
+    damping_coeff / (2.0 * (mass * spring_constant).sqrt())
+}
+
+/// Critical damping coefficient: c_crit = 2√(mk)
+pub fn critical_damping(mass: f64, spring_constant: f64) -> f64 {
+    2.0 * (mass * spring_constant).sqrt()
+}
+
+/// Logarithmic decrement: δ = 2πζ / √(1 - ζ²)
+pub fn logarithmic_decrement(damping_ratio: f64) -> f64 {
+    2.0 * std::f64::consts::PI * damping_ratio / (1.0 - damping_ratio * damping_ratio).sqrt()
+}
+
+/// Quality factor: Q = 1 / (2ζ)
+pub fn quality_factor(damping_ratio: f64) -> f64 {
+    1.0 / (2.0 * damping_ratio)
+}
+
+/// Decay time constant: τ = 1/γ (time for amplitude to drop to 1/e)
+pub fn decay_time(damping_coeff: f64) -> f64 {
+    1.0 / damping_coeff
+}
+
+// ── Driven (Forced) Oscillations ──
+
+/// Driven oscillation amplitude: A = f₀ / √((ω₀²-ω²)² + (2γω)²)
+/// where f₀ = F₀/m (driving force per unit mass)
+pub fn driven_amplitude(f0: f64, omega: f64, omega0: f64, gamma: f64) -> f64 {
+    let delta = omega0 * omega0 - omega * omega;
+    let denom = (delta * delta + (2.0 * gamma * omega).powi(2)).sqrt();
+    f0 / denom
+}
+
+/// Phase lag of driven oscillation: φ = atan2(2γω, ω₀²-ω²)
+pub fn driven_phase(omega: f64, omega0: f64, gamma: f64) -> f64 {
+    (2.0 * gamma * omega).atan2(omega0 * omega0 - omega * omega)
+}
+
+/// Resonance frequency: ωr = √(ω₀² - 2γ²), returns 0 if overdamped
+pub fn resonance_frequency(natural_freq: f64, damping_coeff: f64) -> f64 {
+    let sq = natural_freq * natural_freq - 2.0 * damping_coeff * damping_coeff;
+    if sq <= 0.0 {
+        return 0.0;
+    }
+    sq.sqrt()
+}
+
+/// Peak amplitude at resonance: A_max = f₀ / (2γ√(ω₀² - γ²))
+pub fn resonance_amplitude(f0: f64, omega0: f64, gamma: f64) -> f64 {
+    let denom_sq = omega0 * omega0 - gamma * gamma;
+    if denom_sq <= 0.0 {
+        return f64::INFINITY;
+    }
+    f0 / (2.0 * gamma * denom_sq.sqrt())
+}
+
+// ── Coupled Oscillators ──
+
+/// Normal-mode frequencies of two identical masses coupled by a spring:
+/// ω₁ = √(k/m), ω₂ = √((k + 2k_c)/m)
+pub fn coupled_normal_frequencies(k: f64, k_coupling: f64, m: f64) -> (f64, f64) {
+    let omega1 = (k / m).sqrt();
+    let omega2 = ((k + 2.0 * k_coupling) / m).sqrt();
+    (omega1, omega2)
+}
+
+/// Beat frequency of coupled oscillators: f_beat = |f1 - f2|
+pub fn beat_frequency_coupled(freq1: f64, freq2: f64) -> f64 {
+    (freq1 - freq2).abs()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -298,5 +397,130 @@ mod tests {
         let vf = inelastic_collision_1d(2.0, 3.0, 1.0, -1.0);
         let p_after = momentum(3.0, vf);
         assert!(approx(p_before, p_after));
+    }
+
+    // ── Damped Oscillation Tests ──
+
+    #[test]
+    fn test_damped_frequency_underdamped() {
+        // ω₀ = 10, ζ = 0.1 → ωd = 10√(1-0.01) = 10√0.99
+        let wd = damped_frequency(10.0, 0.1);
+        assert!(approx(wd, 10.0 * (0.99_f64).sqrt()));
+    }
+
+    #[test]
+    fn test_damped_frequency_overdamped() {
+        assert!(approx(damped_frequency(10.0, 1.0), 0.0));
+        assert!(approx(damped_frequency(10.0, 2.0), 0.0));
+    }
+
+    #[test]
+    fn test_damped_amplitude() {
+        // A₀ = 5.0, γ = 0.5, t = 2 → 5e^(-1)
+        let a = damped_amplitude(5.0, 0.5, 2.0);
+        assert!(approx(a, 5.0 * (-1.0_f64).exp()));
+    }
+
+    #[test]
+    fn test_damped_position() {
+        // At t=0, phase=0: x = A₀ * 1 * cos(0) = A₀
+        assert!(approx(damped_position(3.0, 0.5, 10.0, 0.0, 0.0), 3.0));
+    }
+
+    #[test]
+    fn test_damping_ratio() {
+        // c = 4, m = 1, k = 16 → ζ = 4 / (2√16) = 4/8 = 0.5
+        assert!(approx(damping_ratio(4.0, 1.0, 16.0), 0.5));
+    }
+
+    #[test]
+    fn test_critical_damping() {
+        // m = 1, k = 100 → c_crit = 2√100 = 20
+        assert!(approx(critical_damping(1.0, 100.0), 20.0));
+    }
+
+    #[test]
+    fn test_logarithmic_decrement() {
+        // ζ = 0.1 → δ = 2π(0.1)/√(1-0.01)
+        let d = logarithmic_decrement(0.1);
+        let expected = 2.0 * std::f64::consts::PI * 0.1 / (0.99_f64).sqrt();
+        assert!(approx(d, expected));
+    }
+
+    #[test]
+    fn test_quality_factor() {
+        // ζ = 0.05 → Q = 1/(2*0.05) = 10
+        assert!(approx(quality_factor(0.05), 10.0));
+    }
+
+    #[test]
+    fn test_decay_time() {
+        // γ = 0.25 → τ = 4.0
+        assert!(approx(decay_time(0.25), 4.0));
+    }
+
+    // ── Driven Oscillation Tests ──
+
+    #[test]
+    fn test_driven_amplitude_at_resonance() {
+        // At ω = ω₀: A = f₀ / (2γω₀)
+        let a = driven_amplitude(10.0, 5.0, 5.0, 0.5);
+        assert!(approx(a, 10.0 / (2.0 * 0.5 * 5.0)));
+    }
+
+    #[test]
+    fn test_driven_amplitude_off_resonance() {
+        // f₀=1, ω=1, ω₀=3, γ=0.5 → denom = √((9-1)² + (2*0.5*1)²) = √(64+1) = √65
+        let a = driven_amplitude(1.0, 1.0, 3.0, 0.5);
+        assert!(approx(a, 1.0 / 65.0_f64.sqrt()));
+    }
+
+    #[test]
+    fn test_driven_phase_at_resonance() {
+        // At ω = ω₀: φ = atan2(2γω, 0) = π/2
+        let p = driven_phase(5.0, 5.0, 0.5);
+        assert!(approx(p, std::f64::consts::PI / 2.0));
+    }
+
+    #[test]
+    fn test_driven_phase_low_freq() {
+        // ω → 0: φ = atan2(0, ω₀²) = 0
+        let p = driven_phase(0.0, 5.0, 0.5);
+        assert!(approx(p, 0.0));
+    }
+
+    #[test]
+    fn test_resonance_frequency() {
+        // ω₀ = 10, γ = 1 → ωr = √(100 - 2) = √98
+        let wr = resonance_frequency(10.0, 1.0);
+        assert!(approx(wr, 98.0_f64.sqrt()));
+    }
+
+    #[test]
+    fn test_resonance_frequency_overdamped() {
+        // ω₀ = 1, γ = 1 → ω₀² - 2γ² = 1-2 = -1 → returns 0
+        assert!(approx(resonance_frequency(1.0, 1.0), 0.0));
+    }
+
+    #[test]
+    fn test_resonance_amplitude() {
+        // f₀ = 10, ω₀ = 5, γ = 0.5 → 10/(2×0.5×√(25-0.25)) ≈ 2.010076
+        assert!(approx(resonance_amplitude(10.0, 5.0, 0.5), 2.010076));
+    }
+
+    // ── Coupled Oscillator Tests ──
+
+    #[test]
+    fn test_coupled_normal_frequencies() {
+        // k=4, k_c=3, m=1 → ω₁ = 2, ω₂ = √(4+6) = √10
+        let (w1, w2) = coupled_normal_frequencies(4.0, 3.0, 1.0);
+        assert!(approx(w1, 2.0));
+        assert!(approx(w2, 10.0_f64.sqrt()));
+    }
+
+    #[test]
+    fn test_beat_frequency_coupled() {
+        assert!(approx(beat_frequency_coupled(5.0, 3.0), 2.0));
+        assert!(approx(beat_frequency_coupled(3.0, 5.0), 2.0));
     }
 }
