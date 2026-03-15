@@ -30,3 +30,5 @@ pub mod particle_physics;
 pub mod quaternion;
 pub mod monte_carlo;
 pub mod information_theory;
+pub mod vector_calculus;
+pub mod optimization;

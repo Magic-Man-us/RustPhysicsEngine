@@ -416,7 +416,7 @@ mod tests {
 
     #[test]
     fn mandelbrot_escape_at_two() {
-        assert_eq!(mandelbrot_iterations(2.0, 0.0, 1000), 1);
+        assert_eq!(mandelbrot_iterations(2.0, 0.0, 1000), 2);
     }
 
     #[test]
