@@ -347,6 +347,58 @@ pub fn mach_to_mps(mach: f64, speed_of_sound: f64) -> f64 {
     mach * speed_of_sound
 }
 
+// ---------------------------------------------------------------------------
+// Power conversions
+// ---------------------------------------------------------------------------
+
+const WATTS_PER_HP: f64 = 745.7;
+const WATTS_PER_BTU_HR: f64 = 0.293_071;
+const WATTS_PER_TON_REFRIG: f64 = 3516.85;
+const WATTS_PER_KCAL_HR: f64 = 1.163;
+
+#[must_use] pub fn watts_to_horsepower(w: f64) -> f64 { w / WATTS_PER_HP }
+#[must_use] pub fn horsepower_to_watts(hp: f64) -> f64 { hp * WATTS_PER_HP }
+#[must_use] pub fn watts_to_btu_per_hour(w: f64) -> f64 { w / WATTS_PER_BTU_HR }
+#[must_use] pub fn btu_per_hour_to_watts(btu_hr: f64) -> f64 { btu_hr * WATTS_PER_BTU_HR }
+#[must_use] pub fn watts_to_tons_refrigeration(w: f64) -> f64 { w / WATTS_PER_TON_REFRIG }
+#[must_use] pub fn tons_refrigeration_to_watts(tons: f64) -> f64 { tons * WATTS_PER_TON_REFRIG }
+#[must_use] pub fn watts_to_kcal_per_hour(w: f64) -> f64 { w / WATTS_PER_KCAL_HR }
+#[must_use] pub fn kcal_per_hour_to_watts(kcal_hr: f64) -> f64 { kcal_hr * WATTS_PER_KCAL_HR }
+#[must_use] pub fn kilowatts_to_watts(kw: f64) -> f64 { kw * 1e3 }
+#[must_use] pub fn watts_to_kilowatts(w: f64) -> f64 { w * 1e-3 }
+#[must_use] pub fn megawatts_to_watts(mw: f64) -> f64 { mw * 1e6 }
+#[must_use] pub fn watts_to_megawatts(w: f64) -> f64 { w * 1e-6 }
+
+// ---------------------------------------------------------------------------
+// Electrical energy
+// ---------------------------------------------------------------------------
+
+#[must_use] pub fn watt_hours_to_joules(wh: f64) -> f64 { wh * 3600.0 }
+#[must_use] pub fn joules_to_watt_hours(j: f64) -> f64 { j / 3600.0 }
+#[must_use] pub fn amp_hours_to_coulombs(ah: f64) -> f64 { ah * 3600.0 }
+#[must_use] pub fn coulombs_to_amp_hours(c: f64) -> f64 { c / 3600.0 }
+
+// ---------------------------------------------------------------------------
+// Fuel / energy equivalents
+// ---------------------------------------------------------------------------
+
+const JOULES_PER_KG_TNT: f64 = 4.184e6;
+const JOULES_PER_KG_COAL: f64 = 2.9e7;
+const JOULES_PER_KG_OIL: f64 = 4.187e7;
+const JOULES_PER_KG_HYDROGEN: f64 = 1.42e8;
+const JOULES_PER_LITER_GASOLINE: f64 = 3.4e7;
+
+#[must_use] pub fn kg_tnt_to_joules(kg: f64) -> f64 { kg * JOULES_PER_KG_TNT }
+#[must_use] pub fn joules_to_kg_tnt(j: f64) -> f64 { j / JOULES_PER_KG_TNT }
+#[must_use] pub fn kg_coal_to_joules(kg: f64) -> f64 { kg * JOULES_PER_KG_COAL }
+#[must_use] pub fn joules_to_kg_coal(j: f64) -> f64 { j / JOULES_PER_KG_COAL }
+#[must_use] pub fn kg_oil_to_joules(kg: f64) -> f64 { kg * JOULES_PER_KG_OIL }
+#[must_use] pub fn joules_to_kg_oil(j: f64) -> f64 { j / JOULES_PER_KG_OIL }
+#[must_use] pub fn kg_hydrogen_to_joules(kg: f64) -> f64 { kg * JOULES_PER_KG_HYDROGEN }
+#[must_use] pub fn joules_to_kg_hydrogen(j: f64) -> f64 { j / JOULES_PER_KG_HYDROGEN }
+#[must_use] pub fn liters_gasoline_to_joules(liters: f64) -> f64 { liters * JOULES_PER_LITER_GASOLINE }
+#[must_use] pub fn joules_to_liters_gasoline(j: f64) -> f64 { j / JOULES_PER_LITER_GASOLINE }
+
 // ===========================================================================
 // Tests
 // ===========================================================================
@@ -566,5 +618,83 @@ mod tests {
     #[test]
     fn ten_mps_in_kmh() {
         assert!(approx(mps_to_kmh(10.0), 36.0));
+    }
+
+    // -- Power roundtrips ---------------------------------------------------
+
+    #[test]
+    fn roundtrip_watts_horsepower() {
+        let w = 1000.0;
+        assert!(approx(horsepower_to_watts(watts_to_horsepower(w)), w));
+    }
+
+    #[test]
+    fn one_hp_in_watts() {
+        assert!(approx(horsepower_to_watts(1.0), 745.7));
+    }
+
+    #[test]
+    fn roundtrip_watts_btu_hr() {
+        let w = 5000.0;
+        assert!(approx(btu_per_hour_to_watts(watts_to_btu_per_hour(w)), w));
+    }
+
+    #[test]
+    fn roundtrip_watts_tons_refrig() {
+        let w = 3516.85;
+        assert!(approx(tons_refrigeration_to_watts(watts_to_tons_refrigeration(w)), w));
+    }
+
+    #[test]
+    fn roundtrip_watts_kcal_hr() {
+        let w = 1000.0;
+        assert!(approx(kcal_per_hour_to_watts(watts_to_kcal_per_hour(w)), w));
+    }
+
+    #[test]
+    fn kw_mw_conversions() {
+        assert!(approx(kilowatts_to_watts(1.0), 1000.0));
+        assert!(approx(megawatts_to_watts(1.0), 1e6));
+        assert!(approx(watts_to_kilowatts(1000.0), 1.0));
+        assert!(approx(watts_to_megawatts(1e6), 1.0));
+    }
+
+    // -- Electrical energy --------------------------------------------------
+
+    #[test]
+    fn roundtrip_watt_hours_joules() {
+        let wh = 100.0;
+        assert!(approx(joules_to_watt_hours(watt_hours_to_joules(wh)), wh));
+    }
+
+    #[test]
+    fn one_wh_in_joules() {
+        assert!(approx(watt_hours_to_joules(1.0), 3600.0));
+    }
+
+    #[test]
+    fn roundtrip_amp_hours_coulombs() {
+        let ah = 5.0;
+        assert!(approx(coulombs_to_amp_hours(amp_hours_to_coulombs(ah)), ah));
+    }
+
+    // -- Fuel equivalents ---------------------------------------------------
+
+    #[test]
+    fn roundtrip_kg_tnt() {
+        let kg = 10.0;
+        assert!(approx(joules_to_kg_tnt(kg_tnt_to_joules(kg)), kg));
+    }
+
+    #[test]
+    fn roundtrip_kg_coal() {
+        let kg = 1.0;
+        assert!(approx(joules_to_kg_coal(kg_coal_to_joules(kg)), kg));
+    }
+
+    #[test]
+    fn roundtrip_liters_gasoline() {
+        let l = 50.0;
+        assert!(approx(joules_to_liters_gasoline(liters_gasoline_to_joules(l)), l));
     }
 }
