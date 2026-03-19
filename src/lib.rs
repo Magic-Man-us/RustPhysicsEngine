@@ -40,3 +40,4 @@ pub mod control_systems;
 pub mod color_science;
 pub mod biophysics;
 pub mod acoustics;
+pub mod sim;
