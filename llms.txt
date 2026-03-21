@@ -1,0 +1,1606 @@
+# rust_physics_engine — LLM Reference
+
+> Comprehensive Rust physics/math library. Zero dependencies, f64 precision,
+> NIST CODATA constants, input validation on every function. 1,659 tests, 99.98% coverage.
+>
+> Import: `use rust_physics_engine::{module}::{function};`
+>
+> All physics quantities use SI units unless noted. Angles in radians.
+
+## Physical Constants (`math::constants`)
+
+- `PI` = std::f64::consts::PI
+- `TAU` = 2.0 * std::f64::consts::PI
+- `E` = std::f64::consts::E
+- `SQRT_2` = std::f64::consts::SQRT_2
+- `LN_2` = std::f64::consts::LN_2
+- `LN_10` = std::f64::consts::LN_10
+- `C` = 299_792_458.0
+- `G` = 6.674_30e-11
+- `H` = 6.626_070_15e-34
+- `HBAR` = 1.054_571_817e-34
+- `K_B` = 1.380_649e-23
+- `E_CHARGE` = 1.602_176_634e-19
+- `N_A` = 6.022_140_76e23
+- `R` = 8.314_462_618
+- `G_ACCEL` = 9.806_65
+- `M_ELECTRON` = 9.109_383_7015e-31
+- `M_PROTON` = 1.672_621_923_69e-27
+- `M_NEUTRON` = 1.674_927_498_04e-27
+- `AMU` = 1.660_539_066_60e-27
+- `EPSILON_0` = 8.854_187_8128e-12
+- `MU_0` = 1.256_637_062_12e-6
+- `K_E` = 8.987_551_7923e9
+- `VACUUM_IMPEDANCE` = 376.730_313_668
+- `MAGNETIC_FLUX_QUANTUM` = 2.067_833_848e-15
+- `CONDUCTANCE_QUANTUM` = 7.748_091_729e-5
+- `VON_KLITZING` = 25_812.807_45
+- `JOSEPHSON` = 483_597.848_4e9
+- `SIGMA` = 5.670_374_419e-8
+- `WIEN_DISPLACEMENT` = 2.897_771_955e-3
+- `FIRST_RADIATION` = 3.741_771_852e-16
+- `SECOND_RADIATION` = 1.438_776_877e-2
+- `RYDBERG` = 1.097_373_156_8160e7
+- `RYDBERG_ENERGY` = 2.179_872_361_1035e-18
+- `BOHR_RADIUS` = 5.291_772_109_03e-11
+- `BOHR_MAGNETON` = 9.274_010_0783e-24
+- `NUCLEAR_MAGNETON` = 5.050_783_7461e-27
+- `ALPHA` = 7.297_352_5693e-3
+- `ALPHA_INV` = 137.035_999_084
+- `PLANCK_MASS` = 2.176_434e-8
+- `PLANCK_LENGTH` = 1.616_255e-35
+- `PLANCK_TIME` = 5.391_247e-44
+- `PLANCK_TEMPERATURE` = 1.416_784e32
+- `PLANCK_CHARGE` = 1.875_546e-18
+- `SOLAR_MASS` = 1.989e30
+- `SOLAR_RADIUS` = 6.957e8
+- `SOLAR_LUMINOSITY` = 3.828e26
+- `SOLAR_TEMPERATURE` = 5778.0
+- `EARTH_MASS` = 5.972_17e24
+- `EARTH_RADIUS` = 6.371e6
+- `EARTH_MOON_DISTANCE` = 3.844e8
+- `AU` = 1.495_978_707e11
+- `LIGHT_YEAR` = 9.460_730_472_5808e15
+- `PARSEC` = 3.085_677_581e16
+- `HUBBLE` = 2.25e-18
+- `CMB_TEMPERATURE` = 2.725_5
+- `EV_TO_JOULES` = 1.602_176_634e-19
+- `CALORIE` = 4.184
+- `ATM` = 101_325.0
+- `TORR` = 133.322_387_415
+
+## Core Mathematics & Linear Algebra
+
+### `math` — structs: Vec3
+
+- `pub fn new(x: f64, y: f64, z: f64) -> Self` — Constructs a new 3D vector from x, y, z components.
+- `pub fn magnitude(&self) -> f64` — Computes the Euclidean length of this vector: |v| = sqrt(x² + y² + z²).
+- `pub fn magnitude_squared(&self) -> f64` — Computes the squared length of this vector: x² + y² + z² (avoids a sqrt).
+- `pub fn normalized(&self) -> Self` — Returns the unit vector in the same direction: v / |v|. Returns ZERO for zero-length vectors.
+- `pub fn dot(&self, other: &Vec3) -> f64` — Computes the dot product of two vectors: a · b = ax*bx + ay*by + az*bz.
+- `pub fn cross(&self, other: &Vec3) -> Vec3` — Computes the cross product of two vectors: a × b, yielding a vector perpendicular to both.
+- `pub fn distance_to(&self, other: &Vec3) -> f64` — Computes the Euclidean distance between two points: |self - other|.
+- `pub fn angle_between(&self, other: &Vec3) -> f64` — Computes the angle in radians between two vectors: θ = acos((a · b) / (|a| |b|)).
+- `pub fn lerp(&self, other: &Vec3, t: f64) -> Vec3` — Linearly interpolates between two vectors: result = self*(1-t) + other*t.
+- `pub fn project_onto(&self, other: &Vec3) -> Vec3` — Projects this vector onto another: proj_b(a) = b * (a · b) / (b · b).
+- `pub fn reflect(&self, normal: &Vec3) -> Vec3` — Reflects this vector about a surface normal: r = v - 2(v · n)n.
+
+### `linalg` — structs: Mat3
+
+- `pub fn zero() -> Self` — Returns the 3x3 zero matrix.
+- `pub fn identity() -> Self` — Returns the 3x3 identity matrix.
+- `pub fn from_rows(r0: [f64; 3], r1: [f64; 3], r2: [f64; 3]) -> Self` — Constructs a 3x3 matrix from three row arrays.
+- `pub fn determinant(&self) -> f64` — Computes the determinant using the Sarrus rule (cofactor expansion along the first row).
+- `pub fn transpose(&self) -> Self` — Returns the transpose of this matrix: A^T[i][j] = A[j][i].
+- `pub fn inverse(&self) -> Option<Self>` — Computes the matrix inverse via the adjugate method: A⁻¹ = adj(A) / det(A).
+- `pub fn trace(&self) -> f64` — Returns the trace (sum of diagonal elements) of the matrix.
+- `pub fn mul_vec(&self, v: Vec3) -> Vec3` — Multiplies this matrix by a column vector: result = A × v.
+- `pub fn mul_mat(&self, other: &Mat3) -> Mat3` — Multiplies two 3x3 matrices: result = A × B.
+- `pub fn scale(s: f64) -> Self` — Returns a uniform scaling matrix: diag(s, s, s).
+- `pub fn mul_scalar(&self, s: f64) -> Self` — Multiplies every element of the matrix by a scalar.
+- `pub fn rotation_x(angle: f64) -> Mat3` — Rotation matrix about the x-axis by the given angle in radians.
+- `pub fn rotation_y(angle: f64) -> Mat3` — Rotation matrix about the y-axis by the given angle in radians.
+- `pub fn rotation_z(angle: f64) -> Mat3` — Rotation matrix about the z-axis by the given angle in radians.
+- `pub fn rotation_axis_angle(axis: Vec3, angle: f64) -> Mat3` — Rodrigues' rotation formula: rotate by `angle` radians about `axis`.
+- `pub fn cartesian_to_spherical(x: f64, y: f64, z: f64) -> (f64, f64, f64)` — Returns (r, theta, phi) where theta is the polar angle from +z and phi is the azimuthal angle fro...
+- `pub fn spherical_to_cartesian(r: f64, theta: f64, phi: f64) -> (f64, f64, f64)` — Converts spherical coordinates (r, theta, phi) to Cartesian (x, y, z).
+- `pub fn cartesian_to_cylindrical(x: f64, y: f64, z: f64) -> (f64, f64, f64)` — Returns (rho, phi, z) where rho is the radial distance in the xy-plane and phi is the azimuthal a...
+- `pub fn cylindrical_to_cartesian(rho: f64, phi: f64, z: f64) -> (f64, f64, f64)` — Converts cylindrical coordinates (rho, phi, z) to Cartesian (x, y, z).
+- `pub fn polar_to_cartesian(r: f64, theta: f64) -> (f64, f64)` — Converts 2D polar coordinates (r, theta) to Cartesian (x, y).
+- `pub fn cartesian_to_polar(x: f64, y: f64) -> (f64, f64)` — Returns (r, theta) where theta is the angle from +x.
+
+### `quaternion` — structs: Quaternion
+
+- `pub fn new(w: f64, x: f64, y: f64, z: f64) -> Self` — Create a quaternion from components (w, x, y, z).
+- `pub fn identity() -> Self` — Identity quaternion representing no rotation: (1, 0, 0, 0).
+- `pub fn from_axis_angle(axis: Vec3, angle: f64) -> Self` — Create a rotation quaternion from an axis and angle: q = (cos(θ/2), sin(θ/2)·axis).
+- `pub fn from_euler(roll: f64, pitch: f64, yaw: f64) -> Self` — ZYX convention: roll (X), pitch (Y), yaw (Z) applied as Z * Y * X.
+- `pub fn norm(&self) -> f64` — Quaternion norm: |q| = √(w² + x² + y² + z²)
+- `pub fn normalize(&self) -> Self` — Return a unit quaternion (normalized to norm 1).
+- `pub fn conjugate(&self) -> Self` — Quaternion conjugate: q* = (w, -x, -y, -z).
+- `pub fn inverse(&self) -> Self` — Quaternion inverse: q⁻¹ = q*/|q|².
+- `pub fn dot(&self, other: &Self) -> f64` — Dot product of two quaternions: q₁·q₂ = w₁w₂ + x₁x₂ + y₁y₂ + z₁z₂
+- `pub fn rotate_vec(&self, v: Vec3) -> Vec3` — Rotate a vector by this quaternion: v' = q·v·q*
+- `pub fn to_rotation_matrix(&self) -> [[f64; 3]; 3]` — Convert to a 3x3 rotation matrix.
+- `pub fn to_axis_angle(&self) -> (Vec3, f64)` — Extract axis and angle from this rotation quaternion.
+- `pub fn to_euler(&self) -> (f64, f64, f64)` — Returns (roll, pitch, yaw) using ZYX convention.
+- `pub fn angle_between(&self, other: &Self) -> f64` — Angle between two quaternion rotations: θ = 2·arccos(|q₁·q₂|)
+- `pub fn is_unit(&self, tolerance: f64) -> bool` — Check if this quaternion has unit norm within the given tolerance.
+- `pub fn slerp(q1: &Quaternion, q2: &Quaternion, t: f64) -> Quaternion` — Spherical linear interpolation between two quaternions at parameter t in [0, 1].
+- `pub fn nlerp(q1: &Quaternion, q2: &Quaternion, t: f64) -> Quaternion` — Normalized linear interpolation between two quaternions (cheaper than slerp).
+
+### `geometry`
+
+- `pub fn area_circle(radius: f64) -> f64` — Area of a circle: A = πr²
+- `pub fn area_ellipse(semi_major: f64, semi_minor: f64) -> f64` — Area of an ellipse: A = πab
+- `pub fn area_triangle(base: f64, height: f64) -> f64` — Area of a triangle: A = bh/2
+- `pub fn area_triangle_heron(a: f64, b: f64, c: f64) -> f64` — Area of a triangle via Heron's formula: A = √(s(s-a)(s-b)(s-c)) where s = (a+b+c)/2
+- `pub fn area_regular_polygon(n_sides: u32, side_length: f64) -> f64` — Area of a regular polygon: A = n·s²/(4·tan(π/n))
+- `pub fn area_sector(radius: f64, angle: f64) -> f64` — Area of a circular sector: A = r²θ/2
+- `pub fn area_annulus(outer_r: f64, inner_r: f64) -> f64` — Area of an annulus: A = π(R² - r²)
+- `pub fn volume_sphere(radius: f64) -> f64` — Volume of a sphere: V = 4πr³/3
+- `pub fn volume_cylinder(radius: f64, height: f64) -> f64` — Volume of a cylinder: V = πr²h
+- `pub fn volume_cone(radius: f64, height: f64) -> f64` — Volume of a cone: V = πr²h/3
+- `pub fn volume_ellipsoid(a: f64, b: f64, c: f64) -> f64` — Volume of an ellipsoid: V = 4πabc/3
+- `pub fn volume_torus(major_r: f64, minor_r: f64) -> f64` — Volume of a torus: V = 2π²Rr²
+- `pub fn volume_frustum(r1: f64, r2: f64, height: f64) -> f64` — Volume of a frustum: V = πh(r₁² + r₁r₂ + r₂²)/3
+- `pub fn volume_capsule(radius: f64, cylinder_height: f64) -> f64` — Volume of a capsule (cylinder + sphere): V = πr²h + 4πr³/3
+- `pub fn surface_sphere(radius: f64) -> f64` — Surface area of a sphere: A = 4πr²
+- `pub fn surface_cylinder_total(radius: f64, height: f64) -> f64` — Total surface area of a cylinder (lateral + both caps): A = 2πr(r + h)
+- `pub fn surface_cylinder_lateral(radius: f64, height: f64) -> f64` — Lateral surface area of a cylinder: A = 2πrh
+- `pub fn surface_cone_lateral(radius: f64, slant_height: f64) -> f64` — Lateral surface area of a cone: A = πrl
+- `pub fn surface_torus(major_r: f64, minor_r: f64) -> f64` — Surface area of a torus: A = 4π²Rr
+- `pub fn solid_angle_cone(half_angle: f64) -> f64` — Solid angle subtended by a cone: Ω = 2π(1 - cos(θ))
+- `pub fn solid_angle_full_sphere() -> f64` — Solid angle of a full sphere: Ω = 4π steradians
+- `pub fn great_circle_distance(r: f64, lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64` — Great-circle distance on a sphere: d = r·arccos(sin(φ₁)sin(φ₂) + cos(φ₁)cos(φ₂)cos(Δλ))
+- `pub fn spherical_excess(a: f64, b: f64, c: f64) -> f64` — Spherical excess of a spherical triangle: E = A + B + C - π
+- `pub fn moi_solid_sphere(mass: f64, radius: f64) -> f64` — Moment of inertia of a solid sphere: I = 2mr²/5
+- `pub fn moi_hollow_sphere(mass: f64, radius: f64) -> f64` — Moment of inertia of a hollow sphere (thin shell): I = 2mr²/3
+- `pub fn moi_solid_cylinder(mass: f64, radius: f64) -> f64` — Moment of inertia of a solid cylinder about its axis: I = mr²/2
+- `pub fn moi_thin_rod_center(mass: f64, length: f64) -> f64` — Moment of inertia of a thin rod about its center: I = mL²/12
+- `pub fn moi_thin_rod_end(mass: f64, length: f64) -> f64` — Moment of inertia of a thin rod about one end: I = mL²/3
+- `pub fn moi_rectangular_plate(mass: f64, width: f64, height: f64) -> f64` — Moment of inertia of a rectangular plate about its center: I = m(w² + h²)/12
+- `pub fn parallel_axis(i_cm: f64, mass: f64, distance: f64) -> f64` — Parallel axis theorem: I = I_cm + md²
+
+### `curves`
+
+- `pub fn circle_area(radius: f64) -> f64` — Area of a circle: A = πr²
+- `pub fn circle_circumference(radius: f64) -> f64` — Circle circumference: C = 2πr
+- `pub fn circle_equation(x: f64, y: f64, cx: f64, cy: f64, r: f64) -> f64` — Returns (x-cx)^2 + (y-cy)^2 - r^2. Zero means the point lies on the circle.
+- `pub fn ellipse_circumference_approx(a: f64, b: f64) -> f64` — Ramanujan approximation: pi * (3(a+b) - sqrt((3a+b)(a+3b)))
+- `pub fn ellipse_equation(x: f64, y: f64, a: f64, b: f64) -> f64` — Returns x^2/a^2 + y^2/b^2 - 1. Zero means the point lies on the ellipse.
+- `pub fn ellipse_eccentricity(a: f64, b: f64) -> f64` — Eccentricity e = sqrt(1 - b^2/a^2) for a > b.
+- `pub fn parabola_focus(a: f64) -> f64` — Focus distance f = 1/(4a) for parabola y = ax^2.
+- `pub fn parabola_equation(x: f64, a: f64) -> f64` — Parabola equation: y = ax²
+- `pub fn hyperbola_eccentricity(a: f64, b: f64) -> f64` — Eccentricity e = sqrt(1 + b^2/a^2).
+- `pub fn hyperbola_asymptote_slope(a: f64, b: f64) -> f64` — Asymptote slope of a hyperbola: m = b/a
+- `pub fn conic_discriminant(a: f64, b: f64, c: f64) -> f64` — Discriminant B^2 - 4AC for general conic Ax^2 + Bxy + Cy^2 + ...
+- `pub fn bezier_quadratic( t: f64, p0: (f64, f64),` — Quadratic Bezier curve point: B(t) = (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
+- `pub fn bezier_cubic( t: f64, p0: (f64, f64),` — Cubic Bezier curve point: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+- `pub fn bezier_quadratic_3d(t: f64, p0: Vec3, p1: Vec3, p2: Vec3) -> Vec3` — Quadratic Bezier curve in 3D: B(t) = (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
+- `pub fn bezier_cubic_3d(t: f64, p0: Vec3, p1: Vec3, p2: Vec3, p3: Vec3) -> Vec3` — Cubic Bezier curve in 3D: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
+- `pub fn bezier_sample( p0: (f64, f64),` — Sample n+1 evenly spaced points along a cubic Bezier curve (t from 0 to 1).
+- `pub fn parametric_circle(t: f64, r: f64) -> (f64, f64)` — Parametric circle: (x, y) = (r·cos(t), r·sin(t))
+- `pub fn parametric_ellipse(t: f64, a: f64, b: f64) -> (f64, f64)` — Parametric ellipse: (x, y) = (a·cos(t), b·sin(t))
+- `pub fn parametric_spiral(t: f64, a: f64, b: f64) -> (f64, f64)` — Archimedean spiral: r = a + b*t.
+- `pub fn parametric_lissajous(t: f64, a: f64, b: f64, delta: f64) -> (f64, f64)` — Lissajous figure: (sin(a*t + delta), sin(b*t)).
+- `pub fn parametric_cycloid(t: f64, r: f64) -> (f64, f64)` — Cycloid: (r(t - sin(t)), r(1 - cos(t))).
+- `pub fn parametric_helix(t: f64, radius: f64, pitch: f64) -> (f64, f64, f64)` — Helix: (r cos(t), r sin(t), pitch * t / (2*pi)).
+- `pub fn arc_length_parametric( fx: &dyn Fn(f64) -> f64,` — Numerical arc length via piecewise linear approximation with n segments.
+- `pub fn arc_length_circle(radius: f64, angle: f64) -> f64` — Arc length of a circular arc: s = rθ
+- `pub fn curvature_2d(dxdt: f64, dydt: f64, d2xdt2: f64, d2ydt2: f64) -> f64` — Curvature kappa = |x'y'' - y'x''| / (x'^2 + y'^2)^(3/2).
+
+### `trigonometry`
+
+- `pub fn law_of_cosines_side(a: f64, b: f64, angle_c: f64) -> f64` — Compute unknown side via law of cosines: c = sqrt(a² + b² - 2ab·cos(C))
+- `pub fn law_of_cosines_angle(a: f64, b: f64, c: f64) -> f64` — Compute unknown angle via law of cosines: C = arccos((a² + b² - c²) / (2ab))
+- `pub fn law_of_sines_side(a: f64, angle_a: f64, angle_b: f64) -> f64` — Compute unknown side via law of sines: b = a·sin(B) / sin(A)
+- `pub fn law_of_sines_angle(a: f64, b: f64, angle_a: f64) -> f64` — Compute unknown angle via law of sines: B = arcsin(b·sin(A) / a)
+- `pub fn triangle_area_sas(a: f64, b: f64, angle_c: f64) -> f64` — Triangle area using two sides and included angle: A = ½·a·b·sin(C)
+- `pub fn sin_sum(a: f64, b: f64) -> f64` — Sine of sum identity: sin(a+b) = sin(a)cos(b) + cos(a)sin(b)
+- `pub fn cos_sum(a: f64, b: f64) -> f64` — Cosine of sum identity: cos(a+b) = cos(a)cos(b) - sin(a)sin(b)
+- `pub fn sin_diff(a: f64, b: f64) -> f64` — Sine of difference identity: sin(a-b) = sin(a)cos(b) - cos(a)sin(b)
+- `pub fn cos_diff(a: f64, b: f64) -> f64` — Cosine of difference identity: cos(a-b) = cos(a)cos(b) + sin(a)sin(b)
+- `pub fn tan_sum(a: f64, b: f64) -> f64` — Tangent of sum identity: tan(a+b) = (tan(a) + tan(b)) / (1 - tan(a)tan(b))
+- `pub fn double_angle_sin(a: f64) -> f64` — Double-angle sine identity: sin(2a) = 2·sin(a)·cos(a)
+- `pub fn double_angle_cos(a: f64) -> f64` — Double-angle cosine identity: cos(2a) = cos²(a) - sin²(a)
+- `pub fn half_angle_sin(a: f64) -> f64` — Half-angle sine identity: sin(a/2) = sqrt(|1 - cos(a)| / 2)
+- `pub fn half_angle_cos(a: f64) -> f64` — Half-angle cosine identity: cos(a/2) = sqrt(|1 + cos(a)| / 2)
+- `pub fn product_to_sum_sin_sin(a: f64, b: f64) -> f64` — Product-to-sum for sin·sin: sin(a)sin(b) = ½[cos(a-b) - cos(a+b)]
+- `pub fn product_to_sum_cos_cos(a: f64, b: f64) -> f64` — Product-to-sum for cos·cos: cos(a)cos(b) = ½[cos(a-b) + cos(a+b)]
+- `pub fn sinh(x: f64) -> f64` — Hyperbolic sine: sinh(x) = (eˣ - e⁻ˣ) / 2
+- `pub fn cosh(x: f64) -> f64` — Hyperbolic cosine: cosh(x) = (eˣ + e⁻ˣ) / 2
+- `pub fn tanh(x: f64) -> f64` — Hyperbolic tangent: tanh(x) = sinh(x) / cosh(x)
+- `pub fn sech(x: f64) -> f64` — Hyperbolic secant: sech(x) = 1 / cosh(x)
+- `pub fn csch(x: f64) -> f64` — Hyperbolic cosecant: csch(x) = 1 / sinh(x)
+- `pub fn coth(x: f64) -> f64` — Hyperbolic cotangent: coth(x) = cosh(x) / sinh(x)
+- `pub fn asinh(x: f64) -> f64` — Inverse hyperbolic sine: asinh(x) = ln(x + sqrt(x² + 1))
+- `pub fn acosh(x: f64) -> f64` — Inverse hyperbolic cosine: acosh(x) = ln(x + sqrt(x² - 1))
+- `pub fn atanh(x: f64) -> f64` — Inverse hyperbolic tangent: atanh(x) = ½·ln((1+x) / (1-x))
+- `pub fn normalize_angle(angle: f64) -> f64` — Normalize angle to the range [0, 2π)
+- `pub fn normalize_angle_signed(angle: f64) -> f64` — Normalize angle to the range [-π, π)
+- `pub fn angular_difference(a: f64, b: f64) -> f64` — Signed shortest angular difference from a to b: normalize(b - a) in [-π, π)
+- `pub fn is_acute(angle: f64) -> bool` — Check whether angle (in radians) is acute: 0 < angle < π/2
+- `pub fn is_right(angle: f64, tolerance: f64) -> bool` — Check whether angle (in radians) is a right angle within tolerance: |angle - π/2| < tol
+- `pub fn is_obtuse(angle: f64) -> bool` — Check whether angle (in radians) is obtuse: π/2 < angle < π
+- `pub fn complementary(angle: f64) -> f64` — Complementary angle: π/2 - angle
+- `pub fn supplementary(angle: f64) -> f64` — Supplementary angle: π - angle
+
+## Numerical Methods & Computation
+
+### `numerical`
+
+- `pub fn trapezoid(f: &dyn Fn(f64) -> f64, a: f64, b: f64, n: usize) -> f64` — Trapezoidal rule for numerical integration of f over [a, b] with n subintervals.
+- `pub fn simpson(f: &dyn Fn(f64) -> f64, a: f64, b: f64, n: usize) -> f64` — Simpson's 1/3 rule for numerical integration of f over [a, b] with n subintervals.
+- `pub fn gaussian_quadrature_5(f: &dyn Fn(f64) -> f64, a: f64, b: f64) -> f64` — 5-point Gauss-Legendre quadrature of f over [a, b].
+- `pub fn bisection( f: &dyn Fn(f64) -> f64,` — Bisection method for finding a root of f in [a, b].
+- `pub fn newton_raphson( f: &dyn Fn(f64) -> f64,` — Newton-Raphson method starting from x0.
+- `pub fn secant( f: &dyn Fn(f64) -> f64,` — Secant method starting from two initial guesses x0 and x1.
+- `pub fn euler_step(f: &dyn Fn(f64, f64) -> f64, t: f64, y: f64, dt: f64) -> f64` — Single forward Euler step: y_next = y + dt * f(t, y).
+- `pub fn rk4_step(f: &dyn Fn(f64, f64) -> f64, t: f64, y: f64, dt: f64) -> f64` — Single step of the classic 4th-order Runge-Kutta method.
+- `pub fn rk4_solve( f: &dyn Fn(f64, f64) -> f64,` — Full RK4 integration of dy/dt = f(t, y) from t0 to t_end, returning (t, y) pairs.
+- `pub fn rk4_step_vec( f: &dyn Fn(f64, &[f64]) -> Vec<f64>,` — Single RK4 step for a system of ODEs (vector state).
+- `pub fn lerp(a: f64, b: f64, t: f64) -> f64` — Linear interpolation between a and b: a + t*(b - a).
+- `pub fn linear_interp(x_data: &[f64], y_data: &[f64], x: f64) -> f64` — Piecewise linear interpolation in sorted (x_data, y_data).
+- `pub fn cubic_interp(x_data: &[f64], y_data: &[f64], x: f64) -> f64` — Natural cubic spline interpolation for a single query point.
+
+### `optimization`
+
+- `pub fn golden_section_min( f: &dyn Fn(f64) -> f64,` — Golden-section search for the minimum of `f` on `[a, b]`.
+- `pub fn brent_min( f: &dyn Fn(f64) -> f64,` — Brent's method for 1-D minimization, combining golden-section search with
+- `pub fn numerical_gradient_vec(f: &dyn Fn(&[f64]) -> f64, x: &[f64], h: f64) -> Vec<f64>` — Central-difference numerical gradient of a scalar function of n variables.
+- `pub fn gradient_descent( _f: &dyn Fn(&[f64]) -> f64,` — Vanilla gradient descent: x ← x − α∇f.
+- `pub fn gradient_descent_momentum( _f: &dyn Fn(&[f64]) -> f64,` — Gradient descent with momentum: v ← μv − α∇f, x ← x + v.
+- `pub fn adam( _f: &dyn Fn(&[f64]) -> f64,` — Adam optimizer (β1=0.9, β2=0.999, ε=1e-8).
+- `pub fn nelder_mead( f: &dyn Fn(&[f64]) -> f64,` — Nelder-Mead simplex algorithm for unconstrained minimization.
+- `pub fn simulated_annealing( f: &dyn Fn(&[f64]) -> f64,` — Simulated annealing for unconstrained minimization.
+- `pub fn linear_regression(x: &[f64], y: &[f64]) -> (f64, f64)` — Ordinary linear regression via closed-form least-squares.
+- `pub fn polynomial_fit(x: &[f64], y: &[f64], degree: usize) -> Vec<f64>` — Fit a polynomial of the given degree to (x, y) data via normal equations
+- `pub fn r_squared(y_actual: &[f64], y_predicted: &[f64]) -> f64` — Coefficient of determination R² = 1 − SS_res / SS_tot.
+
+### `statistics`
+
+- `pub fn factorial(n: u64) -> f64` — Compute factorial of n: n! = 1 × 2 × ... × n
+- `pub fn gamma_lanczos(z: f64) -> f64` — Compute the gamma function via Lanczos approximation: Γ(z)
+- `pub fn mean(data: &[f64]) -> f64` — Arithmetic mean of a data set: μ = (Σxᵢ) / n
+- `pub fn variance(data: &[f64]) -> f64` — Population variance: σ² = Σ(xᵢ - μ)² / n
+- `pub fn std_deviation(data: &[f64]) -> f64` — Population standard deviation: σ = sqrt(σ²)
+- `pub fn sample_variance(data: &[f64]) -> f64` — Sample variance with Bessel's correction: s² = Σ(xᵢ - x̄)² / (n - 1)
+- `pub fn sample_std_deviation(data: &[f64]) -> f64` — Sample standard deviation: s = sqrt(s²)
+- `pub fn median(data: &mut [f64]) -> f64` — Median of a data set (sorts the slice in place)
+- `pub fn covariance(x: &[f64], y: &[f64]) -> f64` — Population covariance of two data sets: cov(X,Y) = Σ(xᵢ - μₓ)(yᵢ - μᵧ) / n
+- `pub fn correlation(x: &[f64], y: &[f64]) -> f64` — Pearson correlation coefficient: r = cov(X,Y) / (σₓ · σᵧ)
+- `pub fn gaussian(x: f64, mu: f64, sigma: f64) -> f64` — Gaussian probability density function: f(x) = (1/(σ√(2π))) · exp(-½((x-μ)/σ)²)
+- `pub fn gaussian_cdf_approx(x: f64, mu: f64, sigma: f64) -> f64` — Approximate Gaussian CDF using the Abramowitz & Stegun method: Φ(x) ≈ 1 - φ(x)·P(t)
+- `pub fn poisson_pmf(k: u64, lambda: f64) -> f64` — Poisson probability mass function: P(k;λ) = λᵏ · e⁻λ / k!
+- `pub fn exponential_pdf(x: f64, lambda: f64) -> f64` — Exponential probability density function: f(x;λ) = λ · e⁻ˡˣ for x ≥ 0
+- `pub fn exponential_cdf(x: f64, lambda: f64) -> f64` — Exponential cumulative distribution function: F(x;λ) = 1 - e⁻ˡˣ for x ≥ 0
+- `pub fn chi_squared_pdf(x: f64, k: u32) -> f64` — Chi-squared PDF: f(x;k) = x^(k/2-1)·e^(-x/2) / (2^(k/2)·Γ(k/2))
+- `pub fn error_propagation_sum(errors: &[f64]) -> f64` — Error propagation for sums: δ_total = sqrt(Σδᵢ²)
+- `pub fn error_propagation_product(values: &[f64], relative_errors: &[f64]) -> f64` — Error propagation for products using relative errors: δ_rel = sqrt(Σ(δᵢ/vᵢ)²)
+- `pub fn weighted_mean(values: &[f64], weights: &[f64]) -> f64` — Weighted mean: x̄_w = Σ(wᵢ·xᵢ) / Σwᵢ
+- `pub fn weighted_mean_error(weights: &[f64]) -> f64` — Weighted mean uncertainty: δ = 1 / sqrt(Σwᵢ)
+- `pub fn dft(signal: &[f64]) -> Vec<(f64, f64)>` — Discrete Fourier Transform: X[k] = Σ x[n]·e^(-j2πkn/N), returns (real, imag) pairs
+- `pub fn inverse_dft(spectrum: &[(f64, f64)]) -> Vec<f64>` — Inverse DFT: x[n] = (1/N)·Σ X[k]·e^(j2πkn/N)
+- `pub fn power_spectrum(signal: &[f64]) -> Vec<f64>` — Power spectrum: |X[k]|² = Re² + Im² for each frequency bin
+- `pub fn dominant_frequency(signal: &[f64], sample_rate: f64) -> f64` — Find the dominant frequency in a signal: f_peak = k_max · f_s / N
+
+### `monte_carlo` — structs: Rng
+
+- `pub fn new(seed: u64) -> Self` — Creates a new RNG seeded with the given value.
+- `pub fn next_u64(&mut self) -> u64` — Advances the LCG state and returns the next pseudo-random u64.
+- `pub fn next_f64(&mut self) -> f64` — Returns a uniform random f64 in [0, 1) by extracting the top 53 mantissa bits.
+- `pub fn next_gaussian(&mut self) -> f64` — Returns a standard normal variate via the Box-Muller transform.
+- `pub fn mc_integrate_1d( f: &dyn Fn(f64) -> f64,` — Monte Carlo integration of a 1D function over [a, b] using uniform random sampling.
+- `pub fn mc_integrate_2d( f: &dyn Fn(f64, f64) -> f64,` — Monte Carlo integration of a 2D function over a rectangular domain using uniform random sampling.
+- `pub fn mc_estimate_pi(n: usize, rng: &mut Rng) -> f64` — Estimates pi by uniform random sampling inside the unit square: π ≈ 4 × (points inside unit circl...
+- `pub fn mc_integrate_importance( f: &dyn Fn(f64) -> f64,` — Monte Carlo integration using importance sampling: E[f(x)/p(x)] with samples drawn from the propo...
+- `pub fn random_walk_1d(steps: usize, step_size: f64, rng: &mut Rng) -> Vec<f64>` — Simulates a 1D symmetric random walk with equal probability of stepping left or right.
+- `pub fn random_walk_2d(steps: usize, step_size: f64, rng: &mut Rng) -> Vec<(f64, f64)>` — Simulates a 2D random walk with uniformly distributed step direction in [0, 2π).
+- `pub fn random_walk_3d(steps: usize, step_size: f64, rng: &mut Rng) -> Vec<(f64, f64, f64)>` — Simulates a 3D random walk with uniformly distributed direction via Marsaglia's Gaussian method.
+- `pub fn wiener_process(n_steps: usize, dt: f64, rng: &mut Rng) -> Vec<f64>` — Generates a discretized Wiener process (Brownian motion): W(t+dt) = W(t) + √dt × N(0,1).
+- `pub fn ornstein_uhlenbeck( n_steps: usize, dt: f64, theta: f64, mu: f64, sigma: f64,` — Simulates an Ornstein-Uhlenbeck process: dx = θ(μ - x)dt + σdW.
+- `pub fn langevin_step( x: f64, v: f64, force: f64, mass: f64, gamma: f64,` — Performs one Langevin dynamics step with thermal noise: dv = (F/m - γv)dt + √(2γk_BT/m) dW.
+- `pub fn metropolis_step( energy_current: f64, energy_proposed: f64, temperature: f64, rng: &mut Rng, ) -> bool` — Metropolis acceptance criterion: accepts if ΔE < 0, otherwise accepts with probability exp(-ΔE / ...
+- `pub fn metropolis_sample( energy_fn: &dyn Fn(f64) -> f64,` — Generates samples from a Boltzmann distribution using the Metropolis-Hastings algorithm.
+- `pub fn ising_energy_1d(spins: &[i8], j_coupling: f64, h_field: f64) -> f64` — Computes the 1D Ising model energy: E = -J Σ s_i s_{i+1} - H Σ s_i.
+- `pub fn ising_magnetization(spins: &[i8]) -> f64` — Computes the mean magnetization of a spin configuration: M = (Σ s_i) / N.
+- `pub fn ising_step_1d( spins: &mut [i8], j_coupling: f64, h_field: f64, temperature: f64, rng: &mut Rng,` — Performs one Metropolis single-spin-flip update on a 1D Ising model.
+
+### `nonlinear`
+
+- `pub fn logistic_map(r: f64, x: f64) -> f64` — Computes one iteration of the logistic map: x_{n+1} = r × x × (1 - x).
+- `pub fn logistic_map_iterate(r: f64, x0: f64, n: usize) -> Vec<f64>` — Iterates the logistic map n times from x0, returning the full trajectory.
+- `pub fn logistic_map_converge(r: f64, x0: f64, transient: usize, samples: usize) -> Vec<f64>` — Discards an initial transient, then collects post-transient samples from the logistic map.
+- `pub fn lyapunov_exponent_logistic(r: f64, x0: f64, n: usize) -> f64` — Computes the Lyapunov exponent of the logistic map: λ = (1/N) Σ ln|r(1 - 2x_n)|.
+- `pub fn lyapunov_exponent_1d( f: &dyn Fn(f64) -> f64,` — Computes the Lyapunov exponent of a general 1D map: λ = (1/N) Σ ln|f'(x_n)|.
+- `pub fn lorenz_derivatives(state: &[f64; 3], sigma: f64, rho: f64, beta: f64) -> [f64; 3]` — Computes the Lorenz system derivatives: dx/dt = σ(y-x), dy/dt = x(ρ-z)-y, dz/dt = xy-βz.
+- `pub fn rossler_derivatives(state: &[f64; 3], a: f64, b: f64, c: f64) -> [f64; 3]` — Computes the Roessler system derivatives: dx/dt = -y-z, dy/dt = x+ay, dz/dt = b+z(x-c).
+- `pub fn henon_map(x: f64, y: f64, a: f64, b: f64) -> (f64, f64)` — Computes one iteration of the Henon map: x_{n+1} = 1 - ax² + y, y_{n+1} = bx.
+- `pub fn henon_iterate(x0: f64, y0: f64, a: f64, b: f64, n: usize) -> Vec<(f64, f64)>` — Iterates the Henon map n times from (x0, y0), returning the full trajectory of (x, y) pairs.
+- `pub fn correlation_dimension_estimate(distances: &[f64], r: f64) -> f64` — Estimates the correlation integral C(r) as the fraction of pairwise distances below threshold r.
+- `pub fn box_counting_dimension(occupied_boxes: &[(usize, usize)], grid_sizes: &[usize]) -> f64` — Estimates the box-counting (Minkowski) dimension via least-squares fit of log(N) vs log(1/ε).
+- `pub fn fixed_point_iterate( f: &dyn Fn(f64) -> f64,` — Finds a fixed point of f by iterating x_{n+1} = f(x_n) until convergence within tolerance.
+- `pub fn is_stable_fixed_point(df_at_fixed: f64) -> bool` — Returns true if the fixed point is stable, i.e., |f'(x*)| < 1.
+
+### `fractals` — structs: Complex
+
+- `pub fn new(re: f64, im: f64) -> Self` — Create a complex number from real and imaginary parts.
+- `pub fn norm_sq(self) -> f64` — Squared norm (modulus squared): |z|² = re² + im²
+- `pub fn norm(self) -> f64` — Norm (modulus): |z| = √(re² + im²)
+- `pub fn arg(self) -> f64` — Argument (phase angle): arg(z) = atan2(im, re)
+- `pub fn conjugate(self) -> Self` — Complex conjugate: z* = re - im·i
+- `pub fn mandelbrot_iterations(c_re: f64, c_im: f64, max_iter: u32) -> u32` — Mandelbrot escape-time iteration count: z_{n+1} = z_n² + c, returns iterations to escape |z| > 2.
+- `pub fn mandelbrot_smooth(c_re: f64, c_im: f64, max_iter: u32) -> f64` — Smooth Mandelbrot iteration count using continuous escape-time coloring.
+- `pub fn mandelbrot_grid( x_min: f64, x_max: f64, y_min: f64, y_max: f64, width: usize,` — Compute Mandelbrot iteration counts for an entire grid of pixels.
+- `pub fn julia_iterations(z_re: f64, z_im: f64, c_re: f64, c_im: f64, max_iter: u32) -> u32` — Julia set escape-time iteration count for a fixed c: z_{n+1} = z_n² + c.
+- `pub fn julia_grid( c_re: f64, c_im: f64, x_min: f64, x_max: f64, y_min: f64,` — Compute Julia set iteration counts for an entire grid of pixels.
+- `pub fn burning_ship_iterations(c_re: f64, c_im: f64, max_iter: u32) -> u32` — Burning Ship fractal iteration count: z_{n+1} = (|Re(z_n)| + i|Im(z_n)|)² + c.
+- `pub fn newton_fractal_iterations( z_re: f64, z_im: f64, max_iter: u32, tolerance: f64, ) -> (u32, u32)` — Newton fractal for f(z) = z³ - 1: returns (iterations, root_index) for convergence.
+- `pub fn sierpinski_point(x: f64, y: f64, iterations: usize) -> Vec<(f64, f64)>` — Generate Sierpinski triangle points via the chaos game (iterated function system).
+- `pub fn barnsley_fern_point(x: f64, y: f64, iterations: usize) -> Vec<(f64, f64)>` — Generate Barnsley fern points via the iterated function system with four affine maps.
+- `pub fn box_count_2d( points: &[(f64, f64)],` — Count occupied grid cells for box-counting fractal dimension estimation.
+
+### `information_theory`
+
+- `pub fn shannon_entropy(probabilities: &[f64]) -> f64` — H = -Σ pi × log₂(pi), skipping pi = 0.
+- `pub fn shannon_entropy_nats(probabilities: &[f64]) -> f64` — H = -Σ pi × ln(pi), in nats.
+- `pub fn max_entropy(n_symbols: usize) -> f64` — H_max = log₂(N) for N equally likely symbols.
+- `pub fn entropy_rate(conditional_entropy: f64) -> f64` — Identity function returning the conditional entropy value. Provided for API
+- `pub fn kl_divergence(p: &[f64], q: &[f64]) -> f64` — D_KL(P||Q) = Σ pi × ln(pi/qi), skipping pi = 0.
+- `pub fn js_divergence(p: &[f64], q: &[f64]) -> f64` — Jensen-Shannon divergence: JSD(P||Q) = (D_KL(P||M) + D_KL(Q||M)) / 2
+- `pub fn cross_entropy(p: &[f64], q: &[f64]) -> f64` — H(P, Q) = -Σ pi × log₂(qi).
+- `pub fn mutual_information( joint: &[f64], marginal_x: &[f64], marginal_y: &[f64], nx: usize, ny: usize,` — I(X;Y) = Σ p(x,y) × ln(p(x,y) / (p(x) × p(y))).
+- `pub fn conditional_entropy( joint: &[f64], marginal_condition: &[f64], nx: usize, ny: usize, ) -> f64` — H(Y|X) = -Σ p(x,y) × ln(p(y|x)).
+- `pub fn binary_entropy(p: f64) -> f64` — H(p) = -p × log₂(p) - (1-p) × log₂(1-p).
+- `pub fn binary_symmetric_channel_capacity(error_prob: f64) -> f64` — C = 1 - H(p) for a binary symmetric channel with crossover probability p.
+- `pub fn compression_ratio(original_bits: f64, compressed_bits: f64) -> f64` — R = original_bits / compressed_bits.
+- `pub fn redundancy(entropy: f64, max_entropy: f64) -> f64` — D = 1 - H / H_max.
+- `pub fn efficiency(entropy: f64, avg_code_length: f64) -> f64` — η = H / L where L is average code length.
+- `pub fn fisher_information_gaussian(sigma: f64) -> f64` — I(μ) = 1/σ² for a Gaussian when estimating the mean.
+- `pub fn cramer_rao_bound(fisher_info: f64) -> f64` — Cramér-Rao lower bound: var(θ̂) ≥ 1 / I(θ).
+
+### `vector_calculus`
+
+- `pub fn gradient_3d( field: &[f64], nx: usize, ny: usize, nz: usize, dx: f64,` — Compute the gradient of a scalar field on a uniform 3-D grid.
+- `pub fn laplacian_3d( field: &[f64], nx: usize, ny: usize, nz: usize, dx: f64,` — Compute the Laplacian (∇²f) of a scalar field on a uniform 3-D grid.
+- `pub fn divergence_3d( fx: &[f64], fy: &[f64], fz: &[f64], nx: usize, ny: usize,` — Divergence of a vector field on a uniform 3-D grid.
+- `pub fn curl_3d( fx: &[f64], fy: &[f64], fz: &[f64], nx: usize, ny: usize,` — Curl of a vector field on a uniform 3-D grid.
+- `pub fn gradient_2d( field: &[f64], nx: usize, ny: usize, dx: f64, dy: f64,` — Gradient of a scalar field on a uniform 2-D grid.
+- `pub fn laplacian_2d( field: &[f64], nx: usize, ny: usize, dx: f64, dy: f64,` — Laplacian of a scalar field on a uniform 2-D grid.
+- `pub fn divergence_2d( fx: &[f64], fy: &[f64], nx: usize, ny: usize, dx: f64,` — Divergence of a 2-D vector field.
+- `pub fn curl_2d( fx: &[f64], fy: &[f64], nx: usize, ny: usize, dx: f64,` — Scalar curl of a 2-D vector field: ∂Fy/∂x - ∂Fx/∂y.
+- `pub fn poisson_jacobi_2d( rhs: &[f64], nx: usize, ny: usize, dx: f64, dy: f64,` — Solve ∇²φ = ρ on a 2-D grid using Jacobi iteration with zero (Dirichlet)
+- `pub fn line_integral( f: &dyn Fn(f64, f64, f64) -> (f64, f64, f64),` — Numerical line integral ∫F·dr along a piecewise-linear path in 3-D.
+- `pub fn flux_integral_2d( fn_field: &dyn Fn(f64, f64) -> (f64, f64),` — Flux integral ∫F·n̂ ds along a 2-D curve.
+- `pub fn numerical_gradient( f: &dyn Fn(f64, f64, f64) -> f64,` — Finite-difference gradient of a scalar function at a point.
+- `pub fn numerical_laplacian( f: &dyn Fn(f64, f64, f64) -> f64,` — Finite-difference Laplacian of a scalar function at a point.
+- `pub fn numerical_divergence( fx: &dyn Fn(f64, f64, f64) -> f64,` — Finite-difference divergence of a vector field at a point.
+
+### `signal_processing`
+
+- `pub fn convolve(signal: &[f64], kernel: &[f64]) -> Vec<f64>` — Linear convolution of signal with kernel: y[n] = Σ s[i]·k[n-i]
+- `pub fn cross_correlate(x: &[f64], y: &[f64]) -> Vec<f64>` — Cross-correlation of x and y via convolution with time-reversed y
+- `pub fn auto_correlate(signal: &[f64]) -> Vec<f64>` — Auto-correlation of a signal: cross-correlation of the signal with itself
+- `pub fn normalize_signal(signal: &mut [f64])` — Normalize signal amplitude to [-1, 1] by dividing by peak absolute value
+- `pub fn hann_window(n: usize) -> Vec<f64>` — Generate a Hann window of length n: w[k] = 0.5·(1 - cos(2πk/(n-1)))
+- `pub fn hamming_window(n: usize) -> Vec<f64>` — Generate a Hamming window of length n: w[k] = 0.54 - 0.46·cos(2πk/(n-1))
+- `pub fn blackman_window(n: usize) -> Vec<f64>` — Generate a Blackman window of length n: w[k] = 0.42 - 0.5·cos(2πk/(n-1)) + 0.08·cos(4πk/(n-1))
+- `pub fn rectangular_window(n: usize) -> Vec<f64>` — Generate a rectangular (uniform) window of length n: w[k] = 1 for all k
+- `pub fn apply_window(signal: &[f64], window: &[f64]) -> Vec<f64>` — Element-wise multiplication of signal by window coefficients
+- `pub fn moving_average(signal: &[f64], window_size: usize) -> Vec<f64>` — Simple moving average filter with specified window size
+- `pub fn exponential_moving_average(signal: &[f64], alpha: f64) -> Vec<f64>` — Exponential moving average filter: y[n] = α·x[n] + (1-α)·y[n-1]
+- `pub fn first_order_lowpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64>` — First-order RC low-pass filter: α = dt / (RC + dt)
+- `pub fn first_order_highpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64>` — First-order RC high-pass filter: α = RC / (RC + dt)
+- `pub fn median_filter(signal: &[f64], window_size: usize) -> Vec<f64>` — Median filter for impulse noise removal with specified window size
+- `pub fn sine_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> Vec<f64>` — Generate a sine wave: x[n] = A·sin(2πf·n/fs) for n samples over given duration
+- `pub fn square_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> Vec<f64>` — Generate a square wave: +A for first half-period, -A for second half
+- `pub fn sawtooth_wave( frequency: f64, sample_rate: f64, duration: f64, amplitude: f64, ) -> Vec<f64>` — Generate a sawtooth wave: linearly ramps from -A to +A each period
+- `pub fn white_noise(n: usize, amplitude: f64, seed: u64) -> Vec<f64>` — Generate deterministic pseudo-random white noise using a linear congruential generator
+- `pub fn zero_crossings(signal: &[f64]) -> usize` — Count the number of zero crossings (sign changes) in the signal
+- `pub fn rms_level(signal: &[f64]) -> f64` — Root mean square level: RMS = sqrt(Σx²/n)
+- `pub fn peak_to_peak(signal: &[f64]) -> f64` — Peak-to-peak amplitude: max(x) - min(x)
+- `pub fn crest_factor(signal: &[f64]) -> f64` — Crest factor: ratio of peak absolute value to RMS level
+
+## Classical Mechanics
+
+### `classical`
+
+- `pub fn displacement(initial_velocity: f64, acceleration: f64, time: f64) -> f64` — Position after uniform acceleration: x = x0 + v0*t + 0.5*a*t^2
+- `pub fn velocity(initial_velocity: f64, acceleration: f64, time: f64) -> f64` — Velocity after uniform acceleration: v = v0 + a*t
+- `pub fn velocity_squared(initial_velocity: f64, acceleration: f64, displacement: f64) -> f64` — Velocity squared: v^2 = v0^2 + 2*a*d
+- `pub fn position_3d(pos: Vec3, vel: Vec3, acc: Vec3, t: f64) -> Vec3` — 3D position under constant acceleration.
+- `pub fn velocity_3d(vel: Vec3, acc: Vec3, t: f64) -> Vec3` — 3D velocity under constant acceleration.
+- `pub fn projectile_range(speed: f64, angle_rad: f64, g: f64) -> f64` — Range of a projectile on flat ground: R = v^2 * sin(2θ) / g
+- `pub fn projectile_max_height(speed: f64, angle_rad: f64, g: f64) -> f64` — Maximum height of a projectile: H = v^2 * sin^2(θ) / (2g)
+- `pub fn projectile_time_of_flight(speed: f64, angle_rad: f64, g: f64) -> f64` — Time of flight for a projectile on flat ground: T = 2v*sin(θ) / g
+- `pub fn force(mass: f64, acceleration: f64) -> f64` — Force = mass * acceleration (Newton's second law)
+- `pub fn force_3d(mass: f64, acceleration: Vec3) -> Vec3` — F = ma as vectors
+- `pub fn acceleration(force: f64, mass: f64) -> f64` — Acceleration from force: a = F / m
+- `pub fn weight(mass: f64, g: f64) -> f64` — Weight: W = m * g
+- `pub fn momentum(mass: f64, velocity: f64) -> f64` — Linear momentum: p = m * v
+- `pub fn momentum_3d(mass: f64, velocity: Vec3) -> Vec3` — 3D momentum.
+- `pub fn impulse(force: f64, delta_t: f64) -> f64` — Impulse: J = F * Δt
+- `pub fn elastic_collision_1d(m1: f64, v1: f64, m2: f64, v2: f64) -> (f64, f64)` — Final velocities after a 1D elastic collision between two masses.
+- `pub fn inelastic_collision_1d(m1: f64, v1: f64, m2: f64, v2: f64) -> f64` — Final velocity after a perfectly inelastic collision (objects stick together).
+- `pub fn coefficient_of_restitution(v1i: f64, v2i: f64, v1f: f64, v2f: f64) -> f64` — Coefficient of restitution: e = -(v1f - v2f) / (v1i - v2i)
+- `pub fn kinetic_energy(mass: f64, speed: f64) -> f64` — Kinetic energy: KE = 0.5 * m * v^2
+- `pub fn potential_energy_gravity(mass: f64, g: f64, height: f64) -> f64` — Gravitational potential energy: PE = m * g * h
+- `pub fn potential_energy_spring(spring_constant: f64, displacement: f64) -> f64` — Elastic potential energy: PE = 0.5 * k * x^2
+- `pub fn work(force: f64, displacement: f64, angle_rad: f64) -> f64` — Work: W = F * d * cos(θ)
+- `pub fn power(work: f64, time: f64) -> f64` — Power: P = W / t
+- `pub fn power_instantaneous(force: f64, velocity: f64) -> f64` — Power (instantaneous): P = F * v
+- `pub fn angular_velocity(delta_theta: f64, delta_t: f64) -> f64` — Angular velocity: ω = Δθ / Δt
+- `pub fn angular_acceleration(delta_omega: f64, delta_t: f64) -> f64` — Angular acceleration: α = Δω / Δt
+- `pub fn torque(radius: f64, force: f64, angle_rad: f64) -> f64` — Torque: τ = r * F * sin(θ)
+- `pub fn torque_3d(r: Vec3, f: Vec3) -> Vec3` — Torque as cross product: τ = r × F
+- `pub fn moment_of_inertia_point(mass: f64, radius: f64) -> f64` — Moment of inertia of a point mass: I = m * r^2
+- `pub fn moment_of_inertia_solid_sphere(mass: f64, radius: f64) -> f64` — Moment of inertia of a solid sphere: I = (2/5) * m * r^2
+- `pub fn moment_of_inertia_solid_cylinder(mass: f64, radius: f64) -> f64` — Moment of inertia of a solid cylinder about its axis: I = (1/2) * m * r^2
+- `pub fn rotational_kinetic_energy(moment_of_inertia: f64, angular_velocity: f64) -> f64` — Rotational kinetic energy: KE = 0.5 * I * ω^2
+- `pub fn angular_momentum(moment_of_inertia: f64, angular_velocity: f64) -> f64` — Angular momentum: L = I * ω
+- `pub fn centripetal_acceleration(speed: f64, radius: f64) -> f64` — Centripetal acceleration: a = v^2 / r
+- `pub fn centripetal_force(mass: f64, speed: f64, radius: f64) -> f64` — Centripetal force: F = m * v^2 / r
+- `pub fn friction_force(coefficient: f64, normal_force: f64) -> f64` — Friction force: f = μ * N
+- `pub fn shm_period_spring(mass: f64, spring_constant: f64) -> f64` — Period of a mass-spring system: T = 2π * sqrt(m / k)
+- `pub fn shm_period_pendulum(length: f64, g: f64) -> f64` — Period of a simple pendulum: T = 2π * sqrt(L / g)
+- `pub fn shm_position(amplitude: f64, angular_freq: f64, time: f64, phase: f64) -> f64` — Position of SHM: x(t) = A * cos(ωt + φ)
+- `pub fn shm_velocity(amplitude: f64, angular_freq: f64, time: f64, phase: f64) -> f64` — Velocity of SHM: v(t) = -A * ω * sin(ωt + φ)
+- `pub fn damped_frequency(natural_freq: f64, damping_ratio: f64) -> f64` — Damped angular frequency: ωd = ω₀√(1 - ζ²), returns 0 if overdamped (ζ ≥ 1)
+- `pub fn damped_amplitude(initial_amplitude: f64, damping_coeff: f64, time: f64) -> f64` — Damped amplitude: A(t) = A₀ × e^(-γt)
+- `pub fn damped_position( amplitude: f64, damping_coeff: f64, angular_freq: f64, time: f64, phase: f64,` — Damped oscillation position: x(t) = A₀e^(-γt)cos(ωdt + φ)
+- `pub fn damping_ratio(damping_coeff: f64, mass: f64, spring_constant: f64) -> f64` — Damping ratio: ζ = c / (2√(mk))
+- `pub fn critical_damping(mass: f64, spring_constant: f64) -> f64` — Critical damping coefficient: c_crit = 2√(mk)
+- `pub fn logarithmic_decrement(damping_ratio: f64) -> f64` — Logarithmic decrement: δ = 2πζ / √(1 - ζ²)
+- `pub fn quality_factor(damping_ratio: f64) -> f64` — Quality factor: Q = 1 / (2ζ)
+- `pub fn decay_time(damping_coeff: f64) -> f64` — Decay time constant: τ = 1/γ (time for amplitude to drop to 1/e)
+- `pub fn driven_amplitude(f0: f64, omega: f64, omega0: f64, gamma: f64) -> f64` — Driven oscillation amplitude: A = f₀ / √((ω₀²-ω²)² + (2γω)²)
+- `pub fn driven_phase(omega: f64, omega0: f64, gamma: f64) -> f64` — Phase lag of driven oscillation: φ = atan2(2γω, ω₀²-ω²)
+- `pub fn resonance_frequency(natural_freq: f64, damping_coeff: f64) -> f64` — Resonance frequency: ωr = √(ω₀² - 2γ²), returns 0 if overdamped
+- `pub fn resonance_amplitude(f0: f64, omega0: f64, gamma: f64) -> f64` — Peak amplitude at resonance: A_max = f₀ / (2γ√(ω₀² - γ²))
+- `pub fn coupled_normal_frequencies(k: f64, k_coupling: f64, m: f64) -> (f64, f64)` — Normal-mode frequencies of two identical masses coupled by a spring:
+- `pub fn beat_frequency_coupled(freq1: f64, freq2: f64) -> f64` — Beat frequency of coupled oscillators: f_beat = |f1 - f2|
+
+### `gravitation`
+
+- `pub fn gravitational_force(m1: f64, m2: f64, distance: f64) -> f64` — Gravitational force magnitude between two masses: F = G * m1 * m2 / r^2
+- `pub fn gravitational_force_vec(m1: f64, pos1: Vec3, m2: f64, pos2: Vec3) -> Vec3` — Gravitational force vector from body1 toward body2.
+- `pub fn gravitational_potential_energy(m1: f64, m2: f64, distance: f64) -> f64` — Gravitational potential energy: U = -G * m1 * m2 / r
+- `pub fn gravitational_field(mass: f64, distance: f64) -> f64` — Gravitational field strength at distance r from mass M: g = G * M / r^2
+- `pub fn escape_velocity(mass: f64, radius: f64) -> f64` — Escape velocity from a body of mass M and radius r: v = sqrt(2GM/r)
+- `pub fn orbital_velocity(central_mass: f64, orbital_radius: f64) -> f64` — Orbital velocity for a circular orbit: v = sqrt(GM/r)
+- `pub fn orbital_period(central_mass: f64, orbital_radius: f64) -> f64` — Orbital period (Kepler's third law): T = 2π * sqrt(r^3 / (G*M))
+- `pub fn semi_major_axis_from_period(central_mass: f64, period: f64) -> f64` — Semi-major axis from orbital period (inverse Kepler's third law):
+- `pub fn schwarzschild_radius(mass: f64) -> f64` — Schwarzschild radius of a black hole: r_s = 2GM / c^2
+- `pub fn gravitational_time_dilation(mass: f64, distance: f64) -> f64` — Gravitational time dilation factor at distance r from mass M:
+- `pub fn roche_limit(primary_radius: f64, primary_density: f64, satellite_density: f64) -> f64` — Roche limit (fluid body): d = R * (2 * ρ_M / ρ_m)^(1/3)
+- `pub fn vis_viva(central_mass: f64, distance: f64, semi_major_axis: f64) -> f64` — Vis-viva equation: v^2 = GM * (2/r - 1/a)
+- `pub fn specific_orbital_energy(central_mass: f64, semi_major_axis: f64) -> f64` — Specific orbital energy: ε = -GM / (2a)
+- `pub fn hill_sphere_radius(semi_major_axis: f64, orbiting_mass: f64, central_mass: f64) -> f64` — Hill sphere radius: r_H ≈ a * (m / (3M))^(1/3)
+
+### `solid_mechanics`
+
+- `pub fn tensile_stress(force: f64, area: f64) -> f64` — Tensile stress: σ = F/A
+- `pub fn tensile_strain(delta_l: f64, original_l: f64) -> f64` — Tensile strain: ε = ΔL/L₀
+- `pub fn shear_stress(force: f64, area: f64) -> f64` — Shear stress: τ = F/A
+- `pub fn shear_strain(displacement: f64, height: f64) -> f64` — Shear strain: γ = Δx/h
+- `pub fn volumetric_strain(delta_v: f64, original_v: f64) -> f64` — Volumetric strain: εv = ΔV/V₀
+- `pub fn true_stress(engineering_stress: f64, engineering_strain: f64) -> f64` — True stress from engineering values: σ_true = σ_eng(1 + ε_eng)
+- `pub fn true_strain(engineering_strain: f64) -> f64` — True strain from engineering strain: ε_true = ln(1 + ε_eng)
+- `pub fn youngs_modulus(stress: f64, strain: f64) -> f64` — Young's modulus (elastic modulus): E = σ/ε
+- `pub fn shear_modulus(shear_stress: f64, shear_strain: f64) -> f64` — Shear modulus: G = τ/γ
+- `pub fn bulk_modulus(pressure: f64, volumetric_strain: f64) -> f64` — Bulk modulus: K = -P/εv
+- `pub fn poisson_ratio_from_moduli(e: f64, g: f64) -> f64` — Poisson's ratio from elastic moduli: ν = E/(2G) - 1
+- `pub fn e_from_k_and_g(bulk: f64, shear: f64) -> f64` — Young's modulus from bulk and shear moduli: E = 9KG/(3K + G)
+- `pub fn bulk_from_e_and_nu(e: f64, nu: f64) -> f64` — Bulk modulus from Young's modulus and Poisson's ratio: K = E/(3(1 - 2ν))
+- `pub fn shear_from_e_and_nu(e: f64, nu: f64) -> f64` — Shear modulus from Young's modulus and Poisson's ratio: G = E/(2(1 + ν))
+- `pub fn beam_deflection_cantilever_point(force: f64, length: f64, e: f64, i: f64) -> f64` — Cantilever beam tip deflection under point load: δ = FL³/(3EI)
+- `pub fn beam_deflection_simply_supported_center(force: f64, length: f64, e: f64, i: f64) -> f64` — Simply supported beam center deflection under point load: δ = FL³/(48EI)
+- `pub fn bending_moment(force: f64, distance: f64) -> f64` — Bending moment: M = F·d
+- `pub fn bending_stress(moment: f64, y: f64, i: f64) -> f64` — Bending stress at distance y from neutral axis: σ = My/I
+- `pub fn second_moment_rectangle(width: f64, height: f64) -> f64` — Second moment of area for a rectangle: I = bh³/12
+- `pub fn second_moment_circle(radius: f64) -> f64` — Second moment of area for a circle: I = πr⁴/4
+- `pub fn von_mises_stress(s1: f64, s2: f64, s3: f64) -> f64` — Von Mises equivalent stress: σ_vm = √(((σ₁-σ₂)² + (σ₂-σ₃)² + (σ₃-σ₁)²)/2)
+- `pub fn safety_factor(yield_strength: f64, applied_stress: f64) -> f64` — Safety factor: n = σ_yield/σ_applied
+- `pub fn strain_energy_density(stress: f64, strain: f64) -> f64` — Elastic strain energy density: u = σε/2
+
+### `continuum_mechanics`
+
+- `pub fn stress_tensor(sxx: f64, syy: f64, szz: f64, sxy: f64, sxz: f64, syz: f64) -> Mat3` — Constructs a symmetric 3x3 Cauchy stress tensor from six independent components.
+- `pub fn stress_invariants(stress: &Mat3) -> (f64, f64, f64)` — Computes the three stress invariants (I1, I2, I3) of a symmetric stress tensor.
+- `pub fn principal_stresses(stress: &Mat3) -> [f64; 3]` — Computes the three principal stresses (eigenvalues) of a symmetric 3x3 tensor,
+- `pub fn hydrostatic_stress(stress: &Mat3) -> f64` — Hydrostatic (mean) stress: sigma_h = tr(sigma) / 3.
+- `pub fn deviatoric_stress(stress: &Mat3) -> Mat3` — Deviatoric stress tensor: s = sigma - sigma_h * I.
+- `pub fn von_mises_from_tensor(stress: &Mat3) -> f64` — Von Mises equivalent stress from a full stress tensor: sigma_vm = sqrt(3/2 * s:s).
+- `pub fn max_shear_stress(stress: &Mat3) -> f64` — Maximum shear stress: tau_max = (sigma1 - sigma3) / 2.
+- `pub fn strain_tensor(exx: f64, eyy: f64, ezz: f64, exy: f64, exz: f64, eyz: f64) -> Mat3` — Constructs a symmetric 3x3 strain tensor from six independent components.
+- `pub fn volumetric_strain(strain: &Mat3) -> f64` — Volumetric strain: epsilon_v = tr(epsilon).
+- `pub fn deviatoric_strain(strain: &Mat3) -> Mat3` — Deviatoric strain tensor: e = epsilon - (epsilon_v / 3) * I.
+- `pub fn strain_from_displacement_gradient(grad_u: &Mat3) -> Mat3` — Small (infinitesimal) strain from the displacement gradient: epsilon = (grad_u + grad_u^T) / 2.
+- `pub fn green_lagrange_strain(deformation_gradient: &Mat3) -> Mat3` — Green-Lagrange finite strain tensor: E = (F^T F - I) / 2.
+- `pub fn hooke_3d(strain: &Mat3, youngs: f64, poisson: f64) -> Mat3` — 3D isotropic linear elastic (Hooke's law):
+- `pub fn compliance_matrix_isotropic(youngs: f64, poisson: f64) -> [f64; 6]` — Returns the six key elastic constants for an isotropic material:
+- `pub fn plane_stress( strain_xx: f64, strain_yy: f64, strain_xy: f64, youngs: f64, poisson: f64,` — Plane stress: returns (sigma_xx, sigma_yy, tau_xy) given in-plane strains.
+- `pub fn plane_strain( strain_xx: f64, strain_yy: f64, strain_xy: f64, youngs: f64, poisson: f64,` — Plane strain: returns (sigma_xx, sigma_yy, tau_xy) given in-plane strains.
+- `pub fn tresca_stress(stress: &Mat3) -> f64` — Tresca equivalent stress: max(|s1-s2|, |s2-s3|, |s3-s1|).
+- `pub fn mohr_coulomb(normal_stress: f64, shear_stress: f64, cohesion: f64, friction_angle: f64) -> f64` — Mohr-Coulomb failure criterion: tau - c - sigma * tan(phi).
+- `pub fn drucker_prager(stress: &Mat3, cohesion: f64, friction_angle: f64) -> f64` — Drucker-Prager failure criterion: sqrt(J2) + alpha * I1 - k.
+
+## Thermodynamics & Statistical Mechanics
+
+### `thermodynamics`
+
+- `pub fn ideal_gas_pressure(moles: f64, temperature: f64, volume: f64) -> f64` — Ideal gas law: PV = nRT. Solve for pressure: P = nRT / V
+- `pub fn ideal_gas_volume(moles: f64, temperature: f64, pressure: f64) -> f64` — Solve for volume: V = nRT / P
+- `pub fn ideal_gas_temperature(pressure: f64, volume: f64, moles: f64) -> f64` — Solve for temperature: T = PV / (nR)
+- `pub fn ideal_gas_moles(pressure: f64, volume: f64, temperature: f64) -> f64` — Number of moles: n = PV / (RT)
+- `pub fn average_kinetic_energy(temperature: f64) -> f64` — Average kinetic energy of a gas molecule: KE = (3/2) * k_B * T
+- `pub fn rms_speed(temperature: f64, molecular_mass: f64) -> f64` — RMS speed of gas molecules: v_rms = sqrt(3 * k_B * T / m)
+- `pub fn mean_free_path(molecular_diameter: f64, number_density: f64) -> f64` — Mean free path: λ = 1 / (√2 * π * d^2 * n/V)
+- `pub fn heat_transfer(mass: f64, specific_heat: f64, delta_temp: f64) -> f64` — Heat transfer: Q = m * c * ΔT
+- `pub fn heat_conduction_rate( conductivity: f64, area: f64, delta_temp: f64, thickness: f64, ) -> f64` — Heat conduction (Fourier's law): Q/t = k * A * ΔT / d
+- `pub fn heat_radiation_power(emissivity: f64, area: f64, temperature: f64) -> f64` — Heat radiation (Stefan-Boltzmann law): P = ε * σ * A * T^4
+- `pub fn net_radiation_power( emissivity: f64, area: f64, t_hot: f64, t_cold: f64, ) -> f64` — Net radiative heat transfer: P = ε * σ * A * (T_hot^4 - T_cold^4)
+- `pub fn newton_cooling(t_initial: f64, t_environment: f64, cooling_constant: f64, time: f64) -> f64` — Newton's law of cooling: dT/dt = -k * (T - T_env)
+- `pub fn work_isothermal(moles: f64, temperature: f64, v1: f64, v2: f64) -> f64` — Work done by an ideal gas during isothermal expansion: W = nRT * ln(V2/V1)
+- `pub fn work_isobaric(pressure: f64, delta_v: f64) -> f64` — Work done during isobaric (constant pressure) process: W = P * ΔV
+- `pub fn work_adiabatic(p1: f64, v1: f64, p2: f64, v2: f64, gamma: f64) -> f64` — Work done during adiabatic process: W = (P1*V1 - P2*V2) / (γ - 1)
+- `pub fn adiabatic_final_pressure(p1: f64, v1: f64, v2: f64, gamma: f64) -> f64` — Adiabatic relation: P1 * V1^γ = P2 * V2^γ → P2 = P1 * (V1/V2)^γ
+- `pub fn entropy_change_isothermal(heat: f64, temperature: f64) -> f64` — Entropy change for heat transfer at constant temperature: ΔS = Q / T
+- `pub fn entropy_change_ideal_gas( moles: f64, cv: f64, t1: f64, t2: f64, v1: f64,` — Entropy change for an ideal gas: ΔS = n*Cv*ln(T2/T1) + n*R*ln(V2/V1)
+- `pub fn carnot_efficiency(t_cold: f64, t_hot: f64) -> f64` — Carnot efficiency: η = 1 - T_cold / T_hot
+- `pub fn thermal_efficiency(work: f64, heat_input: f64) -> f64` — Thermal efficiency: η = W / Q_hot
+- `pub fn cop_refrigerator(heat_removed: f64, work: f64) -> f64` — Coefficient of performance (refrigerator): COP = Q_cold / W
+- `pub fn cop_heat_pump(heat_delivered: f64, work: f64) -> f64` — Coefficient of performance (heat pump): COP = Q_hot / W
+- `pub fn latent_heat(mass: f64, specific_latent_heat: f64) -> f64` — Heat for phase change: Q = m * L (latent heat)
+- `pub fn clausius_clapeyron(p1: f64, t1: f64, t2: f64, molar_latent_heat: f64) -> f64` — Clausius-Clapeyron (approximate): ln(P2/P1) = (L/R) * (1/T1 - 1/T2)
+- `pub fn convective_heat_rate(h: f64, area: f64, delta_temp: f64) -> f64` — Newton's law of convection: Q/t = h×A×ΔT
+- `pub fn thermal_diffusivity(conductivity: f64, density: f64, specific_heat: f64) -> f64` — Thermal diffusivity: α = k/(ρ×cₚ)
+- `pub fn grashof_number( g: f64, beta: f64, delta_temp: f64, length: f64, kinematic_viscosity: f64,` — Grashof number: Gr = gβΔTL³/ν²
+- `pub fn rayleigh_number(grashof: f64, prandtl: f64) -> f64` — Rayleigh number: Ra = Gr × Pr
+- `pub fn prandtl_number(kinematic_viscosity: f64, thermal_diffusivity: f64) -> f64` — Prandtl number: Pr = ν/α
+- `pub fn nusselt_number(h: f64, length: f64, conductivity: f64) -> f64` — Nusselt number: Nu = hL/k
+- `pub fn biot_number(h: f64, length: f64, conductivity: f64) -> f64` — Biot number: Bi = hL/k (external convection vs internal conduction)
+- `pub fn heat_equation_step_1d(temperatures: &mut [f64], dx: f64, dt: f64, diffusivity: f64)` — Explicit finite difference: T_i^(n+1) = T_i^n + α×dt/dx² × (T_(i+1) - 2T_i + T_(i-1))
+- `pub fn heat_equation_stability(dx: f64, diffusivity: f64) -> f64` — Maximum stable time step for explicit finite difference: dt_max = dx²/(2α)
+- `pub fn wien_displacement(temperature: f64) -> f64` — Wien's displacement law: λ_max = b/T where b = 2.898e-3 m·K
+- `pub fn spectral_exitance(wavelength: f64, temperature: f64) -> f64` — Planck's law: M = (2πhc²/λ⁵) × 1/(e^(hc/λkT) - 1)
+- `pub fn radiative_equilibrium_temperature(luminosity: f64, distance: f64, albedo: f64) -> f64` — Radiative equilibrium temperature: T = ((L(1-a))/(16πσd²))^(1/4)
+- `pub fn celsius_to_kelvin(c: f64) -> f64` — Celsius to Kelvin: K = C + 273.15
+- `pub fn kelvin_to_celsius(k: f64) -> f64` — Kelvin to Celsius: C = K - 273.15
+- `pub fn celsius_to_fahrenheit(c: f64) -> f64` — Celsius to Fahrenheit: F = C × 9/5 + 32
+- `pub fn fahrenheit_to_celsius(f: f64) -> f64` — Fahrenheit to Celsius: C = (F - 32) × 5/9
+- `pub fn fahrenheit_to_kelvin(f: f64) -> f64` — Fahrenheit to Kelvin via Celsius
+- `pub fn kelvin_to_fahrenheit(k: f64) -> f64` — Kelvin to Fahrenheit via Celsius
+- `pub fn celsius_to_rankine(c: f64) -> f64` — Celsius to Rankine: R = (C + 273.15) × 9/5
+- `pub fn rankine_to_celsius(r: f64) -> f64` — Rankine to Celsius: C = R × 5/9 - 273.15
+- `pub fn boiling_point_elevation(kb: f64, molality: f64) -> f64` — Boiling point elevation: ΔTb = Kb × m
+- `pub fn freezing_point_depression(kf: f64, molality: f64) -> f64` — Freezing point depression: ΔTf = Kf × m
+- `pub fn saturation_pressure(t: f64, a: f64, b: f64, c: f64) -> f64` — Antoine equation: log10(P) = A - B/(C+T), returns P
+- `pub fn heat_of_vaporization_trouton(boiling_point_k: f64) -> f64` — Trouton's rule: ΔHvap ≈ 88 × Tb (J/mol)
+- `pub fn superheat_degree(actual_temp: f64, saturation_temp: f64) -> f64` — Degree of superheat: ΔT = T_actual - T_sat
+- `pub fn subcool_degree(saturation_temp: f64, actual_temp: f64) -> f64` — Degree of subcooling: ΔT = T_sat - T_actual
+- `pub fn quality(mass_vapor: f64, mass_total: f64) -> f64` — Steam quality (dryness fraction): x = m_vapor / m_total
+- `pub fn specific_enthalpy_wet(hf: f64, hfg: f64, quality: f64) -> f64` — Specific enthalpy of wet steam: h = hf + x × hfg
+
+### `statistical_mechanics`
+
+- `pub fn einstein_diffusion(temperature: f64, dynamic_viscosity: f64, particle_radius: f64) -> f64` — Stokes-Einstein diffusion coefficient: D = k_B × T / (6π × μ × r)
+- `pub fn mean_square_displacement(diffusion_coeff: f64, time: f64, dimensions: u32) -> f64` — Mean square displacement: ⟨r²⟩ = 2nDt where n = number of spatial dimensions
+- `pub fn rms_displacement(diffusion_coeff: f64, time: f64, dimensions: u32) -> f64` — Root-mean-square displacement: √(⟨r²⟩)
+- `pub fn fick_first_law(diffusion_coeff: f64, concentration_gradient: f64) -> f64` — Fick's first law: J = -D × (dc/dx)
+- `pub fn fick_second_law_step_1d( concentrations: &mut [f64], dx: f64, dt: f64, diffusion_coeff: f64, )` — Fick's second law via explicit finite-difference step in 1D.
+- `pub fn diffusion_length(diffusion_coeff: f64, time: f64) -> f64` — Characteristic diffusion length: L = √(2Dt)
+- `pub fn diffusion_time(diffusion_coeff: f64, length: f64) -> f64` — Time required to diffuse a given length: t = L² / (2D)
+- `pub fn maxwell_speed_distribution(mass: f64, temperature: f64, speed: f64) -> f64` — Maxwell speed distribution: f(v) = 4π × (m/(2πk_BT))^(3/2) × v² × exp(-mv²/(2k_BT))
+- `pub fn most_probable_speed(mass: f64, temperature: f64) -> f64` — Most probable speed: v_p = √(2k_BT / m)
+- `pub fn mean_speed(mass: f64, temperature: f64) -> f64` — Mean speed: v̄ = √(8k_BT / (πm))
+- `pub fn rms_speed_maxwell(mass: f64, temperature: f64) -> f64` — RMS speed from Maxwell-Boltzmann: v_rms = √(3k_BT / m)
+- `pub fn equipartition_energy(degrees_of_freedom: u32, temperature: f64) -> f64` — Equipartition energy: E = (f/2) × k_B × T
+- `pub fn equipartition_heat_capacity(degrees_of_freedom: u32) -> f64` — Equipartition heat capacity per particle: Cv = (f/2) × k_B
+- `pub fn boltzmann_factor(energy: f64, temperature: f64) -> f64` — Boltzmann factor: exp(-E / (k_B × T))
+- `pub fn boltzmann_probability(energy: f64, temperature: f64, partition_function: f64) -> f64` — Boltzmann probability: P = exp(-E/(k_BT)) / Z
+- `pub fn partition_function_harmonic(temperature: f64, frequency: f64) -> f64` — Partition function for a quantum harmonic oscillator: Z = 1 / (1 - exp(-hf/(k_BT)))
+- `pub fn mean_energy_harmonic(temperature: f64, frequency: f64) -> f64` — Mean energy of a quantum harmonic oscillator (includes zero-point energy):
+- `pub fn debye_temperature(max_frequency: f64) -> f64` — Debye temperature: Θ_D = h × f_max / k_B
+- `pub fn debye_heat_capacity_high_t(n_atoms: f64) -> f64` — Dulong-Petit limit (high-T Debye heat capacity): Cv = 3Nk_B
+- `pub fn debye_heat_capacity_low_t( n_atoms: f64, temperature: f64, debye_temp: f64, ) -> f64` — Low-temperature Debye heat capacity: Cv = (12/5)π⁴Nk_B(T/Θ_D)³
+- `pub fn einstein_heat_capacity( n_atoms: f64, temperature: f64, einstein_temp: f64, ) -> f64` — Einstein model heat capacity:
+
+## Electromagnetism & Electronics
+
+### `electromagnetism`
+
+- `pub fn coulomb_force(q1: f64, q2: f64, distance: f64) -> f64` — Coulomb's law: F = k_e * |q1 * q2| / r^2
+- `pub fn coulomb_force_signed(q1: f64, q2: f64, distance: f64) -> f64` — Coulomb force (signed, 1D): positive = repulsive, negative = attractive
+- `pub fn coulomb_force_vec(q1: f64, pos1: Vec3, q2: f64, pos2: Vec3) -> Vec3` — Coulomb force vector from charge at pos1 to charge at pos2.
+- `pub fn electric_field_point_charge(charge: f64, distance: f64) -> f64` — Electric field due to a point charge: E = k_e * q / r^2
+- `pub fn electric_field_vec(charge: f64, charge_pos: Vec3, field_point: Vec3) -> Vec3` — Electric field vector at a point due to a charge at a given position.
+- `pub fn electric_potential(charge: f64, distance: f64) -> f64` — Electric potential due to a point charge: V = k_e * q / r
+- `pub fn electric_potential_energy(q1: f64, q2: f64, distance: f64) -> f64` — Electric potential energy: U = k_e * q1 * q2 / r
+- `pub fn electric_flux_gauss(enclosed_charge: f64) -> f64` — Electric flux through a surface (Gauss's law): Φ = q_enclosed / ε_0
+- `pub fn capacitance_parallel_plate(area: f64, separation: f64) -> f64` — Capacitance of a parallel plate capacitor: C = ε_0 * A / d
+- `pub fn capacitor_energy(capacitance: f64, voltage: f64) -> f64` — Energy stored in a capacitor: U = 0.5 * C * V^2
+- `pub fn ohms_law_voltage(current: f64, resistance: f64) -> f64` — Ohm's law: V = I * R
+- `pub fn ohms_law_current(voltage: f64, resistance: f64) -> f64` — Ohm's law: I = V / R
+- `pub fn ohms_law_resistance(voltage: f64, current: f64) -> f64` — Ohm's law: R = V / I
+- `pub fn electrical_power(voltage: f64, current: f64) -> f64` — Electrical power: P = V * I
+- `pub fn electrical_power_from_current(current: f64, resistance: f64) -> f64` — Electrical power: P = I^2 * R
+- `pub fn resistors_series(resistances: &[f64]) -> f64` — Resistors in series: R_total = R1 + R2 + ...
+- `pub fn resistors_parallel(resistances: &[f64]) -> f64` — Resistors in parallel: 1/R_total = 1/R1 + 1/R2 + ...
+- `pub fn capacitors_series(capacitances: &[f64]) -> f64` — Capacitors in series: 1/C_total = 1/C1 + 1/C2 + ...
+- `pub fn capacitors_parallel(capacitances: &[f64]) -> f64` — Capacitors in parallel: C_total = C1 + C2 + ...
+- `pub fn rc_time_constant(resistance: f64, capacitance: f64) -> f64` — RC time constant: τ = R * C
+- `pub fn rc_charging_voltage(v0: f64, resistance: f64, capacitance: f64, time: f64) -> f64` — Voltage across charging capacitor: V(t) = V0 * (1 - e^(-t/RC))
+- `pub fn magnetic_force_on_charge(charge: f64, velocity: f64, b_field: f64, angle_rad: f64) -> f64` — Magnetic force on a moving charge: F = q * v * B * sin(θ)
+- `pub fn lorentz_force(charge: f64, e_field: Vec3, velocity: Vec3, b_field: Vec3) -> Vec3` — Lorentz force: F = q * (E + v × B)
+- `pub fn magnetic_field_wire(current: f64, distance: f64) -> f64` — Magnetic field from a long straight wire: B = μ_0 * I / (2π * r)
+- `pub fn force_between_wires(i1: f64, i2: f64, distance: f64) -> f64` — Magnetic force between two parallel wires per unit length: F/L = μ_0 * I1 * I2 / (2π * d)
+- `pub fn cyclotron_radius(mass: f64, velocity: f64, charge: f64, b_field: f64) -> f64` — Cyclotron radius: r = m*v / (|q|*B)
+- `pub fn cyclotron_frequency(charge: f64, b_field: f64, mass: f64) -> f64` — Cyclotron frequency: f = |q|*B / (2π*m)
+- `pub fn faraday_emf(num_turns: f64, delta_flux: f64, delta_time: f64) -> f64` — Faraday's law (magnitude): EMF = -N * dΦ/dt
+- `pub fn motional_emf(b_field: f64, length: f64, velocity: f64) -> f64` — Motional EMF: ε = B * L * v
+- `pub fn inductor_energy(inductance: f64, current: f64) -> f64` — Inductance energy: U = 0.5 * L * I^2
+- `pub fn wavelength_from_frequency(frequency: f64) -> f64` — Relationship between wavelength and frequency: c = λ * f
+- `pub fn frequency_from_wavelength(wavelength: f64) -> f64` — Frequency from wavelength: f = c / λ
+- `pub fn poynting_magnitude(e_field: f64, b_field: f64) -> f64` — Poynting vector magnitude (EM wave intensity): S = E * B / μ_0
+- `pub fn solenoid_field(mu0: f64, turns_per_length: f64, current: f64) -> f64` — Solenoid magnetic field: B = μ₀nI
+- `pub fn toroid_field(mu0: f64, total_turns: f64, current: f64, radius: f64) -> f64` — Toroid magnetic field: B = μ₀NI/(2πr)
+- `pub fn magnetic_flux(b_field: f64, area: f64, angle: f64) -> f64` — Magnetic flux: Φ = BA cos(θ)
+- `pub fn magnetic_energy_density(b_field: f64) -> f64` — Magnetic energy density: u = B²/(2μ₀)
+- `pub fn mutual_inductance_coaxial(mu0: f64, n1: f64, n2: f64, area: f64, length: f64) -> f64` — Mutual inductance of coaxial solenoids: M = μ₀n₁n₂AL
+- `pub fn self_inductance_solenoid(mu0: f64, turns: f64, area: f64, length: f64) -> f64` — Self-inductance of a solenoid: L = μ₀N²A/l
+- `pub fn magnetic_dipole_moment(current: f64, area: f64) -> f64` — Magnetic dipole moment: m = IA
+- `pub fn torque_on_dipole(moment: f64, b_field: f64, angle: f64) -> f64` — Torque on a magnetic dipole: τ = mB sin(θ)
+- `pub fn capacitive_reactance(frequency: f64, capacitance: f64) -> f64` — Capacitive reactance: Xc = 1/(2πfC)
+- `pub fn inductive_reactance(frequency: f64, inductance: f64) -> f64` — Inductive reactance: XL = 2πfL
+- `pub fn impedance_rlc_series(resistance: f64, inductive_reactance: f64, capacitive_reactance: f64) -> f64` — Impedance of a series RLC circuit: Z = √(R² + (XL - XC)²)
+- `pub fn resonant_frequency_lc(inductance: f64, capacitance: f64) -> f64` — Resonant frequency of an LC circuit: f₀ = 1/(2π√(LC))
+- `pub fn power_factor(resistance: f64, impedance: f64) -> f64` — Power factor: cos(φ) = R/Z
+- `pub fn rms_voltage(peak: f64) -> f64` — RMS voltage: V_rms = V_peak/√2
+- `pub fn rms_current(peak: f64) -> f64` — RMS current: I_rms = I_peak/√2
+- `pub fn ac_power_average(vrms: f64, irms: f64, power_factor: f64) -> f64` — Average AC power: P = V_rms × I_rms × cos(φ)
+- `pub fn quality_factor_rlc(inductance: f64, capacitance: f64, resistance: f64) -> f64` — Quality factor of an RLC circuit: Q = (1/R)√(L/C)
+- `pub fn bandwidth_rlc(resonant_freq: f64, quality: f64) -> f64` — Bandwidth of an RLC circuit: BW = f₀/Q
+- `pub fn em_wave_speed(permittivity: f64, permeability: f64) -> f64` — EM wave speed in a medium: v = 1/√(εμ)
+- `pub fn refractive_index_from_em(permittivity_rel: f64, permeability_rel: f64) -> f64` — Refractive index from relative permittivity and permeability: n = √(ε_r × μ_r)
+- `pub fn characteristic_impedance(permeability: f64, permittivity: f64) -> f64` — Characteristic impedance of a medium: η = √(μ/ε)
+- `pub fn free_space_impedance() -> f64` — Free-space impedance: η₀ = √(μ₀/ε₀) ≈ 377 Ω
+- `pub fn energy_density_em(e_field: f64, b_field: f64) -> f64` — Total EM energy density: u = ε₀E²/2 + B²/(2μ₀)
+- `pub fn radiation_intensity_dipole(power: f64, angle: f64) -> f64` — Radiation intensity of a Hertzian dipole: I(θ) = (3P/(8π)) × sin²(θ)
+- `pub fn larmor_power(charge: f64, acceleration: f64) -> f64` — Larmor radiated power: P = q²a²/(6πε₀c³)
+- `pub fn transformer_voltage(v_primary: f64, n_primary: f64, n_secondary: f64) -> f64` — Transformer secondary voltage: V₂ = V₁ × N₂/N₁
+- `pub fn transformer_current(i_primary: f64, n_primary: f64, n_secondary: f64) -> f64` — Transformer secondary current: I₂ = I₁ × N₁/N₂
+
+### `electronics`
+
+- `pub fn intrinsic_carrier_concentration( nc: f64, nv: f64, band_gap: f64, temperature: f64, ) -> f64` — Intrinsic carrier concentration: ni = sqrt(Nc * Nv) * exp(-Eg / (2kT))
+- `pub fn fermi_dirac(energy: f64, fermi_level: f64, temperature: f64) -> f64` — Fermi-Dirac distribution: f(E) = 1 / (1 + exp((E - Ef) / (kT)))
+- `pub fn thermal_voltage(temperature: f64) -> f64` — Thermal voltage: Vt = kT / q
+- `pub fn conductivity(carrier_density: f64, mobility: f64, charge: f64) -> f64` — Electrical conductivity: sigma = n * q * mu
+- `pub fn resistivity(conductivity: f64) -> f64` — Resistivity: rho = 1 / sigma
+- `pub fn drift_velocity(mobility: f64, electric_field: f64) -> f64` — Drift velocity: vd = mu * E
+- `pub fn diffusion_coefficient_einstein(mobility: f64, temperature: f64) -> f64` — Einstein relation for diffusion coefficient: D = mu * kT / q
+- `pub fn built_in_potential(na: f64, nd: f64, ni: f64, temperature: f64) -> f64` — Built-in potential of a p-n junction: Vbi = (kT/q) * ln(Na * Nd / ni^2)
+- `pub fn depletion_width( epsilon: f64, vbi: f64, na: f64, nd: f64, charge: f64,` — Depletion region width: W = sqrt(2 * epsilon * Vbi * (1/Na + 1/Nd) / q)
+- `pub fn diode_current(is: f64, voltage: f64, temperature: f64, n: f64) -> f64` — Shockley diode equation: I = Is * (exp(V / (n * Vt)) - 1)
+- `pub fn diode_reverse_saturation( area: f64, ni: f64, dn: f64, dp: f64, ln: f64,` — Reverse saturation current (symmetric approximation):
+- `pub fn mosfet_drain_current_linear( mu: f64, cox: f64, w: f64, l: f64, vgs: f64,` — MOSFET drain current in the linear region:
+- `pub fn mosfet_drain_current_saturation( mu: f64, cox: f64, w: f64, l: f64, vgs: f64,` — MOSFET drain current in the saturation region:
+- `pub fn solar_cell_current( photocurrent: f64, dark_current: f64, voltage: f64, temperature: f64, ) -> f64` — Solar cell current: I = Iph - I0 * (exp(V / Vt) - 1)
+- `pub fn open_circuit_voltage( photocurrent: f64, dark_current: f64, temperature: f64, ) -> f64` — Open-circuit voltage: Voc = Vt * ln(Iph / I0 + 1)
+- `pub fn fill_factor(voc: f64, isc: f64, pmax: f64) -> f64` — Fill factor: FF = Pmax / (Voc * Isc)
+- `pub fn solar_cell_efficiency(pmax: f64, incident_power: f64) -> f64` — Solar cell efficiency: eta = Pmax / Pin
+
+### `rf`
+
+- `pub fn wavelength_to_frequency(wavelength: f64) -> f64` — Wavelength to frequency: f = c / λ
+- `pub fn frequency_to_wavelength(frequency: f64) -> f64` — Frequency to wavelength: λ = c / f
+- `pub fn frequency_to_energy(frequency: f64) -> f64` — Photon energy from frequency: E = hf
+- `pub fn free_space_path_loss(distance: f64, frequency: f64) -> f64` — Free-space path loss in dB: FSPL = 20log₁₀(d) + 20log₁₀(f) + 20log₁₀(4π/c)
+- `pub fn friis_received_power( pt: f64, gt: f64, gr: f64, wavelength: f64, distance: f64,` — Friis transmission equation (linear): Pr = Pt × Gt × Gr × (λ/(4πd))²
+- `pub fn link_budget_db(pt_dbm: f64, gt_dbi: f64, gr_dbi: f64, path_loss_db: f64) -> f64` — Link budget in dB: Pr = Pt + Gt + Gr - PathLoss
+- `pub fn skin_depth_conductor(frequency: f64, permeability: f64, conductivity: f64) -> f64` — Skin depth in a conductor: δ = 1 / √(πfμσ)
+- `pub fn fade_margin_db( _transmitted_dbm: f64, received_dbm: f64, sensitivity_dbm: f64, ) -> f64` — Fade margin: FM = received_dBm - sensitivity_dBm
+- `pub fn antenna_gain_from_area(effective_area: f64, wavelength: f64) -> f64` — Antenna gain from effective area: G = 4πA_e / λ²
+- `pub fn effective_area_from_gain(gain: f64, wavelength: f64) -> f64` — Effective aperture from gain: A_e = Gλ² / (4π)
+- `pub fn half_wave_dipole_gain() -> f64` — Returns the half-wave dipole gain (linear): G ≈ 1.64 (2.15 dBi).
+- `pub fn eirp(power: f64, gain: f64) -> f64` — Effective isotropic radiated power: EIRP = P × G
+- `pub fn beamwidth_approximate(wavelength: f64, aperture: f64) -> f64` — Approximate antenna beamwidth in degrees: θ ≈ 70λ / D.
+- `pub fn antenna_directivity(gain: f64, efficiency: f64) -> f64` — Antenna directivity from gain and efficiency: D = G / η
+- `pub fn characteristic_impedance_coax( outer_radius: f64, inner_radius: f64, permittivity_rel: f64, ) -> f64` — Characteristic impedance of coaxial cable: Z₀ = (138/√εr) × log₁₀(D/d).
+- `pub fn velocity_factor(permittivity_rel: f64) -> f64` — Velocity factor: VF = 1 / √εr
+- `pub fn wavelength_in_line(free_space_wavelength: f64, velocity_factor: f64) -> f64` — Wavelength in a transmission line: λ_line = λ₀ × VF
+- `pub fn vswr(reflection_coeff: f64) -> f64` — Voltage standing wave ratio: VSWR = (1 + |Γ|) / (1 - |Γ|)
+- `pub fn return_loss(reflection_coeff: f64) -> f64` — Return loss in dB: RL = -20log₁₀(|Γ|)
+- `pub fn mismatch_loss(vswr: f64) -> f64` — Mismatch loss in dB: ML = -10log₁₀(1 - ((VSWR-1)/(VSWR+1))²)
+- `pub fn dbm_to_watts(dbm: f64) -> f64` — Convert dBm to watts: P = 10^((dBm - 30) / 10)
+- `pub fn watts_to_dbm(watts: f64) -> f64` — Convert watts to dBm: dBm = 10log₁₀(P) + 30
+- `pub fn db_to_ratio(db: f64) -> f64` — Convert dB to linear ratio: ratio = 10^(dB / 10)
+- `pub fn ratio_to_db(ratio: f64) -> f64` — Convert linear ratio to dB: dB = 10log₁₀(ratio)
+- `pub fn noise_power(bandwidth: f64, temperature: f64) -> f64` — Thermal noise power: N = k_B × T × B
+- `pub fn snr_db(signal_power: f64, noise_power: f64) -> f64` — Signal-to-noise ratio in dB: SNR = 10log₁₀(S / N)
+- `pub fn thermal_noise_floor_dbm(bandwidth: f64, temperature: f64) -> f64` — Thermal noise floor in dBm: 10log₁₀(k_B × T × B) + 30
+- `pub fn shannon_capacity(bandwidth: f64, snr_linear: f64) -> f64` — Shannon-Hartley channel capacity: C = B × log₂(1 + SNR)
+
+### `photonics`
+
+- `pub fn beam_waist_from_divergence(wavelength: f64, divergence_half_angle: f64) -> f64` — Beam waist from far-field divergence: w₀ = λ/(π×θ)
+- `pub fn rayleigh_range(waist: f64, wavelength: f64) -> f64` — Rayleigh range: z_R = πw₀²/λ
+- `pub fn beam_radius(waist: f64, z: f64, rayleigh: f64) -> f64` — Beam radius at axial position z: w(z) = w₀√(1+(z/z_R)²)
+- `pub fn beam_divergence(waist: f64, wavelength: f64) -> f64` — Far-field half-angle divergence: θ = λ/(πw₀)
+- `pub fn beam_curvature(z: f64, rayleigh: f64) -> f64` — Radius of curvature of the wavefront: R(z) = z(1+(z_R/z)²)
+- `pub fn gouy_phase(z: f64, rayleigh: f64) -> f64` — Gouy phase shift: ψ(z) = atan(z/z_R)
+- `pub fn beam_intensity(power: f64, waist: f64, r: f64, z: f64, rayleigh: f64) -> f64` — Peak-normalized Gaussian beam intensity at radial offset r and axial position z:
+- `pub fn beam_parameter(waist: f64, z: f64, rayleigh: f64) -> (f64, f64)` — Combined beam parameter: returns (w(z), R(z)) at axial position z.
+- `pub fn numerical_aperture(n_core: f64, n_clad: f64) -> f64` — Numerical aperture of a step-index fiber: NA = √(n_core² - n_clad²)
+- `pub fn acceptance_angle(na: f64) -> f64` — Maximum acceptance half-angle: θ_max = arcsin(NA)
+- `pub fn v_number(radius: f64, na: f64, wavelength: f64) -> f64` — Normalized frequency (V-number): V = 2πr×NA/λ
+- `pub fn is_single_mode(v_number: f64) -> bool` — True when the fiber supports only the fundamental mode (V < 2.405).
+- `pub fn number_of_modes(v_number: f64) -> f64` — Approximate mode count for a step-index multimode fiber: M ≈ V²/2
+- `pub fn fiber_attenuation(input_power: f64, attenuation_db_per_km: f64, length_km: f64) -> f64` — Output power after propagation through a lossy fiber:
+- `pub fn dispersion_broadening(dispersion: f64, length: f64, spectral_width: f64) -> f64` — Chromatic dispersion pulse broadening: Δt = D × L × Δλ
+- `pub fn critical_angle_fiber(n_core: f64, n_clad: f64) -> f64` — Critical angle for total internal reflection inside the fiber core:
+- `pub fn thin_lens_matrix(focal_length: f64) -> RayMatrix` — Thin lens matrix: [[1, 0], [-1/f, 1]]
+- `pub fn free_space_matrix(distance: f64) -> RayMatrix` — Free-space propagation matrix: [[1, d], [0, 1]]
+- `pub fn multiply_ray_matrices(m1: &RayMatrix, m2: &RayMatrix) -> RayMatrix` — Multiplies two 2×2 ray-transfer matrices: result = m1 × m2.
+- `pub fn apply_ray_matrix(matrix: &RayMatrix, height: f64, angle: f64) -> (f64, f64)` — Applies a ray-transfer matrix to a ray (height, angle), returning (y', θ').
+- `pub fn image_distance_thick_lens( n: f64, r1: f64, r2: f64, thickness: f64, object_dist: f64,` — Image distance for a thick lens via ABCD matrix composition.
+- `pub fn coherence_length(wavelength: f64, bandwidth: f64) -> f64` — Temporal coherence length: L_c = λ²/Δλ
+- `pub fn coherence_time(bandwidth_hz: f64) -> f64` — Coherence time from frequency bandwidth: τ_c = 1/Δf
+- `pub fn fringe_visibility(i_max: f64, i_min: f64) -> f64` — Fringe visibility (contrast): V = (I_max - I_min) / (I_max + I_min)
+- `pub fn fabry_perot_transmission(reflectance: f64, phase: f64) -> f64` — Fabry-Perot etalon transmission (Airy function):
+- `pub fn free_spectral_range(cavity_length: f64, n: f64) -> f64` — Free spectral range of a Fabry-Perot cavity: FSR = c/(2nL) in Hz.
+
+## Waves, Optics & Acoustics
+
+### `waves`
+
+- `pub fn wave_speed(frequency: f64, wavelength: f64) -> f64` — Wave speed: v = f * λ
+- `pub fn wavelength(speed: f64, frequency: f64) -> f64` — Wavelength from speed and frequency: λ = v / f
+- `pub fn frequency(speed: f64, wavelength: f64) -> f64` — Frequency from speed and wavelength: f = v / λ
+- `pub fn period(frequency: f64) -> f64` — Period: T = 1 / f
+- `pub fn angular_frequency(frequency: f64) -> f64` — Angular frequency: ω = 2πf
+- `pub fn wave_number(wavelength: f64) -> f64` — Wave number: k = 2π / λ
+- `pub fn wave_displacement( amplitude: f64, wave_number: f64, x: f64, angular_freq: f64, t: f64,` — Transverse wave displacement: y(x,t) = A * sin(kx - ωt + φ)
+- `pub fn wave_energy_density(amplitude: f64, frequency: f64, linear_density: f64) -> f64` — Energy of a wave (proportional): E ∝ A^2 * f^2
+- `pub fn wave_intensity(power: f64, area: f64) -> f64` — Intensity of a wave: I = P / A (power per unit area)
+- `pub fn spherical_wave_intensity(power: f64, distance: f64) -> f64` — Intensity falls off with distance (spherical wave): I = P / (4πr^2)
+- `pub fn decibel_level(intensity: f64, reference_intensity: f64) -> f64` — Decibel level: β = 10 * log10(I / I_0)
+- `pub fn intensity_from_decibels(decibels: f64, reference_intensity: f64) -> f64` — Intensity from decibel level: I = I_0 * 10^(β/10)
+- `pub fn doppler_frequency( source_freq: f64, wave_speed: f64, observer_velocity: f64, source_velocity: f64, ) -> f64` — Doppler effect (sound): f' = f * (v + v_observer) / (v + v_source)
+- `pub fn relativistic_doppler(source_freq: f64, beta: f64) -> f64` — Relativistic Doppler effect: f' = f * sqrt((1 + β) / (1 - β))
+- `pub fn mach_cone_angle(mach: f64) -> f64` — Mach cone half-angle: sin(θ) = v_sound / v_object = 1/M
+- `pub fn standing_wave_frequency(harmonic: u32, wave_speed: f64, length: f64) -> f64` — Frequencies of standing waves on a string fixed at both ends:
+- `pub fn string_fundamental(length: f64, tension: f64, linear_density: f64) -> f64` — Fundamental frequency of a string: f = (1/(2L)) * sqrt(T/μ)
+- `pub fn open_pipe_frequency(harmonic: u32, sound_speed: f64, length: f64) -> f64` — Standing waves in an open pipe: f_n = n * v / (2L) (all harmonics)
+- `pub fn closed_pipe_frequency(odd_harmonic: u32, sound_speed: f64, length: f64) -> f64` — Standing waves in a closed pipe: f_n = n * v / (4L) (odd harmonics only)
+- `pub fn beat_frequency(f1: f64, f2: f64) -> f64` — Beat frequency: f_beat = |f1 - f2|
+- `pub fn superposition_amplitude(a1: f64, a2: f64, phase_diff: f64) -> f64` — Superposition of two waves at a point (same frequency):
+- `pub fn speed_of_sound_gas(gamma: f64, temperature: f64, molar_mass: f64) -> f64` — Speed of sound in an ideal gas: v = sqrt(γ * R * T / M)
+- `pub fn wave_speed_string(tension: f64, linear_density: f64) -> f64` — Wave speed on a string: v = sqrt(T / μ)
+- `pub fn phase_velocity(angular_freq: f64, wave_number: f64) -> f64` — Phase velocity: v_p = ω/k
+- `pub fn group_velocity(d_omega: f64, d_k: f64) -> f64` — Group velocity: v_g = dω/dk
+- `pub fn wave_impedance(density: f64, wave_speed: f64) -> f64` — Acoustic impedance: Z = ρv
+- `pub fn reflection_coefficient(z1: f64, z2: f64) -> f64` — Amplitude reflection coefficient: R = (Z2 - Z1)/(Z2 + Z1)
+- `pub fn transmission_coefficient(z1: f64, z2: f64) -> f64` — Amplitude transmission coefficient: T = 2Z2/(Z1 + Z2)
+- `pub fn intensity_reflection(z1: f64, z2: f64) -> f64` — Intensity reflection coefficient: R_I = ((Z2 - Z1)/(Z2 + Z1))²
+- `pub fn intensity_transmission(z1: f64, z2: f64) -> f64` — Intensity transmission coefficient: T_I = 4Z1Z2/(Z1 + Z2)²
+- `pub fn attenuated_amplitude(initial: f64, attenuation_coeff: f64, distance: f64) -> f64` — Attenuated amplitude: A = A₀ × e^(-αx)
+- `pub fn absorption_coefficient_from_db(db_per_meter: f64) -> f64` — Absorption coefficient from dB/m: α = dB × ln(10)/20
+- `pub fn penetration_depth(attenuation_coeff: f64) -> f64` — Penetration depth (skin depth): δ = 1/α
+- `pub fn sound_pressure_level(pressure: f64, reference: f64) -> f64` — Sound pressure level: SPL = 20 × log10(p/p_ref)
+- `pub fn acoustic_power(pressure: f64, area: f64, impedance: f64) -> f64` — Acoustic power: P = p²A/Z
+- `pub fn resonant_frequency_tube_open(length: f64, speed: f64) -> f64` — Resonant frequency of open tube: f = v/(2L)
+- `pub fn resonant_frequency_tube_closed(length: f64, speed: f64) -> f64` — Resonant frequency of closed tube: f = v/(4L)
+- `pub fn acoustic_intensity_from_pressure(pressure: f64, impedance: f64) -> f64` — Acoustic intensity from pressure: I = p²/Z
+- `pub fn wavelength_in_medium(frequency: f64, speed_in_medium: f64) -> f64` — Wavelength in a medium: λ = v/f
+- `pub fn p_wave_speed(bulk_modulus: f64, shear_modulus: f64, density: f64) -> f64` — P-wave speed: vp = √((K + 4G/3)/ρ)
+- `pub fn s_wave_speed(shear_modulus: f64, density: f64) -> f64` — S-wave speed: vs = √(G/ρ)
+- `pub fn rayleigh_wave_speed(shear_speed: f64, poisson_ratio: f64) -> f64` — Rayleigh wave speed approximation: vR ≈ vs × (0.862 + 1.14ν)/(1 + ν)
+- `pub fn love_wave_speed_range( shear_speed_layer: f64, shear_speed_halfspace: f64, ) -> (f64, f64)` — Love wave speed range: between vs_layer and vs_halfspace
+- `pub fn path_difference_constructive(order: i32, wavelength: f64) -> f64` — Constructive interference path difference: Δ = mλ
+- `pub fn path_difference_destructive(order: i32, wavelength: f64) -> f64` — Destructive interference path difference: Δ = (m + 0.5)λ
+- `pub fn fraunhofer_single_slit_intensity( angle: f64, slit_width: f64, wavelength: f64, ) -> f64` — Fraunhofer single-slit intensity: I/I₀ = (sin(β)/β)² where β = πa sin(θ)/λ
+- `pub fn airy_disk_radius(wavelength: f64, focal_length: f64, aperture: f64) -> f64` — Airy disk radius: r = 1.22λf/D
+- `pub fn fresnel_number(aperture: f64, distance: f64, wavelength: f64) -> f64` — Fresnel number: F = a²/(λL)
+
+### `optics`
+
+- `pub fn snells_law(n1: f64, angle1_rad: f64, n2: f64) -> Option<f64>` — Snell's law: n1 * sin(θ1) = n2 * sin(θ2) → θ2 = asin(n1 * sin(θ1) / n2)
+- `pub fn critical_angle(n1: f64, n2: f64) -> Option<f64>` — Critical angle for total internal reflection: θ_c = asin(n2 / n1)
+- `pub fn brewster_angle(n1: f64, n2: f64) -> f64` — Brewster's angle: θ_B = atan(n2 / n1)
+- `pub fn refractive_index(speed_in_medium: f64) -> f64` — Index of refraction: n = c / v
+- `pub fn speed_in_medium(refractive_index: f64) -> f64` — Speed of light in a medium: v = c / n
+- `pub fn image_distance(focal_length: f64, object_distance: f64) -> f64` — Mirror/thin lens equation: 1/f = 1/d_o + 1/d_i → d_i = f*d_o / (d_o - f)
+- `pub fn magnification(image_distance: f64, object_distance: f64) -> f64` — Magnification: m = -d_i / d_o
+- `pub fn magnification_from_heights(image_height: f64, object_height: f64) -> f64` — Magnification from image and object heights: m = h_i / h_o
+- `pub fn lens_focal_length(n: f64, r1: f64, r2: f64) -> f64` — Lens maker's equation: 1/f = (n-1) * (1/R1 - 1/R2)
+- `pub fn lens_power(focal_length: f64) -> f64` — Power of a lens: P = 1/f (in diopters when f is in meters)
+- `pub fn combined_focal_length(f1: f64, f2: f64) -> f64` — Combined focal length of two thin lenses in contact: 1/f = 1/f1 + 1/f2
+- `pub fn radius_of_curvature(focal_length: f64) -> f64` — Mirror radius of curvature: R = 2f
+- `pub fn single_slit_minimum(order: i32, wavelength: f64, slit_width: f64) -> Option<f64>` — Single slit diffraction minima: a * sin(θ) = m * λ → θ = asin(m * λ / a)
+- `pub fn double_slit_maximum(order: i32, wavelength: f64, slit_separation: f64) -> Option<f64>` — Double slit maxima: d * sin(θ) = m * λ → θ = asin(m * λ / d)
+- `pub fn diffraction_grating_angle( order: i32, wavelength: f64, grating_spacing: f64, ) -> Option<f64>` — Diffraction grating: d * sin(θ) = m * λ
+- `pub fn rayleigh_resolution(wavelength: f64, aperture_diameter: f64) -> f64` — Rayleigh criterion (angular resolution): θ = 1.22 * λ / D
+- `pub fn thin_film_constructive_thickness(order: u32, wavelength: f64, film_index: f64) -> f64` — Thin film interference (constructive, normal incidence):
+- `pub fn constructive_path_diff(order: i32, wavelength: f64) -> f64` — Path difference for constructive interference: Δ = m * λ
+- `pub fn destructive_path_diff(order: i32, wavelength: f64) -> f64` — Path difference for destructive interference: Δ = (m + 0.5) * λ
+- `pub fn malus_law(initial_intensity: f64, angle_rad: f64) -> f64` — Malus's law: I = I_0 * cos^2(θ)
+
+### `acoustics`
+
+- `pub fn sabine_reverberation(volume: f64, total_absorption: f64) -> f64` — Sabine reverberation time: T60 = 0.161 V / A (seconds).
+- `pub fn eyring_reverberation(volume: f64, surface_area: f64, avg_absorption_coeff: f64) -> f64` — Eyring reverberation time: T60 = 0.161 V / (-S × ln(1 - ā)) (seconds).
+- `pub fn total_absorption(surfaces: &[(f64, f64)]) -> f64` — Total absorption area: A = Σ(Si × αi).
+- `pub fn room_constant(surface_area: f64, avg_absorption: f64) -> f64` — Room constant: R = S × ā / (1 - ā).
+- `pub fn critical_distance(room_constant: f64, directivity: f64) -> f64` — Critical distance: dc = √(Q × R / (16π)).
+- `pub fn room_mode_frequency( length: f64, width: f64, height: f64, nx: u32, ny: u32,` — Axial/tangential/oblique room mode frequency:
+- `pub fn add_db(db1: f64, db2: f64) -> f64` — Energetic sum of two decibel levels: 10 × log₁₀(10^(dB1/10) + 10^(dB2/10)).
+- `pub fn add_db_multiple(levels: &[f64]) -> f64` — Energetic sum of multiple decibel levels.
+- `pub fn subtract_db(total_db: f64, background_db: f64) -> f64` — Subtract background noise: 10 × log₁₀(10^(total/10) - 10^(bg/10)).
+- `pub fn distance_attenuation(db_at_ref: f64, ref_distance: f64, distance: f64) -> f64` — Inverse-square distance attenuation: L2 = L1 - 20 × log₁₀(d2 / d1).
+- `pub fn a_weighting(frequency: f64) -> f64` — A-weighting filter approximation (dBA relative weighting at a given frequency).
+- `pub fn equal_loudness_phon(spl: f64, frequency: f64) -> f64` — Rough equal-loudness approximation in phon.
+- `pub fn bark_scale(frequency: f64) -> f64` — Bark critical-band rate: z = 13 × atan(0.76 f/1000) + 3.5 × atan((f/7500)²).
+- `pub fn mel_scale(frequency: f64) -> f64` — Mel scale: m = 2595 × log₁₀(1 + f/700).
+- `pub fn frequency_from_mel(mel: f64) -> f64` — Inverse mel scale: f = 700 × (10^(m/2595) - 1).
+- `pub fn noise_reduction(tl: f64, receiving_absorption: f64, common_area: f64) -> f64` — Noise reduction through a partition: NR = TL + 10 × log₁₀(A / S).
+- `pub fn transmission_loss_mass_law(surface_density: f64, frequency: f64) -> f64` — Single-panel mass law transmission loss: TL = 20 × log₁₀(m × f) - 47.
+- `pub fn sound_transmission_class_estimate(tl_500: f64) -> f64` — Rough STC estimate (≈ TL at 500 Hz).
+- `pub fn atmospheric_absorption_coeff(frequency: f64, temperature: f64, humidity: f64) -> f64` — Simplified atmospheric absorption coefficient in dB/km.
+- `pub fn ground_effect_excess(distance: f64, source_height: f64, receiver_height: f64) -> f64` — Simplified excess ground attenuation (dB) for propagation over soft ground.
+- `pub fn harmonic_frequency(fundamental: f64, n: u32) -> f64` — Nth harmonic frequency: f_n = n × f_fundamental
+- `pub fn harmonic_series(fundamental: f64, max_harmonic: u32) -> Vec<f64>` — Generate harmonic series up to max_harmonic: [f, 2f, 3f, ..., nf]
+- `pub fn equal_temperament_ratio(semitones: f64) -> f64` — Frequency ratio between two musical interval semitones (equal temperament):
+- `pub fn midi_to_frequency(midi_note: f64) -> f64` — Frequency of a note in equal temperament given A4=440Hz reference:
+- `pub fn frequency_to_midi(frequency: f64) -> f64` — MIDI note number from frequency: n = 69 + 12×log₂(f/440)
+- `pub fn cents(f1: f64, f2: f64) -> f64` — Cents difference between two frequencies: c = 1200 × log₂(f2/f1)
+- `pub fn circular_membrane_frequency(bessel_zero: f64, wave_speed: f64, radius: f64) -> f64` — Frequency of a circular membrane mode (drum):
+- `pub fn rectangular_plate_fundamental(length: f64, flexural_rigidity: f64, mass_per_area: f64) -> f64` — Rectangular plate fundamental frequency:
+- `pub fn total_harmonic_distortion(fundamental_amplitude: f64, harmonic_amplitudes: &[f64]) -> f64` — Harmonic distortion: THD = √(Σ V_n²) / V_1 for n=2..N
+- `pub fn harmonic_synthesis(fundamental: f64, harmonics: &[(u32, f64, f64)], t: f64) -> f64` — Synthesize a waveform from harmonics at a given time:
+- `pub fn inharmonic_frequency(fundamental: f64, n: u32, b_coeff: f64) -> f64` — Inharmonicity coefficient for a stiff string (piano):
+
+## Fluids & Propulsion
+
+### `fluids`
+
+- `pub fn hydrostatic_pressure(density: f64, g: f64, depth: f64) -> f64` — Hydrostatic pressure: P = ρ * g * h
+- `pub fn total_pressure(atmospheric_pressure: f64, density: f64, g: f64, depth: f64) -> f64` — Total pressure at depth: P = P_atm + ρ * g * h
+- `pub fn pascal_force(f1: f64, a1: f64, a2: f64) -> f64` — Pascal's principle: F2 = F1 * (A2 / A1)
+- `pub fn pressure(force: f64, area: f64) -> f64` — Pressure: P = F / A
+- `pub fn buoyant_force(fluid_density: f64, displaced_volume: f64, g: f64) -> f64` — Buoyant force (Archimedes' principle): F_b = ρ_fluid * V_displaced * g
+- `pub fn fraction_submerged(object_density: f64, fluid_density: f64) -> f64` — Fraction of object submerged (floating): f = ρ_object / ρ_fluid
+- `pub fn apparent_weight(mass: f64, object_volume: f64, fluid_density: f64, g: f64) -> f64` — Apparent weight in fluid: W_app = W - F_b = mg - ρ_fluid * V * g
+- `pub fn continuity_velocity(a1: f64, v1: f64, a2: f64) -> f64` — Continuity equation: A1 * v1 = A2 * v2 → v2 = A1 * v1 / A2
+- `pub fn flow_rate(area: f64, velocity: f64) -> f64` — Volume flow rate: Q = A * v
+- `pub fn mass_flow_rate(density: f64, area: f64, velocity: f64) -> f64` — Mass flow rate: ṁ = ρ * A * v
+- `pub fn bernoulli_pressure( p1: f64, density: f64, v1: f64, h1: f64, v2: f64,` — Bernoulli's equation: P1 + 0.5*ρ*v1^2 + ρ*g*h1 = P2 + 0.5*ρ*v2^2 + ρ*g*h2
+- `pub fn torricelli_velocity(g: f64, height: f64) -> f64` — Torricelli's theorem: v = sqrt(2 * g * h)
+- `pub fn venturi_velocity(p1: f64, p2: f64, density: f64, a1: f64, a2: f64) -> f64` — Venturi effect velocity from pressure difference:
+- `pub fn drag_force(drag_coefficient: f64, density: f64, area: f64, velocity: f64) -> f64` — Drag force: F_d = 0.5 * C_d * ρ * A * v^2
+- `pub fn terminal_velocity(mass: f64, g: f64, density: f64, area: f64, drag_coefficient: f64) -> f64` — Terminal velocity: v_t = sqrt(2 * m * g / (ρ * A * C_d))
+- `pub fn stokes_drag(dynamic_viscosity: f64, radius: f64, velocity: f64) -> f64` — Stokes' drag (low Reynolds number): F = 6π * μ * r * v
+- `pub fn reynolds_number(density: f64, velocity: f64, length: f64, dynamic_viscosity: f64) -> f64` — Reynolds number: Re = ρ * v * L / μ
+- `pub fn poiseuille_flow_rate( radius: f64, pressure_drop: f64, dynamic_viscosity: f64, length: f64, ) -> f64` — Poiseuille's law (volume flow rate through a pipe):
+- `pub fn surface_tension_force(surface_tension: f64, length: f64) -> f64` — Surface tension force along a line: F = γ * L
+- `pub fn capillary_rise( surface_tension: f64, contact_angle_rad: f64, density: f64, g: f64, tube_radius: f64,` — Capillary rise: h = 2 * γ * cos(θ) / (ρ * g * r)
+- `pub fn mach_number(velocity: f64, speed_of_sound: f64) -> f64` — Mach number: M = v / a
+- `pub fn dynamic_pressure(density: f64, velocity: f64) -> f64` — Dynamic pressure: q = ½ρv²
+- `pub fn stagnation_pressure(static_pressure: f64, dynamic_pressure: f64) -> f64` — Stagnation pressure: P₀ = P + q
+- `pub fn isentropic_pressure_ratio(mach: f64, gamma: f64) -> f64` — Isentropic pressure ratio: P/P₀ = (1 + (γ-1)/2 × M²)^(-γ/(γ-1))
+- `pub fn isentropic_temperature_ratio(mach: f64, gamma: f64) -> f64` — Isentropic temperature ratio: T/T₀ = (1 + (γ-1)/2 × M²)^(-1)
+- `pub fn vorticity_2d(dvx_dy: f64, dvy_dx: f64) -> f64` — Vorticity in 2D: ω = ∂v_y/∂x - ∂v_x/∂y
+- `pub fn circulation(vorticity: f64, area: f64) -> f64` — Circulation (uniform vorticity): Γ = ω × A
+- `pub fn kutta_joukowski_lift(density: f64, velocity: f64, circulation: f64) -> f64` — Kutta-Joukowski lift per unit span: L = ρ × V × Γ
+- `pub fn kinematic_viscosity(dynamic_viscosity: f64, density: f64) -> f64` — Kinematic viscosity: ν = μ/ρ
+- `pub fn pressure_gradient_pipe( flow_rate: f64, dynamic_viscosity: f64, radius: f64, length: f64, ) -> f64` — Pressure gradient in a pipe (Poiseuille inverse): dP = 8μLQ/(πr⁴)
+- `pub fn hydraulic_diameter(area: f64, wetted_perimeter: f64) -> f64` — Hydraulic diameter: D_h = 4A/P
+- `pub fn darcy_friction_factor_laminar(reynolds: f64) -> f64` — Darcy friction factor for laminar pipe flow: f = 64/Re
+- `pub fn darcy_weisbach_head_loss( friction_factor: f64, length: f64, diameter: f64, velocity: f64, g: f64,` — Darcy-Weisbach head loss: h_L = f × (L/D) × v²/(2g)
+- `pub fn buoyancy_velocity(g: f64, beta: f64, delta_temp: f64, length: f64) -> f64` — Characteristic buoyancy velocity: v = √(gβΔTL)
+- `pub fn thermal_expansion_coefficient_ideal_gas(temperature: f64) -> f64` — Thermal expansion coefficient for ideal gas: β = 1/T
+- `pub fn viscosity_sutherland(mu0: f64, t0: f64, t: f64, s: f64) -> f64` — Sutherland's law for viscosity: μ = μ₀ × (T/T₀)^(3/2) × (T₀ + S)/(T + S)
+- `pub fn thermal_conductivity_gas(k0: f64, t0: f64, t: f64, s: f64) -> f64` — Sutherland's law for thermal conductivity (same form as viscosity)
+- `pub fn natural_convection_nu_vertical(rayleigh: f64) -> f64` — Churchill-Chu correlation for natural convection on a vertical plate (air, Pr≈0.71):
+- `pub fn natural_convection_nu_horizontal_hot(rayleigh: f64) -> f64` — Natural convection Nusselt number for hot horizontal plate facing up:
+- `pub fn marangoni_number( surface_tension_gradient: f64, length: f64, delta_temp: f64, dynamic_viscosity: f64, thermal_diffusivity: f64,` — Marangoni number: Ma = -(dσ/dT) × L × ΔT / (μ × α)
+- `pub fn bond_number(density_diff: f64, g: f64, length: f64, surface_tension: f64) -> f64` — Bond number: Bo = Δρ × g × L² / σ (gravity vs surface tension)
+- `pub fn weber_number(density: f64, velocity: f64, length: f64, surface_tension: f64) -> f64` — Weber number: We = ρv²L / σ (inertia vs surface tension)
+- `pub fn froude_number(velocity: f64, g: f64, length: f64) -> f64` — Froude number: Fr = v / √(gL) (inertia vs gravity in free surface flow)
+- `pub fn archimedes_number( density_fluid: f64, density_particle: f64, diameter: f64, dynamic_viscosity: f64, g: f64,` — Archimedes number: Ar = g × d³ × ρf × (ρp - ρf) / μ²
+- `pub fn peclet_number(velocity: f64, length: f64, diffusivity: f64) -> f64` — Peclet number: Pe = vL/α (advection vs diffusion)
+
+### `fluid_instabilities`
+
+- `pub fn rayleigh_taylor_growth_rate(g: f64, atwood: f64, wavenumber: f64) -> f64` — Growth rate of the Rayleigh-Taylor instability: γ = √(A g k).
+- `pub fn atwood_number(density_heavy: f64, density_light: f64) -> f64` — Atwood number: A = (ρ_heavy − ρ_light) / (ρ_heavy + ρ_light).
+- `pub fn rt_critical_wavelength(surface_tension: f64, density_diff: f64, g: f64) -> f64` — Critical wavelength for capillary stabilization of RT instability:
+- `pub fn rt_most_unstable_wavelength(surface_tension: f64, density_diff: f64, g: f64) -> f64` — Most unstable RT wavelength: λ_max = √3 × λ_c.
+- `pub fn kh_growth_rate( density1: f64, density2: f64, velocity_diff: f64, wavenumber: f64, ) -> f64` — Growth rate of the Kelvin-Helmholtz instability:
+- `pub fn kh_critical_velocity( density1: f64, density2: f64, surface_tension: f64, wavenumber: f64, g: f64,` — Critical velocity difference for onset of KH instability:
+- `pub fn rayleigh_number_thermal( g: f64, beta: f64, delta_t: f64, height: f64, kinematic_viscosity: f64,` — Thermal Rayleigh number: Ra = g β ΔT H³ / (ν α).
+- `pub fn critical_rayleigh_number() -> f64` — Critical Rayleigh number for rigid-rigid boundaries: Ra_c = 1708.
+- `pub fn nusselt_from_rayleigh(rayleigh: f64) -> f64` — Nusselt number from Rayleigh number for turbulent natural convection
+- `pub fn is_convecting(rayleigh: f64) -> bool` — Returns `true` if the Rayleigh number exceeds the critical value (Ra > 1708),
+- `pub fn jeans_length(sound_speed: f64, density: f64) -> f64` — Jeans length: λ_J = c_s √(π / (G ρ)).
+- `pub fn jeans_mass(sound_speed: f64, density: f64) -> f64` — Jeans mass: M_J = (π/6) ρ λ_J³.
+- `pub fn jeans_frequency(sound_speed: f64, density: f64) -> f64` — Jeans angular frequency: ω_J = √(4πGρ).
+- `pub fn plateau_rayleigh_growth_rate( surface_tension: f64, density: f64, radius: f64, wavenumber: f64, ) -> f64` — Growth rate of the Plateau-Rayleigh instability (simplified):
+- `pub fn plateau_rayleigh_critical_wavelength(radius: f64) -> f64` — Critical wavelength for Plateau-Rayleigh instability: λ_c = 2πr.
+- `pub fn plateau_rayleigh_most_unstable(radius: f64) -> f64` — Most unstable wavelength for Plateau-Rayleigh instability: λ_max ≈ 9.02 r.
+- `pub fn richtmyer_meshkov_growth_rate( atwood: f64, velocity_jump: f64, wavenumber: f64, ) -> f64` — Linear growth rate of the Richtmyer-Meshkov instability:
+- `pub fn richardson_number( g: f64, density_gradient: f64, density: f64, velocity_gradient: f64, ) -> f64` — Gradient Richardson number: Ri = g (dρ/dz) / (ρ (du/dz)²).
+- `pub fn is_dynamically_stable(richardson: f64) -> bool` — Returns `true` if the gradient Richardson number exceeds the critical value
+
+### `magnetohydrodynamics`
+
+- `pub fn magnetic_reynolds_number( velocity: f64, length: f64, conductivity: f64, ) -> f64` — Magnetic Reynolds number: Rm = μ₀ σ v L.
+- `pub fn magnetic_diffusivity(conductivity: f64) -> f64` — Magnetic diffusivity: η = 1/(μ₀ σ).
+- `pub fn lundquist_number(alfven_speed: f64, length: f64, diffusivity: f64) -> f64` — Lundquist number: S = vₐ L / η.
+- `pub fn hartmann_number( b_field: f64, length: f64, conductivity: f64, dynamic_viscosity: f64, ) -> f64` — Hartmann number: Ha = B L √(σ / μ_visc).
+- `pub fn magnetic_pressure(b_field: f64) -> f64` — Magnetic pressure: P_B = B² / (2 μ₀).
+- `pub fn total_pressure(gas_pressure: f64, b_field: f64) -> f64` — Total pressure (gas + magnetic): P_total = P + B² / (2 μ₀).
+- `pub fn plasma_beta(gas_pressure: f64, b_field: f64) -> f64` — Plasma beta: β = 2 μ₀ P / B².
+- `pub fn alfven_speed(b_field: f64, density: f64) -> f64` — Alfvén speed: vₐ = B / √(μ₀ ρ).
+- `pub fn slow_magnetosonic_speed(alfven: f64, sound: f64) -> f64` — Slow magnetosonic speed (perpendicular propagation): v_slow = min(vₐ, cₛ).
+- `pub fn fast_magnetosonic_speed(alfven: f64, sound: f64) -> f64` — Fast magnetosonic speed (perpendicular propagation): v_fast = √(vₐ² + cₛ²).
+- `pub fn magnetosonic_mach(velocity: f64, alfven: f64, sound: f64) -> f64` — Magnetosonic Mach number: M_ms = v / v_fast.
+- `pub fn pinch_pressure_balance(current: f64, radius: f64) -> f64` — Z-pinch pressure balance.
+- `pub fn bennett_pinch_condition( current: f64, line_density: f64, temperature: f64, ) -> bool` — Bennett pinch condition: checks whether I² ≈ 8π N k_B T / μ₀.
+- `pub fn grad_shafranov_beta_limit(aspect_ratio: f64) -> f64` — Rough Troyon-like beta limit: β_max ≈ 1 / aspect_ratio.
+- `pub fn sweet_parker_rate(alfven_speed: f64, lundquist: f64) -> f64` — Sweet-Parker reconnection rate: v_in / vₐ = 1 / √S.
+- `pub fn reconnection_electric_field(b_field: f64, inflow_velocity: f64) -> f64` — Reconnection electric field: E = v_in × B (magnitude).
+- `pub fn magnetic_diffusion_time(length: f64, diffusivity: f64) -> f64` — Magnetic diffusion time: τ_d = L² / η.
+- `pub fn advection_time(length: f64, velocity: f64) -> f64` — Advection time: τ_a = L / v.
+- `pub fn is_frozen_in(reynolds_mag: f64) -> bool` — Returns `true` when Rm > 100, indicating the magnetic field is frozen into the plasma.
+
+### `propulsion`
+
+- `pub fn tsiolkovsky_delta_v(exhaust_velocity: f64, mass_initial: f64, mass_final: f64) -> f64` — Tsiolkovsky rocket equation: Δv = ve × ln(m0/mf)
+- `pub fn mass_ratio(delta_v: f64, exhaust_velocity: f64) -> f64` — Mass ratio from the rocket equation inverted: m0/mf = exp(Δv/ve)
+- `pub fn specific_impulse(thrust: f64, mass_flow_rate: f64, g: f64) -> f64` — Specific impulse: Isp = F / (ṁ × g)
+- `pub fn exhaust_velocity_from_isp(isp: f64, g: f64) -> f64` — Effective exhaust velocity from specific impulse: ve = Isp × g
+- `pub fn thrust(mass_flow_rate: f64, exhaust_velocity: f64) -> f64` — Thrust from momentum: F = ṁ × ve
+- `pub fn thrust_with_pressure( mass_flow_rate: f64, exhaust_velocity: f64, exit_pressure: f64, ambient_pressure: f64, exit_area: f64,` — Thrust including pressure term: F = ṁve + (Pe - Pa)Ae
+- `pub fn delta_v_staged(stages: &[(f64, f64, f64)]) -> f64` — Total Δv for a multi-stage rocket. Each element is (exhaust_velocity, mass_full, mass_empty).
+- `pub fn hohmann_delta_v(mu: f64, r1: f64, r2: f64) -> (f64, f64)` — Hohmann transfer Δv values. Returns (Δv1, Δv2) for departure and arrival burns.
+- `pub fn hohmann_transfer_time(mu: f64, r1: f64, r2: f64) -> f64` — Transfer time for a Hohmann orbit: t = π√((r1+r2)³ / (8μ))
+- `pub fn gravity_turn_loss(g: f64, burn_time: f64) -> f64` — Gravity drag loss approximation: Δv_loss ≈ g × t
+- `pub fn delta_v_plane_change(velocity: f64, angle: f64) -> f64` — Plane change Δv: Δv = 2v × sin(θ/2)
+- `pub fn bi_elliptic_delta_v(mu: f64, r1: f64, r2: f64, r_intermediate: f64) -> f64` — Bi-elliptic transfer total Δv via three burns through an intermediate radius.
+- `pub fn nozzle_exit_velocity( chamber_temp: f64, molar_mass: f64, gamma: f64, pressure_ratio: f64, ) -> f64` — Nozzle exit velocity from thermodynamic properties:
+- `pub fn throat_area( mass_flow: f64, chamber_pressure: f64, chamber_temp: f64, gamma: f64, molar_mass: f64,` — Throat area required for a given mass flow:
+- `pub fn area_ratio_from_mach(mach: f64, gamma: f64) -> f64` — Area ratio Ae/A* as a function of Mach number and heat capacity ratio:
+
+## Relativity
+
+### `relativity`
+
+- `pub fn lorentz_factor(velocity: f64) -> f64` — Lorentz factor: γ = 1 / sqrt(1 - v^2/c^2)
+- `pub fn beta(velocity: f64) -> f64` — Beta factor: β = v / c
+- `pub fn time_dilation(proper_time: f64, velocity: f64) -> f64` — Time dilation: Δt = γ * Δt_proper
+- `pub fn length_contraction(proper_length: f64, velocity: f64) -> f64` — Length contraction: L = L_proper / γ
+- `pub fn relativistic_momentum(mass: f64, velocity: f64) -> f64` — Relativistic momentum: p = γ * m * v
+- `pub fn relativistic_kinetic_energy(mass: f64, velocity: f64) -> f64` — Relativistic kinetic energy: KE = (γ - 1) * m * c^2
+- `pub fn relativistic_total_energy(mass: f64, velocity: f64) -> f64` — Total relativistic energy: E = γ * m * c^2
+- `pub fn rest_energy(mass: f64) -> f64` — Rest energy: E = m * c^2
+- `pub fn energy_from_momentum(momentum: f64, mass: f64) -> f64` — Energy-momentum relation: E^2 = (pc)^2 + (mc^2)^2
+- `pub fn velocity_addition(v: f64, u_prime: f64) -> f64` — Relativistic velocity addition: u = (v + u') / (1 + v*u'/c^2)
+- `pub fn lorentz_transform_x(x: f64, v: f64, t: f64) -> f64` — Lorentz transformation of position: x' = γ * (x - v*t)
+- `pub fn lorentz_transform_t(t: f64, v: f64, x: f64) -> f64` — Lorentz transformation of time: t' = γ * (t - v*x/c^2)
+- `pub fn relativistic_doppler_approaching(frequency: f64, velocity: f64) -> f64` — Relativistic Doppler effect (approaching): f' = f * sqrt((1+β)/(1-β))
+- `pub fn relativistic_doppler_receding(frequency: f64, velocity: f64) -> f64` — Relativistic Doppler effect (receding): f' = f * sqrt((1-β)/(1+β))
+- `pub fn gravitational_redshift(emitted_freq: f64, mass: f64, radius: f64) -> f64` — Gravitational redshift: f_obs = f_emit * sqrt(1 - 2GM/(rc^2))
+- `pub fn relativistic_mass(rest_mass: f64, velocity: f64) -> f64` — Relativistic mass (apparent mass at velocity v): m_rel = γ * m_0
+- `pub fn proper_time(coordinate_time: f64, velocity: f64) -> f64` — Proper time interval from coordinate time: Δτ = Δt / γ
+- `pub fn spacetime_interval_squared(dt: f64, dx: f64, dy: f64, dz: f64) -> f64` — Spacetime interval: s^2 = (cΔt)^2 - Δx^2 - Δy^2 - Δz^2
+
+### `general_relativity`
+
+- `pub fn schwarzschild_radius(mass: f64) -> f64` — Schwarzschild radius: r_s = 2GM/c²
+- `pub fn event_horizon_radius(mass: f64) -> f64` — Event horizon radius (alias for schwarzschild_radius).
+- `pub fn schwarzschild_metric_tt(mass: f64, r: f64) -> f64` — Time-time component of the Schwarzschild metric: g_tt = -(1 - r_s/r)
+- `pub fn schwarzschild_metric_rr(mass: f64, r: f64) -> f64` — Radial-radial component of the Schwarzschild metric: g_rr = 1/(1 - r_s/r)
+- `pub fn proper_time_factor(mass: f64, r: f64) -> f64` — Proper time factor: dτ/dt = √(1 - r_s/r)
+- `pub fn gravitational_redshift_factor(mass: f64, r_emit: f64, r_obs: f64) -> f64` — Gravitational redshift factor between emitter at r_emit and observer at r_obs:
+- `pub fn isco_radius(mass: f64) -> f64` — Innermost stable circular orbit for Schwarzschild: r_isco = 3 r_s = 6GM/c²
+- `pub fn photon_sphere_radius(mass: f64) -> f64` — Photon sphere radius: r_ph = 1.5 r_s = 3GM/c²
+- `pub fn kerr_event_horizon(mass: f64, spin: f64) -> f64` — Kerr outer event horizon: r+ = GM/c² + √((GM/c²)² - a²)
+- `pub fn kerr_ergosphere_radius(mass: f64, spin: f64, theta: f64) -> f64` — Kerr ergosphere radius at polar angle theta:
+- `pub fn kerr_isco(mass: f64, spin: f64, prograde: bool) -> f64` — ISCO radius for a Kerr black hole using the exact Bardeen-Press-Teukolsky formula.
+- `pub fn frame_dragging_rate(mass: f64, spin: f64, r: f64) -> f64` — Frame-dragging angular velocity (weak-field / Lense-Thirring limit):
+- `pub fn geodesic_acceleration_schwarzschild(mass: f64, r: f64, _dr_dtau: f64, l: f64) -> f64` — Radial geodesic acceleration in Schwarzschild spacetime (effective potential approach):
+- `pub fn effective_potential_schwarzschild(mass: f64, r: f64, l: f64, particle_mass: f64) -> f64` — Effective potential for a massive particle in Schwarzschild spacetime:
+- `pub fn circular_orbit_energy(mass: f64, r: f64) -> f64` — Specific energy of a circular orbit in Schwarzschild:
+- `pub fn circular_orbit_angular_momentum(mass: f64, r: f64) -> f64` — Specific angular momentum of a circular orbit in Schwarzschild:
+- `pub fn friedmann_hubble(density: f64, _curvature: f64, _cosmological_constant: f64) -> f64` — Friedmann equation (flat universe, matter-dominated):
+- `pub fn critical_density(hubble: f64) -> f64` — Critical density of the universe: ρ_c = 3H² / (8πG)
+- `pub fn cosmological_redshift_distance(redshift: f64, hubble: f64) -> f64` — Comoving distance via Hubble's law (valid for z << 1): d ≈ cz / H₀
+- `pub fn luminosity_distance(redshift: f64, hubble: f64) -> f64` — Luminosity distance (first-order expansion): d_L = (c/H₀) z (1 + z/2)
+- `pub fn lookback_time(redshift: f64, hubble: f64) -> f64` — Lookback time (matter-dominated approximation): t ≈ z / (H₀ (1+z))
+- `pub fn scale_factor_from_redshift(redshift: f64) -> f64` — Scale factor from cosmological redshift: a = 1/(1+z)
+- `pub fn temperature_at_redshift(t0: f64, redshift: f64) -> f64` — CMB temperature at a given redshift: T = T₀ (1+z)
+
+## Quantum & Particle Physics
+
+### `quantum`
+
+- `pub fn de_broglie_wavelength(mass: f64, velocity: f64) -> f64` — de Broglie wavelength: λ = h / p = h / (m * v)
+- `pub fn de_broglie_wavelength_from_energy(mass: f64, kinetic_energy: f64) -> f64` — de Broglie wavelength from kinetic energy: λ = h / sqrt(2mE)
+- `pub fn photon_momentum(wavelength: f64) -> f64` — Photon momentum: p = h / λ = h*f / c
+- `pub fn photon_energy(frequency: f64) -> f64` — Photon energy: E = h * f
+- `pub fn photon_energy_from_wavelength(wavelength: f64) -> f64` — Photon energy from wavelength: E = h * c / λ
+- `pub fn photoelectric_ke(frequency: f64, work_function: f64) -> f64` — Photoelectric effect: KE_max = h*f - φ (work function)
+- `pub fn threshold_frequency(work_function: f64) -> f64` — Threshold frequency: f_0 = φ / h
+- `pub fn threshold_wavelength(work_function: f64) -> f64` — Threshold wavelength: λ_0 = h * c / φ
+- `pub fn stopping_potential(max_kinetic_energy: f64) -> f64` — Stopping potential: V_s = KE_max / e
+- `pub fn min_momentum_uncertainty(position_uncertainty: f64) -> f64` — Heisenberg uncertainty principle (position-momentum): Δx * Δp ≥ ℏ/2
+- `pub fn min_position_uncertainty(momentum_uncertainty: f64) -> f64` — Minimum position uncertainty given momentum uncertainty.
+- `pub fn min_energy_uncertainty(time_uncertainty: f64) -> f64` — Energy-time uncertainty: ΔE * Δt ≥ ℏ/2
+- `pub fn min_time_uncertainty(energy_uncertainty: f64) -> f64` — Minimum time uncertainty given energy uncertainty: Δt ≥ ℏ / (2ΔE)
+- `pub fn bohr_radius() -> f64` — Bohr radius: a_0 = ℏ^2 / (m_e * k_e * e^2)
+- `pub fn hydrogen_energy_level(n: u32) -> f64` — Energy levels of hydrogen atom: E_n = -13.6 eV / n^2
+- `pub fn hydrogen_transition_energy(n_initial: u32, n_final: u32) -> f64` — Energy of photon emitted in hydrogen transition: E = 13.6 eV * (1/n_f^2 - 1/n_i^2)
+- `pub fn hydrogen_transition_wavelength(n_initial: u32, n_final: u32) -> f64` — Wavelength of photon from hydrogen transition (Rydberg formula):
+- `pub fn hydrogen_orbital_radius(n: u32) -> f64` — Orbital radius of nth level in hydrogen: r_n = n^2 * a_0
+- `pub fn hydrogen_orbital_velocity(n: u32) -> f64` — Orbital velocity in nth Bohr orbit: v_n = e^2 / (4πε_0 * n * ℏ)
+- `pub fn tunneling_transmission(mass: f64, barrier_height: f64, particle_energy: f64, barrier_width: f64) -> f64` — Transmission coefficient for a rectangular barrier (approximate, E < V):
+- `pub fn particle_in_box_energy(n: u32, mass: f64, box_length: f64) -> f64` — Energy levels of a particle in a 1D infinite potential well:
+- `pub fn zero_point_energy(mass: f64, box_length: f64) -> f64` — Zero-point energy (ground state, n=1):
+- `pub fn compton_wavelength_shift(scattering_angle_rad: f64) -> f64` — Compton wavelength shift: Δλ = (h / (m_e * c)) * (1 - cos(θ))
+- `pub fn compton_wavelength_electron() -> f64` — Compton wavelength of the electron: λ_C = h / (m_e * c)
+- `pub fn wien_peak_wavelength(temperature: f64) -> f64` — Wien's displacement law: λ_max = b / T where b ≈ 2.898e-3 m·K
+- `pub fn blackbody_power(area: f64, temperature: f64) -> f64` — Stefan-Boltzmann law (total power): P = σ * A * T^4
+- `pub fn planck_spectral_radiance(wavelength: f64, temperature: f64) -> f64` — Planck's law (spectral radiance): B(λ,T) = (2hc^2/λ^5) / (e^(hc/(λkT)) - 1)
+
+### `particle_physics`
+
+- `pub fn invariant_mass(energy: f64, momentum: f64) -> f64` — Invariant mass from total energy and scalar momentum magnitude.
+- `pub fn invariant_mass_two_body( e1: f64, px1: f64, py1: f64, pz1: f64, e2: f64, px2: f64, py2: f64, pz2: f64, ) -> f64` — Invariant mass of a two-body system from individual four-momenta.
+- `pub fn center_of_mass_energy( e_beam: f64, e_target: f64, p_beam: f64, p_target: f64, ) -> f64` — Center-of-mass energy √s for two particles with given energies and momenta.
+- `pub fn fixed_target_com_energy(beam_energy: f64, target_mass: f64) -> f64` — Fixed-target center-of-mass energy (high-energy approximation).
+- `pub fn lorentz_boost_energy(energy: f64, momentum_z: f64, beta: f64) -> f64` — Lorentz boost of energy along z.  E' = γ(E - β pz c)
+- `pub fn lorentz_boost_pz(energy: f64, momentum_z: f64, beta: f64) -> f64` — Lorentz boost of z-momentum.  pz' = γ(pz - β E/c)
+- `pub fn rapidity(energy: f64, pz: f64) -> f64` — Rapidity y = 0.5 × ln((E + pz c) / (E - pz c))
+- `pub fn pseudorapidity(theta: f64) -> f64` — Pseudorapidity η = -ln(tan(θ/2))
+- `pub fn transverse_momentum(px: f64, py: f64) -> f64` — Transverse momentum pT = √(px² + py²)
+- `pub fn rutherford_cross_section(z1: f64, z2: f64, energy: f64, angle: f64) -> f64` — Rutherford scattering differential cross section.
+- `pub fn breit_wigner(energy: f64, mass: f64, width: f64) -> f64` — Non-relativistic Breit-Wigner resonance (normalized to peak = 1).
+- `pub fn decay_rate_from_lifetime(lifetime: f64) -> f64` — Decay rate from lifetime.  Γ = ℏ / τ
+- `pub fn lifetime_from_width(width_joules: f64) -> f64` — Lifetime from decay width.  τ = ℏ / Γ
+- `pub fn branching_ratio(partial_width: f64, total_width: f64) -> f64` — Branching ratio BR = Γ_i / Γ_total
+- `pub fn mean_free_path_particle(cross_section: f64, number_density: f64) -> f64` — Mean free path λ = 1 / (n σ)
+- `pub fn luminosity_to_event_rate(luminosity: f64, cross_section: f64) -> f64` — Event rate R = L × σ
+- `pub fn is_charge_conserved(charges_in: &[f64], charges_out: &[f64]) -> bool` — Check charge conservation: sum of input charges ≈ sum of output charges.
+- `pub fn is_lepton_number_conserved(leptons_in: &[i32], leptons_out: &[i32]) -> bool` — Check lepton number conservation.
+- `pub fn is_baryon_number_conserved(baryons_in: &[i32], baryons_out: &[i32]) -> bool` — Check baryon number conservation.
+- `pub fn four_momentum_magnitude(energy: f64, px: f64, py: f64, pz: f64) -> f64` — Four-momentum magnitude (invariant mass × c).
+
+## Nuclear, Radiation & Plasma
+
+### `nuclear`
+
+- `pub fn remaining_nuclei(initial_count: f64, decay_constant: f64, time: f64) -> f64` — Number of remaining nuclei: N(t) = N_0 * e^(-λt)
+- `pub fn activity(initial_count: f64, decay_constant: f64, time: f64) -> f64` — Activity (decay rate): A = λ * N = λ * N_0 * e^(-λt)
+- `pub fn half_life(decay_constant: f64) -> f64` — Half-life from decay constant: t_1/2 = ln(2) / λ
+- `pub fn decay_constant(half_life: f64) -> f64` — Decay constant from half-life: λ = ln(2) / t_1/2
+- `pub fn mean_lifetime(decay_constant: f64) -> f64` — Mean lifetime: τ = 1 / λ
+- `pub fn remaining_after_half_lives(initial_count: f64, num_half_lives: f64) -> f64` — Number of nuclei remaining after n half-lives: N = N_0 / 2^n
+- `pub fn num_half_lives(time: f64, half_life: f64) -> f64` — Number of half-lives elapsed: n = t / t_1/2
+- `pub fn mass_defect( num_protons: u32, num_neutrons: u32, nucleus_mass: f64, ) -> f64` — Mass defect: Δm = Z*m_p + N*m_n - M_nucleus
+- `pub fn binding_energy(mass_defect: f64) -> f64` — Binding energy from mass defect: E_b = Δm * c^2
+- `pub fn binding_energy_per_nucleon(total_binding_energy: f64, mass_number: u32) -> f64` — Binding energy per nucleon: E_b / A
+- `pub fn q_value(reactant_mass: f64, product_mass: f64) -> f64` — Q-value of a nuclear reaction: Q = (m_reactants - m_products) * c^2
+- `pub fn mass_energy(mass: f64) -> f64` — Energy released from mass conversion: E = Δm * c^2
+- `pub fn energy_from_amu(mass_difference_amu: f64) -> f64` — Energy from fission/fusion (given mass difference in amu):
+- `pub fn reaction_rate(number_density: f64, cross_section: f64, flux: f64) -> f64` — Reaction rate: R = n * σ * Φ
+- `pub fn nuclear_mean_free_path(number_density: f64, cross_section: f64) -> f64` — Mean free path in nuclear context: λ = 1 / (n * σ)
+- `pub fn nuclear_radius(mass_number: u32) -> f64` — Nuclear radius (empirical): R = R_0 * A^(1/3) where R_0 ≈ 1.2 fm
+- `pub fn nuclear_density() -> f64` — Nuclear density (approximately constant): ρ ≈ 3m_p / (4π * R_0^3)
+- `pub fn absorbed_dose(energy: f64, mass: f64) -> f64` — Absorbed dose: D = E / m (Gray, Gy = J/kg)
+- `pub fn equivalent_dose(absorbed_dose: f64, weighting_factor: f64) -> f64` — Equivalent dose: H = D * w_R (Sievert, Sv)
+- `pub fn radiation_intensity_distance( initial_intensity: f64, initial_distance: f64, new_distance: f64, ) -> f64` — Inverse square law for radiation intensity: I = I_0 * (r_0 / r)^2
+
+### `neutronics`
+
+- `pub fn k_effective(production_rate: f64, loss_rate: f64) -> f64` — Effective multiplication factor: k_eff = production_rate / loss_rate
+- `pub fn reactivity(k_eff: f64) -> f64` — Reactivity: ρ = (k - 1) / k
+- `pub fn doubling_time(k_eff: f64, neutron_lifetime: f64) -> f64` — Doubling time for supercritical reactor: T = l × ln(2) / (k - 1)
+- `pub fn six_factor_formula( eta: f64, f: f64, p: f64, epsilon: f64, p_fnl: f64,` — Six-factor formula: k_eff = η × f × p × ε × P_FNL × P_TNL
+- `pub fn reproduction_factor(nu: f64, sigma_f: f64, sigma_a: f64) -> f64` — Reproduction factor: η = ν × σ_f / σ_a
+- `pub fn diffusion_coefficient(transport_mfp: f64) -> f64` — Diffusion coefficient: D = λ_tr / 3
+- `pub fn diffusion_length(diffusion_coeff: f64, absorption_xs: f64) -> f64` — Diffusion length: L = √(D / Σ_a)
+- `pub fn migration_length(diffusion_length: f64, slowing_down_length: f64) -> f64` — Migration length: M = √(L² + τ) where τ is the Fermi age (slowing-down area)
+- `pub fn thermal_utilization(sigma_a_fuel: f64, sigma_a_total: f64) -> f64` — Thermal utilization factor: f = Σ_a_fuel / Σ_a_total
+- `pub fn neutron_flux_slab( source: f64, diffusion_coeff: f64, sigma_a: f64, x: f64, half_thickness: f64,` — Neutron flux in a slab reactor with uniform source:
+- `pub fn microscopic_to_macroscopic(micro_xs: f64, number_density: f64) -> f64` — Macroscopic cross section from microscopic: Σ = N × σ
+- `pub fn number_density(density: f64, molar_mass: f64) -> f64` — Number density from bulk density and molar mass: N = ρ × N_A / M
+- `pub fn mean_free_path_neutron(macro_xs: f64) -> f64` — Mean free path for neutrons: λ = 1 / Σ
+- `pub fn reaction_rate_neutron(macro_xs: f64, flux: f64) -> f64` — Neutron reaction rate: R = Σ × φ
+- `pub fn one_over_v_xs(sigma_0: f64, e_0: f64, energy: f64) -> f64` — 1/v cross section law for thermal neutrons: σ(E) = σ₀ × √(E₀ / E)
+- `pub fn reactor_power(fission_rate: f64, energy_per_fission: f64) -> f64` — Reactor thermal power: P = R_f × E_f
+- `pub fn burnup(power: f64, time: f64, mass_heavy_metal: f64) -> f64` — Burnup: BU = P × t / M (MWd/kg when units are consistent)
+- `pub fn decay_heat_fraction(time_after_shutdown: f64) -> f64` — Decay heat fraction (Way-Wigner approximation for long prior operation):
+- `pub fn transmission_factor(macro_xs: f64, thickness: f64) -> f64` — Transmission factor (uncollided): I/I₀ = e^(-Σx)
+- `pub fn half_value_layer(macro_xs: f64) -> f64` — Half-value layer: HVL = ln(2) / Σ
+- `pub fn tenth_value_layer(macro_xs: f64) -> f64` — Tenth-value layer: TVL = ln(10) / Σ
+- `pub fn buildup_factor_approx(macro_xs: f64, thickness: f64) -> f64` — Linear buildup factor approximation for thin shields: B ≈ 1 + Σx
+
+### `radiation`
+
+- `pub fn total_emissive_power(temperature: f64) -> f64` — Total emissive power of a perfect blackbody (ε=1): E = σT⁴
+- `pub fn spectral_peak_frequency(temperature: f64) -> f64` — Wien's law in the frequency domain: f_max = 5.879×10¹⁰ × T
+- `pub fn color_temperature(peak_wavelength: f64) -> f64` — Inverse Wien's law: T = b / λ_max (color temperature from peak wavelength)
+- `pub fn brightness_temperature(intensity: f64, frequency: f64) -> f64` — Brightness temperature via the Rayleigh-Jeans approximation: T_b = Ic² / (2kf²)
+- `pub fn optical_depth(absorption_coeff: f64, path_length: f64) -> f64` — Optical depth: τ = κ × s
+- `pub fn beer_lambert(initial_intensity: f64, absorption_coeff: f64, path_length: f64) -> f64` — Beer-Lambert law: I = I₀ × e^(-κs)
+- `pub fn mean_free_path_photon(absorption_coeff: f64) -> f64` — Photon mean free path: l = 1/κ
+- `pub fn radiation_pressure(intensity: f64) -> f64` — Radiation pressure for fully absorbed radiation: P = I/c
+- `pub fn radiation_pressure_reflected(intensity: f64) -> f64` — Radiation pressure for fully reflected radiation: P = 2I/c
+- `pub fn emissivity_from_absorptivity(absorptivity: f64) -> f64` — At thermal equilibrium, emissivity equals absorptivity: ε = α
+- `pub fn view_factor_parallel_plates(width: f64, height: f64, separation: f64) -> f64` — View factor for two identical, directly opposed, parallel rectangles of
+- `pub fn radiative_exchange( emissivity1: f64, emissivity2: f64, area: f64, t1: f64, t2: f64,` — Radiative heat exchange between two infinite parallel gray surfaces:
+- `pub fn intensity_at_distance(luminosity: f64, distance: f64) -> f64` — Intensity at distance from a point source: I = L / (4πd²)
+- `pub fn luminosity_from_intensity(intensity: f64, distance: f64) -> f64` — Luminosity from measured intensity and distance: L = I × 4πd²
+
+### `plasma`
+
+- `pub fn debye_length(temperature: f64, density: f64, charge: f64) -> f64` — λD = √(ε₀kT / (nq²))
+- `pub fn plasma_frequency_electron(density: f64) -> f64` — ωp = √(ne² / (mₑε₀))
+- `pub fn plasma_frequency_ion(density: f64, ion_mass: f64) -> f64` — ωp = √(ne² / (m_ion × ε₀))
+- `pub fn cyclotron_frequency_electron(b_field: f64) -> f64` — ωc = eB / mₑ
+- `pub fn cyclotron_frequency_ion(b_field: f64, ion_mass: f64, charge: f64) -> f64` — ωc = qB / m
+- `pub fn larmor_radius(velocity_perp: f64, mass: f64, charge: f64, b_field: f64) -> f64` — rL = mv⊥ / (|q|B)
+- `pub fn plasma_beta(pressure: f64, b_field: f64) -> f64` — β = 2μ₀p / B²
+- `pub fn alfven_speed(b_field: f64, density: f64) -> f64` — vA = B / √(μ₀ρ)
+- `pub fn sound_speed_plasma(gamma: f64, temperature: f64, ion_mass: f64) -> f64` — cs = √(γkT / m)
+- `pub fn thermal_velocity(temperature: f64, mass: f64) -> f64` — vth = √(2kT / m)
+- `pub fn debye_number(density: f64, debye_len: f64) -> f64` — ND = n × (4π/3)λD³
+- `pub fn coulomb_logarithm(temperature: f64, density: f64) -> f64` — lnΛ = ln(12π × ND)
+- `pub fn magnetic_pressure(b_field: f64) -> f64` — Pm = B² / (2μ₀)
+- `pub fn magnetosonic_speed(alfven: f64, sound: f64) -> f64` — vms = √(vA² + cs²)
+- `pub fn skin_depth_plasma(plasma_freq: f64) -> f64` — δ = c / ωp
+- `pub fn collision_frequency( density: f64, temperature: f64, coulomb_log: f64, mass: f64, charge: f64,` — ν = nq⁴lnΛ / (4πε₀²m²vth³)
+
+## Astrophysics
+
+### `astrophysics::collisions` — structs: DebrisParams, CollisionResult
+
+- `pub fn impact_angle(pos1: Vec3, vel1: Vec3, pos2: Vec3, vel2: Vec3) -> f64` — Computes the impact angle between two colliding bodies: θ = acos(v_radial / |v_rel|).
+- `pub fn impact_speed(vel1: Vec3, vel2: Vec3) -> f64` — Computes the relative impact speed between two bodies: |v1 - v2|.
+- `pub fn merge_velocity(m1: f64, v1: Vec3, m2: f64, v2: Vec3) -> Vec3` — Computes the post-merger velocity via conservation of momentum: v_cm = (m1 v1 + m2 v2) / (m1 + m2).
+- `pub fn merge_radius(r1: f64, r2: f64) -> f64` — Computes the merged body radius assuming volume conservation: r = (r1³ + r2³)^(1/3).
+- `pub fn collision_energy(m1: f64, v1: Vec3, m2: f64, v2: Vec3) -> f64` — Computes the kinetic energy available in the center-of-mass frame: KE_cm = Σ ½m_i |v_i - v_cm|².
+- `pub fn escape_speed(mass: f64, radius: f64) -> f64` — Computes the surface escape speed: v_esc = √(2GM/r).
+- `pub fn debris_params(kind: CollisionKind) -> DebrisParams` — Returns debris generation parameters (count, speed, mass fraction, temperature) for a given colli...
+- `pub fn resolve_collision( m1: f64, r1: f64, v1: Vec3, m2: f64, r2: f64, v2: Vec3, kind: CollisionKind, ) -> CollisionResult` — Resolves a collision between two bodies, computing the merged properties and debris parameters.
+
+### `astrophysics::gravitational_waves`
+
+- `pub fn gw_luminosity(m1: f64, m2: f64, separation: f64) -> f64` — Computes gravitational wave luminosity for a circular binary: L = (32/5) G⁴m₁²m₂²(m₁+m₂) / (c⁵ a⁵).
+- `pub fn gw_frequency(m1: f64, m2: f64, separation: f64) -> f64` — Computes the gravitational wave frequency (twice the orbital frequency): f_gw = (1/π)√(G(m₁+m₂)/a³).
+- `pub fn gw_strain(m1: f64, m2: f64, separation: f64, distance_to_observer: f64) -> f64` — Computes the dimensionless gravitational wave strain amplitude: h = 4G²m₁m₂ / (c⁴ a D).
+- `pub fn inspiral_time(m1: f64, m2: f64, separation: f64) -> f64` — Computes the Peters inspiral time for a circular binary: t = (5/256) c⁵ a⁴ / (G³ m₁ m₂ (m₁+m₂)).
+- `pub fn chirp_mass(m1: f64, m2: f64) -> f64` — Computes the chirp mass of a binary system: M_c = (m₁ m₂)^(3/5) / (m₁ + m₂)^(1/5).
+- `pub fn innermost_stable_circular_orbit(total_mass: f64) -> f64` — Computes the Schwarzschild ISCO radius: r_isco = 6GM/c².
+- `pub fn find_strongest_source(masses: &[f64], positions: &[Vec3]) -> Option<(usize, usize, f64)>` — Finds the pair of bodies with the highest gravitational wave luminosity, returning their indices ...
+- `pub fn merger_energy(m1: f64, m2: f64) -> f64` — Estimates the energy radiated during merger: E = η M c², where η = m₁m₂/(m₁+m₂)².
+
+### `astrophysics::habitable_zone`
+
+- `pub fn habitable_zone_inner(luminosity_solar: f64) -> f64` — Computes the inner edge of the habitable zone in AU: d_inner = √L × 0.95.
+- `pub fn habitable_zone_outer(luminosity_solar: f64) -> f64` — Computes the outer edge of the habitable zone in AU: d_outer = √L × 1.37.
+- `pub fn habitable_zone(luminosity_solar: f64) -> (f64, f64)` — Returns the (inner, outer) habitable zone boundaries in AU for a given stellar luminosity in sola...
+- `pub fn is_in_habitable_zone(luminosity_solar: f64, distance_au: f64) -> bool` — Returns true if a body at the given distance (AU) lies within the habitable zone.
+- `pub fn luminosity_from_mass(mass_solar: f64) -> f64` — Estimates stellar luminosity from mass using the mass-luminosity relation: L = M^3.5 (in solar un...
+- `pub fn luminosity_from_temperature_radius(temperature: f64, radius_solar: f64) -> f64` — Computes stellar luminosity from the Stefan-Boltzmann law: L = R² (T/T_sun)⁴ (in solar units).
+
+### `astrophysics::lagrange`
+
+- `pub fn hill_radius(distance: f64, body_mass: f64, primary_mass: f64) -> f64` — Computes the Hill sphere radius: r_H = d (m / 3M)^(1/3).
+- `pub fn lagrange_points( primary_pos: Vec3, primary_mass: f64, body_pos: Vec3, body_vel: Vec3, body_mass: f64,` — Computes all five Lagrange points (L1-L5) for a two-body system in the co-rotating frame.
+- `pub fn circular_velocity(mu: f64, distance: f64) -> f64` — Computes the circular orbital velocity: v_c = √(μ/r).
+- `pub fn escape_ratio(speed: f64, escape_vel: f64) -> f64` — Computes the ratio of current speed to escape velocity: v / v_esc.
+
+### `astrophysics::magnetosphere`
+
+- `pub fn magnetic_moment(body_type: CelestialBodyType, mass: f64, temperature: f64) -> f64` — Estimates a celestial body's magnetic dipole moment based on body type, mass, and temperature.
+- `pub fn magnetosphere_radius(collision_radius: f64, moment: f64) -> f64` — Computes the magnetosphere standoff radius from the magnetic moment and body radius.
+- `pub fn dipole_field(center: Vec3, moment_vec: Vec3, point: Vec3) -> Vec3` — Computes the magnetic dipole field at a point: B = (3(m·r̂)r̂ - m) / r³.
+- `pub fn total_field(centers: &[Vec3], moments: &[Vec3], point: Vec3) -> Vec3` — Computes the superposition of multiple magnetic dipole fields at a point.
+- `pub fn trace_field_line( centers: &[Vec3], moments: &[Vec3], seed: Vec3, forward: bool, step_size: f64,` — Traces a magnetic field line from a seed point using adaptive Euler stepping, returning positions...
+- `pub fn generate_seed_points(center: Vec3, radius: f64, num_seeds: usize) -> Vec<Vec3>` — Generates seed points on a sphere using the golden-angle spiral for uniform distribution.
+
+### `astrophysics::nbody` — structs: Body, NBodySystem
+
+- `pub fn new(id: u32, mass: f64, radius: f64, position: Vec3, velocity: Vec3) -> Self` — Creates a new body with the given properties and zero initial acceleration.
+- `pub fn kinetic_energy(&self) -> f64` — Computes kinetic energy of this body: KE = ½mv².
+- `pub fn new(bodies: Vec<Body>, dt: f64, softening: f64) -> Self` — Initializes an N-body system with the given timestep and gravitational softening length, computin...
+- `pub fn step(&mut self)` — Advances the simulation by one timestep using the velocity Verlet integrator.
+- `pub fn total_energy(&self) -> f64` — Computes the total mechanical energy (kinetic + potential) of the system.
+- `pub fn center_of_mass(&self) -> Vec3` — Computes the mass-weighted center of mass of all bodies.
+- `pub fn total_momentum(&self) -> Vec3` — Computes the total linear momentum of the system: p = Σ(m_i × v_i).
+- `pub fn compute_acceleration(bodies: &[Body], idx: usize, softening: f64) -> Vec3` — Computes gravitational acceleration on body `idx` via direct O(N) pairwise summation with Plummer...
+- `pub fn init_accelerations(bodies: &mut [Body], softening: f64)` — Initializes acceleration vectors for all bodies by computing pairwise gravitational interactions.
+- `pub fn step_verlet(bodies: &mut [Body], dt: f64, softening: f64)` — Performs one velocity Verlet integration step: half-kick, drift, recompute accelerations, half-kick.
+- `pub fn kinetic_energy(bodies: &[Body]) -> f64` — Computes the total kinetic energy of all bodies: KE = Σ ½m_i v_i².
+- `pub fn potential_energy(bodies: &[Body], softening: f64) -> f64` — Computes the total gravitational potential energy: PE = -Σ G m_i m_j / r_ij (with Plummer softeni...
+- `pub fn total_energy(bodies: &[Body], softening: f64) -> f64` — Computes the total mechanical energy as the sum of kinetic and potential energy.
+- `pub fn center_of_mass(bodies: &[Body]) -> Vec3` — Computes the center of mass position: R_cm = Σ(m_i r_i) / Σ(m_i).
+- `pub fn total_momentum(bodies: &[Body]) -> Vec3` — Computes the total linear momentum: p = Σ(m_i v_i).
+
+### `astrophysics::octree` — structs: Octree
+
+- `pub fn build(bodies: &[Body]) -> Self` — Builds a Barnes-Hut octree from a set of bodies, computing bounding box and center-of-mass hierar...
+- `pub fn compute_acceleration(&self, bodies: &[Body], idx: usize, theta: f64, softening: f64) -> Vec3` — Computes gravitational acceleration on body `idx` using the Barnes-Hut tree walk with opening ang...
+- `pub fn compute_all_accelerations(bodies: &[Body], theta: f64, softening: f64) -> Vec<Vec3>` — Computes accelerations for all bodies, using direct summation below the crossover threshold or Ba...
+
+### `astrophysics::orbital_elements` — structs: OrbitalElements
+
+- `pub fn from_state_vectors(position: Vec3, velocity: Vec3, mu: f64) -> Self` — Converts Cartesian state vectors (position, velocity) to Keplerian orbital elements for gravitati...
+- `pub fn is_bound(&self) -> bool` — Returns true if the orbit is gravitationally bound: e < 1.
+- `pub fn period(&self, mu: f64) -> f64` — Computes the orbital period: T = 2π√(a³/μ).
+- `pub fn periapsis(&self) -> f64` — Returns the periapsis distance: r_p = a(1 - e).
+- `pub fn apoapsis(&self) -> Option<f64>` — Returns the apoapsis distance if bound (e < 1): r_a = a(1 + e). Returns None for unbound orbits.
+- `pub fn specific_orbital_energy(mu: f64, r: f64, v: f64) -> f64` — Computes specific orbital energy: ε = v²/2 - μ/r.
+- `pub fn specific_angular_momentum(position: Vec3, velocity: Vec3) -> Vec3` — Computes specific angular momentum vector: h = r × v.
+- `pub fn eccentricity_vector(position: Vec3, velocity: Vec3, mu: f64) -> Vec3` — Computes the eccentricity vector: e = (v × h)/μ - r̂, pointing toward periapsis.
+- `pub fn eccentricity(position: Vec3, velocity: Vec3, mu: f64) -> f64` — Computes the orbital eccentricity as the magnitude of the eccentricity vector: e = |e_vec|.
+- `pub fn semi_major_axis(mu: f64, energy: f64) -> f64` — Computes the semi-major axis from the vis-viva relation: a = -μ/(2ε). Returns infinity for parabo...
+- `pub fn semi_minor_axis(semi_major: f64, ecc: f64) -> f64` — Computes the semi-minor axis: b = a√(1 - e²).
+- `pub fn periapsis(semi_major: f64, ecc: f64) -> f64` — Computes the periapsis distance: r_p = a(1 - e).
+- `pub fn apoapsis(semi_major: f64, ecc: f64) -> f64` — Computes the apoapsis distance: r_a = a(1 + e).
+- `pub fn true_anomaly(position: Vec3, velocity: Vec3, mu: f64) -> f64` — Computes the true anomaly ν from state vectors: ν = acos(e · r / (|e||r|)), adjusted for quadrant.
+- `pub fn inclination(angular_momentum: Vec3) -> f64` — Computes the orbital inclination: i = acos(h_z / |h|).
+- `pub fn longitude_of_ascending_node(angular_momentum: Vec3) -> f64` — Computes the longitude of the ascending node Ω from the nodal vector n = (-h_y, h_x, 0).
+- `pub fn argument_of_periapsis(angular_momentum: Vec3, ecc_vec: Vec3) -> f64` — Computes the argument of periapsis ω: ω = acos(n · e / (|n||e|)), adjusted for quadrant.
+- `pub fn orbit_points_ellipse(elements: &OrbitalElements, _mu: f64, num_points: usize) -> Vec<Vec3>` — Generates 3D points along an elliptical orbit using the conic section r = p/(1 + e cos θ).
+- `pub fn orbit_points_hyperbola(elements: &OrbitalElements, _mu: f64, num_points: usize) -> Vec<Vec3>` — Generates 3D points along a hyperbolic orbit trajectory using r = p/(1 + e cos θ) with θ bounded ...
+- `pub fn is_bound(energy: f64) -> bool` — Returns true if the specific orbital energy indicates a bound orbit: ε < 0.
+
+### `astrophysics::tidal`
+
+- `pub fn tidal_acceleration_magnitude(primary_mass: f64, distance: f64) -> f64` — Computes the Newtonian tidal acceleration magnitude: a_tidal = 2GM/r³.
+- `pub fn tidal_acceleration_gr_corrected( primary_mass: f64, distance: f64, schwarzschild_radius: f64, ) -> f64` — Computes tidal acceleration with a GR correction factor: a_tidal / (1 - r_s/r).
+- `pub fn roche_limit_rigid(primary_radius: f64, primary_density: f64, satellite_density: f64) -> f64` — Computes the rigid-body Roche limit: d = R_p (2 ρ_p / ρ_s)^(1/3).
+- `pub fn roche_limit_fluid(primary_radius: f64, primary_density: f64, satellite_density: f64) -> f64` — Computes the fluid-body Roche limit: d = 2.44 R_p (ρ_p / ρ_s)^(1/3).
+- `pub fn tidal_force_ratio( primary_mass: f64, body_mass: f64, body_radius: f64, distance: f64, ) -> f64` — Computes the ratio of tidal force to self-gravity on a body's surface: (a_tidal × R_body) / (GM_b...
+- `pub fn tidal_tensor_eigenvalues(primary_mass: f64, distance: f64) -> (f64, f64)` — Computes the tidal tensor eigenvalues (radial, tangential): (2GM/r³, -GM/r³).
+- `pub fn roche_potential( x: f64, z: f64, m1: f64, pos1: Vec3, m2: f64,` — Computes the Roche potential in the co-rotating frame: Φ = -Gm₁/r₁ - Gm₂/r₂ - ½ω²r_com².
+
+## Chemistry & Biophysics
+
+### `chemistry`
+
+- `pub fn arrhenius_rate(pre_exponential: f64, activation_energy: f64, temperature: f64) -> f64` — Arrhenius equation: k = A × exp(-Ea / (RT))
+- `pub fn half_life_first_order(rate_constant: f64) -> f64` — First-order half-life: t½ = ln(2) / k
+- `pub fn concentration_first_order(c0: f64, rate_constant: f64, time: f64) -> f64` — First-order concentration decay: [A] = [A]₀ × e^(-kt)
+- `pub fn concentration_second_order(c0: f64, rate_constant: f64, time: f64) -> f64` — Second-order integrated rate law: 1/[A] = 1/[A]₀ + kt, returns [A]
+- `pub fn reaction_rate(k: f64, concentrations: &[f64], orders: &[f64]) -> f64` — General rate law: r = k × Π([Ci]^ni)
+- `pub fn gibbs_free_energy(enthalpy: f64, temperature: f64, entropy: f64) -> f64` — Gibbs free energy: ΔG = ΔH - TΔS
+- `pub fn equilibrium_constant_from_gibbs(delta_g: f64, temperature: f64) -> f64` — Equilibrium constant from Gibbs energy: K = exp(-ΔG / (RT))
+- `pub fn vant_hoff(k1: f64, delta_h: f64, t1: f64, t2: f64) -> f64` — Van't Hoff equation: ln(K2/K1) = -ΔH/R × (1/T2 - 1/T1), returns K2
+- `pub fn hess_law(enthalpies: &[f64], coefficients: &[f64]) -> f64` — Hess's law: ΔH_rxn = Σ(ci × ΔHi)
+- `pub fn nernst_potential( e_standard: f64, temperature: f64, n_electrons: f64, reaction_quotient: f64, ) -> f64` — Nernst equation: E = E° - (RT / (nF)) × ln(Q)
+- `pub fn cell_potential(e_cathode: f64, e_anode: f64) -> f64` — Cell potential: E_cell = E_cathode - E_anode
+- `pub fn faraday_electrolysis( current: f64, time: f64, molar_mass: f64, n_electrons: f64, ) -> f64` — Faraday's law of electrolysis: m = (I × t × M) / (n × F)
+- `pub fn ph(h_concentration: f64) -> f64` — pH = -log₁₀([H⁺])
+- `pub fn poh(oh_concentration: f64) -> f64` — pOH = -log₁₀([OH⁻])
+- `pub fn h_from_ph(ph: f64) -> f64` — [H⁺] = 10^(-pH)
+- `pub fn osmotic_pressure(molarity: f64, temperature: f64, i_factor: f64) -> f64` — Osmotic pressure: Π = iMRT
+- `pub fn molarity(moles: f64, volume_liters: f64) -> f64` — Molarity: M = n / V
+- `pub fn dilution(c1: f64, v1: f64, v2: f64) -> f64` — Dilution: C2 = C1 × V1 / V2
+
+### `biophysics`
+
+- `pub fn nernst_potential(temperature: f64, z: f64, c_out: f64, c_in: f64) -> f64` — Nernst equation: E = (RT/(zF)) × ln(c_out/c_in)
+- `pub fn goldman_potential( temperature: f64, pk: f64, pna: f64, pcl: f64, k_out: f64,` — Goldman-Hodgkin-Katz voltage equation for K⁺, Na⁺, and Cl⁻.
+- `pub fn resting_membrane_potential_typical() -> f64` — Typical resting membrane potential for a neuron: -70 mV
+- `pub fn michaelis_menten(vmax: f64, km: f64, substrate: f64) -> f64` — Michaelis-Menten kinetics: v = Vmax × [S] / (Km + [S])
+- `pub fn michaelis_menten_inhibited( vmax: f64, km: f64, substrate: f64, inhibitor: f64, ki: f64,` — Competitive inhibition: v = Vmax × [S] / (Km(1 + [I]/Ki) + [S])
+- `pub fn lineweaver_burk(vmax: f64, km: f64, substrate: f64) -> (f64, f64)` — Lineweaver-Burk transform: returns (1/[S], 1/v) for double-reciprocal plot
+- `pub fn hill_equation(vmax: f64, k: f64, substrate: f64, n: f64) -> f64` — Hill equation for cooperative binding: v = Vmax × [S]^n / (K^n + [S]^n)
+- `pub fn hill_coefficient_from_data(s1: f64, v1: f64, s2: f64, v2: f64, vmax: f64) -> f64` — Derive Hill coefficient from two (substrate, velocity) data points.
+- `pub fn exponential_growth(n0: f64, rate: f64, time: f64) -> f64` — Exponential growth: N = N₀ × e^(rt)
+- `pub fn logistic_growth(n0: f64, k: f64, r: f64, time: f64) -> f64` — Logistic growth: N = K / (1 + ((K - N₀)/N₀) × e^(-rt))
+- `pub fn doubling_time_population(rate: f64) -> f64` — Doubling time: td = ln(2) / r
+- `pub fn lotka_volterra_prey(prey: f64, predator: f64, alpha: f64, beta: f64) -> f64` — Lotka-Volterra prey rate: dx/dt = αx - βxy
+- `pub fn lotka_volterra_predator(prey: f64, predator: f64, delta: f64, gamma: f64) -> f64` — Lotka-Volterra predator rate: dy/dt = δxy - γy
+- `pub fn cardiac_output(stroke_volume: f64, heart_rate: f64) -> f64` — Cardiac output: CO = SV × HR (L/min when SV in L/beat and HR in bpm)
+- `pub fn mean_arterial_pressure(systolic: f64, diastolic: f64) -> f64` — Mean arterial pressure: MAP = DBP + (SBP - DBP)/3
+- `pub fn vascular_resistance(pressure_drop: f64, flow: f64) -> f64` — Vascular resistance: R = ΔP / Q
+- `pub fn poiseuille_blood_flow(radius: f64, pressure_drop: f64, viscosity: f64, length: f64) -> f64` — Poiseuille flow in a vessel: Q = πr⁴ΔP / (8μL)
+- `pub fn sigmoid(x: f64, x50: f64, slope: f64) -> f64` — Sigmoid function: f = 1 / (1 + exp(-slope × (x - x50)))
+- `pub fn ld50_probit(dose: f64, ld50: f64, slope: f64) -> f64` — LD50 probit model: probability = sigmoid(ln(dose), ln(ld50), slope)
+
+## Simulation Engines
+
+### `sim::rigid_body` — structs: RigidBody, RigidBodySystem
+
+- `pub fn new(mass: f64, inertia: [f64; 3]) -> Self` — Create a rigid body with given mass and diagonal inertia tensor [Ix, Iy, Iz].
+- `pub fn new_sphere(mass: f64, radius: f64) -> Self` — Create a rigid body with uniform sphere inertia: I = 2mr²/5
+- `pub fn new_box(mass: f64, wx: f64, wy: f64, wz: f64) -> Self` — Create a rigid body with box inertia: Ix = m(wy² + wz²)/12, etc.
+- `pub fn new_cylinder(mass: f64, radius: f64, height: f64) -> Self` — Create a rigid body with cylinder inertia (z-axis is symmetry axis).
+- `pub fn apply_force(&mut self, force: Vec3)` — Accumulate a force (applied at center of mass, no torque).
+- `pub fn apply_force_at_point(&mut self, force: Vec3, point: Vec3)` — Accumulate a force at a world-space point, generating torque τ = r × F.
+- `pub fn apply_torque(&mut self, torque: Vec3)` — Accumulate a torque directly.
+- `pub fn clear_forces(&mut self)` — Reset accumulated force and torque to zero.
+- `pub fn step(&mut self, dt: f64)` — Symplectic Euler integration with full Euler rotation equations.
+- `pub fn kinetic_energy(&self) -> f64` — Total kinetic energy: KE = ½mv² + ½ω·I·ω
+- `pub fn angular_momentum(&self) -> Vec3` — Angular momentum in world frame: L = R·(I·ω_body)
+- `pub fn local_to_world(&self, local_point: Vec3) -> Vec3` — Transform a point from body-local to world coordinates.
+- `pub fn world_to_local(&self, world_point: Vec3) -> Vec3` — Transform a point from world to body-local coordinates.
+- `pub fn velocity_at_point(&self, world_point: Vec3) -> Vec3` — Velocity at a world-space point: v_point = v_cm + ω × r
+- `pub fn new(gravity: Vec3) -> Self` — Create a new rigid body system with the given gravitational acceleration.
+- `pub fn add_body(&mut self, body: RigidBody) -> usize` — Add a rigid body to the system, returning its index.
+- `pub fn step(&mut self, dt: f64)` — Advance all bodies by dt, applying gravity and integrating with symplectic Euler.
+- `pub fn total_energy(&self) -> f64` — Total mechanical energy: Σ(KE + PE_gravity) for all bodies.
+- `pub fn total_momentum(&self) -> Vec3` — Total linear momentum: Σ m·v for all bodies.
+- `pub fn sphere_sphere_collision( a: &RigidBody, radius_a: f64, b: &RigidBody, radius_b: f64, ) -> Option<(Vec3, f64)>` — Detect sphere-sphere overlap, returning (contact_normal, penetration_depth) or None.
+- `pub fn resolve_collision( a: &mut RigidBody, b: &mut RigidBody, normal: Vec3, restitution: f64, )` — Resolve a collision between two rigid bodies using impulse-based response.
+
+### `sim::fluid_sim` — structs: ColumnFluid, ShallowWater1D, EulerFluid2D
+
+- `pub fn new(width: usize, dx: f64, density: f64, g: f64) -> Self` — Create a column fluid with the given number of columns, spacing, density, and gravity.
+- `pub fn set_height(&mut self, col: usize, h: f64)` — Set the water height in a specific column.
+- `pub fn step(&mut self, dt: f64)` — Advance one time step using pressure-driven orifice flow between
+- `pub fn total_volume(&self) -> f64` — Total fluid volume: V = Σ h_i × dx (m² in 2D cross-section).
+- `pub fn new(nx: usize, dx: f64, g: f64) -> Self` — Create a 1D shallow water solver with nx cells, spacing dx, and gravity g.
+- `pub fn velocity(&self, i: usize) -> f64` — Recover velocity u = hu/h, returning 0 for dry cells.
+- `pub fn step_lax_friedrichs(&mut self, dt: f64)` — Lax-Friedrichs time step with reflective boundary conditions.
+- `pub fn max_wave_speed(&self) -> f64` — Maximum wave speed: max_i(|u_i| + √(g h_i)).
+- `pub fn stable_dt(&self) -> f64` — CFL-limited stable time step: dt = CFL_SAFETY × dx / max_wave_speed.
+- `pub fn total_volume(&self) -> f64` — Total volume: V = Σ h_i × dx.
+- `pub fn total_energy(&self) -> f64` — Total energy (mechanical): E = Σ (½ h u² + ½ g h²) dx.
+- `pub fn new(nx: usize, ny: usize, dx: f64, dy: f64, density: f64) -> Self` — Create a 2D incompressible Euler fluid solver on an nx-by-ny grid.
+- `pub fn set_velocity(&mut self, i: usize, j: usize, vx: f64, vy: f64)` — Set the velocity at grid point (i, j).
+- `pub fn step(&mut self, dt: f64, gravity_x: f64, gravity_y: f64)` — One full time step via Chorin's projection method.
+- `pub fn divergence(&self) -> f64` — Maximum absolute divergence: max |∇·u|.
+- `pub fn kinetic_energy(&self) -> f64` — Total kinetic energy: KE = ½ρ Σ (vx² + vy²) dx dy.
+
+### `sim::heat_sim` — structs: HeatConduction2D, HeatConduction3D, ConvectionDiffusion1D
+
+- `pub fn new(nx: usize, ny: usize, dx: f64, dy: f64, diffusivity: f64) -> Self` — Create a grid initialized to uniform temperature 0.
+- `pub fn set_temperature(&mut self, i: usize, j: usize, temp: f64)` — Set temperature at grid point (i, j).
+- `pub fn get_temperature(&self, i: usize, j: usize) -> f64` — Get temperature at grid point (i, j).
+- `pub fn step_explicit(&mut self, dt: f64)` — FTCS explicit step. Boundary cells (i=0, i=nx-1, j=0, j=ny-1) are
+- `pub fn step_implicit_jacobi(&mut self, dt: f64, iterations: usize)` — Backward Euler solved via Jacobi iteration (unconditionally stable).
+- `pub fn stable_dt(&self) -> f64` — Maximum stable time step for the explicit FTCS scheme.
+- `pub fn total_energy(&self) -> f64` — Total thermal energy proxy: Σ T_ij · dx · dy.
+- `pub fn max_temperature(&self) -> f64` — Maximum temperature in the field.
+- `pub fn min_temperature(&self) -> f64` — Minimum temperature in the field.
+- `pub fn average_temperature(&self) -> f64` — Average temperature across the entire grid.
+- `pub fn step_with_source(&mut self, dt: f64, sources: &[f64])` — Explicit step with volumetric heat source.
+- `pub fn new( nx: usize, ny: usize, nz: usize, dx: f64, dy: f64,` — Create a 3D heat conduction grid initialized to uniform temperature 0.
+- `pub fn set_temperature(&mut self, i: usize, j: usize, k: usize, temp: f64)` — Set temperature at grid point (i, j, k).
+- `pub fn get_temperature(&self, i: usize, j: usize, k: usize) -> f64` — Get temperature at grid point (i, j, k).
+- `pub fn step_explicit(&mut self, dt: f64)` — FTCS explicit step in 3D. Boundary cells held fixed (Dirichlet).
+- `pub fn stable_dt(&self) -> f64` — dt_max = 1 / (2α·(1/dx² + 1/dy² + 1/dz²))
+- `pub fn total_energy(&self) -> f64` — Total thermal energy proxy: Σ T·dx·dy·dz.
+- `pub fn average_temperature(&self) -> f64` — Average temperature across the entire 3D grid.
+- `pub fn new(nx: usize, dx: f64, velocity: f64, diffusivity: f64) -> Self` — Create a 1D convection-diffusion solver with the given parameters.
+- `pub fn step_upwind(&mut self, dt: f64)` — Upwind advection + central diffusion explicit step.
+- `pub fn peclet_number(&self) -> f64` — Grid Peclet number: Pe = v·dx/α.
+- `pub fn stable_dt(&self) -> f64` — Maximum stable time step.
+
+### `sim::wave_sim` — structs: WaveEquation1D, WaveEquation2D
+
+- `pub fn new(nx: usize, dx: f64, wave_speed: f64) -> Self` — Create a new 1D wave equation solver. All displacements start at zero.
+- `pub fn set_initial(&mut self, displacement: &[f64], velocity: &[f64], dt: f64)` — Set initial displacement u(x, 0) and initial velocity ∂u/∂t(x, 0).
+- `pub fn step(&mut self, dt: f64)` — Advance one time step using the leapfrog scheme with fixed endpoints
+- `pub fn step_absorbing(&mut self, dt: f64)` — Advance one time step with Mur's first-order absorbing boundary conditions.
+- `pub fn courant_number(&self, dt: f64) -> f64` — Courant number r = c dt / dx.
+- `pub fn stable_dt(&self) -> f64` — Maximum stable time step from the CFL condition: dt_max = dx / c.
+- `pub fn total_energy(&self, dt: f64) -> f64` — Discrete total energy (kinetic + potential) of the grid.
+- `pub fn add_source(&mut self, position: usize, amplitude: f64)` — Inject a continuous point source by adding amplitude to the current
+- `pub fn new(nx: usize, ny: usize, dx: f64, dy: f64, wave_speed: f64) -> Self` — Create a new 2D wave equation solver with all displacements at zero.
+- `pub fn set_damping(&mut self, damping: f64)` — Enable viscous damping (-γ ∂u/∂t).
+- `pub fn step(&mut self, dt: f64)` — Advance one time step.
+- `pub fn stable_dt(&self) -> f64` — Maximum stable time step from the 2D CFL condition:
+- `pub fn total_energy(&self, dt: f64) -> f64` — Discrete total energy of the 2D field.
+- `pub fn set_point(&mut self, i: usize, j: usize, value: f64)` — Set the displacement at grid point (i, j) in the current time step.
+
+### `sim::em_sim` — structs: Fdtd1D, Fdtd2D
+
+- `pub fn new(nx: usize, dx: f64) -> Self` — Create a 1D FDTD simulation domain with nx cells and spacing dx.
+- `pub fn set_material(&mut self, start: usize, end: usize, epsilon_r: f64, mu_r: f64, sigma: f64)` — Set relative permittivity, permeability, and conductivity for a range of cells.
+- `pub fn step(&mut self)` — Advance one FDTD leapfrog time step updating Hy then Ez with lossy material support.
+- `pub fn add_source_soft(&mut self, position: usize, value: f64)` — Add value to Ez at position (soft source, allows wave passage).
+- `pub fn add_source_hard(&mut self, position: usize, value: f64)` — Set Ez at position to value (hard source, creates reflections).
+- `pub fn gaussian_pulse(t: f64, t0: f64, spread: f64) -> f64` — Gaussian pulse: exp(-((t - t0)/spread)²)
+- `pub fn sinusoidal_source(t: f64, frequency: f64) -> f64` — Sinusoidal source: sin(2πft)
+- `pub fn apply_abc_mur(&mut self)` — Apply first-order Mur absorbing boundary conditions at both ends.
+- `pub fn total_energy(&self) -> f64` — Total electromagnetic energy: E = ½Σ(ε₀εᵣEz² + μ₀μᵣHy²)dx
+- `pub fn stable_dt_for_dx(dx: f64) -> f64` — CFL-stable time step for 1D FDTD: dt = dx·Courant/(c)
+- `pub fn new(nx: usize, ny: usize, dx: f64, dy: f64) -> Self` — Create a 2D FDTD simulation domain with nx-by-ny cells.
+- `pub fn step(&mut self)` — Advance one 2D FDTD leapfrog time step updating Hx, Hy, then Ez.
+- `pub fn add_source(&mut self, i: usize, j: usize, value: f64)` — Add a soft point source to Ez at grid point (i, j).
+- `pub fn total_energy(&self) -> f64` — Total electromagnetic energy: E = ½Σ(ε₀εᵣEz² + μ₀(Hx² + Hy²))·dx·dy
+- `pub fn stable_dt_for_grid(dx: f64, dy: f64) -> f64` — CFL-stable time step for 2D FDTD: dt = Courant/(c·√(1/dx² + 1/dy²))
+
+### `sim::cloth_sim` — structs: Particle, Spring, MassSpringSystem
+
+- `pub fn new(position: Vec3, mass: f64) -> Self` — Create a free particle at the given position with the given mass.
+- `pub fn new_pinned(position: Vec3) -> Self` — Create a pinned (immovable) particle at the given position.
+- `pub fn new(a: usize, b: usize, rest_length: f64, stiffness: f64, damping: f64) -> Self` — Create a spring connecting particles a and b with given rest length, stiffness, and damping.
+- `pub fn new(gravity: Vec3) -> Self` — Create an empty mass-spring system with the given gravity vector.
+- `pub fn add_particle(&mut self, p: Particle) -> usize` — Add a particle to the system, returning its index.
+- `pub fn add_spring(&mut self, s: Spring)` — Add a spring constraint to the system.
+- `pub fn step_verlet(&mut self, dt: f64)` — Verlet integration with Hooke's law spring forces and viscous damping.
+- `pub fn step_with_constraints(&mut self, dt: f64, iterations: usize)` — Position-based dynamics (Jakobsen method).
+- `pub fn total_energy(&self, dt: f64) -> f64` — Total mechanical energy: KE + PE_gravity + PE_spring.
+- `pub fn total_momentum(&self, dt: f64) -> Vec3` — Total linear momentum: sum of m * v for all non-pinned particles.
+- `pub fn create_cloth_grid( width: usize, height: usize, spacing: f64, mass: f64, stiffness: f64,` — Creates a rectangular cloth grid with structural and shear springs.
+- `pub fn create_rope( n_particles: usize, spacing: f64, mass: f64, stiffness: f64, damping: f64,` — Creates a 1D rope (linear chain of particles connected by springs).
+
+## Reference Data
+
+### `materials::elements` — structs: Element
+
+- `pub fn by_atomic_number(z: u32) -> Option<&'static Element>` — Looks up an element by its atomic number (1..=118).
+- `pub fn by_symbol(symbol: &str) -> Option<&'static Element>` — Looks up an element by its chemical symbol (case-sensitive, e.g. "He", "Fe").
+- `pub fn by_symbol_static(symbol: &str) -> Option<&'static Element>` — O(1) lookup for commonly used element symbols, falling back to linear scan.
+- `pub fn by_name(name: &str) -> Option<&'static Element>` — Looks up an element by name using case-insensitive ASCII comparison.
+- `pub fn all() -> &'static [Element]` — Returns a slice of all 118 elements, ordered by atomic number.
+
+### `materials::common` — structs: Material
+
+- `pub fn by_name(name: &str) -> Option<&'static Material>` — Looks up a material by name using case-insensitive ASCII comparison.
+- `pub fn all() -> &'static [Material]` — Returns a slice of all common engineering materials.
+
+### `materials::fluids` — structs: Fluid
+
+- `pub fn by_name(name: &str) -> Option<&'static Fluid>` — Looks up a fluid by name using case-insensitive ASCII comparison.
+- `pub fn all() -> &'static [Fluid]` — Returns a slice of all fluids in the database.
+
+### `materials::gases` — structs: Gas
+
+- `pub fn by_name(name: &str) -> Option<&'static Gas>` — Looks up a gas by name using case-insensitive ASCII comparison.
+- `pub fn all() -> &'static [Gas]` — Returns a slice of all gases in the database.
+
+## Utilities
+
+### `units`
+
+- `pub fn meters_to_feet(m: f64) -> f64` — Convert meters to feet: ft = m × 3.28084
+- `pub fn feet_to_meters(ft: f64) -> f64` — Convert feet to meters: m = ft / 3.28084
+- `pub fn meters_to_inches(m: f64) -> f64` — Convert meters to inches: in = m × 39.3701
+- `pub fn inches_to_meters(i: f64) -> f64` — Convert inches to meters: m = in / 39.3701
+- `pub fn km_to_miles(km: f64) -> f64` — Convert kilometers to miles: mi = km × 0.621371
+- `pub fn miles_to_km(mi: f64) -> f64` — Convert miles to kilometers: km = mi / 0.621371
+- `pub fn meters_to_au(m: f64) -> f64` — Convert meters to astronomical units: AU = m / 1.496×10¹¹
+- `pub fn au_to_meters(au: f64) -> f64` — Convert astronomical units to meters: m = AU × 1.496×10¹¹
+- `pub fn meters_to_light_years(m: f64) -> f64` — Convert meters to light-years: ly = m / 9.461×10¹⁵
+- `pub fn light_years_to_meters(ly: f64) -> f64` — Convert light-years to meters: m = ly × 9.461×10¹⁵
+- `pub fn meters_to_parsec(m: f64) -> f64` — Convert meters to parsecs: pc = m / 3.086×10¹⁶
+- `pub fn parsec_to_meters(pc: f64) -> f64` — Convert parsecs to meters: m = pc × 3.086×10¹⁶
+- `pub fn angstrom_to_meters(a: f64) -> f64` — Convert angstroms to meters: m = Å × 10⁻¹⁰
+- `pub fn meters_to_angstrom(m: f64) -> f64` — Convert meters to angstroms: Å = m / 10⁻¹⁰
+- `pub fn nautical_miles_to_meters(nm: f64) -> f64` — Convert nautical miles to meters: m = nmi × 1852
+- `pub fn meters_to_nautical_miles(m: f64) -> f64` — Convert meters to nautical miles: nmi = m / 1852
+- `pub fn kg_to_lbs(kg: f64) -> f64` — Convert kilograms to pounds: lb = kg × 2.20462
+- `pub fn lbs_to_kg(lbs: f64) -> f64` — Convert pounds to kilograms: kg = lb / 2.20462
+- `pub fn kg_to_solar_masses(kg: f64) -> f64` — Convert kilograms to solar masses: M☉ = kg / 1.989×10³⁰
+- `pub fn solar_masses_to_kg(sm: f64) -> f64` — Convert solar masses to kilograms: kg = M☉ × 1.989×10³⁰
+- `pub fn amu_to_kg(amu: f64) -> f64` — Convert atomic mass units to kilograms: kg = amu × 1.66054×10⁻²⁷
+- `pub fn kg_to_amu(kg: f64) -> f64` — Convert kilograms to atomic mass units: amu = kg / 1.66054×10⁻²⁷
+- `pub fn joules_to_ev(j: f64) -> f64` — Convert joules to electron-volts: eV = J / e
+- `pub fn ev_to_joules(ev: f64) -> f64` — Convert electron-volts to joules: J = eV × e
+- `pub fn joules_to_calories(j: f64) -> f64` — Convert joules to calories: cal = J / 4.184
+- `pub fn calories_to_joules(cal: f64) -> f64` — Convert calories to joules: J = cal × 4.184
+- `pub fn joules_to_kwh(j: f64) -> f64` — Convert joules to kilowatt-hours: kWh = J / 3.6×10⁶
+- `pub fn kwh_to_joules(kwh: f64) -> f64` — Convert kilowatt-hours to joules: J = kWh × 3.6×10⁶
+- `pub fn joules_to_btu(j: f64) -> f64` — Convert joules to British thermal units: BTU = J / 1055.06
+- `pub fn btu_to_joules(btu: f64) -> f64` — Convert British thermal units to joules: J = BTU × 1055.06
+- `pub fn ev_to_wavelength(ev: f64) -> f64` — Converts photon energy in eV to wavelength in meters via λ = hc/E.
+- `pub fn wavelength_to_ev(wavelength: f64) -> f64` — Converts photon wavelength in meters to energy in eV via E = hc/λ.
+- `pub fn pa_to_atm(pa: f64) -> f64` — Convert pascals to atmospheres: atm = Pa / 101325
+- `pub fn atm_to_pa(atm: f64) -> f64` — Convert atmospheres to pascals: Pa = atm × 101325
+- `pub fn pa_to_bar(pa: f64) -> f64` — Convert pascals to bar: bar = Pa / 10⁵
+- `pub fn bar_to_pa(bar: f64) -> f64` — Convert bar to pascals: Pa = bar × 10⁵
+- `pub fn pa_to_psi(pa: f64) -> f64` — Convert pascals to pounds per square inch: psi = Pa / 6894.76
+- `pub fn psi_to_pa(psi: f64) -> f64` — Convert pounds per square inch to pascals: Pa = psi × 6894.76
+- `pub fn pa_to_mmhg(pa: f64) -> f64` — Convert pascals to millimeters of mercury: mmHg = Pa / 133.322
+- `pub fn mmhg_to_pa(mmhg: f64) -> f64` — Convert millimeters of mercury to pascals: Pa = mmHg × 133.322
+- `pub fn degrees_to_radians(deg: f64) -> f64` — Convert degrees to radians: rad = deg × π / 180
+- `pub fn radians_to_degrees(rad: f64) -> f64` — Convert radians to degrees: deg = rad × 180 / π
+- `pub fn rpm_to_rad_per_sec(rpm: f64) -> f64` — Convert revolutions per minute to radians per second: ω = rpm × 2π / 60
+- `pub fn rad_per_sec_to_rpm(omega: f64) -> f64` — Convert radians per second to revolutions per minute: rpm = ω × 60 / (2π)
+- `pub fn seconds_to_years(s: f64) -> f64` — Convert seconds to years: yr = s / 3.1557×10⁷
+- `pub fn years_to_seconds(yr: f64) -> f64` — Convert years to seconds: s = yr × 3.1557×10⁷
+- `pub fn mps_to_kmh(mps: f64) -> f64` — Convert meters per second to kilometers per hour: km/h = m/s × 3.6
+- `pub fn kmh_to_mps(kmh: f64) -> f64` — Convert kilometers per hour to meters per second: m/s = km/h / 3.6
+- `pub fn mps_to_mph(mps: f64) -> f64` — Convert meters per second to miles per hour: mph = m/s × 2.23694
+- `pub fn mph_to_mps(mph: f64) -> f64` — Convert miles per hour to meters per second: m/s = mph / 2.23694
+- `pub fn mps_to_knots(mps: f64) -> f64` — Convert meters per second to knots: kt = m/s × 1.94384
+- `pub fn knots_to_mps(kt: f64) -> f64` — Convert knots to meters per second: m/s = kt / 1.94384
+- `pub fn mps_to_mach(mps: f64, speed_of_sound: f64) -> f64` — Convert meters per second to Mach number: M = v / v_sound
+- `pub fn mach_to_mps(mach: f64, speed_of_sound: f64) -> f64` — Convert Mach number to meters per second: v = M × v_sound
+- `pub fn watts_to_horsepower(w: f64) -> f64` — Convert watts to mechanical horsepower: hp = W / 745.7
+- `pub fn horsepower_to_watts(hp: f64) -> f64` — Convert mechanical horsepower to watts: W = hp × 745.7
+- `pub fn watts_to_btu_per_hour(w: f64) -> f64` — Convert watts to BTU per hour: BTU/h = W / 0.293071
+- `pub fn btu_per_hour_to_watts(btu_hr: f64) -> f64` — Convert BTU per hour to watts: W = BTU/h × 0.293071
+- `pub fn watts_to_tons_refrigeration(w: f64) -> f64` — Convert watts to tons of refrigeration: TR = W / 3516.85
+- `pub fn tons_refrigeration_to_watts(tons: f64) -> f64` — Convert tons of refrigeration to watts: W = TR × 3516.85
+- `pub fn watts_to_kcal_per_hour(w: f64) -> f64` — Convert watts to kilocalories per hour: kcal/h = W / 1.163
+- `pub fn kcal_per_hour_to_watts(kcal_hr: f64) -> f64` — Convert kilocalories per hour to watts: W = kcal/h × 1.163
+- `pub fn kilowatts_to_watts(kw: f64) -> f64` — Convert kilowatts to watts: W = kW × 10³
+- `pub fn watts_to_kilowatts(w: f64) -> f64` — Convert watts to kilowatts: kW = W × 10⁻³
+- `pub fn megawatts_to_watts(mw: f64) -> f64` — Convert megawatts to watts: W = MW × 10⁶
+- `pub fn watts_to_megawatts(w: f64) -> f64` — Convert watts to megawatts: MW = W × 10⁻⁶
+- `pub fn watt_hours_to_joules(wh: f64) -> f64` — Convert watt-hours to joules: J = Wh × 3600
+- `pub fn joules_to_watt_hours(j: f64) -> f64` — Convert joules to watt-hours: Wh = J / 3600
+- `pub fn amp_hours_to_coulombs(ah: f64) -> f64` — Convert ampere-hours to coulombs: C = Ah × 3600
+- `pub fn coulombs_to_amp_hours(c: f64) -> f64` — Convert coulombs to ampere-hours: Ah = C / 3600
+- `pub fn kg_tnt_to_joules(kg: f64) -> f64` — Convert kg of TNT equivalent to joules: J = kg × 4.184×10⁶
+- `pub fn joules_to_kg_tnt(j: f64) -> f64` — Convert joules to kg of TNT equivalent: kg = J / 4.184×10⁶
+- `pub fn kg_coal_to_joules(kg: f64) -> f64` — Convert kg of coal equivalent to joules: J = kg × 2.9×10⁷
+- `pub fn joules_to_kg_coal(j: f64) -> f64` — Convert joules to kg of coal equivalent: kg = J / 2.9×10⁷
+- `pub fn kg_oil_to_joules(kg: f64) -> f64` — Convert kg of oil equivalent to joules: J = kg × 4.187×10⁷
+- `pub fn joules_to_kg_oil(j: f64) -> f64` — Convert joules to kg of oil equivalent: kg = J / 4.187×10⁷
+- `pub fn kg_hydrogen_to_joules(kg: f64) -> f64` — Convert kg of hydrogen to joules: J = kg × 1.42×10⁸
+- `pub fn joules_to_kg_hydrogen(j: f64) -> f64` — Convert joules to kg of hydrogen equivalent: kg = J / 1.42×10⁸
+- `pub fn liters_gasoline_to_joules(liters: f64) -> f64` — Convert liters of gasoline to joules: J = L × 3.4×10⁷
+- `pub fn joules_to_liters_gasoline(j: f64) -> f64` — Convert joules to liters of gasoline equivalent: L = J / 3.4×10⁷
+
+### `color_science`
+
+- `pub fn wavelength_to_rgb(wavelength_nm: f64) -> (f64, f64, f64)` — Convert a visible light wavelength (380-780 nm) to linear RGB in [0, 1].
+- `pub fn blackbody_to_rgb(temperature_k: f64) -> (f64, f64, f64)` — Convert a blackbody temperature (1000-40000 K) to linear RGB in [0, 1].
+- `pub fn rgb_to_hsv(r: f64, g: f64, b: f64) -> (f64, f64, f64)` — Convert linear RGB [0,1] to HSV. H in [0,360), S and V in [0,1].
+- `pub fn hsv_to_rgb(h: f64, s: f64, v: f64) -> (f64, f64, f64)` — Convert HSV to linear RGB. H in [0,360), S and V in [0,1].
+- `pub fn rgb_to_hsl(r: f64, g: f64, b: f64) -> (f64, f64, f64)` — Convert linear RGB [0,1] to HSL. H in [0,360), S and L in [0,1].
+- `pub fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (f64, f64, f64)` — Convert HSL to linear RGB. H in [0,360), S and L in [0,1].
+- `pub fn linear_to_srgb(c: f64) -> f64` — Apply sRGB gamma correction to a linear channel value.
+- `pub fn srgb_to_linear(c: f64) -> f64` — Convert an sRGB gamma-encoded channel value back to linear.
+- `pub fn rgb_to_xyz(r: f64, g: f64, b: f64) -> (f64, f64, f64)` — Convert linear sRGB to CIE XYZ (D65 illuminant).
+- `pub fn xyz_to_rgb(x: f64, y: f64, z: f64) -> (f64, f64, f64)` — Convert CIE XYZ (D65 illuminant) to linear sRGB.
+- `pub fn correlated_color_temperature(x: f64, y: f64) -> f64` — Compute correlated color temperature from CIE xy chromaticity using
+- `pub fn color_difference_euclidean( r1: f64, g1: f64, b1: f64, r2: f64, g2: f64, b2: f64, ) -> f64` — Euclidean color difference in RGB space.
+- `pub fn luminance(r: f64, g: f64, b: f64) -> f64` — Relative luminance per ITU-R BT.709.
+- `pub fn contrast_ratio(l1: f64, l2: f64) -> f64` — WCAG contrast ratio between two relative luminance values.
+
+### `control_systems` — structs: PidController
+
+- `pub fn new(kp: f64, ki: f64, kd: f64, output_min: f64, output_max: f64) -> Self` — Create a new PID controller with gains Kp, Ki, Kd and output clamping bounds.
+- `pub fn update(&mut self, setpoint: f64, measured: f64, dt: f64) -> f64` — Compute PID output with anti-windup: u = Kp·e + Ki·∫e·dt + Kd·de/dt
+- `pub fn reset(&mut self)` — Reset the integral accumulator and previous error to zero.
+- `pub fn first_order_step_response(gain: f64, tau: f64, t: f64) -> f64` — First-order step response: y(t) = K(1 - e^(-t/τ))
+- `pub fn first_order_impulse_response(gain: f64, tau: f64, t: f64) -> f64` — First-order impulse response: h(t) = (K/τ)·e^(-t/τ)
+- `pub fn second_order_step_response(gain: f64, omega_n: f64, zeta: f64, t: f64) -> f64` — Second-order step response for underdamped, critically damped, and overdamped systems.
+- `pub fn second_order_natural_frequency(k: f64, m: f64) -> f64` — Natural frequency of a second-order system: ωn = √(k/m)
+- `pub fn second_order_damping_ratio(c: f64, k: f64, m: f64) -> f64` — Damping ratio of a second-order system: ζ = c/(2√(km))
+- `pub fn rise_time_first_order(tau: f64) -> f64` — Rise time of a first-order system (10% to 90%): tr = 2.2τ
+- `pub fn settling_time_first_order(tau: f64) -> f64` — Settling time of a first-order system (2% criterion): ts = 4τ
+- `pub fn settling_time_second_order(zeta: f64, omega_n: f64) -> f64` — Settling time of a second-order system (2% criterion): ts = 4/(ζωn)
+- `pub fn overshoot_percent(zeta: f64) -> f64` — Peak overshoot percentage: Mp = 100·exp(-πζ/√(1-ζ²))
+- `pub fn bandwidth_first_order(tau: f64) -> f64` — Bandwidth of a first-order system: ωb = 1/τ
+- `pub fn gain_margin_db(open_loop_gain_at_phase_crossover: f64) -> f64` — Gain margin in dB: GM = -20·log₁₀(|G(jω)|) at the phase crossover frequency
+- `pub fn phase_margin(phase_at_gain_crossover: f64) -> f64` — Phase margin in degrees: PM = 180° + φ(ωgc)
+- `pub fn steady_state_error_type0(gain: f64) -> f64` — Steady-state error for a type-0 system with step input: ess = 1/(1 + K)
+- `pub fn steady_state_error_type1(gain: f64) -> f64` — Steady-state error for a type-1 system with ramp input: ess = 1/K
+- `pub fn is_stable_first_order(tau: f64) -> bool` — Check stability of a first-order system: stable when τ > 0.
+- `pub fn is_stable_second_order(zeta: f64, omega_n: f64) -> bool` — Check stability of a second-order system: stable when ζ > 0 and ωn > 0.
+- `pub fn routh_criterion_2nd(a0: f64, a1: f64, a2: f64) -> bool` — Routh stability criterion for a 2nd-order polynomial: stable when all coefficients > 0.
+
+### `atmosphere`
+
+- `pub fn wind_chill(temperature_c: f64, wind_speed_kmh: f64) -> f64` — Environment Canada / NWS wind chill formula.
+- `pub fn beaufort_to_speed(beaufort: u32) -> f64` — Convert Beaufort scale number to approximate wind speed in m/s.
+- `pub fn speed_to_beaufort(speed_ms: f64) -> u32` — Convert wind speed in m/s to Beaufort scale number (clamped 0–12).
+- `pub fn wind_shear(v_top: f64, v_bottom: f64, height_diff: f64) -> f64` — Vertical wind shear: dv/dz = (v_top - v_bottom) / Δz.
+- `pub fn wind_power_density(density: f64, velocity: f64) -> f64` — Wind power density: P/A = ½ρv³ (W/m²).
+- `pub fn coriolis_parameter(latitude_rad: f64) -> f64` — Coriolis parameter: f = 2Ω sin(φ).
+- `pub fn coriolis_acceleration(velocity: f64, latitude_rad: f64) -> f64` — Coriolis acceleration: a = 2Ωv sin(φ).
+- `pub fn barometric_pressure( p0: f64, molar_mass: f64, g: f64, height: f64, temperature: f64,` — Barometric pressure at a given height using the hypsometric equation.
+- `pub fn dry_adiabatic_lapse_rate(g: f64, cp: f64) -> f64` — Dry adiabatic lapse rate: Γ = g / cp (K/m).
+- `pub fn temperature_at_altitude(t0: f64, lapse_rate: f64, altitude: f64) -> f64` — Temperature at altitude: T = T₀ - Γ × h.
+- `pub fn pressure_altitude(p0: f64, pressure: f64, lapse_rate: f64, t0: f64) -> f64` — Pressure altitude using the standard atmosphere simplification:
+- `pub fn density_altitude( pressure_alt: f64, temperature_c: f64, standard_temp_c: f64, ) -> f64` — Density altitude from pressure altitude and temperature deviation:
+- `pub fn scale_height(temperature: f64, molar_mass: f64, g: f64) -> f64` — Scale height: H = RT / (Mg).
+- `pub fn dew_point(temperature_c: f64, relative_humidity: f64) -> f64` — Dew point via the Magnus formula.
+- `pub fn relative_humidity(temperature_c: f64, dew_point_c: f64) -> f64` — Relative humidity from temperature and dew point (returns fractional 0.0–1.0).
+- `pub fn heat_index(temperature_c: f64, relative_humidity: f64) -> f64` — Heat index via the Rothfusz regression (simplified).
+- `pub fn absolute_humidity(relative_humidity: f64, temperature_c: f64) -> f64` — Absolute humidity in g/m³.
