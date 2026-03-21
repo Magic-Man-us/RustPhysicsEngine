@@ -4,7 +4,6 @@ use crate::math::constants::PI;
 use crate::math::Vec3;
 
 const SLERP_DOT_THRESHOLD: f64 = 0.9995;
-const UNIT_QUATERNION_DEFAULT_TOLERANCE: f64 = 1e-9;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Quaternion {
@@ -15,14 +14,17 @@ pub struct Quaternion {
 }
 
 impl Quaternion {
+    /// Create a quaternion from components (w, x, y, z).
     pub fn new(w: f64, x: f64, y: f64, z: f64) -> Self {
         Self { w, x, y, z }
     }
 
+    /// Identity quaternion representing no rotation: (1, 0, 0, 0).
     pub fn identity() -> Self {
         Self { w: 1.0, x: 0.0, y: 0.0, z: 0.0 }
     }
 
+    /// Create a rotation quaternion from an axis and angle: q = (cos(θ/2), sin(θ/2)·axis).
     pub fn from_axis_angle(axis: Vec3, angle: f64) -> Self {
         let half = angle * 0.5;
         let s = half.sin();
@@ -49,10 +51,12 @@ impl Quaternion {
         }
     }
 
+    /// Quaternion norm: |q| = √(w² + x² + y² + z²)
     pub fn norm(&self) -> f64 {
         (self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    /// Return a unit quaternion (normalized to norm 1).
     pub fn normalize(&self) -> Self {
         let n = self.norm();
         if n == 0.0 {
@@ -67,6 +71,7 @@ impl Quaternion {
         }
     }
 
+    /// Quaternion conjugate: q* = (w, -x, -y, -z).
     pub fn conjugate(&self) -> Self {
         Self {
             w: self.w,
@@ -76,6 +81,7 @@ impl Quaternion {
         }
     }
 
+    /// Quaternion inverse: q⁻¹ = q*/|q|².
     pub fn inverse(&self) -> Self {
         let norm_sq = self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z;
         let inv = 1.0 / norm_sq;
@@ -87,16 +93,19 @@ impl Quaternion {
         }
     }
 
+    /// Dot product of two quaternions: q₁·q₂ = w₁w₂ + x₁x₂ + y₁y₂ + z₁z₂
     pub fn dot(&self, other: &Self) -> f64 {
         self.w * other.w + self.x * other.x + self.y * other.y + self.z * other.z
     }
 
+    /// Rotate a vector by this quaternion: v' = q·v·q*
     pub fn rotate_vec(&self, v: Vec3) -> Vec3 {
         let qv = Quaternion::new(0.0, v.x, v.y, v.z);
         let rotated = *self * qv * self.conjugate();
         Vec3::new(rotated.x, rotated.y, rotated.z)
     }
 
+    /// Convert to a 3x3 rotation matrix.
     pub fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
         let (w, x, y, z) = (self.w, self.x, self.y, self.z);
         let (xx, yy, zz) = (x * x, y * y, z * z);
@@ -110,6 +119,7 @@ impl Quaternion {
         ]
     }
 
+    /// Extract axis and angle from this rotation quaternion.
     pub fn to_axis_angle(&self) -> (Vec3, f64) {
         let n = self.normalize();
         let angle = 2.0 * n.w.clamp(-1.0, 1.0).acos();
@@ -143,11 +153,13 @@ impl Quaternion {
         (roll, pitch, yaw)
     }
 
+    /// Angle between two quaternion rotations: θ = 2·arccos(|q₁·q₂|)
     pub fn angle_between(&self, other: &Self) -> f64 {
         let d = self.dot(other).abs().clamp(0.0, 1.0);
         2.0 * d.acos()
     }
 
+    /// Check if this quaternion has unit norm within the given tolerance.
     pub fn is_unit(&self, tolerance: f64) -> bool {
         (self.norm() - 1.0).abs() <= tolerance
     }
@@ -214,6 +226,7 @@ impl Neg for Quaternion {
     }
 }
 
+/// Spherical linear interpolation between two quaternions at parameter t in [0, 1].
 pub fn slerp(q1: &Quaternion, q2: &Quaternion, t: f64) -> Quaternion {
     let mut dot = q1.dot(q2);
 
@@ -237,6 +250,7 @@ pub fn slerp(q1: &Quaternion, q2: &Quaternion, t: f64) -> Quaternion {
     *q1 * a + q2_adj * b
 }
 
+/// Normalized linear interpolation between two quaternions (cheaper than slerp).
 pub fn nlerp(q1: &Quaternion, q2: &Quaternion, t: f64) -> Quaternion {
     let mut q2_adj = *q2;
     if q1.dot(q2) < 0.0 {
@@ -248,6 +262,8 @@ pub fn nlerp(q1: &Quaternion, q2: &Quaternion, t: f64) -> Quaternion {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const UNIT_QUATERNION_DEFAULT_TOLERANCE: f64 = 1e-9;
 
     fn approx(a: f64, b: f64) -> bool {
         (a - b).abs() < 1e-6
@@ -360,5 +376,132 @@ mod tests {
     fn angle_between_same_is_zero() {
         let q = Quaternion::from_axis_angle(Vec3::new(1.0, 0.0, 0.0), 1.0);
         assert!(approx(q.angle_between(&q), 0.0));
+    }
+
+    #[test]
+    fn dot_identity_with_itself() {
+        let q = Quaternion::identity();
+        assert!(approx(q.dot(&q), 1.0));
+    }
+
+    #[test]
+    fn dot_orthogonal_quaternions() {
+        let q1 = Quaternion::new(1.0, 0.0, 0.0, 0.0);
+        let q2 = Quaternion::new(0.0, 1.0, 0.0, 0.0);
+        assert!(approx(q1.dot(&q2), 0.0));
+    }
+
+    #[test]
+    fn norm_identity() {
+        assert!(approx(Quaternion::identity().norm(), 1.0));
+    }
+
+    #[test]
+    fn norm_scaled() {
+        let q = Quaternion::new(3.0, 0.0, 4.0, 0.0);
+        assert!(approx(q.norm(), 5.0));
+    }
+
+    #[test]
+    fn normalize_returns_unit() {
+        let q = Quaternion::new(1.0, 2.0, 3.0, 4.0);
+        let n = q.normalize();
+        assert!(approx(n.norm(), 1.0));
+    }
+
+    #[test]
+    fn normalize_preserves_direction() {
+        let q = Quaternion::new(0.0, 0.0, 0.0, 5.0);
+        let n = q.normalize();
+        assert!(approx(n.z, 1.0));
+        assert!(approx(n.w, 0.0));
+    }
+
+    #[test]
+    fn to_axis_angle_roundtrip() {
+        let axis = Vec3::new(0.0, 1.0, 0.0);
+        let angle = 1.5;
+        let q = Quaternion::from_axis_angle(axis, angle);
+        let (recovered_axis, recovered_angle) = q.to_axis_angle();
+        assert!(approx(recovered_angle, angle));
+        assert!(vec3_approx(recovered_axis, axis));
+    }
+
+    #[test]
+    fn to_axis_angle_identity_gives_zero_angle() {
+        let q = Quaternion::identity();
+        let (_axis, angle) = q.to_axis_angle();
+        assert!(approx(angle, 0.0));
+    }
+
+    #[test]
+    fn normalize_zero_quaternion_returns_identity() {
+        let zero = Quaternion::new(0.0, 0.0, 0.0, 0.0);
+        let result = zero.normalize();
+        assert!(quat_approx(result, Quaternion::identity()));
+    }
+
+    #[test]
+    fn to_euler_gimbal_lock_positive_pitch() {
+        // sinp >= 1.0 triggers the copysign branch.
+        // Pitch = +PI/2 means w*y - z*x = 0.5, achieved by a pure Y-rotation of PI/2.
+        let q = Quaternion::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), PI / 2.0);
+        let (_roll, pitch, _yaw) = q.to_euler();
+        assert!(approx(pitch, PI / 2.0));
+    }
+
+    #[test]
+    fn to_euler_gimbal_lock_negative_pitch() {
+        let q = Quaternion::from_axis_angle(Vec3::new(0.0, 1.0, 0.0), -PI / 2.0);
+        let (_roll, pitch, _yaw) = q.to_euler();
+        assert!(approx(pitch, -PI / 2.0));
+    }
+
+    #[test]
+    fn sub_quaternions() {
+        let a = Quaternion::new(4.0, 3.0, 2.0, 1.0);
+        let b = Quaternion::new(1.0, 1.0, 1.0, 1.0);
+        let result = a - b;
+        assert!(quat_approx(result, Quaternion::new(3.0, 2.0, 1.0, 0.0)));
+    }
+
+    #[test]
+    fn neg_quaternion() {
+        let q = Quaternion::new(1.0, -2.0, 3.0, -4.0);
+        let result = -q;
+        assert!(quat_approx(result, Quaternion::new(-1.0, 2.0, -3.0, 4.0)));
+    }
+
+    #[test]
+    fn slerp_negative_dot_takes_shorter_arc() {
+        // q and -q represent the same rotation. Use two quaternions whose dot is negative
+        // to exercise the negation branch in slerp.
+        let q1 = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), 0.1);
+        let q2 = -Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), 0.3);
+        // q1 dot q2 should be negative since we negated q2
+        assert!(q1.dot(&q2) < 0.0);
+        let mid = slerp(&q1, &q2, 0.5);
+        // The midpoint should be a unit quaternion near the expected interpolation
+        assert!(mid.is_unit(1e-6));
+    }
+
+    #[test]
+    fn slerp_nearly_identical_quaternions_uses_nlerp() {
+        // Two quaternions very close together (dot > SLERP_DOT_THRESHOLD) trigger the nlerp fallback.
+        let q1 = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), 0.0);
+        let q2 = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), 0.001);
+        let dot = q1.dot(&q2);
+        assert!(dot > SLERP_DOT_THRESHOLD);
+        let mid = slerp(&q1, &q2, 0.5);
+        assert!(mid.is_unit(1e-6));
+    }
+
+    #[test]
+    fn nlerp_negative_dot_takes_shorter_arc() {
+        let q1 = Quaternion::from_axis_angle(Vec3::new(1.0, 0.0, 0.0), 0.2);
+        let q2 = -Quaternion::from_axis_angle(Vec3::new(1.0, 0.0, 0.0), 0.4);
+        assert!(q1.dot(&q2) < 0.0);
+        let mid = nlerp(&q1, &q2, 0.5);
+        assert!(mid.is_unit(1e-6));
     }
 }

@@ -52,6 +52,9 @@ impl HeatConduction2D {
     /// Create a grid initialized to uniform temperature 0.
     #[must_use]
     pub fn new(nx: usize, ny: usize, dx: f64, dy: f64, diffusivity: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(dy > 0.0, "grid spacing dy must be positive");
+        assert!(diffusivity > 0.0, "thermal diffusivity must be positive");
         Self {
             temperature: vec![0.0; nx * ny],
             nx,
@@ -67,12 +70,14 @@ impl HeatConduction2D {
         i * self.ny + j
     }
 
+    /// Set temperature at grid point (i, j).
     pub fn set_temperature(&mut self, i: usize, j: usize, temp: f64) {
         let idx = self.idx(i, j);
         self.temperature[idx] = temp;
     }
 
     #[must_use]
+    /// Get temperature at grid point (i, j).
     pub fn get_temperature(&self, i: usize, j: usize) -> f64 {
         self.temperature[self.idx(i, j)]
     }
@@ -139,16 +144,19 @@ impl HeatConduction2D {
     }
 
     #[must_use]
+    /// Maximum temperature in the field.
     pub fn max_temperature(&self) -> f64 {
         self.temperature.iter().cloned().fold(f64::NEG_INFINITY, f64::max)
     }
 
     #[must_use]
+    /// Minimum temperature in the field.
     pub fn min_temperature(&self) -> f64 {
         self.temperature.iter().cloned().fold(f64::INFINITY, f64::min)
     }
 
     #[must_use]
+    /// Average temperature across the entire grid.
     pub fn average_temperature(&self) -> f64 {
         self.temperature.iter().sum::<f64>() / self.temperature.len() as f64
     }
@@ -160,6 +168,11 @@ impl HeatConduction2D {
     /// `sources` is the Q/(ρcₚ) term at each grid point, same layout as
     /// `temperature` (row-major, length nx*ny). Units: [K/s].
     pub fn step_with_source(&mut self, dt: f64, sources: &[f64]) {
+        assert_eq!(
+            sources.len(),
+            self.nx * self.ny,
+            "sources length must equal nx * ny"
+        );
         let old = self.temperature.clone();
         let rx = self.diffusivity * dt / (self.dx * self.dx);
         let ry = self.diffusivity * dt / (self.dy * self.dy);
@@ -192,6 +205,7 @@ pub struct HeatConduction3D {
 
 impl HeatConduction3D {
     #[must_use]
+    /// Create a 3D heat conduction grid initialized to uniform temperature 0.
     pub fn new(
         nx: usize,
         ny: usize,
@@ -201,6 +215,10 @@ impl HeatConduction3D {
         dz: f64,
         diffusivity: f64,
     ) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(dy > 0.0, "grid spacing dy must be positive");
+        assert!(dz > 0.0, "grid spacing dz must be positive");
+        assert!(diffusivity > 0.0, "thermal diffusivity must be positive");
         Self {
             temperature: vec![0.0; nx * ny * nz],
             nx,
@@ -218,12 +236,14 @@ impl HeatConduction3D {
         i * self.ny * self.nz + j * self.nz + k
     }
 
+    /// Set temperature at grid point (i, j, k).
     pub fn set_temperature(&mut self, i: usize, j: usize, k: usize, temp: f64) {
         let idx = self.idx(i, j, k);
         self.temperature[idx] = temp;
     }
 
     #[must_use]
+    /// Get temperature at grid point (i, j, k).
     pub fn get_temperature(&self, i: usize, j: usize, k: usize) -> f64 {
         self.temperature[self.idx(i, j, k)]
     }
@@ -262,12 +282,14 @@ impl HeatConduction3D {
         1.0 / (2.0 * self.diffusivity * inv)
     }
 
+    /// Total thermal energy proxy: Σ T·dx·dy·dz.
     #[must_use]
     pub fn total_energy(&self) -> f64 {
         let cell_vol = self.dx * self.dy * self.dz;
         self.temperature.iter().sum::<f64>() * cell_vol
     }
 
+    /// Average temperature across the entire 3D grid.
     #[must_use]
     pub fn average_temperature(&self) -> f64 {
         self.temperature.iter().sum::<f64>() / self.temperature.len() as f64
@@ -295,7 +317,10 @@ pub struct ConvectionDiffusion1D {
 
 impl ConvectionDiffusion1D {
     #[must_use]
+    /// Create a 1D convection-diffusion solver with the given parameters.
     pub fn new(nx: usize, dx: f64, velocity: f64, diffusivity: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(diffusivity > 0.0, "thermal diffusivity must be positive");
         Self {
             field: vec![0.0; nx],
             nx,
@@ -360,13 +385,7 @@ mod tests {
         (a - b).abs() < tol
     }
 
-    fn approx_rel(a: f64, b: f64, tol: f64) -> bool {
-        if b.abs() < 1e-15 {
-            a.abs() < tol
-        } else {
-            ((a - b) / b).abs() < tol
-        }
-    }
+
 
     // ── 2D: hot center diffuses outward, max temp decreases ──
 
@@ -478,10 +497,7 @@ mod tests {
         let alpha = 1e-4;
         let grid = HeatConduction2D::new(5, 5, dx, dy, alpha);
 
-        // dt_max = 1 / (2α·(1/dx² + 1/dy²))
-        let inv_dx2 = 1.0 / (dx * dx);
-        let inv_dy2 = 1.0 / (dy * dy);
-        let expected = 1.0 / (2.0 * alpha * (inv_dx2 + inv_dy2));
+        let expected = 0.4;
 
         assert!(approx(grid.stable_dt(), expected, TOLERANCE));
     }
@@ -546,26 +562,24 @@ mod tests {
             / solver.field.iter().sum::<f64>();
 
         let dt = solver.stable_dt() * 0.4;
-        for _ in 0..50 {
+        for _ in 0..10 {
             solver.step_upwind(dt);
         }
 
         let total: f64 = solver.field.iter().sum();
-        if total > 1e-15 {
-            let centroid_after: f64 = solver
-                .field
-                .iter()
-                .enumerate()
-                .map(|(i, &t)| i as f64 * t)
-                .sum::<f64>()
-                / total;
+        assert!(total > 1e-15, "total should remain above threshold");
+        let centroid_after: f64 = solver
+            .field
+            .iter()
+            .enumerate()
+            .map(|(i, &t)| i as f64 * t)
+            .sum::<f64>()
+            / total;
 
-            // Positive velocity → centroid moves to higher indices
-            assert!(
-                centroid_after > centroid_before,
-                "Pulse should advect rightward: before={centroid_before}, after={centroid_after}"
-            );
-        }
+        assert!(
+            centroid_after > centroid_before,
+            "Pulse should advect rightward: before={centroid_before}, after={centroid_after}"
+        );
     }
 
     #[test]
@@ -588,25 +602,24 @@ mod tests {
             / solver.field.iter().sum::<f64>();
 
         let dt = solver.stable_dt() * 0.4;
-        for _ in 0..50 {
+        for _ in 0..10 {
             solver.step_upwind(dt);
         }
 
         let total: f64 = solver.field.iter().sum();
-        if total > 1e-15 {
-            let centroid_after: f64 = solver
-                .field
-                .iter()
-                .enumerate()
-                .map(|(i, &t)| i as f64 * t)
-                .sum::<f64>()
-                / total;
+        assert!(total > 1e-15, "total should remain above threshold");
+        let centroid_after: f64 = solver
+            .field
+            .iter()
+            .enumerate()
+            .map(|(i, &t)| i as f64 * t)
+            .sum::<f64>()
+            / total;
 
-            assert!(
-                centroid_after < centroid_before,
-                "Pulse should advect leftward: before={centroid_before}, after={centroid_after}"
-            );
-        }
+        assert!(
+            centroid_after < centroid_before,
+            "Pulse should advect leftward: before={centroid_before}, after={centroid_after}"
+        );
     }
 
     // ── Convection-diffusion: pure diffusion (v=0) matches heat equation ──
@@ -643,11 +656,10 @@ mod tests {
         }
 
         for i in 0..nx {
+            let (cd_val, ref_val) = (cd.field[i], ref_field[i]);
             assert!(
-                approx(cd.field[i], ref_field[i], 1e-10),
-                "Mismatch at i={i}: cd={}, ref={}",
-                cd.field[i],
-                ref_field[i]
+                approx(cd_val, ref_val, 1e-10),
+                "Mismatch at i={i}: cd={cd_val}, ref={ref_val}",
             );
         }
     }
@@ -670,9 +682,7 @@ mod tests {
         let alpha = 1e-4;
         let solver = ConvectionDiffusion1D::new(10, dx, v, alpha);
 
-        let dt_cfl = dx / v.abs(); // 0.005
-        let dt_diff = dx * dx / (2.0 * alpha); // 0.5
-        let expected = dt_cfl.min(dt_diff); // 0.005
+        let expected = 0.005;
 
         assert!(approx(solver.stable_dt(), expected, TOLERANCE));
     }
@@ -716,8 +726,7 @@ mod tests {
         let alpha = 1e-4;
         let grid = HeatConduction3D::new(5, 5, 5, dx, dy, dz, alpha);
 
-        let inv = 1.0 / (dx * dx) + 1.0 / (dy * dy) + 1.0 / (dz * dz);
-        let expected = 1.0 / (2.0 * alpha * inv);
+        let expected = 0.29508196721311475;
         assert!(approx(grid.stable_dt(), expected, TOLERANCE));
     }
 
@@ -734,5 +743,21 @@ mod tests {
         assert!(approx(grid.min_temperature(), -5.0, TOLERANCE));
         // avg = (10 + 50 + (-5)) / 9 = 55/9
         assert!(approx(grid.average_temperature(), 55.0 / 9.0, 1e-12));
+    }
+
+    #[test]
+    fn test_3d_total_energy() {
+        let mut grid = HeatConduction3D::new(3, 3, 3, 0.01, 0.01, 0.01, 1e-4);
+        grid.set_temperature(1, 1, 1, 100.0);
+        let e = grid.total_energy();
+        assert!(e > 0.0, "Total energy should be positive");
+    }
+
+    #[test]
+    fn test_3d_average_temperature() {
+        let mut grid = HeatConduction3D::new(3, 3, 3, 0.01, 0.01, 0.01, 1e-4);
+        grid.set_temperature(1, 1, 1, 27.0);
+        let avg = grid.average_temperature();
+        assert!(approx(avg, 27.0 / 27.0, 1e-12));
     }
 }

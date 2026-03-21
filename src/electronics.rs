@@ -36,6 +36,7 @@ pub fn conductivity(carrier_density: f64, mobility: f64, charge: f64) -> f64 {
 /// Resistivity: rho = 1 / sigma
 #[must_use]
 pub fn resistivity(conductivity: f64) -> f64 {
+    assert!(conductivity > 0.0, "conductivity must be positive");
     1.0 / conductivity
 }
 
@@ -54,6 +55,7 @@ pub fn diffusion_coefficient_einstein(mobility: f64, temperature: f64) -> f64 {
 /// Built-in potential of a p-n junction: Vbi = (kT/q) * ln(Na * Nd / ni^2)
 #[must_use]
 pub fn built_in_potential(na: f64, nd: f64, ni: f64, temperature: f64) -> f64 {
+    assert!(ni > 0.0, "intrinsic carrier concentration must be positive");
     thermal_voltage(temperature) * (na * nd / (ni * ni)).ln()
 }
 
@@ -66,6 +68,9 @@ pub fn depletion_width(
     nd: f64,
     charge: f64,
 ) -> f64 {
+    assert!(na > 0.0, "acceptor concentration must be positive");
+    assert!(nd > 0.0, "donor concentration must be positive");
+    assert!(charge > 0.0, "charge must be positive");
     (2.0 * epsilon * vbi * (1.0 / na + 1.0 / nd) / charge).sqrt()
 }
 
@@ -76,6 +81,8 @@ pub fn depletion_width(
 /// Shockley diode equation: I = Is * (exp(V / (n * Vt)) - 1)
 #[must_use]
 pub fn diode_current(is: f64, voltage: f64, temperature: f64, n: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
+    assert!(n > 0.0, "ideality factor must be positive");
     let vt = thermal_voltage(temperature);
     is * ((voltage / (n * vt)).exp() - 1.0)
 }
@@ -92,6 +99,8 @@ pub fn diode_reverse_saturation(
     lp: f64,
     charge: f64,
 ) -> f64 {
+    assert!(ln > 0.0, "electron diffusion length must be positive");
+    assert!(lp > 0.0, "hole diffusion length must be positive");
     charge * area * ni * ni * (dn / ln + dp / lp)
 }
 
@@ -111,6 +120,7 @@ pub fn mosfet_drain_current_linear(
     vth: f64,
     vds: f64,
 ) -> f64 {
+    assert!(l > 0.0, "channel length must be positive");
     mu * cox * (w / l) * ((vgs - vth) * vds - vds * vds / 2.0)
 }
 
@@ -125,6 +135,7 @@ pub fn mosfet_drain_current_saturation(
     vgs: f64,
     vth: f64,
 ) -> f64 {
+    assert!(l > 0.0, "channel length must be positive");
     let vov = vgs - vth;
     (mu * cox / 2.0) * (w / l) * vov * vov
 }
@@ -152,6 +163,7 @@ pub fn open_circuit_voltage(
     dark_current: f64,
     temperature: f64,
 ) -> f64 {
+    assert!(dark_current > 0.0, "dark current must be positive");
     let vt = thermal_voltage(temperature);
     vt * (photocurrent / dark_current + 1.0).ln()
 }
@@ -159,12 +171,15 @@ pub fn open_circuit_voltage(
 /// Fill factor: FF = Pmax / (Voc * Isc)
 #[must_use]
 pub fn fill_factor(voc: f64, isc: f64, pmax: f64) -> f64 {
+    assert!(voc > 0.0, "open-circuit voltage must be positive");
+    assert!(isc > 0.0, "short-circuit current must be positive");
     pmax / (voc * isc)
 }
 
 /// Solar cell efficiency: eta = Pmax / Pin
 #[must_use]
 pub fn solar_cell_efficiency(pmax: f64, incident_power: f64) -> f64 {
+    assert!(incident_power > 0.0, "incident power must be positive");
     pmax / incident_power
 }
 
@@ -191,7 +206,7 @@ mod tests {
     #[test]
     fn test_thermal_voltage_at_300k() {
         let vt = thermal_voltage(300.0);
-        let expected = K_B * 300.0 / E_CHARGE;
+        let expected = 0.025851999786435536;
         assert!(approx(vt, expected), "Vt={vt}, expected={expected}");
     }
 
@@ -248,7 +263,7 @@ mod tests {
         let mu = 0.14;
         let t = 300.0;
         let d = diffusion_coefficient_einstein(mu, t);
-        let expected = mu * K_B * t / E_CHARGE;
+        let expected = 3.619279970100976e-3;
         assert!(approx(d, expected));
     }
 
@@ -317,7 +332,7 @@ mod tests {
         let lp = 3e-6;
         let q = E_CHARGE;
         let is = diode_reverse_saturation(area, ni, dn, dp, ln, lp, q);
-        let expected = q * area * ni * ni * (dn / ln + dp / lp);
+        let expected = 3.96538716915e8;
         assert!(approx(is, expected));
         assert!(is > 0.0);
     }
@@ -334,7 +349,7 @@ mod tests {
         let vth = 0.7;
         let vds = 0.1;
         let id = mosfet_drain_current_linear(mu, cox, w, l, vgs, vth, vds);
-        let expected = mu * cox * (w / l) * ((vgs - vth) * vds - vds * vds / 2.0);
+        let expected = 1.725e-4;
         assert!(approx(id, expected));
         assert!(id > 0.0);
     }
@@ -348,8 +363,7 @@ mod tests {
         let vgs = 2.0;
         let vth = 0.7;
         let id = mosfet_drain_current_saturation(mu, cox, w, l, vgs, vth);
-        let vov = vgs - vth;
-        let expected = (mu * cox / 2.0) * (w / l) * vov * vov;
+        let expected = 1.1661e-3;
         assert!(approx(id, expected));
     }
 
@@ -399,7 +413,7 @@ mod tests {
         let isc = 0.035;
         let pmax = 0.015;
         let ff = fill_factor(voc, isc, pmax);
-        let expected = pmax / (voc * isc);
+        let expected = 0.7142857142857142;
         assert!(approx(ff, expected));
         assert!(ff > 0.0 && ff < 1.0);
     }
@@ -410,5 +424,11 @@ mod tests {
         let pin = 0.1;
         let eta = solar_cell_efficiency(pmax, pin);
         assert!(approx(eta, 0.15));
+    }
+
+    #[test]
+    fn test_approx_near_zero_b() {
+        assert!(approx(0.0, 0.0));
+        assert!(!approx(1.0, 0.0));
     }
 }

@@ -2,38 +2,46 @@ use crate::math::constants::PI;
 
 // --- 2D Areas ---
 
+/// Area of a circle: A = πr²
 #[must_use]
 pub fn area_circle(radius: f64) -> f64 {
     PI * radius * radius
 }
 
+/// Area of an ellipse: A = πab
 #[must_use]
 pub fn area_ellipse(semi_major: f64, semi_minor: f64) -> f64 {
     PI * semi_major * semi_minor
 }
 
+/// Area of a triangle: A = bh/2
 #[must_use]
 pub fn area_triangle(base: f64, height: f64) -> f64 {
     base * height / 2.0
 }
 
+/// Area of a triangle via Heron's formula: A = √(s(s-a)(s-b)(s-c)) where s = (a+b+c)/2
 #[must_use]
 pub fn area_triangle_heron(a: f64, b: f64, c: f64) -> f64 {
     let s = (a + b + c) / 2.0;
     (s * (s - a) * (s - b) * (s - c)).sqrt()
 }
 
+/// Area of a regular polygon: A = n·s²/(4·tan(π/n))
 #[must_use]
 pub fn area_regular_polygon(n_sides: u32, side_length: f64) -> f64 {
+    assert!(n_sides >= 3, "polygon must have at least 3 sides");
     let n = f64::from(n_sides);
     (n * side_length * side_length) / (4.0 * (PI / n).tan())
 }
 
+/// Area of a circular sector: A = r²θ/2
 #[must_use]
 pub fn area_sector(radius: f64, angle: f64) -> f64 {
     radius * radius * angle / 2.0
 }
 
+/// Area of an annulus: A = π(R² - r²)
 #[must_use]
 pub fn area_annulus(outer_r: f64, inner_r: f64) -> f64 {
     PI * (outer_r * outer_r - inner_r * inner_r)
@@ -41,36 +49,43 @@ pub fn area_annulus(outer_r: f64, inner_r: f64) -> f64 {
 
 // --- 3D Volumes ---
 
+/// Volume of a sphere: V = 4πr³/3
 #[must_use]
 pub fn volume_sphere(radius: f64) -> f64 {
     4.0 * PI * radius * radius * radius / 3.0
 }
 
+/// Volume of a cylinder: V = πr²h
 #[must_use]
 pub fn volume_cylinder(radius: f64, height: f64) -> f64 {
     PI * radius * radius * height
 }
 
+/// Volume of a cone: V = πr²h/3
 #[must_use]
 pub fn volume_cone(radius: f64, height: f64) -> f64 {
     PI * radius * radius * height / 3.0
 }
 
+/// Volume of an ellipsoid: V = 4πabc/3
 #[must_use]
 pub fn volume_ellipsoid(a: f64, b: f64, c: f64) -> f64 {
     4.0 * PI * a * b * c / 3.0
 }
 
+/// Volume of a torus: V = 2π²Rr²
 #[must_use]
 pub fn volume_torus(major_r: f64, minor_r: f64) -> f64 {
     2.0 * PI * PI * major_r * minor_r * minor_r
 }
 
+/// Volume of a frustum: V = πh(r₁² + r₁r₂ + r₂²)/3
 #[must_use]
 pub fn volume_frustum(r1: f64, r2: f64, height: f64) -> f64 {
     PI * height * (r1 * r1 + r1 * r2 + r2 * r2) / 3.0
 }
 
+/// Volume of a capsule (cylinder + sphere): V = πr²h + 4πr³/3
 #[must_use]
 pub fn volume_capsule(radius: f64, cylinder_height: f64) -> f64 {
     PI * radius * radius * cylinder_height + 4.0 * PI * radius * radius * radius / 3.0
@@ -78,26 +93,31 @@ pub fn volume_capsule(radius: f64, cylinder_height: f64) -> f64 {
 
 // --- Surface Areas ---
 
+/// Surface area of a sphere: A = 4πr²
 #[must_use]
 pub fn surface_sphere(radius: f64) -> f64 {
     4.0 * PI * radius * radius
 }
 
+/// Total surface area of a cylinder (lateral + both caps): A = 2πr(r + h)
 #[must_use]
 pub fn surface_cylinder_total(radius: f64, height: f64) -> f64 {
     2.0 * PI * radius * (radius + height)
 }
 
+/// Lateral surface area of a cylinder: A = 2πrh
 #[must_use]
 pub fn surface_cylinder_lateral(radius: f64, height: f64) -> f64 {
     2.0 * PI * radius * height
 }
 
+/// Lateral surface area of a cone: A = πrl
 #[must_use]
 pub fn surface_cone_lateral(radius: f64, slant_height: f64) -> f64 {
     PI * radius * slant_height
 }
 
+/// Surface area of a torus: A = 4π²Rr
 #[must_use]
 pub fn surface_torus(major_r: f64, minor_r: f64) -> f64 {
     4.0 * PI * PI * major_r * minor_r
@@ -105,16 +125,19 @@ pub fn surface_torus(major_r: f64, minor_r: f64) -> f64 {
 
 // --- Solid Angles & Spherical Geometry ---
 
+/// Solid angle subtended by a cone: Ω = 2π(1 - cos(θ))
 #[must_use]
 pub fn solid_angle_cone(half_angle: f64) -> f64 {
     2.0 * PI * (1.0 - half_angle.cos())
 }
 
+/// Solid angle of a full sphere: Ω = 4π steradians
 #[must_use]
 pub fn solid_angle_full_sphere() -> f64 {
     4.0 * PI
 }
 
+/// Great-circle distance on a sphere: d = r·arccos(sin(φ₁)sin(φ₂) + cos(φ₁)cos(φ₂)cos(Δλ))
 #[must_use]
 pub fn great_circle_distance(r: f64, lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> f64 {
     let delta_lon = lon2 - lon1;
@@ -122,6 +145,7 @@ pub fn great_circle_distance(r: f64, lat1: f64, lon1: f64, lat2: f64, lon2: f64)
     r * cos_angle.clamp(-1.0, 1.0).acos()
 }
 
+/// Spherical excess of a spherical triangle: E = A + B + C - π
 #[must_use]
 pub fn spherical_excess(a: f64, b: f64, c: f64) -> f64 {
     a + b + c - PI
@@ -129,36 +153,43 @@ pub fn spherical_excess(a: f64, b: f64, c: f64) -> f64 {
 
 // --- Moments of Inertia ---
 
+/// Moment of inertia of a solid sphere: I = 2mr²/5
 #[must_use]
 pub fn moi_solid_sphere(mass: f64, radius: f64) -> f64 {
     2.0 * mass * radius * radius / 5.0
 }
 
+/// Moment of inertia of a hollow sphere (thin shell): I = 2mr²/3
 #[must_use]
 pub fn moi_hollow_sphere(mass: f64, radius: f64) -> f64 {
     2.0 * mass * radius * radius / 3.0
 }
 
+/// Moment of inertia of a solid cylinder about its axis: I = mr²/2
 #[must_use]
 pub fn moi_solid_cylinder(mass: f64, radius: f64) -> f64 {
     mass * radius * radius / 2.0
 }
 
+/// Moment of inertia of a thin rod about its center: I = mL²/12
 #[must_use]
 pub fn moi_thin_rod_center(mass: f64, length: f64) -> f64 {
     mass * length * length / 12.0
 }
 
+/// Moment of inertia of a thin rod about one end: I = mL²/3
 #[must_use]
 pub fn moi_thin_rod_end(mass: f64, length: f64) -> f64 {
     mass * length * length / 3.0
 }
 
+/// Moment of inertia of a rectangular plate about its center: I = m(w² + h²)/12
 #[must_use]
 pub fn moi_rectangular_plate(mass: f64, width: f64, height: f64) -> f64 {
     mass * (width * width + height * height) / 12.0
 }
 
+/// Parallel axis theorem: I = I_cm + md²
 #[must_use]
 pub fn parallel_axis(i_cm: f64, mass: f64, distance: f64) -> f64 {
     i_cm + mass * distance * distance
@@ -387,5 +418,11 @@ mod tests {
         let mass = 5.0;
         let radius = 3.0;
         assert!(moi_hollow_sphere(mass, radius) > moi_solid_sphere(mass, radius));
+    }
+
+    #[test]
+    fn test_approx_rel_near_zero_b() {
+        assert!(approx_rel(0.0, 0.0));
+        assert!(!approx_rel(1.0, 0.0));
     }
 }

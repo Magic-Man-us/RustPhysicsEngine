@@ -1,5 +1,6 @@
 use crate::math::Vec3;
 
+/// Computes the Hill sphere radius: r_H = d (m / 3M)^(1/3).
 pub fn hill_radius(distance: f64, body_mass: f64, primary_mass: f64) -> f64 {
     if primary_mass <= 0.0 {
         return 0.0;
@@ -7,6 +8,7 @@ pub fn hill_radius(distance: f64, body_mass: f64, primary_mass: f64) -> f64 {
     distance * (body_mass / (3.0 * primary_mass)).cbrt()
 }
 
+/// Computes all five Lagrange points (L1-L5) for a two-body system in the co-rotating frame.
 pub fn lagrange_points(
     primary_pos: Vec3,
     primary_mass: f64,
@@ -55,6 +57,7 @@ pub fn lagrange_points(
     [l1, l2, l3, l4, l5]
 }
 
+/// Computes the circular orbital velocity: v_c = √(μ/r).
 pub fn circular_velocity(mu: f64, distance: f64) -> f64 {
     if distance <= 0.0 {
         return 0.0;
@@ -62,6 +65,7 @@ pub fn circular_velocity(mu: f64, distance: f64) -> f64 {
     (mu / distance).sqrt()
 }
 
+/// Computes the ratio of current speed to escape velocity: v / v_esc.
 pub fn escape_ratio(speed: f64, escape_vel: f64) -> f64 {
     if escape_vel <= 0.0 {
         return 0.0;
@@ -127,5 +131,54 @@ mod tests {
         let v_esc = (2.0 * mu / r).sqrt();
         let v_circ = circular_velocity(mu, r);
         assert!(approx(v_esc / v_circ, 2.0_f64.sqrt(), 1e-6));
+    }
+
+    #[test]
+    fn test_escape_ratio_bound() {
+        let ratio = escape_ratio(10.0, 20.0);
+        assert!(approx(ratio, 0.5, 1e-12), "escape_ratio should be 0.5, got {ratio}");
+    }
+
+    #[test]
+    fn test_escape_ratio_at_escape() {
+        let ratio = escape_ratio(100.0, 100.0);
+        assert!(approx(ratio, 1.0, 1e-12));
+    }
+
+    #[test]
+    fn test_escape_ratio_zero_escape_vel() {
+        let ratio = escape_ratio(10.0, 0.0);
+        assert!(approx(ratio, 0.0, 1e-12), "Zero escape velocity should return 0");
+    }
+
+    #[test]
+    fn test_hill_radius_zero_primary_mass() {
+        let r = hill_radius(1.496e11, 5.972e24, 0.0);
+        assert!(approx(r, 0.0, 1e-12));
+    }
+
+    #[test]
+    fn test_lagrange_points_coincident() {
+        let points = lagrange_points(Vec3::ZERO, 1000.0, Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 1.0);
+        for p in &points {
+            assert!(approx(p.x, 0.0, 1e-12));
+            assert!(approx(p.y, 0.0, 1e-12));
+            assert!(approx(p.z, 0.0, 1e-12));
+        }
+    }
+
+    #[test]
+    fn test_lagrange_points_zero_angular_momentum() {
+        let primary = Vec3::ZERO;
+        let body = Vec3::new(10.0, 0.0, 0.0);
+        let vel = Vec3::new(1.0, 0.0, 0.0);
+        let points = lagrange_points(primary, 1000.0, body, vel, 1.0);
+        assert!(points[0].x > 0.0 && points[0].x < 10.0);
+    }
+
+    #[test]
+    fn test_circular_velocity_zero_distance() {
+        let v = circular_velocity(G * 1.989e30, 0.0);
+        assert!(approx(v, 0.0, 1e-12));
     }
 }

@@ -303,7 +303,7 @@ pub fn nelder_mead(
     for _ in 0..max_iter {
         // Sort vertices by function value
         let mut order: Vec<usize> = (0..nv).collect();
-        order.sort_by(|&a, &b| fvals[a].partial_cmp(&fvals[b]).unwrap());
+        order.sort_by(|&a, &b| fvals[a].partial_cmp(&fvals[b]).unwrap_or(std::cmp::Ordering::Equal));
 
         let sorted_simplex: Vec<Vec<f64>> = order.iter().map(|&i| simplex[i].clone()).collect();
         let sorted_fvals: Vec<f64> = order.iter().map(|&i| fvals[i]).collect();
@@ -387,7 +387,7 @@ pub fn nelder_mead(
     let best_idx = fvals
         .iter()
         .enumerate()
-        .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+        .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
         .map(|(i, _)| i)
         .unwrap_or(0);
     simplex[best_idx].clone()
@@ -423,8 +423,6 @@ pub fn simulated_annealing(
     step_size: f64,
     max_iter: usize,
 ) -> Vec<f64> {
-    let n = x0.len();
-
     // Derive seed from x0 values
     let seed: u64 = x0
         .iter()
@@ -480,6 +478,7 @@ pub fn linear_regression(x: &[f64], y: &[f64]) -> (f64, f64) {
     let sum_x2: f64 = x.iter().map(|a| a * a).sum();
 
     let denom = n * sum_x2 - sum_x * sum_x;
+    assert!(denom.abs() > f64::EPSILON, "linear_regression: x-values have zero variance");
     let slope = (n * sum_xy - sum_x * sum_y) / denom;
     let intercept = (sum_y - slope * sum_x) / n;
     (slope, intercept)
@@ -624,8 +623,9 @@ mod tests {
         let f = |x: &[f64]| x[0] * x[0] + x[1] * x[1];
         let grad = |x: &[f64]| vec![2.0 * x[0], 2.0 * x[1]];
         let result = gradient_descent(&f, &grad, &[5.0, -3.0], 0.1, 1e-8, 10_000);
-        assert!(approx(result[0], 0.0, TIGHT_TOL), "x={}", result[0]);
-        assert!(approx(result[1], 0.0, TIGHT_TOL), "y={}", result[1]);
+        let (rx, ry) = (result[0], result[1]);
+        assert!(approx(rx, 0.0, TIGHT_TOL), "x={rx}");
+        assert!(approx(ry, 0.0, TIGHT_TOL), "y={ry}");
     }
 
     #[test]
@@ -633,8 +633,9 @@ mod tests {
         let f = |x: &[f64]| x[0] * x[0] + x[1] * x[1];
         let grad = |x: &[f64]| vec![2.0 * x[0], 2.0 * x[1]];
         let result = adam(&f, &grad, &[5.0, -3.0], 0.1, 1e-6, 10_000);
-        assert!(approx(result[0], 0.0, 1e-3), "x={}", result[0]);
-        assert!(approx(result[1], 0.0, 1e-3), "y={}", result[1]);
+        let (ax, ay) = (result[0], result[1]);
+        assert!(approx(ax, 0.0, 1e-3), "x={ax}");
+        assert!(approx(ay, 0.0, 1e-3), "y={ay}");
     }
 
     // -- Derivative-free ----------------------------------------------------
@@ -644,11 +645,10 @@ mod tests {
         let rosenbrock =
             |x: &[f64]| (1.0 - x[0]).powi(2) + 100.0 * (x[1] - x[0] * x[0]).powi(2);
         let result = nelder_mead(&rosenbrock, &[-1.0, 1.0], 0.5, 1e-12, 100_000);
+        let (rx, ry) = (result[0], result[1]);
         assert!(
-            approx(result[0], 1.0, LOOSE_TOL) && approx(result[1], 1.0, LOOSE_TOL),
-            "got ({}, {})",
-            result[0],
-            result[1]
+            approx(rx, 1.0, LOOSE_TOL) && approx(ry, 1.0, LOOSE_TOL),
+            "got ({rx}, {ry})",
         );
     }
 
@@ -668,9 +668,10 @@ mod tests {
         let x: Vec<f64> = (-5..=5).map(|i| i as f64).collect();
         let y: Vec<f64> = x.iter().map(|&xi| 3.0 + 2.0 * xi + 0.5 * xi * xi).collect();
         let coeffs = polynomial_fit(&x, &y, 2);
-        assert!(approx(coeffs[0], 3.0, TIGHT_TOL), "a0={}", coeffs[0]);
-        assert!(approx(coeffs[1], 2.0, TIGHT_TOL), "a1={}", coeffs[1]);
-        assert!(approx(coeffs[2], 0.5, TIGHT_TOL), "a2={}", coeffs[2]);
+        let (a0, a1, a2) = (coeffs[0], coeffs[1], coeffs[2]);
+        assert!(approx(a0, 3.0, TIGHT_TOL), "a0={a0}");
+        assert!(approx(a1, 2.0, TIGHT_TOL), "a1={a1}");
+        assert!(approx(a2, 0.5, TIGHT_TOL), "a2={a2}");
     }
 
     #[test]
@@ -687,7 +688,99 @@ mod tests {
         let point = [3.0, 4.0];
         let ng = numerical_gradient_vec(&f, &point, 1e-7);
         // Analytical: [2x, 4y] = [6, 16]
-        assert!(approx(ng[0], 6.0, LOOSE_TOL), "dfdx={}", ng[0]);
-        assert!(approx(ng[1], 16.0, LOOSE_TOL), "dfdy={}", ng[1]);
+        let (dfdx, dfdy) = (ng[0], ng[1]);
+        assert!(approx(dfdx, 6.0, LOOSE_TOL), "dfdx={dfdx}");
+        assert!(approx(dfdy, 16.0, LOOSE_TOL), "dfdy={dfdy}");
+    }
+
+    #[test]
+    fn gradient_descent_momentum_on_quadratic() {
+        let f = |x: &[f64]| x[0] * x[0] + x[1] * x[1];
+        let grad = |x: &[f64]| vec![2.0 * x[0], 2.0 * x[1]];
+        let result = gradient_descent_momentum(&f, &grad, &[5.0, -3.0], 0.01, 0.9, 1e-8, 10_000);
+        let (mx, my) = (result[0], result[1]);
+        assert!(approx(mx, 0.0, LOOSE_TOL), "x={mx}");
+        assert!(approx(my, 0.0, LOOSE_TOL), "y={my}");
+    }
+
+    #[test]
+    fn simulated_annealing_finds_approximate_minimum() {
+        let f = |x: &[f64]| (x[0] - 3.0).powi(2) + (x[1] + 2.0).powi(2);
+        let result = simulated_annealing(&f, &[0.0, 0.0], 10.0, 0.9999, 0.1, 100_000);
+        let (rx, ry) = (result[0], result[1]);
+        assert!(
+            approx(rx, 3.0, 0.5) && approx(ry, -2.0, 0.5),
+            "SA should find approximate minimum, got ({rx}, {ry})",
+        );
+    }
+
+    #[test]
+    fn brent_finds_asymmetric_minimum() {
+        let f = |x: f64| (x - 7.0).powi(2) + 0.01 * (x - 7.0).powi(3);
+        let xmin = brent_min(&f, 0.0, 15.0, 1e-12, 1000);
+        assert!(approx(xmin, 7.0, LOOSE_TOL), "got {xmin}");
+    }
+
+    #[test]
+    fn nelder_mead_on_steep_quadratic() {
+        let f = |x: &[f64]| 100.0 * x[0] * x[0] + x[1] * x[1];
+        let result = nelder_mead(&f, &[5.0, 5.0], 1.0, 1e-12, 100_000);
+        let (sx, sy) = (result[0], result[1]);
+        assert!(approx(sx, 0.0, LOOSE_TOL), "x={sx}");
+        assert!(approx(sy, 0.0, LOOSE_TOL), "y={sy}");
+    }
+
+    #[test]
+    fn r_squared_constant_actual() {
+        let actual = vec![3.0, 3.0, 3.0, 3.0];
+        let predicted = vec![3.0, 3.0, 3.0, 3.0];
+        let r2 = r_squared(&actual, &predicted);
+        assert!(approx(r2, 1.0, TIGHT_TOL), "R²={r2}");
+    }
+
+    #[test]
+    fn simulated_annealing_cold_temperature() {
+        let f = |x: &[f64]| x[0] * x[0];
+        let result = simulated_annealing(&f, &[1.0], 1e-20, 0.99, 0.1, 100);
+        assert!(result[0].is_finite());
+    }
+
+    #[test]
+    fn polynomial_fit_linear() {
+        let x: Vec<f64> = (0..5).map(|i| i as f64).collect();
+        let y: Vec<f64> = x.iter().map(|&xi| 3.0 + 2.0 * xi).collect();
+        let coeffs = polynomial_fit(&x, &y, 1);
+        let (c0, c1) = (coeffs[0], coeffs[1]);
+        assert!(approx(c0, 3.0, TIGHT_TOL), "a0={c0}");
+        assert!(approx(c1, 2.0, TIGHT_TOL), "a1={c1}");
+    }
+
+    #[test]
+    fn nelder_mead_triggers_shrink() {
+        // Rastrigin-like function with many local features that force shrink steps
+        let f = |x: &[f64]| {
+            let a = 10.0;
+            a * 2.0
+                + (x[0] * x[0] - a * (2.0 * std::f64::consts::PI * x[0]).cos())
+                + (x[1] * x[1] - a * (2.0 * std::f64::consts::PI * x[1]).cos())
+        };
+        let result = nelder_mead(&f, &[3.0, 4.0], 5.0, 1e-14, 50_000);
+        assert!(result[0].is_finite() && result[1].is_finite());
+    }
+
+    #[test]
+    fn polynomial_fit_overdetermined_near_singular() {
+        // All x values identical: creates a near-singular Vandermonde matrix
+        let x = vec![1.0, 1.0, 1.0, 1.0];
+        let y = vec![2.0, 2.1, 1.9, 2.0];
+        let coeffs = polynomial_fit(&x, &y, 2);
+        assert!(coeffs.iter().all(|c| c.is_finite()));
+    }
+
+    #[test]
+    fn brent_min_reversed_bounds() {
+        let f = |x: f64| (x - 2.0).powi(2);
+        let xmin = brent_min(&f, 5.0, 0.0, 1e-12, 1000);
+        assert!(approx(xmin, 2.0, LOOSE_TOL), "got {xmin}");
     }
 }

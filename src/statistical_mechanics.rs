@@ -4,6 +4,8 @@ use crate::math::constants;
 
 /// Stokes-Einstein diffusion coefficient: D = k_B × T / (6π × μ × r)
 pub fn einstein_diffusion(temperature: f64, dynamic_viscosity: f64, particle_radius: f64) -> f64 {
+    assert!(dynamic_viscosity > 0.0, "dynamic_viscosity must be positive");
+    assert!(particle_radius > 0.0, "particle_radius must be positive");
     constants::K_B * temperature
         / (6.0 * constants::PI * dynamic_viscosity * particle_radius)
 }
@@ -31,6 +33,7 @@ pub fn fick_second_law_step_1d(
     dt: f64,
     diffusion_coeff: f64,
 ) {
+    assert!(dx > 0.0, "dx must be positive");
     let n = concentrations.len();
     if n < 3 {
         return;
@@ -53,6 +56,7 @@ pub fn diffusion_length(diffusion_coeff: f64, time: f64) -> f64 {
 
 /// Time required to diffuse a given length: t = L² / (2D)
 pub fn diffusion_time(diffusion_coeff: f64, length: f64) -> f64 {
+    assert!(diffusion_coeff > 0.0, "diffusion_coeff must be positive");
     length * length / (2.0 * diffusion_coeff)
 }
 
@@ -60,6 +64,8 @@ pub fn diffusion_time(diffusion_coeff: f64, length: f64) -> f64 {
 
 /// Maxwell speed distribution: f(v) = 4π × (m/(2πk_BT))^(3/2) × v² × exp(-mv²/(2k_BT))
 pub fn maxwell_speed_distribution(mass: f64, temperature: f64, speed: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
+    assert!(temperature > 0.0, "temperature must be positive");
     let a = mass / (2.0 * constants::PI * constants::K_B * temperature);
     4.0 * constants::PI * a.powf(1.5) * speed * speed
         * (-mass * speed * speed / (2.0 * constants::K_B * temperature)).exp()
@@ -67,16 +73,19 @@ pub fn maxwell_speed_distribution(mass: f64, temperature: f64, speed: f64) -> f6
 
 /// Most probable speed: v_p = √(2k_BT / m)
 pub fn most_probable_speed(mass: f64, temperature: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
     (2.0 * constants::K_B * temperature / mass).sqrt()
 }
 
 /// Mean speed: v̄ = √(8k_BT / (πm))
 pub fn mean_speed(mass: f64, temperature: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
     (8.0 * constants::K_B * temperature / (constants::PI * mass)).sqrt()
 }
 
 /// RMS speed from Maxwell-Boltzmann: v_rms = √(3k_BT / m)
 pub fn rms_speed_maxwell(mass: f64, temperature: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
     (3.0 * constants::K_B * temperature / mass).sqrt()
 }
 
@@ -94,16 +103,19 @@ pub fn equipartition_heat_capacity(degrees_of_freedom: u32) -> f64 {
 
 /// Boltzmann factor: exp(-E / (k_B × T))
 pub fn boltzmann_factor(energy: f64, temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     (-energy / (constants::K_B * temperature)).exp()
 }
 
 /// Boltzmann probability: P = exp(-E/(k_BT)) / Z
 pub fn boltzmann_probability(energy: f64, temperature: f64, partition_function: f64) -> f64 {
+    assert!(partition_function > 0.0, "partition_function must be positive");
     boltzmann_factor(energy, temperature) / partition_function
 }
 
 /// Partition function for a quantum harmonic oscillator: Z = 1 / (1 - exp(-hf/(k_BT)))
 pub fn partition_function_harmonic(temperature: f64, frequency: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     let x = constants::H * frequency / (constants::K_B * temperature);
     1.0 / (1.0 - (-x).exp())
 }
@@ -111,6 +123,7 @@ pub fn partition_function_harmonic(temperature: f64, frequency: f64) -> f64 {
 /// Mean energy of a quantum harmonic oscillator (includes zero-point energy):
 /// ⟨E⟩ = hf / (exp(hf/(k_BT)) - 1) + hf/2
 pub fn mean_energy_harmonic(temperature: f64, frequency: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     let hf = constants::H * frequency;
     let x = hf / (constants::K_B * temperature);
     hf / (x.exp() - 1.0) + hf / 2.0
@@ -134,6 +147,7 @@ pub fn debye_heat_capacity_low_t(
     temperature: f64,
     debye_temp: f64,
 ) -> f64 {
+    assert!(debye_temp > 0.0, "debye_temp must be positive");
     let pi4 = constants::PI.powi(4);
     let ratio = temperature / debye_temp;
     (12.0 / 5.0) * pi4 * n_atoms * constants::K_B * ratio.powi(3)
@@ -146,6 +160,7 @@ pub fn einstein_heat_capacity(
     temperature: f64,
     einstein_temp: f64,
 ) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     let x = einstein_temp / temperature;
     let ex = x.exp();
     let denom = ex - 1.0;
@@ -171,7 +186,7 @@ mod tests {
     fn test_einstein_diffusion() {
         // Water at 300 K, viscosity ~1e-3 Pa·s, 1 μm particle
         let d = einstein_diffusion(300.0, 1e-3, 1e-6);
-        let expected = constants::K_B * 300.0 / (6.0 * constants::PI * 1e-3 * 1e-6);
+        let expected = 2.197371130248822e-13;
         assert!(approx(d, expected), "got {d}, expected {expected}");
     }
 
@@ -262,22 +277,21 @@ mod tests {
     #[test]
     fn test_most_probable_speed() {
         let vp = most_probable_speed(constants::M_PROTON, 300.0);
-        let expected = (2.0 * constants::K_B * 300.0 / constants::M_PROTON).sqrt();
+        let expected = 2225.452730128216;
         assert!(approx(vp, expected));
     }
 
     #[test]
     fn test_mean_speed() {
         let vm = mean_speed(constants::M_PROTON, 300.0);
-        let expected =
-            (8.0 * constants::K_B * 300.0 / (constants::PI * constants::M_PROTON)).sqrt();
+        let expected = 2511.154498032511;
         assert!(approx(vm, expected));
     }
 
     #[test]
     fn test_rms_speed_maxwell() {
         let vrms = rms_speed_maxwell(constants::M_PROTON, 300.0);
-        let expected = (3.0 * constants::K_B * 300.0 / constants::M_PROTON).sqrt();
+        let expected = 2725.611817748942;
         assert!(approx(vrms, expected));
     }
 
@@ -299,14 +313,14 @@ mod tests {
     fn test_equipartition_energy_monatomic() {
         // Monatomic ideal gas: 3 translational DOF
         let e = equipartition_energy(3, 300.0);
-        let expected = 1.5 * constants::K_B * 300.0;
+        let expected = 6.2129205e-21;
         assert!(approx(e, expected));
     }
 
     #[test]
     fn test_equipartition_heat_capacity() {
         let cv = equipartition_heat_capacity(5);
-        assert!(approx(cv, 2.5 * constants::K_B));
+        assert!(approx(cv, 3.4516225e-23));
     }
 
     #[test]
@@ -365,7 +379,7 @@ mod tests {
     fn test_debye_temperature() {
         let f_max = 1e13;
         let theta = debye_temperature(f_max);
-        let expected = constants::H * f_max / constants::K_B;
+        let expected = 479.9243073366221;
         assert!(approx(theta, expected));
     }
 
@@ -375,7 +389,7 @@ mod tests {
         let n = constants::N_A;
         let cv = debye_heat_capacity_high_t(n);
         // Should equal 3R per mole ≈ 24.9 J/(mol·K)
-        let expected = 3.0 * n * constants::K_B;
+        let expected = 24.94338785445972;
         assert!(approx(cv, expected));
     }
 
@@ -405,5 +419,11 @@ mod tests {
         // At T << Θ_E, Cv → 0 exponentially
         let cv = einstein_heat_capacity(1.0, 50.0, 1000.0);
         assert!(cv < 1e-6, "Cv at low T should be negligible, got {cv}");
+    }
+
+    #[test]
+    fn test_approx_near_zero_b() {
+        assert!(approx(0.0, 0.0));
+        assert!(!approx(1.0, 0.0));
     }
 }

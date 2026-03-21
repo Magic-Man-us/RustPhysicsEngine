@@ -31,7 +31,6 @@ pub const STRONG_COUPLING: f64 = 0.1179; // α_s at M_Z
 // ---------------------------------------------------------------------------
 
 const C2: f64 = C * C;
-const C4: f64 = C2 * C2;
 
 /// Invariant mass from total energy and scalar momentum magnitude.
 /// m = √(E² - p²c²) / c²
@@ -74,24 +73,29 @@ pub fn fixed_target_com_energy(beam_energy: f64, target_mass: f64) -> f64 {
 
 /// Lorentz boost of energy along z.  E' = γ(E - β pz c)
 pub fn lorentz_boost_energy(energy: f64, momentum_z: f64, beta: f64) -> f64 {
+    assert!(beta.abs() < 1.0, "beta must be less than 1");
     let gamma = 1.0 / (1.0 - beta * beta).sqrt();
     gamma * (energy - beta * momentum_z * C)
 }
 
 /// Lorentz boost of z-momentum.  pz' = γ(pz - β E/c)
 pub fn lorentz_boost_pz(energy: f64, momentum_z: f64, beta: f64) -> f64 {
+    assert!(beta.abs() < 1.0, "beta must be less than 1");
     let gamma = 1.0 / (1.0 - beta * beta).sqrt();
     gamma * (momentum_z - beta * energy / C)
 }
 
 /// Rapidity y = 0.5 × ln((E + pz c) / (E - pz c))
 pub fn rapidity(energy: f64, pz: f64) -> f64 {
+    assert!(energy > (pz * C).abs(), "energy must exceed |pz*c| for valid rapidity");
     0.5 * ((energy + pz * C) / (energy - pz * C)).ln()
 }
 
 /// Pseudorapidity η = -ln(tan(θ/2))
 pub fn pseudorapidity(theta: f64) -> f64 {
-    -(theta / 2.0).tan().ln()
+    let tan_half = (theta / 2.0).tan();
+    assert!(tan_half > 0.0, "theta must be in (0, pi)");
+    -tan_half.ln()
 }
 
 /// Transverse momentum pT = √(px² + py²)
@@ -106,9 +110,11 @@ pub fn transverse_momentum(px: f64, py: f64) -> f64 {
 /// Rutherford scattering differential cross section.
 /// dσ/dΩ = (Z1 Z2 k_e e² / (4E))² / sin⁴(θ/2)
 pub fn rutherford_cross_section(z1: f64, z2: f64, energy: f64, angle: f64) -> f64 {
+    assert!(energy > 0.0, "energy must be positive");
+    let sin_half = (angle / 2.0).sin();
+    assert!(sin_half.abs() > 0.0, "angle must not be a multiple of 2*pi");
     let numerator = z1 * z2 * K_E * E_CHARGE * E_CHARGE;
     let term = numerator / (4.0 * energy);
-    let sin_half = (angle / 2.0).sin();
     let sin4 = sin_half.powi(4);
     (term * term) / sin4
 }
@@ -123,21 +129,26 @@ pub fn breit_wigner(energy: f64, mass: f64, width: f64) -> f64 {
 
 /// Decay rate from lifetime.  Γ = ℏ / τ
 pub fn decay_rate_from_lifetime(lifetime: f64) -> f64 {
+    assert!(lifetime > 0.0, "lifetime must be positive");
     HBAR / lifetime
 }
 
 /// Lifetime from decay width.  τ = ℏ / Γ
 pub fn lifetime_from_width(width_joules: f64) -> f64 {
+    assert!(width_joules > 0.0, "width_joules must be positive");
     HBAR / width_joules
 }
 
 /// Branching ratio BR = Γ_i / Γ_total
 pub fn branching_ratio(partial_width: f64, total_width: f64) -> f64 {
+    assert!(total_width > 0.0, "total_width must be positive");
     partial_width / total_width
 }
 
 /// Mean free path λ = 1 / (n σ)
 pub fn mean_free_path_particle(cross_section: f64, number_density: f64) -> f64 {
+    assert!(cross_section > 0.0, "cross_section must be positive");
+    assert!(number_density > 0.0, "number_density must be positive");
     1.0 / (number_density * cross_section)
 }
 
@@ -239,7 +250,7 @@ mod tests {
         let e_beam = 1.0e-6;
         let m_target = M_PROTON;
         let sqrt_s = fixed_target_com_energy(e_beam, m_target);
-        let expected = (2.0 * e_beam * m_target * C2).sqrt();
+        let expected = 1.73394210744484e-8;
         assert!(approx(sqrt_s, expected, 1e-10));
     }
 
@@ -358,5 +369,10 @@ mod tests {
         let e = m * C2;
         let mag = four_momentum_magnitude(e, 0.0, 0.0, 0.0);
         assert!(approx(mag, m * C, 1e-6));
+    }
+
+    #[test]
+    fn test_approx_both_zero() {
+        assert!(approx(0.0, 0.0, 1e-6));
     }
 }

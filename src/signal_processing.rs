@@ -17,6 +17,7 @@ const BLACKMAN_A2: f64 = 0.08;
 
 // --- Convolution & Correlation ---
 
+/// Linear convolution of signal with kernel: y[n] = Σ s[i]·k[n-i]
 #[must_use]
 pub fn convolve(signal: &[f64], kernel: &[f64]) -> Vec<f64> {
     if signal.is_empty() || kernel.is_empty() {
@@ -32,17 +33,20 @@ pub fn convolve(signal: &[f64], kernel: &[f64]) -> Vec<f64> {
     output
 }
 
+/// Cross-correlation of x and y via convolution with time-reversed y
 #[must_use]
 pub fn cross_correlate(x: &[f64], y: &[f64]) -> Vec<f64> {
     let reversed: Vec<f64> = y.iter().rev().copied().collect();
     convolve(x, &reversed)
 }
 
+/// Auto-correlation of a signal: cross-correlation of the signal with itself
 #[must_use]
 pub fn auto_correlate(signal: &[f64]) -> Vec<f64> {
     cross_correlate(signal, signal)
 }
 
+/// Normalize signal amplitude to [-1, 1] by dividing by peak absolute value
 pub fn normalize_signal(signal: &mut [f64]) {
     if signal.is_empty() {
         return;
@@ -65,6 +69,7 @@ pub fn normalize_signal(signal: &mut [f64]) {
 
 // --- Window Functions ---
 
+/// Generate a Hann window of length n: w[k] = 0.5·(1 - cos(2πk/(n-1)))
 #[must_use]
 pub fn hann_window(n: usize) -> Vec<f64> {
     if n <= 1 {
@@ -76,6 +81,7 @@ pub fn hann_window(n: usize) -> Vec<f64> {
         .collect()
 }
 
+/// Generate a Hamming window of length n: w[k] = 0.54 - 0.46·cos(2πk/(n-1))
 #[must_use]
 pub fn hamming_window(n: usize) -> Vec<f64> {
     if n <= 1 {
@@ -87,6 +93,7 @@ pub fn hamming_window(n: usize) -> Vec<f64> {
         .collect()
 }
 
+/// Generate a Blackman window of length n: w[k] = 0.42 - 0.5·cos(2πk/(n-1)) + 0.08·cos(4πk/(n-1))
 #[must_use]
 pub fn blackman_window(n: usize) -> Vec<f64> {
     if n <= 1 {
@@ -102,11 +109,13 @@ pub fn blackman_window(n: usize) -> Vec<f64> {
         .collect()
 }
 
+/// Generate a rectangular (uniform) window of length n: w[k] = 1 for all k
 #[must_use]
 pub fn rectangular_window(n: usize) -> Vec<f64> {
     vec![1.0; n]
 }
 
+/// Element-wise multiplication of signal by window coefficients
 #[must_use]
 pub fn apply_window(signal: &[f64], window: &[f64]) -> Vec<f64> {
     signal
@@ -118,6 +127,7 @@ pub fn apply_window(signal: &[f64], window: &[f64]) -> Vec<f64> {
 
 // --- Digital Filters ---
 
+/// Simple moving average filter with specified window size
 #[must_use]
 pub fn moving_average(signal: &[f64], window_size: usize) -> Vec<f64> {
     if signal.is_empty() || window_size == 0 {
@@ -141,6 +151,7 @@ pub fn moving_average(signal: &[f64], window_size: usize) -> Vec<f64> {
     output
 }
 
+/// Exponential moving average filter: y[n] = α·x[n] + (1-α)·y[n-1]
 #[must_use]
 pub fn exponential_moving_average(signal: &[f64], alpha: f64) -> Vec<f64> {
     if signal.is_empty() {
@@ -156,14 +167,20 @@ pub fn exponential_moving_average(signal: &[f64], alpha: f64) -> Vec<f64> {
     output
 }
 
+/// First-order RC low-pass filter: α = dt / (RC + dt)
 #[must_use]
 pub fn first_order_lowpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64> {
+    assert!(dt > 0.0, "time step dt must be positive");
+    assert!(rc >= 0.0, "RC time constant must be non-negative");
     let alpha = dt / (rc + dt);
     exponential_moving_average(signal, alpha)
 }
 
+/// First-order RC high-pass filter: α = RC / (RC + dt)
 #[must_use]
 pub fn first_order_highpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64> {
+    assert!(dt > 0.0, "time step dt must be positive");
+    assert!(rc >= 0.0, "RC time constant must be non-negative");
     if signal.is_empty() {
         return Vec::new();
     }
@@ -177,6 +194,7 @@ pub fn first_order_highpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64> {
     output
 }
 
+/// Median filter for impulse noise removal with specified window size
 #[must_use]
 pub fn median_filter(signal: &[f64], window_size: usize) -> Vec<f64> {
     if signal.is_empty() || window_size == 0 {
@@ -204,8 +222,10 @@ pub fn median_filter(signal: &[f64], window_size: usize) -> Vec<f64> {
 
 // --- Signal Generation ---
 
+/// Generate a sine wave: x[n] = A·sin(2πf·n/fs) for n samples over given duration
 #[must_use]
 pub fn sine_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> Vec<f64> {
+    assert!(sample_rate > 0.0, "sample rate must be positive");
     let n = (sample_rate * duration) as usize;
     let angular_freq = TWO_PI * frequency;
     let inv_rate = 1.0 / sample_rate;
@@ -214,8 +234,10 @@ pub fn sine_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f64
         .collect()
 }
 
+/// Generate a square wave: +A for first half-period, -A for second half
 #[must_use]
 pub fn square_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> Vec<f64> {
+    assert!(sample_rate > 0.0, "sample rate must be positive");
     let n = (sample_rate * duration) as usize;
     let inv_rate = 1.0 / sample_rate;
     (0..n)
@@ -230,6 +252,7 @@ pub fn square_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f
         .collect()
 }
 
+/// Generate a sawtooth wave: linearly ramps from -A to +A each period
 #[must_use]
 pub fn sawtooth_wave(
     frequency: f64,
@@ -237,6 +260,7 @@ pub fn sawtooth_wave(
     duration: f64,
     amplitude: f64,
 ) -> Vec<f64> {
+    assert!(sample_rate > 0.0, "sample rate must be positive");
     let n = (sample_rate * duration) as usize;
     let inv_rate = 1.0 / sample_rate;
     (0..n)
@@ -247,6 +271,7 @@ pub fn sawtooth_wave(
         .collect()
 }
 
+/// Generate deterministic pseudo-random white noise using a linear congruential generator
 #[must_use]
 pub fn white_noise(n: usize, amplitude: f64, seed: u64) -> Vec<f64> {
     let mut state = seed;
@@ -264,6 +289,7 @@ pub fn white_noise(n: usize, amplitude: f64, seed: u64) -> Vec<f64> {
 
 // --- Signal Analysis ---
 
+/// Count the number of zero crossings (sign changes) in the signal
 #[must_use]
 pub fn zero_crossings(signal: &[f64]) -> usize {
     if signal.len() < 2 {
@@ -275,6 +301,7 @@ pub fn zero_crossings(signal: &[f64]) -> usize {
         .count()
 }
 
+/// Root mean square level: RMS = sqrt(Σx²/n)
 #[must_use]
 pub fn rms_level(signal: &[f64]) -> f64 {
     if signal.is_empty() {
@@ -284,6 +311,7 @@ pub fn rms_level(signal: &[f64]) -> f64 {
     (sum_sq / signal.len() as f64).sqrt()
 }
 
+/// Peak-to-peak amplitude: max(x) - min(x)
 #[must_use]
 pub fn peak_to_peak(signal: &[f64]) -> f64 {
     if signal.is_empty() {
@@ -302,6 +330,7 @@ pub fn peak_to_peak(signal: &[f64]) -> f64 {
     max_val - min_val
 }
 
+/// Crest factor: ratio of peak absolute value to RMS level
 #[must_use]
 pub fn crest_factor(signal: &[f64]) -> f64 {
     let rms = rms_level(signal);
@@ -440,15 +469,14 @@ mod tests {
     fn test_hamming_window_endpoints() {
         let w = hamming_window(64);
         // Hamming endpoints are 0.08, not zero
-        assert!(approx(w[0], HAMMING_A0 - HAMMING_A1));
+        assert!(approx(w[0], 0.08));
     }
 
     #[test]
     fn test_blackman_window_endpoints() {
         let w = blackman_window(64);
-        let expected = BLACKMAN_A0 - BLACKMAN_A1 + BLACKMAN_A2;
-        assert!(approx(w[0], expected));
-        assert!(approx(w[63], expected));
+        assert!(approx(w[0], 0.0));
+        assert!(approx(w[63], 0.0));
     }
 
     #[test]
@@ -651,8 +679,7 @@ mod tests {
         let amp = 1.0;
         let wave = sine_wave(100.0, 44100.0, 1.0, amp);
         let rms = rms_level(&wave);
-        let expected = amp / 2.0_f64.sqrt();
-        assert!(approx_rel(rms, expected, 0.01));
+        assert!(approx_rel(rms, 0.707_106_781_186_547_6, 0.01));
     }
 
     #[test]
@@ -683,7 +710,7 @@ mod tests {
         // Crest factor of a sine wave = sqrt(2) ≈ 1.414
         let wave = sine_wave(100.0, 44100.0, 1.0, 1.0);
         let cf = crest_factor(&wave);
-        assert!(approx_rel(cf, 2.0_f64.sqrt(), 0.01));
+        assert!(approx_rel(cf, 1.414_213_562_373_095, 0.01));
     }
 
     #[test]
@@ -695,5 +722,36 @@ mod tests {
     #[test]
     fn test_crest_factor_empty() {
         assert_eq!(crest_factor(&[]), 0.0);
+    }
+
+    #[test]
+    fn test_hamming_window_single() {
+        let w = hamming_window(1);
+        assert_eq!(w.len(), 1);
+        assert!(approx(w[0], 1.0));
+    }
+
+    #[test]
+    fn test_blackman_window_single() {
+        let w = blackman_window(1);
+        assert_eq!(w.len(), 1);
+        assert!(approx(w[0], 1.0));
+    }
+
+    #[test]
+    fn test_exponential_moving_average_empty() {
+        let result = exponential_moving_average(&[], 0.5);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_first_order_highpass_empty() {
+        let result = first_order_highpass(&[], 0.01, 0.1);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_approx_rel_both_zero() {
+        assert!(approx_rel(0.0, 0.0, 1e-6));
     }
 }

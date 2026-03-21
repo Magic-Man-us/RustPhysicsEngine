@@ -16,6 +16,9 @@ const RESTING_POTENTIAL_V: f64 = -70e-3;
 
 /// Nernst equation: E = (RT/(zF)) × ln(c_out/c_in)
 pub fn nernst_potential(temperature: f64, z: f64, c_out: f64, c_in: f64) -> f64 {
+    assert!(z != 0.0, "valence z must be nonzero");
+    assert!(c_in > 0.0, "c_in must be positive");
+    assert!(c_out > 0.0, "c_out must be positive");
     (constants::R * temperature / (z * FARADAY)) * (c_out / c_in).ln()
 }
 
@@ -35,6 +38,8 @@ pub fn goldman_potential(
 ) -> f64 {
     let numerator = pk * k_out + pna * na_out + pcl * cl_in;
     let denominator = pk * k_in + pna * na_in + pcl * cl_out;
+    assert!(denominator > 0.0, "denominator (Pk*K_in + Pna*Na_in + Pcl*Cl_out) must be positive");
+    assert!(numerator > 0.0, "numerator (Pk*K_out + Pna*Na_out + Pcl*Cl_in) must be positive");
     (constants::R * temperature / FARADAY) * (numerator / denominator).ln()
 }
 
@@ -58,12 +63,15 @@ pub fn michaelis_menten_inhibited(
     inhibitor: f64,
     ki: f64,
 ) -> f64 {
+    assert!(ki > 0.0, "ki must be positive");
     vmax * substrate / (km * (1.0 + inhibitor / ki) + substrate)
 }
 
 /// Lineweaver-Burk transform: returns (1/[S], 1/v) for double-reciprocal plot
 pub fn lineweaver_burk(vmax: f64, km: f64, substrate: f64) -> (f64, f64) {
+    assert!(substrate > 0.0, "substrate must be positive");
     let v = michaelis_menten(vmax, km, substrate);
+    assert!(v > 0.0, "velocity must be positive");
     (1.0 / substrate, 1.0 / v)
 }
 
@@ -77,6 +85,11 @@ pub fn hill_equation(vmax: f64, k: f64, substrate: f64, n: f64) -> f64 {
 /// Derive Hill coefficient from two (substrate, velocity) data points.
 /// n = log((v1/(Vmax-v1)) / (v2/(Vmax-v2))) / log(s1/s2)
 pub fn hill_coefficient_from_data(s1: f64, v1: f64, s2: f64, v2: f64, vmax: f64) -> f64 {
+    assert!(vmax > v1, "vmax must be greater than v1");
+    assert!(vmax > v2, "vmax must be greater than v2");
+    assert!(s1 > 0.0, "s1 must be positive");
+    assert!(s2 > 0.0, "s2 must be positive");
+    assert!((s1 - s2).abs() > 0.0, "s1 and s2 must differ");
     let ratio1 = v1 / (vmax - v1);
     let ratio2 = v2 / (vmax - v2);
     (ratio1 / ratio2).ln() / (s1 / s2).ln()
@@ -91,11 +104,13 @@ pub fn exponential_growth(n0: f64, rate: f64, time: f64) -> f64 {
 
 /// Logistic growth: N = K / (1 + ((K - N₀)/N₀) × e^(-rt))
 pub fn logistic_growth(n0: f64, k: f64, r: f64, time: f64) -> f64 {
+    assert!(n0 > 0.0, "initial population n0 must be positive");
     k / (1.0 + ((k - n0) / n0) * (-r * time).exp())
 }
 
 /// Doubling time: td = ln(2) / r
 pub fn doubling_time_population(rate: f64) -> f64 {
+    assert!(rate > 0.0, "growth rate must be positive");
     2.0_f64.ln() / rate
 }
 
@@ -123,11 +138,14 @@ pub fn mean_arterial_pressure(systolic: f64, diastolic: f64) -> f64 {
 
 /// Vascular resistance: R = ΔP / Q
 pub fn vascular_resistance(pressure_drop: f64, flow: f64) -> f64 {
+    assert!(flow != 0.0, "flow must be nonzero");
     pressure_drop / flow
 }
 
 /// Poiseuille flow in a vessel: Q = πr⁴ΔP / (8μL)
 pub fn poiseuille_blood_flow(radius: f64, pressure_drop: f64, viscosity: f64, length: f64) -> f64 {
+    assert!(viscosity > 0.0, "viscosity must be positive");
+    assert!(length > 0.0, "length must be positive");
     constants::PI * radius.powi(4) * pressure_drop / (8.0 * viscosity * length)
 }
 
@@ -140,6 +158,8 @@ pub fn sigmoid(x: f64, x50: f64, slope: f64) -> f64 {
 
 /// LD50 probit model: probability = sigmoid(ln(dose), ln(ld50), slope)
 pub fn ld50_probit(dose: f64, ld50: f64, slope: f64) -> f64 {
+    assert!(dose > 0.0, "dose must be positive");
+    assert!(ld50 > 0.0, "ld50 must be positive");
     sigmoid(dose.ln(), ld50.ln(), slope)
 }
 
@@ -170,9 +190,8 @@ mod tests {
 
     #[test]
     fn test_nernst_potential_monovalent_37c() {
-        // RT/F at 310.15K ≈ 0.02672 V ≈ 26.7 mV
-        let rt_over_f = constants::R * BODY_TEMP / FARADAY;
-        assert!(approx_rel(rt_over_f, 0.02672, 0.01));
+        let e = nernst_potential(BODY_TEMP, 1.0, 5.0, 140.0);
+        assert!(approx_rel(e, -0.089_058, 1e-3));
     }
 
     #[test]
@@ -223,9 +242,8 @@ mod tests {
     #[test]
     fn test_lineweaver_burk() {
         let (inv_s, inv_v) = lineweaver_burk(100.0, 10.0, 20.0);
-        assert!(approx(inv_s, 1.0 / 20.0));
-        let expected_v = michaelis_menten(100.0, 10.0, 20.0);
-        assert!(approx(inv_v, 1.0 / expected_v));
+        assert!(approx(inv_s, 0.05));
+        assert!(approx(inv_v, 0.015));
     }
 
     #[test]
@@ -265,7 +283,7 @@ mod tests {
     #[test]
     fn test_exponential_growth() {
         let n = exponential_growth(100.0, 0.1, 10.0);
-        assert!(approx_rel(n, 100.0 * (1.0_f64).exp(), 1e-6));
+        assert!(approx_rel(n, 271.828_183, 1e-4));
     }
 
     #[test]
@@ -326,8 +344,7 @@ mod tests {
     #[test]
     fn test_poiseuille_blood_flow() {
         let q = poiseuille_blood_flow(0.01, 1000.0, 0.003, 0.1);
-        let expected = constants::PI * 0.01_f64.powi(4) * 1000.0 / (8.0 * 0.003 * 0.1);
-        assert!(approx_rel(q, expected, 1e-6));
+        assert!(approx_rel(q, 0.013_09, 1e-3));
     }
 
     // ── Dose-Response ──
@@ -353,5 +370,11 @@ mod tests {
         // At dose = LD50, probability should be 0.5
         let p = ld50_probit(50.0, 50.0, 1.0);
         assert!(approx(p, 0.5));
+    }
+
+    #[test]
+    fn test_approx_rel_near_zero_b() {
+        assert!(approx_rel(1e-16, 0.0, 1e-6));
+        assert!(!approx_rel(1.0, 0.0, 0.5));
     }
 }

@@ -24,26 +24,31 @@ pub struct Complex {
 
 impl Complex {
     #[inline]
+    /// Create a complex number from real and imaginary parts.
     pub fn new(re: f64, im: f64) -> Self {
         Self { re, im }
     }
 
     #[inline]
+    /// Squared norm (modulus squared): |z|² = re² + im²
     pub fn norm_sq(self) -> f64 {
         self.re * self.re + self.im * self.im
     }
 
     #[inline]
+    /// Norm (modulus): |z| = √(re² + im²)
     pub fn norm(self) -> f64 {
         self.norm_sq().sqrt()
     }
 
     #[inline]
+    /// Argument (phase angle): arg(z) = atan2(im, re)
     pub fn arg(self) -> f64 {
         self.im.atan2(self.re)
     }
 
     #[inline]
+    /// Complex conjugate: z* = re - im·i
     pub fn conjugate(self) -> Self {
         Self {
             re: self.re,
@@ -88,6 +93,7 @@ impl Mul for Complex {
 // --- Mandelbrot ---
 
 #[must_use]
+/// Mandelbrot escape-time iteration count: z_{n+1} = z_n² + c, returns iterations to escape |z| > 2.
 pub fn mandelbrot_iterations(c_re: f64, c_im: f64, max_iter: u32) -> u32 {
     let c = Complex::new(c_re, c_im);
     let mut z = Complex::new(0.0, 0.0);
@@ -101,6 +107,7 @@ pub fn mandelbrot_iterations(c_re: f64, c_im: f64, max_iter: u32) -> u32 {
 }
 
 #[must_use]
+/// Smooth Mandelbrot iteration count using continuous escape-time coloring.
 pub fn mandelbrot_smooth(c_re: f64, c_im: f64, max_iter: u32) -> f64 {
     let c = Complex::new(c_re, c_im);
     let mut z = Complex::new(0.0, 0.0);
@@ -116,6 +123,7 @@ pub fn mandelbrot_smooth(c_re: f64, c_im: f64, max_iter: u32) -> f64 {
 }
 
 #[must_use]
+/// Compute Mandelbrot iteration counts for an entire grid of pixels.
 pub fn mandelbrot_grid(
     x_min: f64,
     x_max: f64,
@@ -125,6 +133,8 @@ pub fn mandelbrot_grid(
     height: usize,
     max_iter: u32,
 ) -> Vec<u32> {
+    assert!(width > 0, "width must be positive");
+    assert!(height > 0, "height must be positive");
     let mut result = Vec::with_capacity(width * height);
     let dx = (x_max - x_min) / width as f64;
     let dy = (y_max - y_min) / height as f64;
@@ -141,6 +151,7 @@ pub fn mandelbrot_grid(
 // --- Julia Sets ---
 
 #[must_use]
+/// Julia set escape-time iteration count for a fixed c: z_{n+1} = z_n² + c.
 pub fn julia_iterations(z_re: f64, z_im: f64, c_re: f64, c_im: f64, max_iter: u32) -> u32 {
     let c = Complex::new(c_re, c_im);
     let mut z = Complex::new(z_re, z_im);
@@ -154,6 +165,7 @@ pub fn julia_iterations(z_re: f64, z_im: f64, c_re: f64, c_im: f64, max_iter: u3
 }
 
 #[must_use]
+/// Compute Julia set iteration counts for an entire grid of pixels.
 pub fn julia_grid(
     c_re: f64,
     c_im: f64,
@@ -165,6 +177,8 @@ pub fn julia_grid(
     height: usize,
     max_iter: u32,
 ) -> Vec<u32> {
+    assert!(width > 0, "width must be positive");
+    assert!(height > 0, "height must be positive");
     let mut result = Vec::with_capacity(width * height);
     let dx = (x_max - x_min) / width as f64;
     let dy = (y_max - y_min) / height as f64;
@@ -181,6 +195,7 @@ pub fn julia_grid(
 // --- Burning Ship ---
 
 #[must_use]
+/// Burning Ship fractal iteration count: z_{n+1} = (|Re(z_n)| + i|Im(z_n)|)² + c.
 pub fn burning_ship_iterations(c_re: f64, c_im: f64, max_iter: u32) -> u32 {
     let mut z_re: f64 = 0.0;
     let mut z_im: f64 = 0.0;
@@ -201,6 +216,7 @@ pub fn burning_ship_iterations(c_re: f64, c_im: f64, max_iter: u32) -> u32 {
 // --- Newton Fractal ---
 
 #[must_use]
+/// Newton fractal for f(z) = z³ - 1: returns (iterations, root_index) for convergence.
 pub fn newton_fractal_iterations(
     z_re: f64,
     z_im: f64,
@@ -262,6 +278,7 @@ fn lcg_next(state: &mut u64) -> f64 {
 }
 
 #[must_use]
+/// Generate Sierpinski triangle points via the chaos game (iterated function system).
 pub fn sierpinski_point(x: f64, y: f64, iterations: usize) -> Vec<(f64, f64)> {
     let vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, (3.0_f64).sqrt() / 2.0)];
     let mut points = Vec::with_capacity(iterations);
@@ -281,6 +298,7 @@ pub fn sierpinski_point(x: f64, y: f64, iterations: usize) -> Vec<(f64, f64)> {
 }
 
 #[must_use]
+/// Generate Barnsley fern points via the iterated function system with four affine maps.
 pub fn barnsley_fern_point(x: f64, y: f64, iterations: usize) -> Vec<(f64, f64)> {
     let mut points = Vec::with_capacity(iterations);
     let mut px = x;
@@ -312,6 +330,7 @@ pub fn barnsley_fern_point(x: f64, y: f64, iterations: usize) -> Vec<(f64, f64)>
 // --- Fractal Dimension ---
 
 #[must_use]
+/// Count occupied grid cells for box-counting fractal dimension estimation.
 pub fn box_count_2d(
     points: &[(f64, f64)],
     grid_size: usize,
@@ -479,5 +498,109 @@ mod tests {
     fn box_count_empty() {
         let count = box_count_2d(&[], 10, (0.0, 1.0, 0.0, 1.0));
         assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn julia_grid_dimensions() {
+        let width = 80;
+        let height = 60;
+        let grid = julia_grid(-0.7, 0.27015, -1.5, 1.5, -1.0, 1.0, width, height, 100);
+        assert_eq!(grid.len(), width * height);
+    }
+
+    #[test]
+    fn julia_grid_origin_c_zero_all_in_set() {
+        // c = 0: the Julia set is the unit circle; origin should be in the set
+        let grid = julia_grid(0.0, 0.0, -0.1, 0.1, -0.1, 0.1, 3, 3, 1000);
+        // The center pixel (z near origin) should reach max_iter
+        assert_eq!(grid[4], 1000);
+    }
+
+    #[test]
+    fn mandelbrot_smooth_in_set_returns_max_iter() {
+        let val = mandelbrot_smooth(0.0, 0.0, 100);
+        assert!(approx(val, 100.0), "origin should return max_iter, got {val}");
+    }
+
+    #[test]
+    fn mandelbrot_smooth_escape_gives_fractional_value() {
+        let val = mandelbrot_smooth(2.0, 0.0, 1000);
+        // Should escape quickly and give a smooth fractional iteration count
+        assert!(val < 5.0, "should escape quickly, got {val}");
+        // Should be fractional (not integer)
+        assert!((val - val.round()).abs() > 0.01, "smooth coloring should be fractional, got {val}");
+    }
+
+    // --- Burning Ship escape path ---
+
+    #[test]
+    fn burning_ship_escapes_far_from_origin() {
+        // c = (10, 0) is far outside the set and must escape quickly
+        let iters = burning_ship_iterations(10.0, 0.0, 1000);
+        assert!(iters < 1000, "far-out point should escape, got {iters}");
+        assert!(iters >= 1, "should take at least one iteration");
+    }
+
+    // --- Newton fractal: exercising the iteration loop ---
+
+    #[test]
+    fn newton_converges_to_root_after_iterations() {
+        // Start away from all roots; Newton's method should converge in a few steps
+        let (iters, root) = newton_fractal_iterations(0.5, 0.5, 200, 1e-6);
+        assert!(iters > 0, "should require at least one Newton step");
+        assert!(iters < 200, "should converge before max_iter");
+        assert!(root < 3, "root_index must be 0, 1, or 2");
+    }
+
+    #[test]
+    fn newton_max_iter_fallback_finds_closest_root() {
+        // With max_iter = 1 and a point far from roots, should hit the closest-root fallback
+        let (iters, root) = newton_fractal_iterations(0.5, 0.5, 1, 1e-15);
+        assert_eq!(iters, 1, "should exhaust max_iter");
+        assert!(root < 3, "closest root index must be valid");
+    }
+
+    #[test]
+    fn newton_degenerate_at_origin() {
+        // z = 0 makes f'(z) = 3z² = 0, triggering the degenerate denominator guard
+        let (iters, root) = newton_fractal_iterations(0.0, 0.0, 100, 1e-6);
+        assert_eq!(iters, 100, "degenerate point should return max_iter");
+        assert_eq!(root, 0);
+    }
+
+    // --- Barnsley fern: ensure all branches are hit ---
+
+    #[test]
+    fn barnsley_fern_all_branches_with_many_iterations() {
+        // The LCG is deterministic. With enough iterations all four probability
+        // branches (stem at p < 0.01, small leaflet, left leaflet, main) will fire.
+        let points = barnsley_fern_point(0.0, 0.0, 10_000);
+        assert_eq!(points.len(), 10_000);
+        // Fern points should stay in a bounded region (roughly x in [-3, 3], y in [0, 10])
+        for &(x, y) in &points {
+            assert!(x > -5.0 && x < 5.0, "x out of expected range: {x}");
+            assert!(y > -1.0 && y < 12.0, "y out of expected range: {y}");
+        }
+    }
+
+    // --- Box counting: invalid bounds ---
+
+    #[test]
+    fn box_count_zero_grid_size() {
+        let points = vec![(0.5, 0.5)];
+        assert_eq!(box_count_2d(&points, 0, (0.0, 1.0, 0.0, 1.0)), 0);
+    }
+
+    #[test]
+    fn box_count_inverted_bounds() {
+        // x_max < x_min => range <= 0 => returns 0
+        let points = vec![(0.5, 0.5)];
+        assert_eq!(box_count_2d(&points, 10, (1.0, 0.0, 0.0, 1.0)), 0);
+    }
+
+    #[test]
+    fn box_count_zero_y_range() {
+        let points = vec![(0.5, 0.5)];
+        assert_eq!(box_count_2d(&points, 10, (0.0, 1.0, 1.0, 1.0)), 0);
     }
 }

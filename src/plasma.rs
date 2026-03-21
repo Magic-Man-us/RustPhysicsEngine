@@ -3,6 +3,8 @@ use crate::math::constants::{C, E_CHARGE, EPSILON_0, K_B, M_ELECTRON, MU_0, PI};
 /// λD = √(ε₀kT / (nq²))
 #[must_use]
 pub fn debye_length(temperature: f64, density: f64, charge: f64) -> f64 {
+    assert!(density > 0.0, "density must be positive");
+    assert!(charge != 0.0, "charge must not be zero");
     (EPSILON_0 * K_B * temperature / (density * charge * charge)).sqrt()
 }
 
@@ -15,6 +17,7 @@ pub fn plasma_frequency_electron(density: f64) -> f64 {
 /// ωp = √(ne² / (m_ion × ε₀))
 #[must_use]
 pub fn plasma_frequency_ion(density: f64, ion_mass: f64) -> f64 {
+    assert!(ion_mass > 0.0, "ion_mass must be positive");
     (density * E_CHARGE * E_CHARGE / (ion_mass * EPSILON_0)).sqrt()
 }
 
@@ -27,36 +30,43 @@ pub fn cyclotron_frequency_electron(b_field: f64) -> f64 {
 /// ωc = qB / m
 #[must_use]
 pub fn cyclotron_frequency_ion(b_field: f64, ion_mass: f64, charge: f64) -> f64 {
+    assert!(ion_mass > 0.0, "ion_mass must be positive");
     charge * b_field / ion_mass
 }
 
 /// rL = mv⊥ / (|q|B)
 #[must_use]
 pub fn larmor_radius(velocity_perp: f64, mass: f64, charge: f64, b_field: f64) -> f64 {
+    assert!(charge != 0.0, "charge must not be zero");
+    assert!(b_field > 0.0, "b_field must be positive");
     mass * velocity_perp / (charge.abs() * b_field)
 }
 
 /// β = 2μ₀p / B²
 #[must_use]
 pub fn plasma_beta(pressure: f64, b_field: f64) -> f64 {
+    assert!(b_field != 0.0, "b_field must not be zero");
     2.0 * MU_0 * pressure / (b_field * b_field)
 }
 
 /// vA = B / √(μ₀ρ)
 #[must_use]
 pub fn alfven_speed(b_field: f64, density: f64) -> f64 {
+    assert!(density > 0.0, "density must be positive");
     b_field / (MU_0 * density).sqrt()
 }
 
 /// cs = √(γkT / m)
 #[must_use]
 pub fn sound_speed_plasma(gamma: f64, temperature: f64, ion_mass: f64) -> f64 {
+    assert!(ion_mass > 0.0, "ion_mass must be positive");
     (gamma * K_B * temperature / ion_mass).sqrt()
 }
 
 /// vth = √(2kT / m)
 #[must_use]
 pub fn thermal_velocity(temperature: f64, mass: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
     (2.0 * K_B * temperature / mass).sqrt()
 }
 
@@ -89,6 +99,7 @@ pub fn magnetosonic_speed(alfven: f64, sound: f64) -> f64 {
 /// δ = c / ωp
 #[must_use]
 pub fn skin_depth_plasma(plasma_freq: f64) -> f64 {
+    assert!(plasma_freq > 0.0, "plasma_freq must be positive");
     C / plasma_freq
 }
 
@@ -239,7 +250,7 @@ mod tests {
         let va = 1000.0;
         let cs = 500.0;
         let vms = magnetosonic_speed(va, cs);
-        let expected = (1000.0_f64.powi(2) + 500.0_f64.powi(2)).sqrt();
+        let expected = 1118.033988749895;
         assert!(approx_rel(vms, expected, 1e-10));
     }
 
@@ -259,5 +270,11 @@ mod tests {
         let nu = collision_frequency(n, temp, ln_lambda, M_ELECTRON, E_CHARGE);
         // Should be a positive finite number in a reasonable range
         assert!(nu > 0.0 && nu.is_finite());
+    }
+
+    #[test]
+    fn test_approx_rel_zero_b() {
+        assert!(approx_rel(0.0, 0.0, 1e-6));
+        assert!(!approx_rel(1.0, 0.0, 0.5));
     }
 }

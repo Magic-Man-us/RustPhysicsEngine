@@ -211,20 +211,20 @@ mod tests {
     #[test]
     fn test_fair_die_entropy() {
         let probs = [1.0 / 6.0; 6];
-        let expected = (6.0_f64).log2();
+        let expected = 2.584962500721156;
         assert!(approx(shannon_entropy(&probs), expected));
     }
 
     #[test]
     fn test_max_entropy() {
-        assert!(approx(max_entropy(6), (6.0_f64).log2()));
+        assert!(approx(max_entropy(6), 2.584962500721156));
         assert!(approx(max_entropy(2), 1.0));
     }
 
     #[test]
     fn test_shannon_entropy_nats_fair_coin() {
         let probs = [0.5, 0.5];
-        let expected = (2.0_f64).ln();
+        let expected = 0.6931471805599453;
         assert!(approx(shannon_entropy_nats(&probs), expected));
     }
 
@@ -331,5 +331,22 @@ mod tests {
     #[test]
     fn test_entropy_rate_identity() {
         assert!(approx(entropy_rate(1.234), 1.234));
+    }
+
+    #[test]
+    fn test_mutual_information_with_zeros() {
+        let joint = vec![0.5, 0.0, 0.0, 0.5];
+        let mx = vec![0.5, 0.5];
+        let my = vec![0.5, 0.5];
+        let mi = mutual_information(&joint, &mx, &my, 2, 2);
+        assert!(mi > 0.0);
+    }
+
+    #[test]
+    fn test_conditional_entropy_with_zero_marginal() {
+        let joint = vec![0.0, 0.0, 0.5, 0.5];
+        let mx = vec![0.0, 1.0];
+        let h = conditional_entropy(&joint, &mx, 2, 2);
+        assert!(h >= 0.0);
     }
 }

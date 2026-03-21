@@ -4,36 +4,48 @@ use crate::math::constants::PI;
 // Stress & Strain
 // ---------------------------------------------------------------------------
 
+/// Tensile stress: σ = F/A
 #[must_use]
 pub fn tensile_stress(force: f64, area: f64) -> f64 {
+    assert!(area > 0.0, "area must be positive");
     force / area
 }
 
+/// Tensile strain: ε = ΔL/L₀
 #[must_use]
 pub fn tensile_strain(delta_l: f64, original_l: f64) -> f64 {
+    assert!(original_l > 0.0, "original_l must be positive");
     delta_l / original_l
 }
 
+/// Shear stress: τ = F/A
 #[must_use]
 pub fn shear_stress(force: f64, area: f64) -> f64 {
+    assert!(area > 0.0, "area must be positive");
     force / area
 }
 
+/// Shear strain: γ = Δx/h
 #[must_use]
 pub fn shear_strain(displacement: f64, height: f64) -> f64 {
+    assert!(height > 0.0, "height must be positive");
     displacement / height
 }
 
+/// Volumetric strain: εv = ΔV/V₀
 #[must_use]
 pub fn volumetric_strain(delta_v: f64, original_v: f64) -> f64 {
+    assert!(original_v > 0.0, "original_v must be positive");
     delta_v / original_v
 }
 
+/// True stress from engineering values: σ_true = σ_eng(1 + ε_eng)
 #[must_use]
 pub fn true_stress(engineering_stress: f64, engineering_strain: f64) -> f64 {
     engineering_stress * (1.0 + engineering_strain)
 }
 
+/// True strain from engineering strain: ε_true = ln(1 + ε_eng)
 #[must_use]
 pub fn true_strain(engineering_strain: f64) -> f64 {
     (1.0 + engineering_strain).ln()
@@ -43,38 +55,52 @@ pub fn true_strain(engineering_strain: f64) -> f64 {
 // Elastic Moduli
 // ---------------------------------------------------------------------------
 
+/// Young's modulus (elastic modulus): E = σ/ε
 #[must_use]
 pub fn youngs_modulus(stress: f64, strain: f64) -> f64 {
+    assert!(strain != 0.0, "strain must not be zero");
     stress / strain
 }
 
+/// Shear modulus: G = τ/γ
 #[must_use]
 pub fn shear_modulus(shear_stress: f64, shear_strain: f64) -> f64 {
+    assert!(shear_strain != 0.0, "shear_strain must not be zero");
     shear_stress / shear_strain
 }
 
+/// Bulk modulus: K = -P/εv
 #[must_use]
 pub fn bulk_modulus(pressure: f64, volumetric_strain: f64) -> f64 {
+    assert!(volumetric_strain != 0.0, "volumetric_strain must not be zero");
     -pressure / volumetric_strain
 }
 
+/// Poisson's ratio from elastic moduli: ν = E/(2G) - 1
 #[must_use]
 pub fn poisson_ratio_from_moduli(e: f64, g: f64) -> f64 {
+    assert!(g > 0.0, "shear modulus must be positive");
     e / (2.0 * g) - 1.0
 }
 
+/// Young's modulus from bulk and shear moduli: E = 9KG/(3K + G)
 #[must_use]
 pub fn e_from_k_and_g(bulk: f64, shear: f64) -> f64 {
+    assert!(3.0 * bulk + shear != 0.0, "3K + G must not be zero");
     9.0 * bulk * shear / (3.0 * bulk + shear)
 }
 
+/// Bulk modulus from Young's modulus and Poisson's ratio: K = E/(3(1 - 2ν))
 #[must_use]
 pub fn bulk_from_e_and_nu(e: f64, nu: f64) -> f64 {
+    assert!((1.0 - 2.0 * nu).abs() > 0.0, "1 - 2*nu must not be zero");
     e / (3.0 * (1.0 - 2.0 * nu))
 }
 
+/// Shear modulus from Young's modulus and Poisson's ratio: G = E/(2(1 + ν))
 #[must_use]
 pub fn shear_from_e_and_nu(e: f64, nu: f64) -> f64 {
+    assert!((1.0 + nu).abs() > 0.0, "1 + nu must not be zero");
     e / (2.0 * (1.0 + nu))
 }
 
@@ -82,31 +108,42 @@ pub fn shear_from_e_and_nu(e: f64, nu: f64) -> f64 {
 // Beam Mechanics
 // ---------------------------------------------------------------------------
 
+/// Cantilever beam tip deflection under point load: δ = FL³/(3EI)
 #[must_use]
 pub fn beam_deflection_cantilever_point(force: f64, length: f64, e: f64, i: f64) -> f64 {
+    assert!(e > 0.0, "elastic modulus must be positive");
+    assert!(i > 0.0, "second moment of area must be positive");
     force * length.powi(3) / (3.0 * e * i)
 }
 
+/// Simply supported beam center deflection under point load: δ = FL³/(48EI)
 #[must_use]
 pub fn beam_deflection_simply_supported_center(force: f64, length: f64, e: f64, i: f64) -> f64 {
+    assert!(e > 0.0, "elastic modulus must be positive");
+    assert!(i > 0.0, "second moment of area must be positive");
     force * length.powi(3) / (48.0 * e * i)
 }
 
+/// Bending moment: M = F·d
 #[must_use]
 pub fn bending_moment(force: f64, distance: f64) -> f64 {
     force * distance
 }
 
+/// Bending stress at distance y from neutral axis: σ = My/I
 #[must_use]
 pub fn bending_stress(moment: f64, y: f64, i: f64) -> f64 {
+    assert!(i > 0.0, "second moment of area must be positive");
     moment * y / i
 }
 
+/// Second moment of area for a rectangle: I = bh³/12
 #[must_use]
 pub fn second_moment_rectangle(width: f64, height: f64) -> f64 {
     width * height.powi(3) / 12.0
 }
 
+/// Second moment of area for a circle: I = πr⁴/4
 #[must_use]
 pub fn second_moment_circle(radius: f64) -> f64 {
     PI * radius.powi(4) / 4.0
@@ -116,17 +153,21 @@ pub fn second_moment_circle(radius: f64) -> f64 {
 // Failure Criteria
 // ---------------------------------------------------------------------------
 
+/// Von Mises equivalent stress: σ_vm = √(((σ₁-σ₂)² + (σ₂-σ₃)² + (σ₃-σ₁)²)/2)
 #[must_use]
 pub fn von_mises_stress(s1: f64, s2: f64, s3: f64) -> f64 {
     let term = (s1 - s2).powi(2) + (s2 - s3).powi(2) + (s3 - s1).powi(2);
     (term / 2.0).sqrt()
 }
 
+/// Safety factor: n = σ_yield/σ_applied
 #[must_use]
 pub fn safety_factor(yield_strength: f64, applied_stress: f64) -> f64 {
+    assert!(applied_stress != 0.0, "applied_stress must not be zero");
     yield_strength / applied_stress
 }
 
+/// Elastic strain energy density: u = σε/2
 #[must_use]
 pub fn strain_energy_density(stress: f64, strain: f64) -> f64 {
     stress * strain / 2.0
@@ -178,17 +219,14 @@ mod tests {
 
     #[test]
     fn test_true_stress() {
-        let eng_stress = 200e6;
-        let eng_strain = 0.05;
-        let expected = eng_stress * 1.05;
-        assert!(approx_rel(true_stress(eng_stress, eng_strain), expected));
+        // 200e6 * (1 + 0.05) = 210e6
+        assert!(approx_rel(true_stress(200e6, 0.05), 210e6));
     }
 
     #[test]
     fn test_true_strain() {
-        let eng_strain = 0.05;
-        let expected = (1.05_f64).ln();
-        assert!(approx_rel(true_strain(eng_strain), expected));
+        // ln(1.05) ≈ 0.04879016
+        assert!(approx_rel(true_strain(0.05), 0.04879016));
     }
 
     // -- Elastic Moduli --
@@ -210,71 +248,56 @@ mod tests {
 
     #[test]
     fn test_poisson_ratio_from_moduli() {
-        // Steel: E ~ 200 GPa, G ~ 77 GPa => nu ~ 0.2987
+        // Steel: E=200 GPa, G=77 GPa => ν = 200/(2*77) - 1 = 1.2987 - 1 = 0.2987
         let nu = poisson_ratio_from_moduli(200e9, 77e9);
-        assert!(approx_rel(nu, 200e9 / (2.0 * 77e9) - 1.0));
+        assert!(approx_rel(nu, 0.2987013));
     }
 
     #[test]
     fn test_e_from_k_and_g() {
-        let k = 160e9;
-        let g = 80e9;
-        let e = e_from_k_and_g(k, g);
-        let expected = 9.0 * k * g / (3.0 * k + g);
-        assert!(approx_rel(e, expected));
+        // 9*160e9*80e9 / (3*160e9 + 80e9) = 115200e18 / 560e9 ≈ 205.714e9
+        let e = e_from_k_and_g(160e9, 80e9);
+        assert!(approx_rel(e, 205.7142857e9));
     }
 
     #[test]
     fn test_bulk_from_e_and_nu() {
-        let e = 200e9;
-        let nu = 0.3;
-        let expected = e / (3.0 * (1.0 - 2.0 * nu));
-        assert!(approx_rel(bulk_from_e_and_nu(e, nu), expected));
+        // 200e9 / (3*(1-0.6)) = 200e9 / 1.2 ≈ 166.667e9
+        assert!(approx_rel(bulk_from_e_and_nu(200e9, 0.3), 166.6667e9));
     }
 
     #[test]
     fn test_shear_from_e_and_nu() {
-        let e = 200e9;
-        let nu = 0.3;
-        let expected = e / (2.0 * (1.0 + nu));
-        assert!(approx_rel(shear_from_e_and_nu(e, nu), expected));
+        // 200e9 / (2*1.3) = 200e9 / 2.6 ≈ 76.923e9
+        assert!(approx_rel(shear_from_e_and_nu(200e9, 0.3), 76.92308e9));
     }
 
     #[test]
     fn test_moduli_roundtrip() {
-        let e = 200e9;
-        let nu = 0.3;
-        let k = bulk_from_e_and_nu(e, nu);
-        let g = shear_from_e_and_nu(e, nu);
+        // K=166.667e9, G=76.923e9 → E = 9KG/(3K+G) ≈ 200e9
+        let k = bulk_from_e_and_nu(200e9, 0.3);
+        let g = shear_from_e_and_nu(200e9, 0.3);
         let e_recovered = e_from_k_and_g(k, g);
-        assert!(approx_rel(e_recovered, e));
+        assert!(approx_rel(e_recovered, 200e9));
     }
 
     // -- Beam Mechanics --
 
     #[test]
     fn test_cantilever_deflection() {
-        let force = 1000.0;
-        let length = 2.0;
-        let e = 200e9;
-        let i = 8.33e-6;
-        let expected = force * (length as f64).powi(3) / (3.0 * e * i);
+        // FL³/(3EI) = 1000*8 / (3*200e9*8.33e-6) = 8000/4998 ≈ 0.001601 m
         assert!(approx_rel(
-            beam_deflection_cantilever_point(force, length, e, i),
-            expected,
+            beam_deflection_cantilever_point(1000.0, 2.0, 200e9, 8.33e-6),
+            0.0016006403,
         ));
     }
 
     #[test]
     fn test_simply_supported_deflection() {
-        let force = 1000.0;
-        let length = 4.0;
-        let e = 200e9;
-        let i = 8.33e-6;
-        let expected = force * (length as f64).powi(3) / (48.0 * e * i);
+        // FL³/(48EI) = 1000*64 / (48*200e9*8.33e-6) = 64000/79968 ≈ 0.0008003 m
         assert!(approx_rel(
-            beam_deflection_simply_supported_center(force, length, e, i),
-            expected,
+            beam_deflection_simply_supported_center(1000.0, 4.0, 200e9, 8.33e-6),
+            0.00080032013,
         ));
     }
 
@@ -285,26 +308,20 @@ mod tests {
 
     #[test]
     fn test_bending_stress() {
-        let moment = 1500.0;
-        let y = 0.05;
-        let i = 8.33e-6;
-        let expected = moment * y / i;
-        assert!(approx_rel(bending_stress(moment, y, i), expected));
+        // M*y/I = 1500*0.05 / 8.33e-6 = 75 / 8.33e-6 ≈ 9_003_601.44 Pa
+        assert!(approx_rel(bending_stress(1500.0, 0.05, 8.33e-6), 9_003_601.44));
     }
 
     #[test]
     fn test_second_moment_rectangle() {
-        let w = 0.1;
-        let h = 0.2;
-        let expected = w * (h as f64).powi(3) / 12.0;
-        assert!(approx_rel(second_moment_rectangle(w, h), expected));
+        // bh³/12 = 0.1 * 0.008 / 12 = 6.6667e-5
+        assert!(approx_rel(second_moment_rectangle(0.1, 0.2), 6.666667e-5));
     }
 
     #[test]
     fn test_second_moment_circle() {
-        let r = 0.05;
-        let expected = PI * (r as f64).powi(4) / 4.0;
-        assert!(approx_rel(second_moment_circle(r), expected));
+        // πr⁴/4 = π * 6.25e-6 / 4 ≈ 4.90874e-6
+        assert!(approx_rel(second_moment_circle(0.05), 4.90874e-6));
     }
 
     // -- Failure Criteria --
@@ -325,10 +342,8 @@ mod tests {
 
     #[test]
     fn test_von_mises_pure_shear() {
-        // Pure shear: s1 = tau, s2 = 0, s3 = -tau => von Mises = tau * sqrt(3)
-        let tau = 100e6;
-        let expected = tau * 3.0_f64.sqrt();
-        assert!(approx_rel(von_mises_stress(tau, 0.0, -tau), expected));
+        // Pure shear: s1=τ, s2=0, s3=-τ => von Mises = τ√3 = 100e6 * 1.73205 ≈ 173.205e6
+        assert!(approx_rel(von_mises_stress(100e6, 0.0, -100e6), 173.205e6));
     }
 
     #[test]
@@ -339,5 +354,11 @@ mod tests {
     #[test]
     fn test_strain_energy_density() {
         assert!(approx(strain_energy_density(200e6, 0.001), 100e3));
+    }
+
+    #[test]
+    fn test_approx_rel_near_zero_b() {
+        assert!(approx_rel(0.0, 0.0));
+        assert!(!approx_rel(1.0, 0.0));
     }
 }

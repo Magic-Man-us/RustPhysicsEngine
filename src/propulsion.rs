@@ -1,19 +1,23 @@
-use crate::math::constants::{G_ACCEL, PI, R as GAS_R};
+use crate::math::constants::{PI, R as GAS_R};
 
 // ── Rocket Equation ──
 
 /// Tsiolkovsky rocket equation: Δv = ve × ln(m0/mf)
 pub fn tsiolkovsky_delta_v(exhaust_velocity: f64, mass_initial: f64, mass_final: f64) -> f64 {
+    assert!(mass_final > 0.0, "mass_final must be positive");
     exhaust_velocity * (mass_initial / mass_final).ln()
 }
 
 /// Mass ratio from the rocket equation inverted: m0/mf = exp(Δv/ve)
 pub fn mass_ratio(delta_v: f64, exhaust_velocity: f64) -> f64 {
+    assert!(exhaust_velocity > 0.0, "exhaust_velocity must be positive");
     (delta_v / exhaust_velocity).exp()
 }
 
 /// Specific impulse: Isp = F / (ṁ × g)
 pub fn specific_impulse(thrust: f64, mass_flow_rate: f64, g: f64) -> f64 {
+    assert!(mass_flow_rate > 0.0, "mass_flow_rate must be positive");
+    assert!(g > 0.0, "g must be positive");
     thrust / (mass_flow_rate * g)
 }
 
@@ -52,6 +56,8 @@ pub fn delta_v_staged(stages: &[(f64, f64, f64)]) -> f64 {
 
 /// Hohmann transfer Δv values. Returns (Δv1, Δv2) for departure and arrival burns.
 pub fn hohmann_delta_v(mu: f64, r1: f64, r2: f64) -> (f64, f64) {
+    assert!(r1 > 0.0, "r1 must be positive");
+    assert!(r2 > 0.0, "r2 must be positive");
     let dv1 = (mu / r1).sqrt() * ((2.0 * r2 / (r1 + r2)).sqrt() - 1.0);
     let dv2 = (mu / r2).sqrt() * (1.0 - (2.0 * r1 / (r1 + r2)).sqrt());
     (dv1, dv2)
@@ -59,6 +65,7 @@ pub fn hohmann_delta_v(mu: f64, r1: f64, r2: f64) -> (f64, f64) {
 
 /// Transfer time for a Hohmann orbit: t = π√((r1+r2)³ / (8μ))
 pub fn hohmann_transfer_time(mu: f64, r1: f64, r2: f64) -> f64 {
+    assert!(mu > 0.0, "mu must be positive");
     let a = r1 + r2;
     PI * (a * a * a / (8.0 * mu)).sqrt()
 }
@@ -106,6 +113,8 @@ pub fn nozzle_exit_velocity(
     gamma: f64,
     pressure_ratio: f64,
 ) -> f64 {
+    assert!(molar_mass > 0.0, "molar_mass must be positive");
+    assert!(gamma > 1.0, "gamma must be greater than 1");
     let exponent = (gamma - 1.0) / gamma;
     let term = 1.0 - pressure_ratio.powf(exponent);
     let coeff = 2.0 * gamma * GAS_R * chamber_temp / (molar_mass * (gamma - 1.0));
@@ -121,6 +130,9 @@ pub fn throat_area(
     gamma: f64,
     molar_mass: f64,
 ) -> f64 {
+    assert!(chamber_pressure > 0.0, "chamber_pressure must be positive");
+    assert!(molar_mass > 0.0, "molar_mass must be positive");
+    assert!(gamma > 1.0, "gamma must be greater than 1");
     let gp1 = gamma + 1.0;
     let gm1 = gamma - 1.0;
     let throat_factor = (2.0 / gp1).powf(gp1 / (2.0 * gm1));
@@ -131,6 +143,8 @@ pub fn throat_area(
 /// Area ratio Ae/A* as a function of Mach number and heat capacity ratio:
 /// Ae/A* = (1/M) × ((2/(γ+1)) × (1 + (γ-1)/2 × M²))^((γ+1)/(2(γ-1)))
 pub fn area_ratio_from_mach(mach: f64, gamma: f64) -> f64 {
+    assert!(mach > 0.0, "mach must be positive");
+    assert!(gamma > 1.0, "gamma must be greater than 1");
     let gp1 = gamma + 1.0;
     let gm1 = gamma - 1.0;
     let inner = (2.0 / gp1) * (1.0 + gm1 / 2.0 * mach * mach);
@@ -141,6 +155,7 @@ pub fn area_ratio_from_mach(mach: f64, gamma: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::math::constants::G_ACCEL;
 
     const TOLERANCE: f64 = 1e-6;
     const LOOSE_TOLERANCE: f64 = 0.01;
@@ -162,7 +177,7 @@ mod tests {
         let m0 = 2_970_000.0;
         let mf = 870_000.0;
         let dv = tsiolkovsky_delta_v(ve, m0, mf);
-        let expected = ve * (m0 / mf).ln();
+        let expected = 3167.785971982139;
         assert!(approx(dv, expected, TOLERANCE));
     }
 
@@ -216,7 +231,7 @@ mod tests {
         let pa = 101_325.0;
         let ae = 2.0;
         let f = thrust_with_pressure(mdot, ve, pe, pa, ae);
-        let expected = mdot * ve + (pe - pa) * ae;
+        let expected = 197_350.0;
         assert!(approx(f, expected, TOLERANCE));
     }
 
@@ -278,7 +293,7 @@ mod tests {
         let angle = 28.5_f64.to_radians();
         let dv = delta_v_plane_change(v, angle);
         // Δv = 2 × 7700 × sin(14.25°) ≈ 3790 m/s
-        let expected = 2.0 * v * (angle / 2.0).sin();
+        let expected = 3790.760712646493;
         assert!(approx(dv, expected, TOLERANCE));
     }
 

@@ -13,7 +13,9 @@ pub struct Particle {
 }
 
 impl Particle {
+    /// Create a free particle at the given position with the given mass.
     pub fn new(position: Vec3, mass: f64) -> Self {
+        assert!(mass > 0.0, "particle mass must be positive");
         Self {
             position,
             previous_position: position,
@@ -23,6 +25,7 @@ impl Particle {
         }
     }
 
+    /// Create a pinned (immovable) particle at the given position.
     pub fn new_pinned(position: Vec3) -> Self {
         Self {
             position,
@@ -44,6 +47,7 @@ pub struct Spring {
 }
 
 impl Spring {
+    /// Create a spring connecting particles a and b with given rest length, stiffness, and damping.
     pub fn new(a: usize, b: usize, rest_length: f64, stiffness: f64, damping: f64) -> Self {
         Self {
             particle_a: a,
@@ -64,6 +68,7 @@ pub struct MassSpringSystem {
 }
 
 impl MassSpringSystem {
+    /// Create an empty mass-spring system with the given gravity vector.
     pub fn new(gravity: Vec3) -> Self {
         Self {
             particles: Vec::new(),
@@ -73,12 +78,14 @@ impl MassSpringSystem {
         }
     }
 
+    /// Add a particle to the system, returning its index.
     pub fn add_particle(&mut self, p: Particle) -> usize {
         let idx = self.particles.len();
         self.particles.push(p);
         idx
     }
 
+    /// Add a spring constraint to the system.
     pub fn add_spring(&mut self, s: Spring) {
         self.springs.push(s);
     }
@@ -310,6 +317,8 @@ pub fn create_cloth_grid(
     stiffness: f64,
     damping: f64,
 ) -> MassSpringSystem {
+    assert!(mass > 0.0, "particle mass must be positive");
+    assert!(spacing > 0.0, "grid spacing must be positive");
     let mut system = MassSpringSystem::new(Vec3::new(0.0, DEFAULT_GRAVITY_Y, 0.0));
 
     // Create particles in row-major order: index = row * width + col
@@ -390,6 +399,8 @@ pub fn create_rope(
     stiffness: f64,
     damping: f64,
 ) -> MassSpringSystem {
+    assert!(mass > 0.0, "particle mass must be positive");
+    assert!(spacing > 0.0, "rope spacing must be positive");
     let mut system = MassSpringSystem::new(Vec3::new(0.0, DEFAULT_GRAVITY_Y, 0.0));
 
     for i in 0..n_particles {
@@ -476,10 +487,10 @@ mod tests {
             prev_dist = dist;
         }
 
+        let num_crossings = crossings.len();
         assert!(
-            crossings.len() >= 2,
-            "expected at least 2 crossings, got {}",
-            crossings.len()
+            num_crossings >= 2,
+            "expected at least 2 crossings, got {num_crossings}",
         );
         let measured_period = crossings[1] - crossings[0];
         assert!(
@@ -501,13 +512,12 @@ mod tests {
             system.step_verlet(0.001);
         }
 
+        let actual_pos = system.particles[0].position;
         assert!(
-            approx(system.particles[0].position.x, pinned_pos.x, TOLERANCE)
-                && approx(system.particles[0].position.y, pinned_pos.y, TOLERANCE)
-                && approx(system.particles[0].position.z, pinned_pos.z, TOLERANCE),
-            "pinned particle moved from {:?} to {:?}",
-            pinned_pos,
-            system.particles[0].position
+            approx(actual_pos.x, pinned_pos.x, TOLERANCE)
+                && approx(actual_pos.y, pinned_pos.y, TOLERANCE)
+                && approx(actual_pos.z, pinned_pos.z, TOLERANCE),
+            "pinned particle moved from {pinned_pos:?} to {actual_pos:?}",
         );
     }
 
@@ -529,19 +539,18 @@ mod tests {
         }
 
         // The bottom particle should be below the pinned one
+        let y0 = rope.particles[0].position.y;
+        let y1 = rope.particles[1].position.y;
+        let y2 = rope.particles[2].position.y;
         assert!(
-            rope.particles[2].position.y < rope.particles[0].position.y,
-            "bottom particle y={:.4} should be below pinned y={:.4}",
-            rope.particles[2].position.y,
-            rope.particles[0].position.y
+            y2 < y0,
+            "bottom particle y={y2:.4} should be below pinned y={y0:.4}",
         );
 
         // Each successive particle should be lower
         assert!(
-            rope.particles[1].position.y > rope.particles[2].position.y,
-            "particle 1 y={:.4} should be above particle 2 y={:.4}",
-            rope.particles[1].position.y,
-            rope.particles[2].position.y
+            y1 > y2,
+            "particle 1 y={y1:.4} should be above particle 2 y={y2:.4}",
         );
 
         // Check that bottom particle is roughly at the right position.
@@ -662,11 +671,11 @@ mod tests {
         // Shear down-left: (h-1) * (w-1)
         let diag_left = (h - 1) * (w - 1);
         let expected_springs = horizontal + vertical + diag_right + diag_left;
+        let actual_springs = cloth.springs.len();
         assert_eq!(
-            cloth.springs.len(),
+            actual_springs,
             expected_springs,
-            "expected {expected_springs} springs, got {}",
-            cloth.springs.len()
+            "expected {expected_springs} springs, got {actual_springs}",
         );
 
         // Top row should be pinned
@@ -741,6 +750,209 @@ mod tests {
             "momentum y: initial={:.6}, final={:.6}",
             initial_momentum.y,
             final_momentum.y
+        );
+    }
+
+    #[test]
+    fn test_step_verlet_coincident_particles_skips_force() {
+        // Two particles at the exact same position: dist < MIN_DISTANCE branch
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+        let origin = Vec3::new(1.0, 2.0, 3.0);
+        system.add_particle(Particle::new(origin, 1.0));
+        system.add_particle(Particle::new(origin, 1.0));
+        system.add_spring(Spring::new(0, 1, 1.0, 100.0, 0.5));
+
+        let pos_before_a = system.particles[0].position;
+        let pos_before_b = system.particles[1].position;
+
+        system.step_verlet(0.01);
+
+        // With zero gravity and coincident particles, spring force is skipped,
+        // so positions stay the same (Verlet: new = 2*pos - prev + 0 = pos)
+        assert!(approx(system.particles[0].position.x, pos_before_a.x, TOLERANCE));
+        assert!(approx(system.particles[0].position.y, pos_before_a.y, TOLERANCE));
+        assert!(approx(system.particles[1].position.x, pos_before_b.x, TOLERANCE));
+        assert!(approx(system.particles[1].position.y, pos_before_b.y, TOLERANCE));
+    }
+
+    #[test]
+    fn test_step_verlet_zero_dt_applies_spring_force_without_damping() {
+        // dt=0 branch: spring force applied without damping calculation
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+        let rest = 1.0;
+        let stretch = 0.5;
+        let k = 100.0;
+
+        system.add_particle(Particle::new(Vec3::new(0.0, 0.0, 0.0), 1.0));
+        system.add_particle(Particle::new(Vec3::new(rest + stretch, 0.0, 0.0), 1.0));
+        system.add_spring(Spring::new(0, 1, rest, k, 10.0));
+
+        // With dt=0, Verlet update is pos*2 - prev + acc*0 = pos (no movement),
+        // but the spring force accumulation still runs through the dt<=0 branch
+        system.step_verlet(0.0);
+
+        // Particles should not move (dt^2 = 0)
+        assert!(approx(system.particles[0].position.x, 0.0, TOLERANCE));
+        assert!(approx(system.particles[1].position.x, rest + stretch, TOLERANCE));
+    }
+
+    #[test]
+    fn test_constraint_solver_free_a_pinned_b() {
+        // Exercises the (false, true) match arm: particle A is free, B is pinned
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+
+        // A is free, B is pinned -- spring connects them
+        system.add_particle(Particle::new(Vec3::new(0.0, 0.0, 0.0), 1.0));
+        system.add_particle(Particle::new_pinned(Vec3::new(3.0, 0.0, 0.0)));
+        system.add_spring(Spring::new(0, 1, 1.0, 100.0, 0.0));
+
+        // Run constraint solver: A should be pulled toward B since rest < dist
+        system.step_with_constraints(0.01, 20);
+
+        // A should have moved closer to B (toward x=3), getting correction*2.0
+        let ax = system.particles[0].position.x;
+        assert!(
+            ax > 0.0,
+            "free particle A should move toward pinned B, got x={ax:.4}",
+        );
+        // B should remain pinned
+        let bx = system.particles[1].position.x;
+        assert!(
+            approx(bx, 3.0, TOLERANCE),
+            "pinned particle B should not move, got x={bx:.4}",
+        );
+    }
+
+    #[test]
+    fn test_constraint_solver_both_pinned() {
+        // Exercises the (true, true) match arm: both particles are pinned
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+
+        let pos_a = Vec3::new(0.0, 0.0, 0.0);
+        let pos_b = Vec3::new(5.0, 0.0, 0.0);
+        system.add_particle(Particle::new_pinned(pos_a));
+        system.add_particle(Particle::new_pinned(pos_b));
+        system.add_spring(Spring::new(0, 1, 1.0, 100.0, 0.0));
+
+        system.step_with_constraints(0.01, 10);
+
+        // Neither particle should move
+        assert!(approx(system.particles[0].position.x, pos_a.x, TOLERANCE));
+        assert!(approx(system.particles[0].position.y, pos_a.y, TOLERANCE));
+        assert!(approx(system.particles[1].position.x, pos_b.x, TOLERANCE));
+        assert!(approx(system.particles[1].position.y, pos_b.y, TOLERANCE));
+    }
+
+    #[test]
+    fn test_constraint_solver_coincident_particles_skips() {
+        // Exercises the dist < MIN_DISTANCE continue in constraint loop
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+
+        let pos = Vec3::new(1.0, 1.0, 1.0);
+        system.add_particle(Particle::new(pos, 1.0));
+        system.add_particle(Particle::new(pos, 1.0));
+        system.add_spring(Spring::new(0, 1, 1.0, 100.0, 0.0));
+
+        // Should not panic even with coincident particles
+        system.step_with_constraints(0.0, 5);
+
+        // Particles remain at the same position (dt=0 means no Verlet movement)
+        assert!(approx(system.particles[0].position.x, pos.x, TOLERANCE));
+        assert!(approx(system.particles[1].position.x, pos.x, TOLERANCE));
+    }
+
+    #[test]
+    fn test_total_energy_with_pinned_particles() {
+        // Exercises the pinned-particle skip in total_energy
+        let mut system = MassSpringSystem::new(Vec3::new(0.0, -9.81, 0.0));
+
+        system.add_particle(Particle::new_pinned(Vec3::new(0.0, 5.0, 0.0)));
+        system.add_particle(Particle::new(Vec3::new(0.0, 3.0, 0.0), 2.0));
+        system.add_spring(Spring::new(0, 1, 1.0, 50.0, 0.0));
+
+        let dt = 0.01;
+        let energy = system.total_energy(dt);
+
+        // Energy should come only from the free particle and the spring.
+        // Pinned particle contributes nothing to KE or PE_grav.
+        // Free particle: vel=0 (pos==prev_pos), so KE=0.
+        // PE_grav = -m * g.dot(pos) = -2.0 * (-9.81*3.0) = 58.86
+        // Spring stretch = 2.0 - 1.0 = 1.0, PE_spring = 0.5 * 50 * 1.0 = 25.0
+        let expected = 58.86 + 25.0;
+        assert!(
+            approx(energy, expected, 0.01),
+            "energy {energy:.4} vs expected {expected:.4}"
+        );
+    }
+
+    #[test]
+    fn test_total_energy_zero_dt() {
+        // Exercises the dt==0 branch in total_energy (velocity becomes ZERO)
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+
+        let mut p = Particle::new(Vec3::new(1.0, 0.0, 0.0), 1.0);
+        // Offset previous position to simulate velocity -- but dt=0 should ignore it
+        p.previous_position = Vec3::new(0.0, 0.0, 0.0);
+        system.add_particle(p);
+        system.add_spring(Spring::new(0, 0, 0.0, 0.0, 0.0));
+
+        let energy = system.total_energy(0.0);
+
+        // With dt=0, velocity is ZERO, so KE=0. No gravity, so PE_grav=0.
+        // Spring from particle 0 to itself: delta=0, stretch=0, PE_spring=0.
+        assert!(
+            approx(energy, 0.0, TOLERANCE),
+            "energy with dt=0 should be 0, got {energy:.6}"
+        );
+    }
+
+    #[test]
+    fn test_total_momentum_with_pinned_particles() {
+        // Exercises the pinned-particle skip in total_momentum
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+
+        // Pinned particle with offset previous_position (should be excluded)
+        let mut pinned = Particle::new_pinned(Vec3::new(0.0, 0.0, 0.0));
+        pinned.previous_position = Vec3::new(-1.0, 0.0, 0.0);
+        system.add_particle(pinned);
+
+        // Free particle with known velocity
+        let dt = 0.01;
+        let mut free = Particle::new(Vec3::new(5.0, 0.0, 0.0), 2.0);
+        free.previous_position = Vec3::new(4.9, 0.0, 0.0);
+        system.add_particle(free);
+
+        let momentum = system.total_momentum(dt);
+
+        // Only the free particle contributes: v = (5.0 - 4.9)/0.01 = 10.0
+        // momentum = m*v = 2.0 * 10.0 = 20.0
+        assert!(
+            approx(momentum.x, 20.0, TOLERANCE),
+            "momentum x should be 20.0, got {:.6}",
+            momentum.x
+        );
+        assert!(
+            approx(momentum.y, 0.0, TOLERANCE),
+            "momentum y should be 0, got {:.6}",
+            momentum.y
+        );
+    }
+
+    #[test]
+    fn test_total_momentum_zero_dt() {
+        // Exercises the dt==0 branch in total_momentum (velocity becomes ZERO)
+        let mut system = MassSpringSystem::new(Vec3::ZERO);
+
+        let mut p = Particle::new(Vec3::new(5.0, 0.0, 0.0), 3.0);
+        p.previous_position = Vec3::new(0.0, 0.0, 0.0);
+        system.add_particle(p);
+
+        let momentum = system.total_momentum(0.0);
+
+        assert!(
+            approx(momentum.x, 0.0, TOLERANCE),
+            "momentum with dt=0 should be 0, got {:.6}",
+            momentum.x
         );
     }
 }

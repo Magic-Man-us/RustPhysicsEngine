@@ -7,11 +7,13 @@ pub const FARADAY: f64 = 96485.0;
 
 /// Arrhenius equation: k = A × exp(-Ea / (RT))
 pub fn arrhenius_rate(pre_exponential: f64, activation_energy: f64, temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     pre_exponential * (-activation_energy / (constants::R * temperature)).exp()
 }
 
 /// First-order half-life: t½ = ln(2) / k
 pub fn half_life_first_order(rate_constant: f64) -> f64 {
+    assert!(rate_constant > 0.0, "rate_constant must be positive");
     f64::ln(2.0) / rate_constant
 }
 
@@ -22,6 +24,7 @@ pub fn concentration_first_order(c0: f64, rate_constant: f64, time: f64) -> f64 
 
 /// Second-order integrated rate law: 1/[A] = 1/[A]₀ + kt, returns [A]
 pub fn concentration_second_order(c0: f64, rate_constant: f64, time: f64) -> f64 {
+    assert!(c0 > 0.0, "initial concentration must be positive");
     1.0 / (1.0 / c0 + rate_constant * time)
 }
 
@@ -49,11 +52,14 @@ pub fn gibbs_free_energy(enthalpy: f64, temperature: f64, entropy: f64) -> f64 {
 
 /// Equilibrium constant from Gibbs energy: K = exp(-ΔG / (RT))
 pub fn equilibrium_constant_from_gibbs(delta_g: f64, temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     (-delta_g / (constants::R * temperature)).exp()
 }
 
 /// Van't Hoff equation: ln(K2/K1) = -ΔH/R × (1/T2 - 1/T1), returns K2
 pub fn vant_hoff(k1: f64, delta_h: f64, t1: f64, t2: f64) -> f64 {
+    assert!(t1 > 0.0, "t1 must be positive");
+    assert!(t2 > 0.0, "t2 must be positive");
     let exponent = -delta_h / constants::R * (1.0 / t2 - 1.0 / t1);
     k1 * exponent.exp()
 }
@@ -81,6 +87,8 @@ pub fn nernst_potential(
     n_electrons: f64,
     reaction_quotient: f64,
 ) -> f64 {
+    assert!(n_electrons > 0.0, "n_electrons must be positive");
+    assert!(reaction_quotient > 0.0, "reaction_quotient must be positive");
     e_standard
         - (constants::R * temperature / (n_electrons * FARADAY)) * reaction_quotient.ln()
 }
@@ -97,6 +105,7 @@ pub fn faraday_electrolysis(
     molar_mass: f64,
     n_electrons: f64,
 ) -> f64 {
+    assert!(n_electrons > 0.0, "n_electrons must be positive");
     (current * time * molar_mass) / (n_electrons * FARADAY)
 }
 
@@ -104,11 +113,13 @@ pub fn faraday_electrolysis(
 
 /// pH = -log₁₀([H⁺])
 pub fn ph(h_concentration: f64) -> f64 {
+    assert!(h_concentration > 0.0, "h_concentration must be positive");
     -h_concentration.log10()
 }
 
 /// pOH = -log₁₀([OH⁻])
 pub fn poh(oh_concentration: f64) -> f64 {
+    assert!(oh_concentration > 0.0, "oh_concentration must be positive");
     -oh_concentration.log10()
 }
 
@@ -124,11 +135,13 @@ pub fn osmotic_pressure(molarity: f64, temperature: f64, i_factor: f64) -> f64 {
 
 /// Molarity: M = n / V
 pub fn molarity(moles: f64, volume_liters: f64) -> f64 {
+    assert!(volume_liters > 0.0, "volume_liters must be positive");
     moles / volume_liters
 }
 
 /// Dilution: C2 = C1 × V1 / V2
 pub fn dilution(c1: f64, v1: f64, v2: f64) -> f64 {
+    assert!(v2 > 0.0, "v2 must be positive");
     c1 * v1 / v2
 }
 
@@ -155,35 +168,31 @@ mod tests {
     #[test]
     fn test_arrhenius_rate() {
         let k = arrhenius_rate(1e13, 75000.0, 300.0);
-        let expected = 1e13 * (-75000.0 / (constants::R * 300.0)).exp();
-        assert!(approx_rel(k, expected, 1e-9));
+        assert!(approx_rel(k, 0.874_168, 1e-4));
     }
 
     #[test]
     fn test_half_life_first_order() {
         let t = half_life_first_order(0.05);
-        assert!(approx_rel(t, f64::ln(2.0) / 0.05, 1e-9));
+        assert!(approx_rel(t, 13.862_944, 1e-4));
     }
 
     #[test]
     fn test_concentration_first_order() {
         let c = concentration_first_order(1.0, 0.1, 10.0);
-        let expected = (-1.0_f64).exp();
-        assert!(approx_rel(c, expected, 1e-9));
+        assert!(approx_rel(c, 0.367_879_441, 1e-6));
     }
 
     #[test]
     fn test_concentration_second_order() {
         let c = concentration_second_order(1.0, 0.5, 2.0);
-        let expected = 1.0 / (1.0 + 0.5 * 2.0);
-        assert!(approx(c, expected));
+        assert!(approx(c, 0.5));
     }
 
     #[test]
     fn test_reaction_rate() {
         let r = reaction_rate(0.5, &[2.0, 3.0], &[1.0, 2.0]);
-        let expected = 0.5 * 2.0 * 9.0;
-        assert!(approx(r, expected));
+        assert!(approx(r, 9.0));
     }
 
     #[test]
@@ -197,8 +206,7 @@ mod tests {
     #[test]
     fn test_gibbs_free_energy() {
         let dg = gibbs_free_energy(-100000.0, 298.15, -200.0);
-        let expected = -100000.0 - 298.15 * (-200.0);
-        assert!(approx(dg, expected));
+        assert!(approx(dg, -40370.0));
     }
 
     #[test]
@@ -210,23 +218,19 @@ mod tests {
     #[test]
     fn test_equilibrium_constant_negative_dg() {
         let k = equilibrium_constant_from_gibbs(-5000.0, 298.15);
-        let expected = (5000.0 / (constants::R * 298.15)).exp();
-        assert!(approx_rel(k, expected, 1e-9));
+        assert!(approx_rel(k, 7.5158, 1e-3));
     }
 
     #[test]
     fn test_vant_hoff() {
         let k2 = vant_hoff(1.0, -40000.0, 300.0, 350.0);
-        let exponent = 40000.0 / constants::R * (1.0 / 350.0 - 1.0 / 300.0);
-        let expected = exponent.exp();
-        assert!(approx_rel(k2, expected, 1e-9));
+        assert!(approx_rel(k2, 0.10117, 1e-3));
     }
 
     #[test]
     fn test_hess_law() {
         let dh = hess_law(&[-100.0, 50.0, -200.0], &[1.0, -2.0, 1.0]);
-        let expected = -100.0 + (-100.0) + (-200.0);
-        assert!(approx(dh, expected));
+        assert!(approx(dh, -400.0));
     }
 
     #[test]
@@ -246,9 +250,7 @@ mod tests {
     #[test]
     fn test_nernst_potential_nonstandard() {
         let e = nernst_potential(0.76, 298.15, 2.0, 0.01);
-        let correction = (constants::R * 298.15 / (2.0 * FARADAY)) * 0.01_f64.ln();
-        let expected = 0.76 - correction;
-        assert!(approx_rel(e, expected, 1e-9));
+        assert!(approx_rel(e, 0.819_15, 1e-3));
     }
 
     #[test]
@@ -260,8 +262,7 @@ mod tests {
     #[test]
     fn test_faraday_electrolysis() {
         let m = faraday_electrolysis(10.0, 3600.0, 63.546, 2.0);
-        let expected = (10.0 * 3600.0 * 63.546) / (2.0 * FARADAY);
-        assert!(approx_rel(m, expected, 1e-9));
+        assert!(approx_rel(m, 11.8553, 1e-3));
     }
 
     // ── Solution Chemistry ──
@@ -295,8 +296,7 @@ mod tests {
     #[test]
     fn test_osmotic_pressure() {
         let pi = osmotic_pressure(0.1, 298.15, 2.0);
-        let expected = 2.0 * 0.1 * constants::R * 298.15;
-        assert!(approx_rel(pi, expected, 1e-9));
+        assert!(approx_rel(pi, 495.79, 1e-3));
     }
 
     #[test]
@@ -309,5 +309,11 @@ mod tests {
     fn test_dilution() {
         let c2 = dilution(1.0, 0.5, 2.0);
         assert!(approx(c2, 0.25));
+    }
+
+    #[test]
+    fn test_approx_rel_zero_b() {
+        assert!(approx_rel(0.0, 0.0, 0.01));
+        assert!(!approx_rel(1.0, 0.0, 0.01));
     }
 }

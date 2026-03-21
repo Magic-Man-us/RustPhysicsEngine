@@ -1,10 +1,8 @@
 use std::ops::{Add, Mul, Sub};
 
-use crate::math::constants::PI;
 use crate::math::Vec3;
 
 const SINGULARITY_THRESHOLD: f64 = 1e-12;
-const APPROX_EPSILON: f64 = 1e-9;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Mat3 {
@@ -12,6 +10,7 @@ pub struct Mat3 {
 }
 
 impl Mat3 {
+    /// Returns the 3x3 zero matrix.
     #[must_use]
     pub fn zero() -> Self {
         Self {
@@ -19,6 +18,7 @@ impl Mat3 {
         }
     }
 
+    /// Returns the 3x3 identity matrix.
     #[must_use]
     pub fn identity() -> Self {
         Self {
@@ -30,11 +30,13 @@ impl Mat3 {
         }
     }
 
+    /// Constructs a 3x3 matrix from three row arrays.
     #[must_use]
     pub fn from_rows(r0: [f64; 3], r1: [f64; 3], r2: [f64; 3]) -> Self {
         Self { data: [r0, r1, r2] }
     }
 
+    /// Computes the determinant using the Sarrus rule (cofactor expansion along the first row).
     #[must_use]
     pub fn determinant(&self) -> f64 {
         let d = &self.data;
@@ -43,6 +45,7 @@ impl Mat3 {
             + d[0][2] * (d[1][0] * d[2][1] - d[1][1] * d[2][0])
     }
 
+    /// Returns the transpose of this matrix: A^T[i][j] = A[j][i].
     #[must_use]
     pub fn transpose(&self) -> Self {
         let d = &self.data;
@@ -55,6 +58,7 @@ impl Mat3 {
         }
     }
 
+    /// Computes the matrix inverse via the adjugate method: A⁻¹ = adj(A) / det(A).
     #[must_use]
     pub fn inverse(&self) -> Option<Self> {
         let det = self.determinant();
@@ -86,11 +90,13 @@ impl Mat3 {
         })
     }
 
+    /// Returns the trace (sum of diagonal elements) of the matrix.
     #[must_use]
     pub fn trace(&self) -> f64 {
         self.data[0][0] + self.data[1][1] + self.data[2][2]
     }
 
+    /// Multiplies this matrix by a column vector: result = A × v.
     #[must_use]
     pub fn mul_vec(&self, v: Vec3) -> Vec3 {
         let d = &self.data;
@@ -101,6 +107,7 @@ impl Mat3 {
         )
     }
 
+    /// Multiplies two 3x3 matrices: result = A × B.
     #[must_use]
     pub fn mul_mat(&self, other: &Mat3) -> Mat3 {
         let a = &self.data;
@@ -114,6 +121,7 @@ impl Mat3 {
         Mat3 { data: result }
     }
 
+    /// Returns a uniform scaling matrix: diag(s, s, s).
     #[must_use]
     pub fn scale(s: f64) -> Self {
         Self {
@@ -125,6 +133,7 @@ impl Mat3 {
         }
     }
 
+    /// Multiplies every element of the matrix by a scalar.
     #[must_use]
     pub fn mul_scalar(&self, s: f64) -> Self {
         let d = &self.data;
@@ -180,6 +189,7 @@ impl Sub<Mat3> for Mat3 {
 
 // --- Rotation matrices ---
 
+/// Rotation matrix about the x-axis by the given angle in radians.
 #[must_use]
 pub fn rotation_x(angle: f64) -> Mat3 {
     let (s, c) = angle.sin_cos();
@@ -190,6 +200,7 @@ pub fn rotation_x(angle: f64) -> Mat3 {
     )
 }
 
+/// Rotation matrix about the y-axis by the given angle in radians.
 #[must_use]
 pub fn rotation_y(angle: f64) -> Mat3 {
     let (s, c) = angle.sin_cos();
@@ -200,6 +211,7 @@ pub fn rotation_y(angle: f64) -> Mat3 {
     )
 }
 
+/// Rotation matrix about the z-axis by the given angle in radians.
 #[must_use]
 pub fn rotation_z(angle: f64) -> Mat3 {
     let (s, c) = angle.sin_cos();
@@ -251,6 +263,7 @@ pub fn cartesian_to_spherical(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     (r, theta, phi)
 }
 
+/// Converts spherical coordinates (r, theta, phi) to Cartesian (x, y, z).
 #[must_use]
 pub fn spherical_to_cartesian(r: f64, theta: f64, phi: f64) -> (f64, f64, f64) {
     let (sin_theta, cos_theta) = theta.sin_cos();
@@ -270,12 +283,14 @@ pub fn cartesian_to_cylindrical(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     (rho, phi, z)
 }
 
+/// Converts cylindrical coordinates (rho, phi, z) to Cartesian (x, y, z).
 #[must_use]
 pub fn cylindrical_to_cartesian(rho: f64, phi: f64, z: f64) -> (f64, f64, f64) {
     let (sin_phi, cos_phi) = phi.sin_cos();
     (rho * cos_phi, rho * sin_phi, z)
 }
 
+/// Converts 2D polar coordinates (r, theta) to Cartesian (x, y).
 #[must_use]
 pub fn polar_to_cartesian(r: f64, theta: f64) -> (f64, f64) {
     let (sin_t, cos_t) = theta.sin_cos();
@@ -293,6 +308,9 @@ pub fn cartesian_to_polar(x: f64, y: f64) -> (f64, f64) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::math::constants::PI;
+
+    const APPROX_EPSILON: f64 = 1e-9;
 
     fn approx(a: f64, b: f64) -> bool {
         (a - b).abs() < APPROX_EPSILON
@@ -441,10 +459,10 @@ mod tests {
     #[test]
     fn test_rotation_matrix_determinant_is_one() {
         let r = rotation_axis_angle(Vec3::new(0.0, 1.0, 0.0), 0.75);
+        let det = r.determinant();
         assert!(
-            approx(r.determinant(), 1.0),
-            "Rotation matrix determinant should be 1, got {}",
-            r.determinant()
+            approx(det, 1.0),
+            "Rotation matrix determinant should be 1, got {det}",
         );
     }
 
@@ -512,5 +530,31 @@ mod tests {
     fn test_origin_spherical() {
         let (r, theta, phi) = cartesian_to_spherical(0.0, 0.0, 0.0);
         assert!(approx(r, 0.0) && approx(theta, 0.0) && approx(phi, 0.0));
+    }
+
+    #[test]
+    fn test_mul_vec_non_identity() {
+        let m = Mat3::from_rows([2.0, 0.0, 0.0], [0.0, 3.0, 0.0], [0.0, 0.0, 4.0]);
+        let v = Vec3::new(1.0, 2.0, 3.0);
+        let result = m.mul_vec(v);
+        assert!(approx(result.x, 2.0) && approx(result.y, 6.0) && approx(result.z, 12.0));
+    }
+
+    #[test]
+    fn test_mul_mat_non_trivial() {
+        let a = Mat3::from_rows([1.0, 2.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]);
+        let b = Mat3::from_rows([1.0, 0.0, 0.0], [3.0, 1.0, 0.0], [0.0, 0.0, 1.0]);
+        let c = a.mul_mat(&b);
+        // c[0][0] = 1*1+2*3+0*0 = 7, c[0][1] = 1*0+2*1+0*0 = 2
+        assert!(approx(c.data[0][0], 7.0), "got {}", c.data[0][0]);
+        assert!(approx(c.data[0][1], 2.0), "got {}", c.data[0][1]);
+        assert!(approx(c.data[1][0], 3.0), "got {}", c.data[1][0]);
+    }
+
+    #[test]
+    fn test_mat3_approx_eq_different() {
+        let a = Mat3::identity();
+        let b = Mat3::from_rows([2.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]);
+        assert!(!mat3_approx_eq(&a, &b));
     }
 }

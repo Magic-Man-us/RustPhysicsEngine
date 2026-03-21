@@ -23,7 +23,12 @@ pub struct RigidBody {
 
 impl RigidBody {
     #[must_use]
+    /// Create a rigid body with given mass and diagonal inertia tensor [Ix, Iy, Iz].
     pub fn new(mass: f64, inertia: [f64; 3]) -> Self {
+        assert!(mass > 0.0, "rigid body mass must be positive");
+        assert!(inertia[0] > 0.0, "inertia Ix must be positive");
+        assert!(inertia[1] > 0.0, "inertia Iy must be positive");
+        assert!(inertia[2] > 0.0, "inertia Iz must be positive");
         Self {
             position: Vec3::ZERO,
             velocity: Vec3::ZERO,
@@ -37,13 +42,21 @@ impl RigidBody {
     }
 
     #[must_use]
+    /// Create a rigid body with uniform sphere inertia: I = 2mr²/5
     pub fn new_sphere(mass: f64, radius: f64) -> Self {
+        assert!(mass > 0.0, "sphere mass must be positive");
+        assert!(radius > 0.0, "sphere radius must be positive");
         let i = SPHERE_INERTIA_FACTOR * mass * radius * radius;
         Self::new(mass, [i, i, i])
     }
 
     #[must_use]
+    /// Create a rigid body with box inertia: Ix = m(wy² + wz²)/12, etc.
     pub fn new_box(mass: f64, wx: f64, wy: f64, wz: f64) -> Self {
+        assert!(mass > 0.0, "box mass must be positive");
+        assert!(wx > 0.0, "box width wx must be positive");
+        assert!(wy > 0.0, "box width wy must be positive");
+        assert!(wz > 0.0, "box width wz must be positive");
         let ix = mass * (wy * wy + wz * wz) / BOX_INERTIA_DENOM;
         let iy = mass * (wx * wx + wz * wz) / BOX_INERTIA_DENOM;
         let iz = mass * (wx * wx + wy * wy) / BOX_INERTIA_DENOM;
@@ -51,26 +64,34 @@ impl RigidBody {
     }
 
     #[must_use]
+    /// Create a rigid body with cylinder inertia (z-axis is symmetry axis).
     pub fn new_cylinder(mass: f64, radius: f64, height: f64) -> Self {
+        assert!(mass > 0.0, "cylinder mass must be positive");
+        assert!(radius > 0.0, "cylinder radius must be positive");
+        assert!(height > 0.0, "cylinder height must be positive");
         let i_axial = CYLINDER_AXIAL_FACTOR * mass * radius * radius;
         let i_perp = mass * (3.0 * radius * radius + height * height) / BOX_INERTIA_DENOM;
         Self::new(mass, [i_perp, i_perp, i_axial])
     }
 
+    /// Accumulate a force (applied at center of mass, no torque).
     pub fn apply_force(&mut self, force: Vec3) {
         self.force = self.force + force;
     }
 
+    /// Accumulate a force at a world-space point, generating torque τ = r × F.
     pub fn apply_force_at_point(&mut self, force: Vec3, point: Vec3) {
         self.force = self.force + force;
         let r = point - self.position;
         self.torque = self.torque + r.cross(&force);
     }
 
+    /// Accumulate a torque directly.
     pub fn apply_torque(&mut self, torque: Vec3) {
         self.torque = self.torque + torque;
     }
 
+    /// Reset accumulated force and torque to zero.
     pub fn clear_forces(&mut self) {
         self.force = Vec3::ZERO;
         self.torque = Vec3::ZERO;
@@ -127,6 +148,7 @@ impl RigidBody {
     }
 
     #[must_use]
+    /// Total kinetic energy: KE = ½mv² + ½ω·I·ω
     pub fn kinetic_energy(&self) -> f64 {
         let translational = HALF * self.mass * self.velocity.magnitude_squared();
 
@@ -141,6 +163,7 @@ impl RigidBody {
     }
 
     #[must_use]
+    /// Angular momentum in world frame: L = R·(I·ω_body)
     pub fn angular_momentum(&self) -> Vec3 {
         let omega_body = self.orientation.conjugate().rotate_vec(self.angular_velocity);
         let l_body = Vec3::new(
@@ -152,16 +175,19 @@ impl RigidBody {
     }
 
     #[must_use]
+    /// Transform a point from body-local to world coordinates.
     pub fn local_to_world(&self, local_point: Vec3) -> Vec3 {
         self.position + self.orientation.rotate_vec(local_point)
     }
 
     #[must_use]
+    /// Transform a point from world to body-local coordinates.
     pub fn world_to_local(&self, world_point: Vec3) -> Vec3 {
         self.orientation.conjugate().rotate_vec(world_point - self.position)
     }
 
     #[must_use]
+    /// Velocity at a world-space point: v_point = v_cm + ω × r
     pub fn velocity_at_point(&self, world_point: Vec3) -> Vec3 {
         let r = world_point - self.position;
         self.velocity + self.angular_velocity.cross(&r)
@@ -176,6 +202,7 @@ pub struct RigidBodySystem {
 
 impl RigidBodySystem {
     #[must_use]
+    /// Create a new rigid body system with the given gravitational acceleration.
     pub fn new(gravity: Vec3) -> Self {
         Self {
             bodies: Vec::new(),
@@ -184,12 +211,14 @@ impl RigidBodySystem {
         }
     }
 
+    /// Add a rigid body to the system, returning its index.
     pub fn add_body(&mut self, body: RigidBody) -> usize {
         let idx = self.bodies.len();
         self.bodies.push(body);
         idx
     }
 
+    /// Advance all bodies by dt, applying gravity and integrating with symplectic Euler.
     pub fn step(&mut self, dt: f64) {
         for body in &mut self.bodies {
             let gravity_force = self.gravity * body.mass;
@@ -200,6 +229,7 @@ impl RigidBodySystem {
     }
 
     #[must_use]
+    /// Total mechanical energy: Σ(KE + PE_gravity) for all bodies.
     pub fn total_energy(&self) -> f64 {
         self.bodies.iter().map(|b| {
             let ke = b.kinetic_energy();
@@ -210,6 +240,7 @@ impl RigidBodySystem {
     }
 
     #[must_use]
+    /// Total linear momentum: Σ m·v for all bodies.
     pub fn total_momentum(&self) -> Vec3 {
         self.bodies.iter().fold(Vec3::ZERO, |acc, b| {
             acc + b.velocity * b.mass
@@ -220,6 +251,7 @@ impl RigidBodySystem {
 // --- Sphere-sphere collision ---
 
 #[must_use]
+/// Detect sphere-sphere overlap, returning (contact_normal, penetration_depth) or None.
 pub fn sphere_sphere_collision(
     a: &RigidBody,
     radius_a: f64,
@@ -237,12 +269,15 @@ pub fn sphere_sphere_collision(
     Some((normal, penetration))
 }
 
+/// Resolve a collision between two rigid bodies using impulse-based response.
 pub fn resolve_collision(
     a: &mut RigidBody,
     b: &mut RigidBody,
     normal: Vec3,
     restitution: f64,
 ) {
+    assert!(a.mass > 0.0, "body a mass must be positive");
+    assert!(b.mass > 0.0, "body b mass must be positive");
     let v_rel = a.velocity - b.velocity;
     let v_rel_normal = v_rel.dot(&normal);
 
@@ -400,8 +435,7 @@ mod tests {
         let point = Vec3::new(2.0, 0.0, 0.0);
         let v_point = body.velocity_at_point(point);
 
-        let r = point - body.position;
-        let expected = body.velocity + body.angular_velocity.cross(&r);
+        let expected = Vec3::new(1.0, 10.0, 0.0);
 
         assert!(
             vec3_approx(v_point, expected, TOLERANCE),
@@ -459,7 +493,7 @@ mod tests {
     #[test]
     fn sphere_inertia_correct() {
         let body = RigidBody::new_sphere(10.0, 2.0);
-        let expected = SPHERE_INERTIA_FACTOR * 10.0 * 4.0;
+        let expected = 16.0;
         assert!(approx(body.inertia[0], expected));
         assert!(approx(body.inertia[1], expected));
         assert!(approx(body.inertia[2], expected));
@@ -468,22 +502,17 @@ mod tests {
     #[test]
     fn box_inertia_correct() {
         let body = RigidBody::new_box(12.0, 2.0, 3.0, 4.0);
-        let ix = 12.0 * (9.0 + 16.0) / BOX_INERTIA_DENOM;
-        let iy = 12.0 * (4.0 + 16.0) / BOX_INERTIA_DENOM;
-        let iz = 12.0 * (4.0 + 9.0) / BOX_INERTIA_DENOM;
-        assert!(approx(body.inertia[0], ix));
-        assert!(approx(body.inertia[1], iy));
-        assert!(approx(body.inertia[2], iz));
+        assert!(approx(body.inertia[0], 25.0));
+        assert!(approx(body.inertia[1], 20.0));
+        assert!(approx(body.inertia[2], 13.0));
     }
 
     #[test]
     fn cylinder_inertia_correct() {
         let body = RigidBody::new_cylinder(6.0, 2.0, 5.0);
-        let i_axial = CYLINDER_AXIAL_FACTOR * 6.0 * 4.0;
-        let i_perp = 6.0 * (12.0 + 25.0) / BOX_INERTIA_DENOM;
-        assert!(approx(body.inertia[2], i_axial));
-        assert!(approx(body.inertia[0], i_perp));
-        assert!(approx(body.inertia[1], i_perp));
+        assert!(approx(body.inertia[2], 12.0));
+        assert!(approx(body.inertia[0], 18.5));
+        assert!(approx(body.inertia[1], 18.5));
     }
 
     // --- System-level energy conservation (no gravity, elastic) ---
@@ -520,6 +549,62 @@ mod tests {
     // --- Apply force at point generates correct torque ---
 
     #[test]
+    fn apply_force_accumulates() {
+        let mut body = RigidBody::new_sphere(1.0, 1.0);
+        body.apply_force(Vec3::new(1.0, 0.0, 0.0));
+        body.apply_force(Vec3::new(0.0, 2.0, 0.0));
+        // After step, velocity should reflect both forces: a = F/m, v = a*dt
+        let dt = 1.0;
+        body.step(dt);
+        assert!(approx(body.velocity.x, 1.0), "vx={}", body.velocity.x);
+        assert!(approx(body.velocity.y, 2.0), "vy={}", body.velocity.y);
+    }
+
+    #[test]
+    fn apply_torque_accumulates() {
+        let mut body = RigidBody::new_sphere(1.0, 1.0);
+        body.apply_torque(Vec3::new(0.0, 0.0, 1.0));
+        body.apply_torque(Vec3::new(0.0, 0.0, 1.0));
+        // Total torque = (0,0,2). After step, angular velocity should be nonzero around z
+        body.step(1.0);
+        assert!(
+            body.angular_velocity.z.abs() > TOLERANCE,
+            "angular velocity should be nonzero after torque"
+        );
+    }
+
+    #[test]
+    fn clear_forces_resets_to_zero() {
+        let mut body = RigidBody::new_sphere(1.0, 1.0);
+        body.apply_force(Vec3::new(10.0, 20.0, 30.0));
+        body.apply_torque(Vec3::new(1.0, 2.0, 3.0));
+        body.clear_forces();
+        // Step with cleared forces should produce no acceleration
+        body.step(1.0);
+        assert!(
+            vec3_approx(body.velocity, Vec3::ZERO, TOLERANCE),
+            "velocity should be zero after clearing forces, got {:?}",
+            body.velocity
+        );
+    }
+
+    #[test]
+    fn total_momentum_two_bodies() {
+        let mut sys = RigidBodySystem::new(Vec3::ZERO);
+        let mut a = RigidBody::new_sphere(2.0, 1.0);
+        a.velocity = Vec3::new(3.0, 0.0, 0.0);
+        let mut b = RigidBody::new_sphere(3.0, 1.0);
+        b.velocity = Vec3::new(0.0, 4.0, 0.0);
+        sys.add_body(a);
+        sys.add_body(b);
+        let p = sys.total_momentum();
+        // p = 2*3 + 3*0 = 6 in x, 2*0 + 3*4 = 12 in y
+        assert!(approx(p.x, 6.0), "px={}", p.x);
+        assert!(approx(p.y, 12.0), "py={}", p.y);
+        assert!(approx(p.z, 0.0), "pz={}", p.z);
+    }
+
+    #[test]
     fn apply_force_at_point_generates_torque() {
         let mut body = RigidBody::new_sphere(1.0, 1.0);
         let force = Vec3::new(0.0, 1.0, 0.0);
@@ -534,6 +619,47 @@ mod tests {
         assert!(
             body.angular_velocity.z.abs() > TOLERANCE,
             "expected non-zero angular velocity around z"
+        );
+    }
+
+    #[test]
+    fn test_resolve_collision_head_on() {
+        let mut a = RigidBody::new(1.0, [1.0, 1.0, 1.0]);
+        a.velocity = Vec3::new(-5.0, 0.0, 0.0);
+        let mut b = RigidBody::new(1.0, [1.0, 1.0, 1.0]);
+        b.position = Vec3::new(2.0, 0.0, 0.0);
+        b.velocity = Vec3::new(5.0, 0.0, 0.0);
+
+        let normal = Vec3::new(1.0, 0.0, 0.0);
+        let restitution = 1.0;
+        resolve_collision(&mut a, &mut b, normal, restitution);
+
+        assert!(
+            (a.velocity.x - 5.0).abs() < TOLERANCE,
+            "a should reverse: got {}",
+            a.velocity.x,
+        );
+        assert!(
+            (b.velocity.x - (-5.0)).abs() < TOLERANCE,
+            "b should reverse: got {}",
+            b.velocity.x,
+        );
+    }
+
+    #[test]
+    fn test_resolve_collision_separating_bodies() {
+        let mut a = RigidBody::new(1.0, [1.0, 1.0, 1.0]);
+        a.velocity = Vec3::new(5.0, 0.0, 0.0);
+        let mut b = RigidBody::new(1.0, [1.0, 1.0, 1.0]);
+        b.position = Vec3::new(2.0, 0.0, 0.0);
+        b.velocity = Vec3::new(-5.0, 0.0, 0.0);
+
+        let normal = Vec3::new(1.0, 0.0, 0.0);
+        resolve_collision(&mut a, &mut b, normal, 1.0);
+
+        assert!(
+            (a.velocity.x - 5.0).abs() < TOLERANCE,
+            "separating bodies should not change velocity",
         );
     }
 }

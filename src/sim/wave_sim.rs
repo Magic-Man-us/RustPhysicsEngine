@@ -42,6 +42,8 @@ pub struct WaveEquation1D {
 impl WaveEquation1D {
     /// Create a new 1D wave equation solver. All displacements start at zero.
     pub fn new(nx: usize, dx: f64, wave_speed: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(wave_speed > 0.0, "wave speed must be positive");
         Self {
             u_current: vec![0.0; nx],
             u_previous: vec![0.0; nx],
@@ -207,6 +209,9 @@ pub struct WaveEquation2D {
 impl WaveEquation2D {
     /// Create a new 2D wave equation solver with all displacements at zero.
     pub fn new(nx: usize, ny: usize, dx: f64, dy: f64, wave_speed: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(dy > 0.0, "grid spacing dy must be positive");
+        assert!(wave_speed > 0.0, "wave speed must be positive");
         let n = nx * ny;
         Self {
             u_current: vec![0.0; n],
@@ -376,23 +381,23 @@ mod tests {
 
         // With r=1 the leapfrog scheme is exact: the center should be near zero
         // and the two peaks should each be approximately half the original amplitude.
+        let center_val = sim.u_current[center_idx];
         assert!(
-            sim.u_current[center_idx].abs() < 0.05,
-            "center should be near zero, got {}",
-            sim.u_current[center_idx]
+            center_val.abs() < 0.05,
+            "center should be near zero, got {center_val}",
         );
 
         // The peaks travel at speed c. After n_steps time steps of dt=dx/c,
         // they've moved n_steps grid cells.
+        let left_val = sim.u_current[left_peak_idx];
         assert!(
-            sim.u_current[left_peak_idx].abs() > 0.3,
-            "left peak too small: {}",
-            sim.u_current[left_peak_idx]
+            left_val.abs() > 0.3,
+            "left peak too small: {left_val}",
         );
+        let right_val = sim.u_current[right_peak_idx];
         assert!(
-            sim.u_current[right_peak_idx].abs() > 0.3,
-            "right peak too small: {}",
-            sim.u_current[right_peak_idx]
+            right_val.abs() > 0.3,
+            "right peak too small: {right_val}",
         );
     }
 
@@ -489,11 +494,11 @@ mod tests {
         let dx = 0.05;
         let c = 340.0;
         let sim = WaveEquation1D::new(100, dx, c);
-        let expected = dx / c;
+        let expected = 1.4705882352941176e-4;
+        let dt = sim.stable_dt();
         assert!(
-            approx(sim.stable_dt(), expected, TOLERANCE),
-            "stable_dt={}, expected={expected}",
-            sim.stable_dt()
+            approx(dt, expected, TOLERANCE),
+            "stable_dt={dt}, expected={expected}",
         );
     }
 
@@ -568,11 +573,45 @@ mod tests {
         let dy = 0.2;
         let c = 3.0;
         let sim = WaveEquation2D::new(10, 10, dx, dy, c);
-        let expected = 1.0 / (c * (1.0 / (dx * dx) + 1.0 / (dy * dy)).sqrt());
+        let expected = 0.029814239699997197;
+        let dt = sim.stable_dt();
         assert!(
-            approx(sim.stable_dt(), expected, TOLERANCE),
-            "stable_dt={}, expected={expected}",
-            sim.stable_dt()
+            approx(dt, expected, TOLERANCE),
+            "stable_dt={dt}, expected={expected}",
+        );
+    }
+
+    #[test]
+    fn test_1d_add_source() {
+        let nx = 50;
+        let dx = 0.01;
+        let c = 1.0;
+        let mut sim = WaveEquation1D::new(nx, dx, c);
+        sim.add_source(25, 3.0);
+        let val1 = sim.u_current[25];
+        assert!(
+            approx(val1, 3.0, TOLERANCE),
+            "add_source should add amplitude, got {val1}",
+        );
+        sim.add_source(25, 2.0);
+        let val2 = sim.u_current[25];
+        assert!(
+            approx(val2, 5.0, TOLERANCE),
+            "add_source should accumulate, got {val2}",
+        );
+    }
+
+    #[test]
+    fn test_1d_courant_number() {
+        let dx = 0.05;
+        let c = 340.0;
+        let sim = WaveEquation1D::new(100, dx, c);
+        let dt = 0.0001;
+        let r = sim.courant_number(dt);
+        let expected = 0.68;
+        assert!(
+            approx(r, expected, TOLERANCE),
+            "courant_number={r}, expected {expected}"
         );
     }
 

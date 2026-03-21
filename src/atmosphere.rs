@@ -65,6 +65,7 @@ pub fn speed_to_beaufort(speed_ms: f64) -> u32 {
 /// Returns shear in s⁻¹.
 #[must_use]
 pub fn wind_shear(v_top: f64, v_bottom: f64, height_diff: f64) -> f64 {
+    assert!(height_diff != 0.0, "height_diff must be non-zero");
     (v_top - v_bottom) / height_diff
 }
 
@@ -100,12 +101,14 @@ pub fn barometric_pressure(
     height: f64,
     temperature: f64,
 ) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     p0 * (-molar_mass * g * height / (constants::R * temperature)).exp()
 }
 
 /// Dry adiabatic lapse rate: Γ = g / cp (K/m).
 #[must_use]
 pub fn dry_adiabatic_lapse_rate(g: f64, cp: f64) -> f64 {
+    assert!(cp > 0.0, "specific heat capacity must be positive");
     g / cp
 }
 
@@ -119,6 +122,8 @@ pub fn temperature_at_altitude(t0: f64, lapse_rate: f64, altitude: f64) -> f64 {
 /// h = (T₀ / Γ) × (1 - (P / P₀)^0.1903)
 #[must_use]
 pub fn pressure_altitude(p0: f64, pressure: f64, lapse_rate: f64, t0: f64) -> f64 {
+    assert!(p0 > 0.0, "reference pressure must be positive");
+    assert!(lapse_rate != 0.0, "lapse_rate must be non-zero");
     (t0 / lapse_rate) * (1.0 - (pressure / p0).powf(STD_ATMO_EXPONENT))
 }
 
@@ -136,6 +141,8 @@ pub fn density_altitude(
 /// Scale height: H = RT / (Mg).
 #[must_use]
 pub fn scale_height(temperature: f64, molar_mass: f64, g: f64) -> f64 {
+    assert!(molar_mass > 0.0, "molar_mass must be positive");
+    assert!(g > 0.0, "gravitational acceleration must be positive");
     constants::R * temperature / (molar_mass * g)
 }
 
@@ -146,8 +153,11 @@ pub fn scale_height(temperature: f64, molar_mass: f64, g: f64) -> f64 {
 /// `relative_humidity` is fractional (0.0–1.0).
 #[must_use]
 pub fn dew_point(temperature_c: f64, relative_humidity: f64) -> f64 {
+    assert!(relative_humidity > 0.0, "relative_humidity must be positive for ln()");
+    assert!((MAGNUS_B + temperature_c) != 0.0, "temperature_c must not equal -MAGNUS_B");
     let alpha =
         (MAGNUS_A * temperature_c) / (MAGNUS_B + temperature_c) + relative_humidity.ln();
+    assert!((MAGNUS_A - alpha) != 0.0, "degenerate dew point formula: alpha equals MAGNUS_A");
     (MAGNUS_B * alpha) / (MAGNUS_A - alpha)
 }
 
@@ -181,6 +191,8 @@ pub fn heat_index(temperature_c: f64, relative_humidity: f64) -> f64 {
 #[must_use]
 pub fn absolute_humidity(relative_humidity: f64, temperature_c: f64) -> f64 {
     let t = temperature_c;
+    assert!((t + 243.5) != 0.0, "temperature_c must not equal -243.5");
+    assert!((273.15 + t) != 0.0, "temperature_c must not equal -273.15");
     let saturation = 6.112 * (17.67 * t / (t + 243.5)).exp();
     (saturation * relative_humidity * 2.1674) / (273.15 + t)
 }
@@ -261,16 +273,14 @@ mod tests {
     fn test_coriolis_parameter_45deg() {
         let lat = constants::PI / 4.0;
         let f = coriolis_parameter(lat);
-        let expected = 2.0 * EARTH_ROTATION_RATE * (constants::PI / 4.0).sin();
-        assert!(approx(f, expected, 1e-10));
+        assert!(approx(f, 1.031_26e-4, 1e-8));
     }
 
     #[test]
     fn test_coriolis_acceleration() {
         let lat = constants::PI / 4.0;
         let a = coriolis_acceleration(10.0, lat);
-        let expected = 10.0 * coriolis_parameter(lat);
-        assert!(approx(a, expected, 1e-12));
+        assert!(approx(a, 1.031_26e-3, 1e-7));
     }
 
     // ── Atmospheric Structure ──────────────────────────────────

@@ -4,16 +4,21 @@ use crate::math::constants;
 
 /// de Broglie wavelength: λ = h / p = h / (m * v)
 pub fn de_broglie_wavelength(mass: f64, velocity: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
+    assert!(velocity != 0.0, "velocity must not be zero");
     constants::H / (mass * velocity)
 }
 
 /// de Broglie wavelength from kinetic energy: λ = h / sqrt(2mE)
 pub fn de_broglie_wavelength_from_energy(mass: f64, kinetic_energy: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
+    assert!(kinetic_energy > 0.0, "kinetic energy must be positive");
     constants::H / (2.0 * mass * kinetic_energy).sqrt()
 }
 
 /// Photon momentum: p = h / λ = h*f / c
 pub fn photon_momentum(wavelength: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
     constants::H / wavelength
 }
 
@@ -24,6 +29,7 @@ pub fn photon_energy(frequency: f64) -> f64 {
 
 /// Photon energy from wavelength: E = h * c / λ
 pub fn photon_energy_from_wavelength(wavelength: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
     constants::H * constants::C / wavelength
 }
 
@@ -37,11 +43,13 @@ pub fn photoelectric_ke(frequency: f64, work_function: f64) -> f64 {
 
 /// Threshold frequency: f_0 = φ / h
 pub fn threshold_frequency(work_function: f64) -> f64 {
+    assert!(work_function > 0.0, "work function must be positive");
     work_function / constants::H
 }
 
 /// Threshold wavelength: λ_0 = h * c / φ
 pub fn threshold_wavelength(work_function: f64) -> f64 {
+    assert!(work_function > 0.0, "work function must be positive");
     constants::H * constants::C / work_function
 }
 
@@ -55,20 +63,25 @@ pub fn stopping_potential(max_kinetic_energy: f64) -> f64 {
 /// Heisenberg uncertainty principle (position-momentum): Δx * Δp ≥ ℏ/2
 /// Returns minimum uncertainty in momentum given position uncertainty.
 pub fn min_momentum_uncertainty(position_uncertainty: f64) -> f64 {
+    assert!(position_uncertainty > 0.0, "position uncertainty must be positive");
     constants::HBAR / (2.0 * position_uncertainty)
 }
 
 /// Minimum position uncertainty given momentum uncertainty.
 pub fn min_position_uncertainty(momentum_uncertainty: f64) -> f64 {
+    assert!(momentum_uncertainty > 0.0, "momentum uncertainty must be positive");
     constants::HBAR / (2.0 * momentum_uncertainty)
 }
 
 /// Energy-time uncertainty: ΔE * Δt ≥ ℏ/2
 pub fn min_energy_uncertainty(time_uncertainty: f64) -> f64 {
+    assert!(time_uncertainty > 0.0, "time uncertainty must be positive");
     constants::HBAR / (2.0 * time_uncertainty)
 }
 
+/// Minimum time uncertainty given energy uncertainty: Δt ≥ ℏ / (2ΔE)
 pub fn min_time_uncertainty(energy_uncertainty: f64) -> f64 {
+    assert!(energy_uncertainty > 0.0, "energy uncertainty must be positive");
     constants::HBAR / (2.0 * energy_uncertainty)
 }
 
@@ -132,6 +145,9 @@ pub fn tunneling_transmission(mass: f64, barrier_height: f64, particle_energy: f
 /// Energy levels of a particle in a 1D infinite potential well:
 /// E_n = n^2 * π^2 * ℏ^2 / (2 * m * L^2)
 pub fn particle_in_box_energy(n: u32, mass: f64, box_length: f64) -> f64 {
+    assert!(n > 0, "quantum number n must be positive");
+    assert!(mass > 0.0, "mass must be positive");
+    assert!(box_length > 0.0, "box length must be positive");
     let n = n as f64;
     n * n * constants::PI * constants::PI * constants::HBAR * constants::HBAR
         / (2.0 * mass * box_length * box_length)
@@ -158,6 +174,7 @@ pub fn compton_wavelength_electron() -> f64 {
 
 /// Wien's displacement law: λ_max = b / T where b ≈ 2.898e-3 m·K
 pub fn wien_peak_wavelength(temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     2.898e-3 / temperature
 }
 
@@ -168,6 +185,8 @@ pub fn blackbody_power(area: f64, temperature: f64) -> f64 {
 
 /// Planck's law (spectral radiance): B(λ,T) = (2hc^2/λ^5) / (e^(hc/(λkT)) - 1)
 pub fn planck_spectral_radiance(wavelength: f64, temperature: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
+    assert!(temperature > 0.0, "temperature must be positive");
     let numerator = 2.0 * constants::H * constants::C * constants::C / wavelength.powi(5);
     let exponent = constants::H * constants::C / (wavelength * constants::K_B * temperature);
     numerator / (exponent.exp() - 1.0)
@@ -246,5 +265,137 @@ mod tests {
     fn test_tunneling_zero_barrier() {
         let t = tunneling_transmission(constants::M_ELECTRON, 1.0, 2.0, 1e-10);
         assert!((t - 1.0).abs() < 1e-9);
+    }
+
+    // ── Tests for previously untested functions ──
+
+    fn approx(a: f64, b: f64, tol: f64) -> bool {
+        (a - b).abs() < tol
+    }
+
+    #[test]
+    fn test_de_broglie_wavelength_from_energy() {
+        let ke = 1.0 * constants::E_CHARGE; // 1 eV
+        let wl = de_broglie_wavelength_from_energy(constants::M_ELECTRON, ke);
+        assert!(approx_rel(wl, 1.226_39e-9, 1e-3));
+    }
+
+    #[test]
+    fn test_photon_energy() {
+        let e = photon_energy(5e14);
+        assert!(approx_rel(e, 3.313_035_075e-19, 1e-6));
+    }
+
+    #[test]
+    fn test_photon_energy_from_wavelength() {
+        let e = photon_energy_from_wavelength(500e-9);
+        assert!(approx_rel(e, 3.972_891e-19, 1e-4));
+    }
+
+    #[test]
+    fn test_photon_momentum() {
+        let p = photon_momentum(500e-9);
+        assert!(approx_rel(p, 1.325_214_03e-27, 1e-6));
+    }
+
+    #[test]
+    fn test_threshold_frequency() {
+        let work = 4.0 * constants::E_CHARGE;
+        let f0 = threshold_frequency(work);
+        assert!(approx_rel(f0, 9.6719e14, 1e-4));
+    }
+
+    #[test]
+    fn test_threshold_wavelength() {
+        let work = 4.0 * constants::E_CHARGE;
+        let lam = threshold_wavelength(work);
+        assert!(approx_rel(lam, 3.0996e-7, 1e-3));
+    }
+
+    #[test]
+    fn test_stopping_potential() {
+        let ke_max = 2.0 * constants::E_CHARGE;
+        let vs = stopping_potential(ke_max);
+        assert!(approx(vs, 2.0, 1e-6));
+    }
+
+    #[test]
+    fn test_min_energy_uncertainty() {
+        let de = min_energy_uncertainty(1e-15);
+        assert!(approx_rel(de, 5.272_859_085e-20, 1e-6));
+    }
+
+    #[test]
+    fn test_min_time_uncertainty() {
+        let dt = min_time_uncertainty(1.0 * constants::E_CHARGE);
+        assert!(approx_rel(dt, 3.2918e-16, 1e-3));
+    }
+
+    #[test]
+    fn test_hydrogen_transition_energy() {
+        let e = hydrogen_transition_energy(2, 1);
+        assert!(approx_rel(e, 1.634_22e-18, 1e-3));
+    }
+
+    #[test]
+    fn test_hydrogen_orbital_radius() {
+        let r1 = hydrogen_orbital_radius(1);
+        assert!(approx_rel(r1, 5.29e-11, 0.01));
+        let r2 = hydrogen_orbital_radius(2);
+        assert!(approx_rel(r2, 2.116e-10, 0.01));
+    }
+
+    #[test]
+    fn test_hydrogen_orbital_velocity() {
+        let v1 = hydrogen_orbital_velocity(1);
+        assert!(approx_rel(v1, 2.187_69e6, 1e-3));
+        let v2 = hydrogen_orbital_velocity(2);
+        assert!(approx_rel(v2, 1.093_85e6, 1e-3));
+    }
+
+    #[test]
+    fn test_compton_wavelength_shift() {
+        let shift_90 = compton_wavelength_shift(constants::PI / 2.0);
+        assert!(approx_rel(shift_90, 2.4263e-12, 1e-3));
+
+        let shift_0 = compton_wavelength_shift(0.0);
+        assert!(approx(shift_0, 0.0, 1e-20));
+    }
+
+    #[test]
+    fn test_blackbody_power() {
+        let p = blackbody_power(1.0, 5778.0);
+        assert!(approx_rel(p, 6.320e7, 1e-3));
+    }
+
+    #[test]
+    fn test_planck_spectral_radiance() {
+        let b = planck_spectral_radiance(500e-9, 5778.0);
+        assert!(b > 0.0);
+        assert!(b.is_finite());
+    }
+
+    #[test]
+    fn test_zero_point_energy() {
+        let e_zp = zero_point_energy(constants::M_ELECTRON, 1e-9);
+        assert!(approx_rel(e_zp, 6.024e-20, 0.05));
+    }
+
+    #[test]
+    fn test_hydrogen_transition_wavelength_downward() {
+        let lambda = hydrogen_transition_wavelength(1, 2);
+        assert!(lambda.is_infinite());
+    }
+
+    #[test]
+    fn test_tunneling_transmission_above_barrier() {
+        let t = tunneling_transmission(constants::M_ELECTRON, 1.0e-19, 2.0e-19, 1.0e-10);
+        assert!((t - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_tunneling_transmission_below_barrier() {
+        let t = tunneling_transmission(constants::M_ELECTRON, 2.0e-19, 1.0e-19, 1.0e-10);
+        assert!(t > 0.0 && t < 1.0);
     }
 }

@@ -14,11 +14,13 @@ pub fn total_pressure(atmospheric_pressure: f64, density: f64, g: f64, depth: f6
 
 /// Pascal's principle: F2 = F1 * (A2 / A1)
 pub fn pascal_force(f1: f64, a1: f64, a2: f64) -> f64 {
+    assert!(a1 > 0.0, "a1 must be positive");
     f1 * a2 / a1
 }
 
 /// Pressure: P = F / A
 pub fn pressure(force: f64, area: f64) -> f64 {
+    assert!(area > 0.0, "area must be positive");
     force / area
 }
 
@@ -31,6 +33,7 @@ pub fn buoyant_force(fluid_density: f64, displaced_volume: f64, g: f64) -> f64 {
 
 /// Fraction of object submerged (floating): f = ρ_object / ρ_fluid
 pub fn fraction_submerged(object_density: f64, fluid_density: f64) -> f64 {
+    assert!(fluid_density > 0.0, "fluid_density must be positive");
     object_density / fluid_density
 }
 
@@ -43,6 +46,7 @@ pub fn apparent_weight(mass: f64, object_volume: f64, fluid_density: f64, g: f64
 
 /// Continuity equation: A1 * v1 = A2 * v2 → v2 = A1 * v1 / A2
 pub fn continuity_velocity(a1: f64, v1: f64, a2: f64) -> f64 {
+    assert!(a2 > 0.0, "a2 must be positive");
     a1 * v1 / a2
 }
 
@@ -78,6 +82,8 @@ pub fn torricelli_velocity(g: f64, height: f64) -> f64 {
 /// Venturi effect velocity from pressure difference:
 /// v2 = sqrt(2 * (P1 - P2) / (ρ * (1 - (A2/A1)^2)))
 pub fn venturi_velocity(p1: f64, p2: f64, density: f64, a1: f64, a2: f64) -> f64 {
+    assert!(density > 0.0, "density must be positive");
+    assert!(a1 > 0.0, "a1 must be positive");
     let ratio = a2 / a1;
     (2.0 * (p1 - p2) / (density * (1.0 - ratio * ratio))).sqrt()
 }
@@ -91,6 +97,9 @@ pub fn drag_force(drag_coefficient: f64, density: f64, area: f64, velocity: f64)
 
 /// Terminal velocity: v_t = sqrt(2 * m * g / (ρ * A * C_d))
 pub fn terminal_velocity(mass: f64, g: f64, density: f64, area: f64, drag_coefficient: f64) -> f64 {
+    assert!(density > 0.0, "density must be positive");
+    assert!(area > 0.0, "area must be positive");
+    assert!(drag_coefficient > 0.0, "drag_coefficient must be positive");
     (2.0 * mass * g / (density * area * drag_coefficient)).sqrt()
 }
 
@@ -101,6 +110,7 @@ pub fn stokes_drag(dynamic_viscosity: f64, radius: f64, velocity: f64) -> f64 {
 
 /// Reynolds number: Re = ρ * v * L / μ
 pub fn reynolds_number(density: f64, velocity: f64, length: f64, dynamic_viscosity: f64) -> f64 {
+    assert!(dynamic_viscosity > 0.0, "dynamic_viscosity must be positive");
     density * velocity * length / dynamic_viscosity
 }
 
@@ -112,6 +122,8 @@ pub fn poiseuille_flow_rate(
     dynamic_viscosity: f64,
     length: f64,
 ) -> f64 {
+    assert!(dynamic_viscosity > 0.0, "dynamic_viscosity must be positive");
+    assert!(length > 0.0, "length must be positive");
     constants::PI * radius.powi(4) * pressure_drop / (8.0 * dynamic_viscosity * length)
 }
 
@@ -130,6 +142,9 @@ pub fn capillary_rise(
     g: f64,
     tube_radius: f64,
 ) -> f64 {
+    assert!(density > 0.0, "density must be positive");
+    assert!(g > 0.0, "g must be positive");
+    assert!(tube_radius > 0.0, "tube_radius must be positive");
     2.0 * surface_tension * contact_angle_rad.cos() / (density * g * tube_radius)
 }
 
@@ -137,6 +152,7 @@ pub fn capillary_rise(
 
 /// Mach number: M = v / a
 pub fn mach_number(velocity: f64, speed_of_sound: f64) -> f64 {
+    assert!(speed_of_sound > 0.0, "speed_of_sound must be positive");
     velocity / speed_of_sound
 }
 
@@ -152,6 +168,7 @@ pub fn stagnation_pressure(static_pressure: f64, dynamic_pressure: f64) -> f64 {
 
 /// Isentropic pressure ratio: P/P₀ = (1 + (γ-1)/2 × M²)^(-γ/(γ-1))
 pub fn isentropic_pressure_ratio(mach: f64, gamma: f64) -> f64 {
+    assert!(gamma != 1.0, "gamma must not equal 1.0");
     let exponent = -gamma / (gamma - 1.0);
     (1.0 + (gamma - 1.0) / 2.0 * mach * mach).powf(exponent)
 }
@@ -182,6 +199,7 @@ pub fn kutta_joukowski_lift(density: f64, velocity: f64, circulation: f64) -> f6
 
 /// Kinematic viscosity: ν = μ/ρ
 pub fn kinematic_viscosity(dynamic_viscosity: f64, density: f64) -> f64 {
+    assert!(density > 0.0, "density must be positive");
     dynamic_viscosity / density
 }
 
@@ -192,16 +210,19 @@ pub fn pressure_gradient_pipe(
     radius: f64,
     length: f64,
 ) -> f64 {
+    assert!(radius > 0.0, "radius must be positive");
     8.0 * dynamic_viscosity * length * flow_rate / (constants::PI * radius.powi(4))
 }
 
 /// Hydraulic diameter: D_h = 4A/P
 pub fn hydraulic_diameter(area: f64, wetted_perimeter: f64) -> f64 {
+    assert!(wetted_perimeter > 0.0, "wetted_perimeter must be positive");
     4.0 * area / wetted_perimeter
 }
 
 /// Darcy friction factor for laminar pipe flow: f = 64/Re
 pub fn darcy_friction_factor_laminar(reynolds: f64) -> f64 {
+    assert!(reynolds > 0.0, "reynolds must be positive");
     64.0 / reynolds
 }
 
@@ -213,6 +234,8 @@ pub fn darcy_weisbach_head_loss(
     velocity: f64,
     g: f64,
 ) -> f64 {
+    assert!(diameter > 0.0, "diameter must be positive");
+    assert!(g > 0.0, "g must be positive");
     friction_factor * (length / diameter) * velocity * velocity / (2.0 * g)
 }
 
@@ -225,6 +248,7 @@ pub fn buoyancy_velocity(g: f64, beta: f64, delta_temp: f64, length: f64) -> f64
 
 /// Thermal expansion coefficient for ideal gas: β = 1/T
 pub fn thermal_expansion_coefficient_ideal_gas(temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     1.0 / temperature
 }
 
@@ -232,11 +256,15 @@ pub fn thermal_expansion_coefficient_ideal_gas(temperature: f64) -> f64 {
 
 /// Sutherland's law for viscosity: μ = μ₀ × (T/T₀)^(3/2) × (T₀ + S)/(T + S)
 pub fn viscosity_sutherland(mu0: f64, t0: f64, t: f64, s: f64) -> f64 {
+    assert!(t0 > 0.0, "t0 must be positive");
+    assert!(t + s != 0.0, "t + s must not be zero");
     mu0 * (t / t0).powf(1.5) * (t0 + s) / (t + s)
 }
 
 /// Sutherland's law for thermal conductivity (same form as viscosity)
 pub fn thermal_conductivity_gas(k0: f64, t0: f64, t: f64, s: f64) -> f64 {
+    assert!(t0 > 0.0, "t0 must be positive");
+    assert!(t + s != 0.0, "t + s must not be zero");
     k0 * (t / t0).powf(1.5) * (t0 + s) / (t + s)
 }
 
@@ -261,22 +289,28 @@ pub fn marangoni_number(
     dynamic_viscosity: f64,
     thermal_diffusivity: f64,
 ) -> f64 {
+    assert!(dynamic_viscosity > 0.0, "dynamic_viscosity must be positive");
+    assert!(thermal_diffusivity > 0.0, "thermal_diffusivity must be positive");
     -surface_tension_gradient * length * delta_temp
         / (dynamic_viscosity * thermal_diffusivity)
 }
 
 /// Bond number: Bo = Δρ × g × L² / σ (gravity vs surface tension)
 pub fn bond_number(density_diff: f64, g: f64, length: f64, surface_tension: f64) -> f64 {
+    assert!(surface_tension > 0.0, "surface_tension must be positive");
     density_diff * g * length * length / surface_tension
 }
 
 /// Weber number: We = ρv²L / σ (inertia vs surface tension)
 pub fn weber_number(density: f64, velocity: f64, length: f64, surface_tension: f64) -> f64 {
+    assert!(surface_tension > 0.0, "surface_tension must be positive");
     density * velocity * velocity * length / surface_tension
 }
 
 /// Froude number: Fr = v / √(gL) (inertia vs gravity in free surface flow)
 pub fn froude_number(velocity: f64, g: f64, length: f64) -> f64 {
+    assert!(g > 0.0, "g must be positive");
+    assert!(length > 0.0, "length must be positive");
     velocity / (g * length).sqrt()
 }
 
@@ -288,12 +322,14 @@ pub fn archimedes_number(
     dynamic_viscosity: f64,
     g: f64,
 ) -> f64 {
+    assert!(dynamic_viscosity != 0.0, "dynamic_viscosity must not be zero");
     g * diameter.powi(3) * density_fluid * (density_particle - density_fluid)
         / (dynamic_viscosity * dynamic_viscosity)
 }
 
 /// Peclet number: Pe = vL/α (advection vs diffusion)
 pub fn peclet_number(velocity: f64, length: f64, diffusivity: f64) -> f64 {
+    assert!(diffusivity > 0.0, "diffusivity must be positive");
     velocity * length / diffusivity
 }
 
@@ -558,5 +594,100 @@ mod tests {
         // Pe = 0.1 × 0.01 / 1.43e-7 ≈ 6993.0
         let pe = peclet_number(0.1, 0.01, 1.43e-7);
         assert!(approx_rel(pe, 6993.0, 0.01));
+    }
+
+    // ── Pressure (untested) ──
+
+    #[test]
+    fn test_total_pressure() {
+        // P_atm=101325 Pa, water at 10m: P = 101325 + 1000*9.8*10 = 199325 Pa
+        let p = total_pressure(101325.0, 1000.0, 9.8, 10.0);
+        assert!(approx(p, 199325.0, 0.1));
+    }
+
+    #[test]
+    fn test_pressure() {
+        // F=500 N, A=0.1 m² → P = 5000 Pa
+        let p = pressure(500.0, 0.1);
+        assert!(approx(p, 5000.0, 1e-9));
+    }
+
+    // ── Buoyancy (untested) ──
+
+    #[test]
+    fn test_fraction_submerged() {
+        // Wood (ρ=600) in water (ρ=1000): fraction = 0.6
+        let f = fraction_submerged(600.0, 1000.0);
+        assert!(approx(f, 0.6, 1e-9));
+    }
+
+    #[test]
+    fn test_apparent_weight() {
+        // 5 kg steel (V=0.000633 m³) in water: W_app = 5*9.8 - 1000*0.000633*9.8
+        let w = apparent_weight(5.0, 0.000633, 1000.0, 9.8);
+        // W_app = 5*9.8 - 1000*0.000633*9.8 = 49 - 6.2034 = 42.7966 N
+        assert!(approx(w, 42.7966, 1e-3));
+    }
+
+    // ── Fluid Flow (untested) ──
+
+    #[test]
+    fn test_flow_rate() {
+        // A=0.01 m², v=3.0 m/s → Q = 0.03 m³/s
+        let q = flow_rate(0.01, 3.0);
+        assert!(approx(q, 0.03, 1e-9));
+    }
+
+    #[test]
+    fn test_mass_flow_rate() {
+        // ρ=1000, A=0.01, v=3.0 → ṁ = 30 kg/s
+        let m = mass_flow_rate(1000.0, 0.01, 3.0);
+        assert!(approx(m, 30.0, 1e-9));
+    }
+
+    #[test]
+    fn test_venturi_velocity() {
+        // P1=200000 Pa, P2=180000 Pa, ρ=1000, A1=0.1, A2=0.05
+        // v2 = sqrt(2*20000 / (1000*(1 - 0.25))) = sqrt(40000/750) = sqrt(53.333) ≈ 7.303
+        let v = venturi_velocity(200000.0, 180000.0, 1000.0, 0.1, 0.05);
+        // v2 = sqrt(2*20000 / (1000*0.75)) = sqrt(53.333) ≈ 7.303 m/s
+        assert!(approx_rel(v, 7.303, 0.001));
+    }
+
+    // ── Viscosity and Drag (untested) ──
+
+    #[test]
+    fn test_terminal_velocity() {
+        // m=0.01 kg, g=9.8, ρ=1.225, A=0.001, Cd=0.47
+        // v_t = sqrt(2*0.01*9.8 / (1.225*0.001*0.47))
+        let v = terminal_velocity(0.01, 9.8, 1.225, 0.001, 0.47);
+        // v_t = sqrt(2*0.01*9.8 / (1.225*0.001*0.47)) ≈ 18.449 m/s
+        assert!(approx_rel(v, 18.449, 0.001));
+    }
+
+    #[test]
+    fn test_stokes_drag() {
+        // μ=0.001, r=0.001, v=0.01 → F = 6π*0.001*0.001*0.01
+        let f = stokes_drag(0.001, 0.001, 0.01);
+        // F = 6π × 0.001 × 0.001 × 0.01 ≈ 1.884956e-7 N
+        assert!(approx_rel(f, 1.884956e-7, 1e-4));
+    }
+
+    // ── Surface Tension (untested) ──
+
+    #[test]
+    fn test_surface_tension_force() {
+        // γ=0.0728 N/m, L=0.1 m → F = 0.00728 N
+        let f = surface_tension_force(0.0728, 0.1);
+        assert!(approx(f, 0.00728, 1e-9));
+    }
+
+    #[test]
+    fn test_capillary_rise() {
+        // Water in glass: γ=0.0728, θ=0 (cos=1), ρ=1000, g=9.8, r=0.0005
+        // h = 2*0.0728*1 / (1000*9.8*0.0005) = 0.1456/4.9 ≈ 0.02971 m
+        let h = capillary_rise(0.0728, 0.0, 1000.0, 9.8, 0.0005);
+        // h = 2*0.0728 / (1000*9.8*0.0005) = 0.1456/4.9 ≈ 0.029714 m
+        assert!(approx_rel(h, 0.029714, 0.001));
     }
 }

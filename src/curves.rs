@@ -5,10 +5,12 @@ use crate::math::constants::PI;
 // Conic Sections
 // ---------------------------------------------------------------------------
 
+/// Area of a circle: A = πr²
 pub fn circle_area(radius: f64) -> f64 {
     PI * radius * radius
 }
 
+/// Circle circumference: C = 2πr
 pub fn circle_circumference(radius: f64) -> f64 {
     2.0 * PI * radius
 }
@@ -27,29 +29,37 @@ pub fn ellipse_circumference_approx(a: f64, b: f64) -> f64 {
 
 /// Returns x^2/a^2 + y^2/b^2 - 1. Zero means the point lies on the ellipse.
 pub fn ellipse_equation(x: f64, y: f64, a: f64, b: f64) -> f64 {
+    assert!(a != 0.0, "semi-major axis must be non-zero");
+    assert!(b != 0.0, "semi-minor axis must be non-zero");
     (x * x) / (a * a) + (y * y) / (b * b) - 1.0
 }
 
 /// Eccentricity e = sqrt(1 - b^2/a^2) for a > b.
 pub fn ellipse_eccentricity(a: f64, b: f64) -> f64 {
+    assert!(a != 0.0, "semi-major axis must be non-zero");
     (1.0 - (b * b) / (a * a)).sqrt()
 }
 
 /// Focus distance f = 1/(4a) for parabola y = ax^2.
 pub fn parabola_focus(a: f64) -> f64 {
+    assert!(a != 0.0, "parabola coefficient must be non-zero");
     1.0 / (4.0 * a)
 }
 
+/// Parabola equation: y = ax²
 pub fn parabola_equation(x: f64, a: f64) -> f64 {
     a * x * x
 }
 
 /// Eccentricity e = sqrt(1 + b^2/a^2).
 pub fn hyperbola_eccentricity(a: f64, b: f64) -> f64 {
+    assert!(a != 0.0, "semi-transverse axis must be non-zero");
     (1.0 + (b * b) / (a * a)).sqrt()
 }
 
+/// Asymptote slope of a hyperbola: m = b/a
 pub fn hyperbola_asymptote_slope(a: f64, b: f64) -> f64 {
+    assert!(a != 0.0, "semi-transverse axis must be non-zero");
     b / a
 }
 
@@ -63,6 +73,7 @@ pub fn conic_discriminant(a: f64, b: f64, c: f64) -> f64 {
 // Bezier Curves
 // ---------------------------------------------------------------------------
 
+/// Quadratic Bezier curve point: B(t) = (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
 pub fn bezier_quadratic(
     t: f64,
     p0: (f64, f64),
@@ -78,6 +89,7 @@ pub fn bezier_quadratic(
     )
 }
 
+/// Cubic Bezier curve point: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
 pub fn bezier_cubic(
     t: f64,
     p0: (f64, f64),
@@ -96,11 +108,13 @@ pub fn bezier_cubic(
     )
 }
 
+/// Quadratic Bezier curve in 3D: B(t) = (1-t)²P₀ + 2(1-t)tP₁ + t²P₂
 pub fn bezier_quadratic_3d(t: f64, p0: Vec3, p1: Vec3, p2: Vec3) -> Vec3 {
     let u = 1.0 - t;
     p0 * (u * u) + p1 * (2.0 * u * t) + p2 * (t * t)
 }
 
+/// Cubic Bezier curve in 3D: B(t) = (1-t)³P₀ + 3(1-t)²tP₁ + 3(1-t)t²P₂ + t³P₃
 pub fn bezier_cubic_3d(t: f64, p0: Vec3, p1: Vec3, p2: Vec3, p3: Vec3) -> Vec3 {
     let u = 1.0 - t;
     let uu = u * u;
@@ -116,6 +130,7 @@ pub fn bezier_sample(
     p3: (f64, f64),
     n: usize,
 ) -> Vec<(f64, f64)> {
+    assert!(n > 0, "number of segments must be positive");
     (0..=n)
         .map(|i| {
             let t = i as f64 / n as f64;
@@ -128,10 +143,12 @@ pub fn bezier_sample(
 // Parametric Curves
 // ---------------------------------------------------------------------------
 
+/// Parametric circle: (x, y) = (r·cos(t), r·sin(t))
 pub fn parametric_circle(t: f64, r: f64) -> (f64, f64) {
     (r * t.cos(), r * t.sin())
 }
 
+/// Parametric ellipse: (x, y) = (a·cos(t), b·sin(t))
 pub fn parametric_ellipse(t: f64, a: f64, b: f64) -> (f64, f64) {
     (a * t.cos(), b * t.sin())
 }
@@ -170,6 +187,7 @@ pub fn arc_length_parametric(
     t1: f64,
     n: usize,
 ) -> f64 {
+    assert!(n > 0, "number of segments must be positive");
     let dt = (t1 - t0) / n as f64;
     let mut length = 0.0;
     let mut prev_x = fx(t0);
@@ -187,6 +205,7 @@ pub fn arc_length_parametric(
     length
 }
 
+/// Arc length of a circular arc: s = rθ
 pub fn arc_length_circle(radius: f64, angle: f64) -> f64 {
     radius * angle
 }

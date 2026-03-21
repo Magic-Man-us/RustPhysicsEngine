@@ -14,16 +14,19 @@ pub fn activity(initial_count: f64, decay_constant: f64, time: f64) -> f64 {
 
 /// Half-life from decay constant: t_1/2 = ln(2) / λ
 pub fn half_life(decay_constant: f64) -> f64 {
+    assert!(decay_constant > 0.0, "decay constant must be positive");
     2.0_f64.ln() / decay_constant
 }
 
 /// Decay constant from half-life: λ = ln(2) / t_1/2
 pub fn decay_constant(half_life: f64) -> f64 {
+    assert!(half_life > 0.0, "half-life must be positive");
     2.0_f64.ln() / half_life
 }
 
 /// Mean lifetime: τ = 1 / λ
 pub fn mean_lifetime(decay_constant: f64) -> f64 {
+    assert!(decay_constant > 0.0, "decay constant must be positive");
     1.0 / decay_constant
 }
 
@@ -34,6 +37,7 @@ pub fn remaining_after_half_lives(initial_count: f64, num_half_lives: f64) -> f6
 
 /// Number of half-lives elapsed: n = t / t_1/2
 pub fn num_half_lives(time: f64, half_life: f64) -> f64 {
+    assert!(half_life > 0.0, "half-life must be positive");
     time / half_life
 }
 
@@ -56,6 +60,7 @@ pub fn binding_energy(mass_defect: f64) -> f64 {
 
 /// Binding energy per nucleon: E_b / A
 pub fn binding_energy_per_nucleon(total_binding_energy: f64, mass_number: u32) -> f64 {
+    assert!(mass_number > 0, "mass number must be positive");
     total_binding_energy / mass_number as f64
 }
 
@@ -87,6 +92,8 @@ pub fn reaction_rate(number_density: f64, cross_section: f64, flux: f64) -> f64 
 
 /// Mean free path in nuclear context: λ = 1 / (n * σ)
 pub fn nuclear_mean_free_path(number_density: f64, cross_section: f64) -> f64 {
+    assert!(number_density > 0.0, "number density must be positive");
+    assert!(cross_section > 0.0, "cross section must be positive");
     1.0 / (number_density * cross_section)
 }
 
@@ -107,6 +114,7 @@ pub fn nuclear_density() -> f64 {
 
 /// Absorbed dose: D = E / m (Gray, Gy = J/kg)
 pub fn absorbed_dose(energy: f64, mass: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
     energy / mass
 }
 
@@ -122,6 +130,7 @@ pub fn radiation_intensity_distance(
     initial_distance: f64,
     new_distance: f64,
 ) -> f64 {
+    assert!(new_distance > 0.0, "new distance must be positive");
     initial_intensity * (initial_distance / new_distance).powi(2)
 }
 
@@ -139,9 +148,10 @@ mod tests {
 
     #[test]
     fn test_half_life() {
-        let lambda = decay_constant(5730.0 * 365.25 * 24.0 * 3600.0); // C-14
+        // C-14 half-life: 5730 yr × 365.25 × 24 × 3600 = 1.80825048e11 s
+        let lambda = decay_constant(1.80825048e11);
         let hl = half_life(lambda);
-        assert!(approx_rel(hl, 5730.0 * 365.25 * 24.0 * 3600.0, 0.001));
+        assert!(approx_rel(hl, 1.80825048e11, 0.001));
     }
 
     #[test]
@@ -190,7 +200,8 @@ mod tests {
     fn test_activity() {
         let lambda = decay_constant(100.0);
         let a = activity(1000.0, lambda, 0.0);
-        assert!(approx(a, lambda * 1000.0, 1e-6));
+        // A = λ*N = (ln(2)/100)*1000 = 10*ln(2) ≈ 6.93147
+        assert!(approx(a, 6.93147, 1e-3));
     }
 
     #[test]
@@ -203,6 +214,77 @@ mod tests {
     #[test]
     fn test_energy_from_amu() {
         let e = energy_from_amu(1.0);
-        assert!(approx_rel(e, 931.5e6 * constants::E_CHARGE, 0.001));
+        // E = 931.5e6 * 1.602176634e-19 ≈ 1.49243e-10 J
+        assert!(approx_rel(e, 1.49243e-10, 0.001));
+    }
+
+    // ── Untested functions ──
+
+    #[test]
+    fn test_mean_lifetime() {
+        // λ = ln(2)/100 → τ = 1/λ = 100/ln(2) ≈ 144.27 s
+        let lambda = decay_constant(100.0);
+        let tau = mean_lifetime(lambda);
+        // τ = 100/ln(2) ≈ 144.2695 s
+        assert!(approx_rel(tau, 144.2695, 1e-4));
+    }
+
+    #[test]
+    fn test_num_half_lives() {
+        // t=300 s, t_1/2=100 s → n = 3.0
+        let n = num_half_lives(300.0, 100.0);
+        assert!(approx(n, 3.0, 1e-9));
+    }
+
+    #[test]
+    fn test_binding_energy_per_nucleon() {
+        // E_b=1.4e-11 J, A=56 → E_b/A ≈ 2.5e-13 J
+        let bepn = binding_energy_per_nucleon(1.4e-11, 56);
+        assert!(approx_rel(bepn, 2.5e-13, 0.01));
+    }
+
+    #[test]
+    fn test_mass_energy() {
+        // 1 kg → E = c² ≈ 8.988e16 J
+        let e = mass_energy(1.0);
+        // E = c² = (299792458)² ≈ 8.98755179e16 J
+        assert!(approx_rel(e, 8.98755179e16, 1e-6));
+    }
+
+    #[test]
+    fn test_reaction_rate() {
+        // n=1e28, σ=1e-24 cm² = 1e-28 m², Φ=1e14
+        // R = 1e28 * 1e-28 * 1e14 = 1e14
+        let r = reaction_rate(1e28, 1e-28, 1e14);
+        assert!(approx_rel(r, 1e14, 1e-9));
+    }
+
+    #[test]
+    fn test_nuclear_mean_free_path() {
+        // n=1e28 m⁻³, σ=1e-28 m² → λ = 1/(1e28*1e-28) = 1.0 m
+        let mfp = nuclear_mean_free_path(1e28, 1e-28);
+        assert!(approx(mfp, 1.0, 1e-9));
+    }
+
+    #[test]
+    fn test_nuclear_density() {
+        // Nuclear density is approximately 2.3e17 kg/m³
+        let rho = nuclear_density();
+        assert!(approx_rel(rho, 2.3e17, 0.1));
+    }
+
+    #[test]
+    fn test_absorbed_dose() {
+        // E=0.01 J, m=70 kg → D = 1.429e-4 Gy
+        let d = absorbed_dose(0.01, 70.0);
+        // D = 0.01/70 ≈ 1.42857e-4 Gy
+        assert!(approx_rel(d, 1.42857e-4, 1e-4));
+    }
+
+    #[test]
+    fn test_equivalent_dose() {
+        // D=0.001 Gy, w_R=20 (alpha) → H = 0.02 Sv
+        let h = equivalent_dose(0.001, 20.0);
+        assert!(approx(h, 0.02, 1e-9));
     }
 }

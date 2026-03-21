@@ -737,12 +737,10 @@ mod tests {
                     let y = j as f64 * dy;
                     let z = k as f64 * dz;
                     let (gx, gy, gz) = grad[idx3(i, j, k, ny, nz)];
+                    let (ex, ey, ez) = (2.0 * x, 2.0 * y, 2.0 * z);
                     assert!(
-                        approx(gx, 2.0 * x) && approx(gy, 2.0 * y) && approx(gz, 2.0 * z),
-                        "gradient mismatch at ({i},{j},{k}): got ({gx},{gy},{gz}), expected ({},{},{})",
-                        2.0 * x,
-                        2.0 * y,
-                        2.0 * z,
+                        approx(gx, ex) && approx(gy, ey) && approx(gz, ez),
+                        "gradient mismatch at ({i},{j},{k}): got ({gx},{gy},{gz}), expected ({ex},{ey},{ez})",
                     );
                 }
             }
@@ -866,12 +864,10 @@ mod tests {
             for j in 2..ny - 2 {
                 for k in 2..nz - 2 {
                     let idx = idx3(i, j, k, ny, nz);
+                    let (cvx, cvy, cvz) = (cx[idx], cy[idx], cz[idx]);
                     assert!(
-                        cx[idx].abs() < 1e-4 && cy[idx].abs() < 1e-4 && cz[idx].abs() < 1e-4,
-                        "curl of gradient nonzero at ({i},{j},{k}): ({},{},{})",
-                        cx[idx],
-                        cy[idx],
-                        cz[idx],
+                        cvx.abs() < 1e-4 && cvy.abs() < 1e-4 && cvz.abs() < 1e-4,
+                        "curl of gradient nonzero at ({i},{j},{k}): ({cvx},{cvy},{cvz})",
                     );
                 }
             }
@@ -916,9 +912,7 @@ mod tests {
         // F = ∇(x² + y² + z²) = (2x, 2y, 2z)
         let field = |x: f64, y: f64, z: f64| -> (f64, f64, f64) { (2.0 * x, 2.0 * y, 2.0 * z) };
         let potential = |x: f64, y: f64, z: f64| -> f64 { x * x + y * y + z * z };
-
-        let start = (0.0, 0.0, 0.0);
-        let end = (1.0, 1.0, 1.0);
+        let expected = potential(1.0, 1.0, 1.0) - potential(0.0, 0.0, 0.0);
 
         // Path 1: straight line (many segments for accuracy)
         let n_seg = 1000;
@@ -946,7 +940,6 @@ mod tests {
 
         let i1 = line_integral(&field, &path1);
         let i2 = line_integral(&field, &path2);
-        let expected = potential(end.0, end.1, end.2) - potential(start.0, start.1, start.2);
 
         assert!(
             (i1 - expected).abs() < 1e-4,
@@ -1080,6 +1073,37 @@ mod tests {
     }
 
     #[test]
+    fn test_divergence_2d_identity_field() {
+        // F = (x, y) => div = 2
+        let nx = 11;
+        let ny = 11;
+        let h = 0.1;
+        let n = nx * ny;
+
+        let mut fx = vec![0.0; n];
+        let mut fy = vec![0.0; n];
+
+        for i in 0..nx {
+            for j in 0..ny {
+                fx[idx2(i, j, ny)] = i as f64 * h;
+                fy[idx2(i, j, ny)] = j as f64 * h;
+            }
+        }
+
+        let div = divergence_2d(&fx, &fy, nx, ny, h, h);
+
+        for i in 1..nx - 1 {
+            for j in 1..ny - 1 {
+                let val = div[idx2(i, j, ny)];
+                assert!(
+                    approx(val, 2.0),
+                    "2d divergence at ({i},{j}): {val} != 2.0"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn test_flux_integral_2d_radial_field() {
         // F = (x, y), integrate around a unit circle.
         // Exact flux = ∫∫ div(F) dA = 2 * π * r² = 2π for r=1.
@@ -1094,10 +1118,44 @@ mod tests {
             .collect();
 
         let flux = flux_integral_2d(&field, &path);
-        let expected = 2.0 * std::f64::consts::PI;
+        let expected = 6.283185307179586;
         assert!(
             (flux - expected).abs() < 1e-3,
             "flux {flux} != expected {expected}"
         );
+    }
+
+    #[test]
+    fn test_central_diff_single_cell() {
+        let val = super::central_diff(1.0, 3.0, 1.0, true, true);
+        assert!(approx(val, 0.0));
+    }
+
+    #[test]
+    fn test_central_diff2_single_cell() {
+        let val = super::central_diff2(1.0, 2.0, 3.0, 1.0, true, true);
+        assert!(approx(val, 0.0));
+    }
+
+    #[test]
+    fn test_central_diff2_boundary() {
+        let val = super::central_diff2(1.0, 2.0, 3.0, 1.0, true, false);
+        assert!(approx(val, 0.0));
+    }
+
+    #[test]
+    fn test_line_integral_single_point() {
+        let f = |_x: f64, _y: f64, _z: f64| (1.0, 0.0, 0.0);
+        let path = vec![(0.0, 0.0, 0.0)];
+        let result = line_integral(&f, &path);
+        assert!(approx(result, 0.0));
+    }
+
+    #[test]
+    fn test_flux_integral_2d_single_point() {
+        let f = |_x: f64, _y: f64| (1.0, 0.0);
+        let path = vec![(0.0, 0.0)];
+        let result = flux_integral_2d(&f, &path);
+        assert!(approx(result, 0.0));
     }
 }

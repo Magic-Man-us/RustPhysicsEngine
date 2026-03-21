@@ -30,6 +30,7 @@ pub struct CollisionResult {
     pub debris: DebrisParams,
 }
 
+/// Computes the impact angle between two colliding bodies: θ = acos(v_radial / |v_rel|).
 pub fn impact_angle(pos1: Vec3, vel1: Vec3, pos2: Vec3, vel2: Vec3) -> f64 {
     let delta = pos2 - pos1;
     let dist = delta.magnitude();
@@ -49,10 +50,12 @@ pub fn impact_angle(pos1: Vec3, vel1: Vec3, pos2: Vec3, vel2: Vec3) -> f64 {
     cos_angle.acos()
 }
 
+/// Computes the relative impact speed between two bodies: |v1 - v2|.
 pub fn impact_speed(vel1: Vec3, vel2: Vec3) -> f64 {
     (vel1 - vel2).magnitude()
 }
 
+/// Computes the post-merger velocity via conservation of momentum: v_cm = (m1 v1 + m2 v2) / (m1 + m2).
 pub fn merge_velocity(m1: f64, v1: Vec3, m2: f64, v2: Vec3) -> Vec3 {
     let total = m1 + m2;
     if total <= 0.0 {
@@ -61,10 +64,12 @@ pub fn merge_velocity(m1: f64, v1: Vec3, m2: f64, v2: Vec3) -> Vec3 {
     (v1 * m1 + v2 * m2) * (1.0 / total)
 }
 
+/// Computes the merged body radius assuming volume conservation: r = (r1³ + r2³)^(1/3).
 pub fn merge_radius(r1: f64, r2: f64) -> f64 {
     (r1.powi(3) + r2.powi(3)).cbrt()
 }
 
+/// Computes the kinetic energy available in the center-of-mass frame: KE_cm = Σ ½m_i |v_i - v_cm|².
 pub fn collision_energy(m1: f64, v1: Vec3, m2: f64, v2: Vec3) -> f64 {
     let v_cm = merge_velocity(m1, v1, m2, v2);
     let ke1 = 0.5 * m1 * (v1 - v_cm).magnitude_squared();
@@ -72,6 +77,7 @@ pub fn collision_energy(m1: f64, v1: Vec3, m2: f64, v2: Vec3) -> f64 {
     ke1 + ke2
 }
 
+/// Computes the surface escape speed: v_esc = √(2GM/r).
 pub fn escape_speed(mass: f64, radius: f64) -> f64 {
     if radius <= 0.0 {
         return 0.0;
@@ -79,6 +85,7 @@ pub fn escape_speed(mass: f64, radius: f64) -> f64 {
     (2.0 * G * mass / radius).sqrt()
 }
 
+/// Returns debris generation parameters (count, speed, mass fraction, temperature) for a given collision type.
 pub fn debris_params(kind: CollisionKind) -> DebrisParams {
     match kind {
         CollisionKind::Merger => DebrisParams {
@@ -105,6 +112,7 @@ pub fn debris_params(kind: CollisionKind) -> DebrisParams {
     }
 }
 
+/// Resolves a collision between two bodies, computing the merged properties and debris parameters.
 pub fn resolve_collision(
     m1: f64, r1: f64, v1: Vec3,
     m2: f64, r2: f64, v2: Vec3,
@@ -176,5 +184,124 @@ mod tests {
         assert!(e > 0.0);
         // In CM frame each has v=10, so KE = 2 * 0.5 * 1.0 * 100 = 100
         assert!(approx(e, 100.0, 1e-9));
+    }
+
+    #[test]
+    fn test_escape_speed_earth() {
+        let v_esc = escape_speed(5.972e24, 6.371e6);
+        // Earth escape speed ~11.2 km/s
+        assert!(v_esc > 1.0e4 && v_esc < 1.2e4, "Escape speed = {v_esc}, expected ~11186 m/s");
+    }
+
+    #[test]
+    fn test_escape_speed_zero_radius() {
+        assert!(approx(escape_speed(1.0e30, 0.0), 0.0, 1e-20));
+    }
+
+    #[test]
+    fn test_impact_speed_stationary() {
+        let speed = impact_speed(Vec3::new(5.0, 0.0, 0.0), Vec3::new(5.0, 0.0, 0.0));
+        assert!(approx(speed, 0.0, 1e-12));
+    }
+
+    #[test]
+    fn test_impact_speed_opposing() {
+        let speed = impact_speed(Vec3::new(10.0, 0.0, 0.0), Vec3::new(-10.0, 0.0, 0.0));
+        assert!(approx(speed, 20.0, 1e-12));
+    }
+
+    #[test]
+    fn test_resolve_collision_mass_conservation() {
+        let result = resolve_collision(
+            3.0, 1.0, Vec3::new(1.0, 0.0, 0.0),
+            7.0, 2.0, Vec3::new(-1.0, 0.0, 0.0),
+            CollisionKind::Merger,
+        );
+        assert!(approx(result.merged_mass, 10.0, 1e-12));
+    }
+
+    #[test]
+    fn test_resolve_collision_momentum_conservation() {
+        let m1 = 3.0;
+        let v1 = Vec3::new(5.0, 2.0, -1.0);
+        let m2 = 7.0;
+        let v2 = Vec3::new(-3.0, 1.0, 4.0);
+        let result = resolve_collision(m1, 1.0, v1, m2, 2.0, v2, CollisionKind::GiantImpact);
+        let expected_v = (v1 * m1 + v2 * m2) * (1.0 / (m1 + m2));
+        assert!(approx(result.merged_velocity.x, expected_v.x, 1e-12));
+        assert!(approx(result.merged_velocity.y, expected_v.y, 1e-12));
+        assert!(approx(result.merged_velocity.z, expected_v.z, 1e-12));
+    }
+
+    #[test]
+    fn test_resolve_collision_kind_propagated() {
+        let result = resolve_collision(
+            1.0, 1.0, Vec3::ZERO,
+            1.0, 1.0, Vec3::ZERO,
+            CollisionKind::TidalDisruption,
+        );
+        assert_eq!(result.kind, CollisionKind::TidalDisruption);
+    }
+
+    #[test]
+    fn test_impact_angle_coincident_positions() {
+        let angle = impact_angle(
+            Vec3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 0.0, 0.0),
+            Vec3::new(1.0, 2.0, 3.0), Vec3::new(-1.0, 0.0, 0.0),
+        );
+        assert!(approx(angle, 0.0, 1e-12));
+    }
+
+    #[test]
+    fn test_impact_angle_zero_relative_velocity() {
+        let angle = impact_angle(
+            Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 0.0, 0.0),
+            Vec3::new(10.0, 0.0, 0.0), Vec3::new(1.0, 0.0, 0.0),
+        );
+        assert!(approx(angle, 0.0, 1e-12));
+    }
+
+    #[test]
+    fn test_merge_velocity_zero_total_mass() {
+        let v = merge_velocity(0.0, Vec3::new(1.0, 0.0, 0.0), 0.0, Vec3::new(-1.0, 0.0, 0.0));
+        assert!(approx(v.x, 0.0, 1e-12));
+        assert!(approx(v.y, 0.0, 1e-12));
+        assert!(approx(v.z, 0.0, 1e-12));
+    }
+
+    #[test]
+    fn test_debris_params_planetary_destruction() {
+        let dp = debris_params(CollisionKind::PlanetaryDestruction);
+        assert_eq!(dp.count, 24);
+        assert!(approx(dp.speed_factor, 1.5, 1e-9));
+        assert!(approx(dp.mass_fraction, 0.6, 1e-9));
+        assert!(approx(dp.base_temperature, 3000.0, 1e-9));
+    }
+
+    #[test]
+    fn test_debris_params_black_hole_absorption() {
+        let dp = debris_params(CollisionKind::BlackHoleAbsorption);
+        assert_eq!(dp.count, 16);
+        assert!(approx(dp.speed_factor, 0.5, 1e-9));
+        assert!(approx(dp.base_temperature, 20000.0, 1e-9));
+    }
+
+    #[test]
+    fn test_debris_params_grazing_collision() {
+        let dp = debris_params(CollisionKind::GrazingCollision);
+        assert_eq!(dp.count, 12);
+        assert!(approx(dp.speed_factor, 0.8, 1e-9));
+        assert!(approx(dp.mass_fraction, 0.2, 1e-9));
+        assert!(approx(dp.base_temperature, 2000.0, 1e-9));
+    }
+
+    #[test]
+    fn test_resolve_collision_zero_mass_temp_increase() {
+        let result = resolve_collision(
+            0.0, 1.0, Vec3::ZERO,
+            0.0, 1.0, Vec3::ZERO,
+            CollisionKind::Merger,
+        );
+        assert!(approx(result.temperature_increase, 0.0, 1e-12));
     }
 }

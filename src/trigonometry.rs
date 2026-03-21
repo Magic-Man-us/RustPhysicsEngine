@@ -5,11 +5,13 @@ const HALF_PI: f64 = PI / 2.0;
 
 // --- Triangle Laws ---
 
+/// Compute unknown side via law of cosines: c = sqrt(a² + b² - 2ab·cos(C))
 #[must_use]
 pub fn law_of_cosines_side(a: f64, b: f64, angle_c: f64) -> f64 {
     (a * a + b * b - 2.0 * a * b * angle_c.cos()).sqrt()
 }
 
+/// Compute unknown angle via law of cosines: C = arccos((a² + b² - c²) / (2ab))
 #[must_use]
 pub fn law_of_cosines_angle(a: f64, b: f64, c: f64) -> f64 {
     let numerator = a * a + b * b - c * c;
@@ -17,16 +19,19 @@ pub fn law_of_cosines_angle(a: f64, b: f64, c: f64) -> f64 {
     (numerator / denominator).clamp(-1.0, 1.0).acos()
 }
 
+/// Compute unknown side via law of sines: b = a·sin(B) / sin(A)
 #[must_use]
 pub fn law_of_sines_side(a: f64, angle_a: f64, angle_b: f64) -> f64 {
     a * angle_b.sin() / angle_a.sin()
 }
 
+/// Compute unknown angle via law of sines: B = arcsin(b·sin(A) / a)
 #[must_use]
 pub fn law_of_sines_angle(a: f64, b: f64, angle_a: f64) -> f64 {
     (b * angle_a.sin() / a).clamp(-1.0, 1.0).asin()
 }
 
+/// Triangle area using two sides and included angle: A = ½·a·b·sin(C)
 #[must_use]
 pub fn triangle_area_sas(a: f64, b: f64, angle_c: f64) -> f64 {
     0.5 * a * b * angle_c.sin()
@@ -34,26 +39,31 @@ pub fn triangle_area_sas(a: f64, b: f64, angle_c: f64) -> f64 {
 
 // --- Trig Identities ---
 
+/// Sine of sum identity: sin(a+b) = sin(a)cos(b) + cos(a)sin(b)
 #[must_use]
 pub fn sin_sum(a: f64, b: f64) -> f64 {
     a.sin() * b.cos() + a.cos() * b.sin()
 }
 
+/// Cosine of sum identity: cos(a+b) = cos(a)cos(b) - sin(a)sin(b)
 #[must_use]
 pub fn cos_sum(a: f64, b: f64) -> f64 {
     a.cos() * b.cos() - a.sin() * b.sin()
 }
 
+/// Sine of difference identity: sin(a-b) = sin(a)cos(b) - cos(a)sin(b)
 #[must_use]
 pub fn sin_diff(a: f64, b: f64) -> f64 {
     a.sin() * b.cos() - a.cos() * b.sin()
 }
 
+/// Cosine of difference identity: cos(a-b) = cos(a)cos(b) + sin(a)sin(b)
 #[must_use]
 pub fn cos_diff(a: f64, b: f64) -> f64 {
     a.cos() * b.cos() + a.sin() * b.sin()
 }
 
+/// Tangent of sum identity: tan(a+b) = (tan(a) + tan(b)) / (1 - tan(a)tan(b))
 #[must_use]
 pub fn tan_sum(a: f64, b: f64) -> f64 {
     let tan_a = a.tan();
@@ -61,11 +71,13 @@ pub fn tan_sum(a: f64, b: f64) -> f64 {
     (tan_a + tan_b) / (1.0 - tan_a * tan_b)
 }
 
+/// Double-angle sine identity: sin(2a) = 2·sin(a)·cos(a)
 #[must_use]
 pub fn double_angle_sin(a: f64) -> f64 {
     2.0 * a.sin() * a.cos()
 }
 
+/// Double-angle cosine identity: cos(2a) = cos²(a) - sin²(a)
 #[must_use]
 pub fn double_angle_cos(a: f64) -> f64 {
     let c = a.cos();
@@ -73,21 +85,25 @@ pub fn double_angle_cos(a: f64) -> f64 {
     c * c - s * s
 }
 
+/// Half-angle sine identity: sin(a/2) = sqrt(|1 - cos(a)| / 2)
 #[must_use]
 pub fn half_angle_sin(a: f64) -> f64 {
     ((1.0 - a.cos()) / 2.0).abs().sqrt()
 }
 
+/// Half-angle cosine identity: cos(a/2) = sqrt(|1 + cos(a)| / 2)
 #[must_use]
 pub fn half_angle_cos(a: f64) -> f64 {
     ((1.0 + a.cos()) / 2.0).abs().sqrt()
 }
 
+/// Product-to-sum for sin·sin: sin(a)sin(b) = ½[cos(a-b) - cos(a+b)]
 #[must_use]
 pub fn product_to_sum_sin_sin(a: f64, b: f64) -> f64 {
     0.5 * ((a - b).cos() - (a + b).cos())
 }
 
+/// Product-to-sum for cos·cos: cos(a)cos(b) = ½[cos(a-b) + cos(a+b)]
 #[must_use]
 pub fn product_to_sum_cos_cos(a: f64, b: f64) -> f64 {
     0.5 * ((a - b).cos() + (a + b).cos())
@@ -95,46 +111,55 @@ pub fn product_to_sum_cos_cos(a: f64, b: f64) -> f64 {
 
 // --- Hyperbolic Functions ---
 
+/// Hyperbolic sine: sinh(x) = (eˣ - e⁻ˣ) / 2
 #[must_use]
 pub fn sinh(x: f64) -> f64 {
     x.sinh()
 }
 
+/// Hyperbolic cosine: cosh(x) = (eˣ + e⁻ˣ) / 2
 #[must_use]
 pub fn cosh(x: f64) -> f64 {
     x.cosh()
 }
 
+/// Hyperbolic tangent: tanh(x) = sinh(x) / cosh(x)
 #[must_use]
 pub fn tanh(x: f64) -> f64 {
     x.tanh()
 }
 
+/// Hyperbolic secant: sech(x) = 1 / cosh(x)
 #[must_use]
 pub fn sech(x: f64) -> f64 {
     1.0 / x.cosh()
 }
 
+/// Hyperbolic cosecant: csch(x) = 1 / sinh(x)
 #[must_use]
 pub fn csch(x: f64) -> f64 {
     1.0 / x.sinh()
 }
 
+/// Hyperbolic cotangent: coth(x) = cosh(x) / sinh(x)
 #[must_use]
 pub fn coth(x: f64) -> f64 {
     x.cosh() / x.sinh()
 }
 
+/// Inverse hyperbolic sine: asinh(x) = ln(x + sqrt(x² + 1))
 #[must_use]
 pub fn asinh(x: f64) -> f64 {
     (x + (x * x + 1.0).sqrt()).ln()
 }
 
+/// Inverse hyperbolic cosine: acosh(x) = ln(x + sqrt(x² - 1))
 #[must_use]
 pub fn acosh(x: f64) -> f64 {
     (x + (x * x - 1.0).sqrt()).ln()
 }
 
+/// Inverse hyperbolic tangent: atanh(x) = ½·ln((1+x) / (1-x))
 #[must_use]
 pub fn atanh(x: f64) -> f64 {
     0.5 * ((1.0 + x) / (1.0 - x)).ln()
@@ -142,6 +167,7 @@ pub fn atanh(x: f64) -> f64 {
 
 // --- Angle Utilities ---
 
+/// Normalize angle to the range [0, 2π)
 #[must_use]
 pub fn normalize_angle(angle: f64) -> f64 {
     let mut a = angle % TWO_PI;
@@ -151,6 +177,7 @@ pub fn normalize_angle(angle: f64) -> f64 {
     a
 }
 
+/// Normalize angle to the range [-π, π)
 #[must_use]
 pub fn normalize_angle_signed(angle: f64) -> f64 {
     let mut a = angle % TWO_PI;
@@ -162,33 +189,39 @@ pub fn normalize_angle_signed(angle: f64) -> f64 {
     a
 }
 
+/// Signed shortest angular difference from a to b: normalize(b - a) in [-π, π)
 #[must_use]
 pub fn angular_difference(a: f64, b: f64) -> f64 {
     normalize_angle_signed(b - a)
 }
 
+/// Check whether angle (in radians) is acute: 0 < angle < π/2
 #[must_use]
 pub fn is_acute(angle: f64) -> bool {
     let a = normalize_angle(angle);
     a > 0.0 && a < HALF_PI
 }
 
+/// Check whether angle (in radians) is a right angle within tolerance: |angle - π/2| < tol
 #[must_use]
 pub fn is_right(angle: f64, tolerance: f64) -> bool {
     (normalize_angle(angle) - HALF_PI).abs() < tolerance
 }
 
+/// Check whether angle (in radians) is obtuse: π/2 < angle < π
 #[must_use]
 pub fn is_obtuse(angle: f64) -> bool {
     let a = normalize_angle(angle);
     a > HALF_PI && a < PI
 }
 
+/// Complementary angle: π/2 - angle
 #[must_use]
 pub fn complementary(angle: f64) -> f64 {
     HALF_PI - angle
 }
 
+/// Supplementary angle: π - angle
 #[must_use]
 pub fn supplementary(angle: f64) -> f64 {
     PI - angle
@@ -429,5 +462,18 @@ mod tests {
     #[test]
     fn test_supplementary() {
         assert!(approx(supplementary(PI / 3.0), 2.0 * PI / 3.0));
+    }
+
+    #[test]
+    fn test_normalize_angle_signed_very_negative() {
+        let a = normalize_angle_signed(-4.0 * PI - 0.1);
+        assert!(a >= -PI && a < PI, "got {a}");
+    }
+
+    #[test]
+    fn test_normalize_angle_signed_below_neg_pi() {
+        let a = normalize_angle_signed(-PI - 0.5);
+        assert!(a >= -PI && a < PI, "got {a}");
+        assert!((a - (PI - 0.5)).abs() < 1e-10);
     }
 }

@@ -1,15 +1,19 @@
 use crate::math::Vec3;
 use crate::math::constants::G;
 
+/// Computes the Newtonian tidal acceleration magnitude: a_tidal = 2GM/r³.
 pub fn tidal_acceleration_magnitude(primary_mass: f64, distance: f64) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     2.0 * G * primary_mass / (distance * distance * distance)
 }
 
+/// Computes tidal acceleration with a GR correction factor: a_tidal / (1 - r_s/r).
 pub fn tidal_acceleration_gr_corrected(
     primary_mass: f64,
     distance: f64,
     schwarzschild_radius: f64,
 ) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     let base = tidal_acceleration_magnitude(primary_mass, distance);
     if distance > schwarzschild_radius * 1.02 {
         base / (1.0 - schwarzschild_radius / distance)
@@ -18,6 +22,7 @@ pub fn tidal_acceleration_gr_corrected(
     }
 }
 
+/// Computes the rigid-body Roche limit: d = R_p (2 ρ_p / ρ_s)^(1/3).
 pub fn roche_limit_rigid(primary_radius: f64, primary_density: f64, satellite_density: f64) -> f64 {
     if satellite_density <= 0.0 {
         return f64::INFINITY;
@@ -25,6 +30,7 @@ pub fn roche_limit_rigid(primary_radius: f64, primary_density: f64, satellite_de
     primary_radius * (2.0 * primary_density / satellite_density).cbrt()
 }
 
+/// Computes the fluid-body Roche limit: d = 2.44 R_p (ρ_p / ρ_s)^(1/3).
 pub fn roche_limit_fluid(primary_radius: f64, primary_density: f64, satellite_density: f64) -> f64 {
     if satellite_density <= 0.0 {
         return f64::INFINITY;
@@ -32,12 +38,15 @@ pub fn roche_limit_fluid(primary_radius: f64, primary_density: f64, satellite_de
     2.44 * primary_radius * (primary_density / satellite_density).cbrt()
 }
 
+/// Computes the ratio of tidal force to self-gravity on a body's surface: (a_tidal × R_body) / (GM_body / R_body²).
 pub fn tidal_force_ratio(
     primary_mass: f64,
     body_mass: f64,
     body_radius: f64,
     distance: f64,
 ) -> f64 {
+    assert!(body_radius > 0.0, "body radius must be positive");
+    assert!(distance > 0.0, "distance must be positive");
     let tidal = tidal_acceleration_magnitude(primary_mass, distance) * body_radius;
     let self_gravity = G * body_mass / (body_radius * body_radius);
     if self_gravity <= 0.0 {
@@ -46,11 +55,14 @@ pub fn tidal_force_ratio(
     tidal / self_gravity
 }
 
+/// Computes the tidal tensor eigenvalues (radial, tangential): (2GM/r³, -GM/r³).
 pub fn tidal_tensor_eigenvalues(primary_mass: f64, distance: f64) -> (f64, f64) {
+    assert!(distance > 0.0, "distance must be positive");
     let base = G * primary_mass / (distance * distance * distance);
     (2.0 * base, -base)
 }
 
+/// Computes the Roche potential in the co-rotating frame: Φ = -Gm₁/r₁ - Gm₂/r₂ - ½ω²r_com².
 pub fn roche_potential(
     x: f64,
     z: f64,
@@ -67,6 +79,7 @@ pub fn roche_potential(
     }
 
     let total_mass = m1 + m2;
+    assert!(total_mass > 0.0, "total mass must be positive");
     let omega_sq = G * total_mass / (d * d * d);
 
     let bcx = (pos1.x * m1 + pos2.x * m2) / total_mass;
@@ -128,5 +141,58 @@ mod tests {
             1.0, Vec3::new(1.0, 0.0, 0.0),
         );
         assert!(approx(p1, p2, 1e-6), "Potential should be symmetric about line of centers");
+    }
+
+    #[test]
+    fn test_tidal_force_ratio_increases_closer() {
+        let primary_mass = 1.989e30;
+        let body_mass = 5.972e24;
+        let body_radius = 6.371e6;
+        let ratio_close = tidal_force_ratio(primary_mass, body_mass, body_radius, 1.0e10);
+        let ratio_far = tidal_force_ratio(primary_mass, body_mass, body_radius, 1.0e11);
+        assert!(ratio_close > ratio_far, "Tidal force ratio should increase at closer distances");
+    }
+
+    #[test]
+    fn test_tidal_force_ratio_positive() {
+        let ratio = tidal_force_ratio(1.989e30, 5.972e24, 6.371e6, 1.496e11);
+        assert!(ratio > 0.0, "Tidal force ratio should be positive, got {ratio}");
+    }
+
+    #[test]
+    fn test_tidal_force_ratio_zero_body_mass() {
+        let ratio = tidal_force_ratio(1.989e30, 0.0, 6.371e6, 1.496e11);
+        assert!(ratio.is_infinite() || ratio > 1e10, "Zero body mass should give infinite or very large ratio");
+    }
+
+    #[test]
+    fn test_gr_correction_near_schwarzschild() {
+        let rs = 2.0 * G * 1.989e30 / (3e8 * 3e8);
+        let r = rs * 1.01;
+        let newtonian = tidal_acceleration_magnitude(1.989e30, r);
+        let gr = tidal_acceleration_gr_corrected(1.989e30, r, rs);
+        assert!(approx(gr, newtonian, newtonian * 1e-6));
+    }
+
+    #[test]
+    fn test_roche_limit_rigid_zero_satellite_density() {
+        let r = roche_limit_rigid(1.0, 5000.0, 0.0);
+        assert!(r.is_infinite());
+    }
+
+    #[test]
+    fn test_roche_limit_fluid_zero_satellite_density() {
+        let r = roche_limit_fluid(1.0, 5000.0, 0.0);
+        assert!(r.is_infinite());
+    }
+
+    #[test]
+    fn test_roche_potential_coincident_bodies() {
+        let p = roche_potential(
+            0.5, 0.0,
+            1.0, Vec3::ZERO,
+            1.0, Vec3::ZERO,
+        );
+        assert!(approx(p, 0.0, 1e-12));
     }
 }

@@ -311,6 +311,7 @@ pub fn xyz_to_rgb(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
 /// McCamy's approximation.
 #[must_use]
 pub fn correlated_color_temperature(x: f64, y: f64) -> f64 {
+    assert!((y - MCCAMY_Y_REF).abs() > f64::EPSILON, "y must differ from McCamy reference (0.1858)");
     let n = (x - MCCAMY_X_REF) / (y - MCCAMY_Y_REF);
     MCCAMY_C3 * n * n * n + MCCAMY_C2 * n * n + MCCAMY_C1 * n + MCCAMY_C0
 }
@@ -459,5 +460,318 @@ mod tests {
     fn color_difference_same_color() {
         let d = color_difference_euclidean(0.5, 0.5, 0.5, 0.5, 0.5, 0.5);
         assert!(approx(d, 0.0, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn correlated_color_temperature_mccamy() {
+        // McCamy's approximation: n = (x - 0.3320) / (y - 0.1858)
+        // For x=0.3320, n=0, CCT = C0 = 5520.33
+        let cct_at_ref = correlated_color_temperature(MCCAMY_X_REF, MCCAMY_Y_REF + 0.15);
+        // n = 0 => CCT = 5520.33
+        assert!(
+            (cct_at_ref - MCCAMY_C0).abs() < 1.0,
+            "at reference x, CCT should be C0={MCCAMY_C0}, got {cct_at_ref}"
+        );
+    }
+
+    // --- wavelength_to_rgb: cover violet band (380-440 nm) ---
+    #[test]
+    fn violet_light_400nm() {
+        // 400 nm is in [380, 440): violet band with intensity falloff
+        let (r, g, b) = wavelength_to_rgb(400.0);
+        // r = (440 - 400) / (440 - 380) = 40/60 = 0.6667
+        // g = 0, b = 1.0
+        // factor = 0.3 + 0.7 * (400 - 380) / (420 - 380) = 0.3 + 0.7 * 0.5 = 0.65
+        assert!(r > 0.0, "violet has some red: r={r}");
+        assert!(approx(g, 0.0, TIGHT_TOLERANCE), "green should be zero: g={g}");
+        assert!(b > r, "blue should exceed red in violet: b={b}, r={r}");
+        let expected_r = (40.0 / 60.0) * 0.65;
+        let expected_b = 1.0 * 0.65;
+        assert!(approx(r, expected_r, TIGHT_TOLERANCE), "r={r}, expected {expected_r}");
+        assert!(approx(b, expected_b, TIGHT_TOLERANCE), "b={b}, expected {expected_b}");
+    }
+
+    // --- wavelength_to_rgb: cover cyan band (490-510 nm) ---
+    #[test]
+    fn cyan_light_500nm() {
+        // 500 nm is in [490, 510): cyan band, full intensity
+        let (r, g, b) = wavelength_to_rgb(500.0);
+        // r = 0, g = 1.0, b = (510 - 500) / (510 - 490) = 0.5
+        // factor = 1.0 (between 420 and 700)
+        assert!(approx(r, 0.0, TIGHT_TOLERANCE), "red should be zero: r={r}");
+        assert!(approx(g, 1.0, TIGHT_TOLERANCE), "green should be 1.0: g={g}");
+        assert!(approx(b, 0.5, TIGHT_TOLERANCE), "blue should be 0.5: b={b}");
+    }
+
+    // --- wavelength_to_rgb: cover yellow band (580-645 nm) ---
+    #[test]
+    fn yellow_light_600nm() {
+        // 600 nm is in [580, 645): yellow band, full intensity
+        let (r, g, b) = wavelength_to_rgb(600.0);
+        // r = 1.0, g = (645 - 600) / (645 - 580) = 45/65, b = 0
+        // factor = 1.0 (between 420 and 700)
+        let expected_g = 45.0 / 65.0;
+        assert!(approx(r, 1.0, TIGHT_TOLERANCE), "red should be 1.0: r={r}");
+        assert!(approx(g, expected_g, TIGHT_TOLERANCE), "g={g}, expected {expected_g}");
+        assert!(approx(b, 0.0, TIGHT_TOLERANCE), "blue should be zero: b={b}");
+    }
+
+    // --- blackbody_to_rgb: cover high temperature (> 6600 K) branches ---
+    #[test]
+    fn blackbody_high_temp_10000k() {
+        // At 10000 K (> 6600), red uses Helland formula, green uses cool formula, blue = 255
+        let (r, g, b) = blackbody_to_rgb(10000.0);
+        assert!(b > 0.99, "blue should be ~1.0 at 10000K: b={b}");
+        assert!(r < 1.0, "red should be below 1.0 at 10000K: r={r}");
+        assert!(r > 0.5, "red should still be significant: r={r}");
+        assert!(g > 0.5, "green should still be significant: g={g}");
+    }
+
+    // --- blackbody_to_rgb: cover very low temperature (<= 1900 K) for blue = 0 ---
+    #[test]
+    fn blackbody_very_low_temp_1500k() {
+        // At 1500 K (<= 1900), blue channel should be 0
+        let (r, g, b) = blackbody_to_rgb(1500.0);
+        assert!(approx(b, 0.0, TIGHT_TOLERANCE), "blue should be 0 at 1500K: b={b}");
+        assert!(r > g, "red should exceed green at very low temp");
+        assert!(approx(r, 1.0, TIGHT_TOLERANCE), "red should be 1.0 (clamped to 255/255)");
+    }
+
+    // --- rgb_to_hsv: achromatic (black) ---
+    #[test]
+    fn hsv_black() {
+        let (h, s, v) = rgb_to_hsv(0.0, 0.0, 0.0);
+        assert!(approx(h, 0.0, TIGHT_TOLERANCE));
+        assert!(approx(s, 0.0, TIGHT_TOLERANCE));
+        assert!(approx(v, 0.0, TIGHT_TOLERANCE));
+    }
+
+    // --- rgb_to_hsv: achromatic (gray) ---
+    #[test]
+    fn hsv_gray() {
+        let (h, s, v) = rgb_to_hsv(0.5, 0.5, 0.5);
+        assert!(approx(h, 0.0, TIGHT_TOLERANCE), "hue undefined for gray: h={h}");
+        assert!(approx(s, 0.0, TIGHT_TOLERANCE), "saturation should be 0: s={s}");
+        assert!(approx(v, 0.5, TIGHT_TOLERANCE), "value should be 0.5: v={v}");
+    }
+
+    // --- rgb_to_hsv: max == green ---
+    #[test]
+    fn hsv_green_dominant() {
+        // Pure green: (0, 1, 0) => H=120, S=1, V=1
+        let (h, s, v) = rgb_to_hsv(0.0, 1.0, 0.0);
+        assert!(approx(h, 120.0, TIGHT_TOLERANCE), "h={h}");
+        assert!(approx(s, 1.0, TIGHT_TOLERANCE), "s={s}");
+        assert!(approx(v, 1.0, TIGHT_TOLERANCE), "v={v}");
+    }
+
+    // --- rgb_to_hsv: max == blue ---
+    #[test]
+    fn hsv_blue_dominant() {
+        // Pure blue: (0, 0, 1) => H=240, S=1, V=1
+        let (h, s, v) = rgb_to_hsv(0.0, 0.0, 1.0);
+        assert!(approx(h, 240.0, TIGHT_TOLERANCE), "h={h}");
+        assert!(approx(s, 1.0, TIGHT_TOLERANCE), "s={s}");
+        assert!(approx(v, 1.0, TIGHT_TOLERANCE), "v={v}");
+    }
+
+    // --- rgb_to_hsv: negative hue wrapping ---
+    #[test]
+    fn hsv_negative_hue_wrapping() {
+        // RGB with max=R where g < b produces negative hue before wrapping
+        // e.g., (0.8, 0.1, 0.5): max=0.8(R), delta=0.7
+        //   h_raw = 60 * ((0.1 - 0.5) / 0.7 % 6) = 60 * (-0.5714 % 6) = 60 * 5.4286 = 325.7
+        // Actually, Rust's % can produce negative: (g-b)/delta = -0.4/0.7 = -0.5714
+        // -0.5714 % 6.0 in Rust = -0.5714 (remainder preserves sign)
+        // h_raw = 60 * -0.5714 = -34.28... < 0 => h = -34.28 + 360 = 325.7
+        let (h, s, v) = rgb_to_hsv(0.8, 0.1, 0.5);
+        assert!(h > 300.0, "hue should be in magenta range after wrapping: h={h}");
+        assert!(h < 360.0, "hue should be < 360: h={h}");
+        let (r2, g2, b2) = hsv_to_rgb(h, s, v);
+        assert!(approx(r2, 0.8, TIGHT_TOLERANCE), "roundtrip r");
+        assert!(approx(g2, 0.1, TIGHT_TOLERANCE), "roundtrip g");
+        assert!(approx(b2, 0.5, TIGHT_TOLERANCE), "roundtrip b");
+    }
+
+    // --- hsv_to_rgb: cover all 6 sectors ---
+    #[test]
+    fn hsv_sector_1() {
+        // H in [60, 120): sector 1
+        let (r, g, b) = hsv_to_rgb(90.0, 1.0, 1.0);
+        let (h, s, v) = rgb_to_hsv(r, g, b);
+        assert!(approx(h, 90.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+        assert!(approx(s, 1.0, TIGHT_TOLERANCE));
+        assert!(approx(v, 1.0, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn hsv_sector_2() {
+        // H in [120, 180): sector 2
+        let (r, g, b) = hsv_to_rgb(150.0, 0.8, 0.9);
+        let (h, s, v) = rgb_to_hsv(r, g, b);
+        assert!(approx(h, 150.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+        assert!(approx(s, 0.8, TIGHT_TOLERANCE));
+        assert!(approx(v, 0.9, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn hsv_sector_3() {
+        // H in [180, 240): sector 3
+        let (r, g, b) = hsv_to_rgb(200.0, 0.7, 0.6);
+        let (h, s, v) = rgb_to_hsv(r, g, b);
+        assert!(approx(h, 200.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+        assert!(approx(s, 0.7, TIGHT_TOLERANCE));
+        assert!(approx(v, 0.6, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn hsv_sector_4() {
+        // H in [240, 300): sector 4
+        let (r, g, b) = hsv_to_rgb(270.0, 0.5, 0.8);
+        let (h, s, v) = rgb_to_hsv(r, g, b);
+        assert!(approx(h, 270.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+        assert!(approx(s, 0.5, TIGHT_TOLERANCE));
+        assert!(approx(v, 0.8, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn hsv_sector_5() {
+        // H in [300, 360): sector 5
+        let (r, g, b) = hsv_to_rgb(330.0, 0.9, 0.7);
+        let (h, s, v) = rgb_to_hsv(r, g, b);
+        assert!(approx(h, 330.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+        assert!(approx(s, 0.9, TIGHT_TOLERANCE));
+        assert!(approx(v, 0.7, TIGHT_TOLERANCE));
+    }
+
+    // --- rgb_to_hsl: cover all branches ---
+    #[test]
+    fn hsl_achromatic() {
+        // Gray: delta=0, h=0, s=0
+        let (h, s, l) = rgb_to_hsl(0.5, 0.5, 0.5);
+        assert!(approx(h, 0.0, TIGHT_TOLERANCE));
+        assert!(approx(s, 0.0, TIGHT_TOLERANCE));
+        assert!(approx(l, 0.5, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn hsl_green_dominant() {
+        // Pure green: H=120, S=1, L=0.5
+        let (h, s, l) = rgb_to_hsl(0.0, 1.0, 0.0);
+        assert!(approx(h, 120.0, TIGHT_TOLERANCE), "h={h}");
+        assert!(approx(s, 1.0, TIGHT_TOLERANCE), "s={s}");
+        assert!(approx(l, 0.5, TIGHT_TOLERANCE), "l={l}");
+    }
+
+    #[test]
+    fn hsl_blue_dominant() {
+        // Pure blue: H=240, S=1, L=0.5
+        let (h, s, l) = rgb_to_hsl(0.0, 0.0, 1.0);
+        assert!(approx(h, 240.0, TIGHT_TOLERANCE), "h={h}");
+        assert!(approx(s, 1.0, TIGHT_TOLERANCE), "s={s}");
+        assert!(approx(l, 0.5, TIGHT_TOLERANCE), "l={l}");
+    }
+
+    #[test]
+    fn hsl_negative_hue_wrapping() {
+        // Same magenta-ish color that produces negative hue
+        let (h, s, l) = rgb_to_hsl(0.8, 0.1, 0.5);
+        assert!(h > 300.0, "hue should wrap to positive: h={h}");
+        let (r2, g2, b2) = hsl_to_rgb(h, s, l);
+        assert!(approx(r2, 0.8, TIGHT_TOLERANCE), "roundtrip r");
+        assert!(approx(g2, 0.1, TIGHT_TOLERANCE), "roundtrip g");
+        assert!(approx(b2, 0.5, TIGHT_TOLERANCE), "roundtrip b");
+    }
+
+    // --- hsl_to_rgb: cover all 6 sectors ---
+    #[test]
+    fn hsl_sector_1() {
+        let (r, g, b) = hsl_to_rgb(90.0, 0.8, 0.5);
+        let (h, _, _) = rgb_to_hsl(r, g, b);
+        assert!(approx(h, 90.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+    }
+
+    #[test]
+    fn hsl_sector_2() {
+        let (r, g, b) = hsl_to_rgb(150.0, 0.8, 0.5);
+        let (h, _, _) = rgb_to_hsl(r, g, b);
+        assert!(approx(h, 150.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+    }
+
+    #[test]
+    fn hsl_sector_3() {
+        let (r, g, b) = hsl_to_rgb(200.0, 0.8, 0.5);
+        let (h, _, _) = rgb_to_hsl(r, g, b);
+        assert!(approx(h, 200.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+    }
+
+    #[test]
+    fn hsl_sector_4() {
+        let (r, g, b) = hsl_to_rgb(270.0, 0.8, 0.5);
+        let (h, _, _) = rgb_to_hsl(r, g, b);
+        assert!(approx(h, 270.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+    }
+
+    #[test]
+    fn hsl_sector_5() {
+        let (r, g, b) = hsl_to_rgb(330.0, 0.8, 0.5);
+        let (h, _, _) = rgb_to_hsl(r, g, b);
+        assert!(approx(h, 330.0, TIGHT_TOLERANCE), "h roundtrip: {h}");
+    }
+
+    // --- color_difference_euclidean: non-zero distance ---
+    #[test]
+    fn color_difference_known_distance() {
+        // Distance between (1,0,0) and (0,1,0) = sqrt(2)
+        let d = color_difference_euclidean(1.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        assert!(approx(d, std::f64::consts::SQRT_2, TIGHT_TOLERANCE), "d={d}");
+    }
+
+    // --- contrast_ratio: same luminance ---
+    #[test]
+    fn contrast_ratio_same_luminance() {
+        let ratio = contrast_ratio(0.5, 0.5);
+        assert!(approx(ratio, 1.0, TIGHT_TOLERANCE), "same luminance => ratio 1.0: {ratio}");
+    }
+
+    // --- luminance: pure channels ---
+    #[test]
+    fn luminance_pure_red() {
+        let l = luminance(1.0, 0.0, 0.0);
+        assert!(approx(l, LUMINANCE_R, TIGHT_TOLERANCE));
+    }
+
+    #[test]
+    fn luminance_black() {
+        let l = luminance(0.0, 0.0, 0.0);
+        assert!(approx(l, 0.0, TIGHT_TOLERANCE));
+    }
+
+    // --- hsv_to_rgb / hsl_to_rgb: sector 0 (H in [0, 60)) ---
+    #[test]
+    fn hsv_sector_0() {
+        // H=30 (orange), S=1, V=1 => h_prime=0.5, c=1, x=0.5, m=0
+        // sector 0: (c, x, 0) = (1.0, 0.5, 0.0)
+        let (r, g, b) = hsv_to_rgb(30.0, 1.0, 1.0);
+        assert!(approx(r, 1.0, TIGHT_TOLERANCE), "r={r}");
+        assert!(approx(g, 0.5, TIGHT_TOLERANCE), "g={g}");
+        assert!(approx(b, 0.0, TIGHT_TOLERANCE), "b={b}");
+    }
+
+    #[test]
+    fn hsl_sector_0() {
+        // H=30, S=1, L=0.5 => c=1, h_prime=0.5, x=0.5, m=0
+        // sector 0: (c, x, 0) + m = (1.0, 0.5, 0.0)
+        let (r, g, b) = hsl_to_rgb(30.0, 1.0, 0.5);
+        assert!(approx(r, 1.0, TIGHT_TOLERANCE), "r={r}");
+        assert!(approx(g, 0.5, TIGHT_TOLERANCE), "g={g}");
+        assert!(approx(b, 0.0, TIGHT_TOLERANCE), "b={b}");
+    }
+
+    // --- correlated_color_temperature: panic on degenerate y ---
+    #[test]
+    #[should_panic(expected = "y must differ from McCamy reference")]
+    fn cct_panics_at_reference_y() {
+        let _ = correlated_color_temperature(0.4, MCCAMY_Y_REF);
     }
 }

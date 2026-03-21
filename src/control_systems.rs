@@ -21,6 +21,7 @@ pub struct PidController {
 }
 
 impl PidController {
+    /// Create a new PID controller with gains Kp, Ki, Kd and output clamping bounds.
     pub fn new(kp: f64, ki: f64, kd: f64, output_min: f64, output_max: f64) -> Self {
         Self {
             kp,
@@ -33,6 +34,7 @@ impl PidController {
         }
     }
 
+    /// Compute PID output with anti-windup: u = Kp·e + Ki·∫e·dt + Kd·de/dt
     pub fn update(&mut self, setpoint: f64, measured: f64, dt: f64) -> f64 {
         let error = setpoint - measured;
 
@@ -56,6 +58,7 @@ impl PidController {
         clamped
     }
 
+    /// Reset the integral accumulator and previous error to zero.
     pub fn reset(&mut self) {
         self.integral = 0.0;
         self.prev_error = 0.0;
@@ -64,14 +67,19 @@ impl PidController {
 
 // ── Transfer Functions ─────────────────────────────────────────────────
 
+/// First-order step response: y(t) = K(1 - e^(-t/τ))
 pub fn first_order_step_response(gain: f64, tau: f64, t: f64) -> f64 {
+    assert!(tau > 0.0, "time constant tau must be positive");
     gain * (1.0 - (-t / tau).exp())
 }
 
+/// First-order impulse response: h(t) = (K/τ)·e^(-t/τ)
 pub fn first_order_impulse_response(gain: f64, tau: f64, t: f64) -> f64 {
+    assert!(tau > 0.0, "time constant tau must be positive");
     (gain / tau) * (-t / tau).exp()
 }
 
+/// Second-order step response for underdamped, critically damped, and overdamped systems.
 pub fn second_order_step_response(gain: f64, omega_n: f64, zeta: f64, t: f64) -> f64 {
     if t <= 0.0 {
         return 0.0;
@@ -94,28 +102,39 @@ pub fn second_order_step_response(gain: f64, omega_n: f64, zeta: f64, t: f64) ->
     }
 }
 
+/// Natural frequency of a second-order system: ωn = √(k/m)
 pub fn second_order_natural_frequency(k: f64, m: f64) -> f64 {
+    assert!(m > 0.0, "mass m must be positive");
     (k / m).sqrt()
 }
 
+/// Damping ratio of a second-order system: ζ = c/(2√(km))
 pub fn second_order_damping_ratio(c: f64, k: f64, m: f64) -> f64 {
+    assert!(k > 0.0, "stiffness k must be positive");
+    assert!(m > 0.0, "mass m must be positive");
     c / (2.0 * (k * m).sqrt())
 }
 
 // ── System Characteristics ─────────────────────────────────────────────
 
+/// Rise time of a first-order system (10% to 90%): tr = 2.2τ
 pub fn rise_time_first_order(tau: f64) -> f64 {
     RISE_TIME_FACTOR * tau
 }
 
+/// Settling time of a first-order system (2% criterion): ts = 4τ
 pub fn settling_time_first_order(tau: f64) -> f64 {
     SETTLING_TIME_FACTOR_1ST * tau
 }
 
+/// Settling time of a second-order system (2% criterion): ts = 4/(ζωn)
 pub fn settling_time_second_order(zeta: f64, omega_n: f64) -> f64 {
+    assert!(zeta > 0.0, "damping ratio zeta must be positive");
+    assert!(omega_n > 0.0, "natural frequency omega_n must be positive");
     SETTLING_TIME_FACTOR_2ND / (zeta * omega_n)
 }
 
+/// Peak overshoot percentage: Mp = 100·exp(-πζ/√(1-ζ²))
 pub fn overshoot_percent(zeta: f64) -> f64 {
     if zeta >= 1.0 {
         return 0.0;
@@ -123,36 +142,47 @@ pub fn overshoot_percent(zeta: f64) -> f64 {
     SETTLING_PERCENT_SCALE * (-PI * zeta / (1.0 - zeta * zeta).sqrt()).exp()
 }
 
+/// Bandwidth of a first-order system: ωb = 1/τ
 pub fn bandwidth_first_order(tau: f64) -> f64 {
+    assert!(tau > 0.0, "time constant tau must be positive");
     1.0 / tau
 }
 
+/// Gain margin in dB: GM = -20·log₁₀(|G(jω)|) at the phase crossover frequency
 pub fn gain_margin_db(open_loop_gain_at_phase_crossover: f64) -> f64 {
+    assert!(open_loop_gain_at_phase_crossover != 0.0, "open_loop_gain_at_phase_crossover must be nonzero");
     -DB_SCALE * open_loop_gain_at_phase_crossover.abs().log10()
 }
 
+/// Phase margin in degrees: PM = 180° + φ(ωgc)
 pub fn phase_margin(phase_at_gain_crossover: f64) -> f64 {
     PHASE_OFFSET_DEG + phase_at_gain_crossover
 }
 
+/// Steady-state error for a type-0 system with step input: ess = 1/(1 + K)
 pub fn steady_state_error_type0(gain: f64) -> f64 {
     1.0 / (1.0 + gain)
 }
 
+/// Steady-state error for a type-1 system with ramp input: ess = 1/K
 pub fn steady_state_error_type1(gain: f64) -> f64 {
+    assert!(gain != 0.0, "gain must be nonzero");
     1.0 / gain
 }
 
 // ── Stability ──────────────────────────────────────────────────────────
 
+/// Check stability of a first-order system: stable when τ > 0.
 pub fn is_stable_first_order(tau: f64) -> bool {
     tau > 0.0
 }
 
+/// Check stability of a second-order system: stable when ζ > 0 and ωn > 0.
 pub fn is_stable_second_order(zeta: f64, omega_n: f64) -> bool {
     zeta > 0.0 && omega_n > 0.0
 }
 
+/// Routh stability criterion for a 2nd-order polynomial: stable when all coefficients > 0.
 pub fn routh_criterion_2nd(a0: f64, a1: f64, a2: f64) -> bool {
     a0 > 0.0 && a1 > 0.0 && a2 > 0.0
 }
@@ -250,19 +280,10 @@ mod tests {
 
     #[test]
     fn overshoot_at_zeta_0_5() {
-        let zeta = 0.5;
-        let expected = SETTLING_PERCENT_SCALE * (-PI * zeta / (1.0 - zeta * zeta).sqrt()).exp();
-        let computed = overshoot_percent(zeta);
-
-        assert!(
-            approx_rel(computed, expected, 1e-9),
-            "Overshoot formula mismatch. computed={computed}, expected={expected}"
-        );
-
-        // Known value: ~16.3%
+        let computed = overshoot_percent(0.5);
         assert!(
             approx_rel(computed, 16.303, 0.01),
-            "Overshoot at ζ=0.5 should be ~16.3%. got={computed}"
+            "Overshoot at zeta=0.5 should be ~16.3%. got={computed}"
         );
     }
 
@@ -308,5 +329,72 @@ mod tests {
         assert!(approx(second_order_natural_frequency(100.0, 1.0), 10.0));
         // c=10, k=100, m=1 => ζ = 10/(2*10) = 0.5
         assert!(approx(second_order_damping_ratio(10.0, 100.0, 1.0), 0.5));
+    }
+
+    #[test]
+    fn first_order_impulse_response_at_zero() {
+        // h(0) = K/τ
+        let gain = 3.0;
+        let tau = 0.5;
+        let h = first_order_impulse_response(gain, tau, 0.0);
+        assert!(approx(h, gain / tau), "h(0) should be K/τ = {}, got {h}", gain / tau);
+    }
+
+    #[test]
+    fn first_order_impulse_response_decays() {
+        let gain = 2.0;
+        let tau = 1.0;
+        let h_early = first_order_impulse_response(gain, tau, 0.5);
+        let h_late = first_order_impulse_response(gain, tau, 5.0);
+        assert!(h_early > h_late, "impulse response should decay over time");
+        assert!(h_late > 0.0, "impulse response should remain positive");
+    }
+
+    #[test]
+    fn pid_reset_clears_state() {
+        let mut pid = PidController::new(1.0, 1.0, 0.1, -100.0, 100.0);
+        // Run some updates to build up integral and prev_error
+        for _ in 0..100 {
+            pid.update(10.0, 0.0, 0.01);
+        }
+        pid.reset();
+        // After reset, a zero-error update should produce zero output
+        let output = pid.update(5.0, 5.0, 0.01);
+        assert!(approx(output, 0.0), "after reset with zero error, output should be 0, got {output}");
+    }
+
+    #[test]
+    fn pid_zero_dt() {
+        let mut pid = PidController::new(1.0, 1.0, 0.1, -100.0, 100.0);
+        let output = pid.update(10.0, 0.0, 0.0);
+        assert!(output.is_finite());
+    }
+
+    #[test]
+    fn second_order_step_response_overdamped() {
+        let gain = 1.0;
+        let omega_n = 10.0;
+        let zeta = 2.0;
+        let t = 1.0;
+        let y = second_order_step_response(gain, omega_n, zeta, t);
+        assert!(y > 0.0 && y <= gain, "Overdamped response should approach gain monotonically, got {y}");
+    }
+
+    #[test]
+    fn second_order_step_response_at_t_zero() {
+        let y = second_order_step_response(1.0, 10.0, 0.5, 0.0);
+        assert!(approx(y, 0.0));
+    }
+
+    #[test]
+    fn overshoot_percent_overdamped() {
+        let mp = overshoot_percent(1.5);
+        assert!(approx(mp, 0.0));
+    }
+
+    #[test]
+    fn test_approx_rel_zero_b() {
+        assert!(approx_rel(0.0, 0.0, 1e-6));
+        assert!(!approx_rel(1.0, 0.0, 0.5));
     }
 }

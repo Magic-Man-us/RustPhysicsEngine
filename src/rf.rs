@@ -4,11 +4,13 @@ use crate::math::constants;
 
 /// Wavelength to frequency: f = c / λ
 pub fn wavelength_to_frequency(wavelength: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
     constants::C / wavelength
 }
 
 /// Frequency to wavelength: λ = c / f
 pub fn frequency_to_wavelength(frequency: f64) -> f64 {
+    assert!(frequency > 0.0, "frequency must be positive");
     constants::C / frequency
 }
 
@@ -34,6 +36,7 @@ pub fn friis_received_power(
     wavelength: f64,
     distance: f64,
 ) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     let ratio = wavelength / (4.0 * constants::PI * distance);
     pt * gt * gr * ratio * ratio
 }
@@ -45,6 +48,9 @@ pub fn link_budget_db(pt_dbm: f64, gt_dbi: f64, gr_dbi: f64, path_loss_db: f64) 
 
 /// Skin depth in a conductor: δ = 1 / √(πfμσ)
 pub fn skin_depth_conductor(frequency: f64, permeability: f64, conductivity: f64) -> f64 {
+    assert!(frequency > 0.0, "frequency must be positive");
+    assert!(permeability > 0.0, "permeability must be positive");
+    assert!(conductivity > 0.0, "conductivity must be positive");
     1.0 / (constants::PI * frequency * permeability * conductivity).sqrt()
 }
 
@@ -61,6 +67,7 @@ pub fn fade_margin_db(
 
 /// Antenna gain from effective area: G = 4πA_e / λ²
 pub fn antenna_gain_from_area(effective_area: f64, wavelength: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
     4.0 * constants::PI * effective_area / (wavelength * wavelength)
 }
 
@@ -72,6 +79,7 @@ pub fn effective_area_from_gain(gain: f64, wavelength: f64) -> f64 {
 /// Half-wave dipole gain (linear): G ≈ 1.64 (2.15 dBi)
 const HALF_WAVE_DIPOLE_GAIN: f64 = 1.64;
 
+/// Returns the half-wave dipole gain (linear): G ≈ 1.64 (2.15 dBi).
 pub fn half_wave_dipole_gain() -> f64 {
     HALF_WAVE_DIPOLE_GAIN
 }
@@ -84,12 +92,15 @@ pub fn eirp(power: f64, gain: f64) -> f64 {
 /// Approximate antenna beamwidth in degrees: θ ≈ 70λ / D
 const BEAMWIDTH_FACTOR: f64 = 70.0;
 
+/// Approximate antenna beamwidth in degrees: θ ≈ 70λ / D.
 pub fn beamwidth_approximate(wavelength: f64, aperture: f64) -> f64 {
+    assert!(aperture > 0.0, "aperture must be positive");
     BEAMWIDTH_FACTOR * wavelength / aperture
 }
 
 /// Antenna directivity from gain and efficiency: D = G / η
 pub fn antenna_directivity(gain: f64, efficiency: f64) -> f64 {
+    assert!(efficiency > 0.0, "efficiency must be positive");
     gain / efficiency
 }
 
@@ -98,17 +109,21 @@ pub fn antenna_directivity(gain: f64, efficiency: f64) -> f64 {
 /// Characteristic impedance of coaxial cable: Z₀ = (138/√εr) × log₁₀(D/d)
 const COAX_IMPEDANCE_FACTOR: f64 = 138.0;
 
+/// Characteristic impedance of coaxial cable: Z₀ = (138/√εr) × log₁₀(D/d).
 pub fn characteristic_impedance_coax(
     outer_radius: f64,
     inner_radius: f64,
     permittivity_rel: f64,
 ) -> f64 {
+    assert!(inner_radius > 0.0, "inner_radius must be positive");
+    assert!(permittivity_rel > 0.0, "permittivity_rel must be positive");
     (COAX_IMPEDANCE_FACTOR / permittivity_rel.sqrt())
         * (outer_radius / inner_radius).log10()
 }
 
 /// Velocity factor: VF = 1 / √εr
 pub fn velocity_factor(permittivity_rel: f64) -> f64 {
+    assert!(permittivity_rel > 0.0, "permittivity_rel must be positive");
     1.0 / permittivity_rel.sqrt()
 }
 
@@ -120,6 +135,7 @@ pub fn wavelength_in_line(free_space_wavelength: f64, velocity_factor: f64) -> f
 /// Voltage standing wave ratio: VSWR = (1 + |Γ|) / (1 - |Γ|)
 pub fn vswr(reflection_coeff: f64) -> f64 {
     let gamma = reflection_coeff.abs();
+    assert!(gamma < 1.0, "reflection coefficient magnitude must be less than 1");
     (1.0 + gamma) / (1.0 - gamma)
 }
 
@@ -163,6 +179,7 @@ pub fn noise_power(bandwidth: f64, temperature: f64) -> f64 {
 
 /// Signal-to-noise ratio in dB: SNR = 10log₁₀(S / N)
 pub fn snr_db(signal_power: f64, noise_power: f64) -> f64 {
+    assert!(noise_power > 0.0, "noise_power must be positive");
     10.0 * (signal_power / noise_power).log10()
 }
 
@@ -375,7 +392,7 @@ mod tests {
     #[test]
     fn test_noise_power() {
         let n = noise_power(1.0e6, 290.0);
-        let expected = constants::K_B * 290.0 * 1.0e6;
+        let expected = 4.003882100000000e-15;
         assert!(approx_rel(n, expected, 1e-10));
     }
 
@@ -396,7 +413,13 @@ mod tests {
     fn test_shannon_capacity() {
         let cap = shannon_capacity(1.0e6, 1000.0);
         // C = 1e6 * log2(1001)
-        let expected = 1.0e6 * 1001.0_f64.log2();
+        let expected = 9.967226258835994e6;
         assert!(approx_rel(cap, expected, 1e-10));
+    }
+
+    #[test]
+    fn test_approx_rel_zero_b() {
+        assert!(approx_rel(0.0, 0.0, 1e-6));
+        assert!(!approx_rel(1.0, 0.0, 0.5));
     }
 }

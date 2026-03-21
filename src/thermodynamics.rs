@@ -4,21 +4,25 @@ use crate::math::constants;
 
 /// Ideal gas law: PV = nRT. Solve for pressure: P = nRT / V
 pub fn ideal_gas_pressure(moles: f64, temperature: f64, volume: f64) -> f64 {
+    assert!(volume > 0.0, "volume must be positive");
     moles * constants::R * temperature / volume
 }
 
 /// Solve for volume: V = nRT / P
 pub fn ideal_gas_volume(moles: f64, temperature: f64, pressure: f64) -> f64 {
+    assert!(pressure > 0.0, "pressure must be positive");
     moles * constants::R * temperature / pressure
 }
 
 /// Solve for temperature: T = PV / (nR)
 pub fn ideal_gas_temperature(pressure: f64, volume: f64, moles: f64) -> f64 {
+    assert!(moles > 0.0, "moles must be positive");
     pressure * volume / (moles * constants::R)
 }
 
 /// Number of moles: n = PV / (RT)
 pub fn ideal_gas_moles(pressure: f64, volume: f64, temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     pressure * volume / (constants::R * temperature)
 }
 
@@ -31,11 +35,14 @@ pub fn average_kinetic_energy(temperature: f64) -> f64 {
 
 /// RMS speed of gas molecules: v_rms = sqrt(3 * k_B * T / m)
 pub fn rms_speed(temperature: f64, molecular_mass: f64) -> f64 {
+    assert!(molecular_mass > 0.0, "molecular mass must be positive");
     (3.0 * constants::K_B * temperature / molecular_mass).sqrt()
 }
 
 /// Mean free path: λ = 1 / (√2 * π * d^2 * n/V)
 pub fn mean_free_path(molecular_diameter: f64, number_density: f64) -> f64 {
+    assert!(molecular_diameter > 0.0, "molecular diameter must be positive");
+    assert!(number_density > 0.0, "number density must be positive");
     1.0 / (std::f64::consts::SQRT_2 * constants::PI * molecular_diameter * molecular_diameter * number_density)
 }
 
@@ -53,6 +60,7 @@ pub fn heat_conduction_rate(
     delta_temp: f64,
     thickness: f64,
 ) -> f64 {
+    assert!(thickness > 0.0, "thickness must be positive");
     conductivity * area * delta_temp / thickness
 }
 
@@ -81,6 +89,8 @@ pub fn newton_cooling(t_initial: f64, t_environment: f64, cooling_constant: f64,
 
 /// Work done by an ideal gas during isothermal expansion: W = nRT * ln(V2/V1)
 pub fn work_isothermal(moles: f64, temperature: f64, v1: f64, v2: f64) -> f64 {
+    assert!(v1 > 0.0, "initial volume v1 must be positive");
+    assert!(v2 > 0.0, "final volume v2 must be positive");
     moles * constants::R * temperature * (v2 / v1).ln()
 }
 
@@ -91,11 +101,13 @@ pub fn work_isobaric(pressure: f64, delta_v: f64) -> f64 {
 
 /// Work done during adiabatic process: W = (P1*V1 - P2*V2) / (γ - 1)
 pub fn work_adiabatic(p1: f64, v1: f64, p2: f64, v2: f64, gamma: f64) -> f64 {
+    assert!(gamma != 1.0, "gamma must not be 1.0 for adiabatic work");
     (p1 * v1 - p2 * v2) / (gamma - 1.0)
 }
 
 /// Adiabatic relation: P1 * V1^γ = P2 * V2^γ → P2 = P1 * (V1/V2)^γ
 pub fn adiabatic_final_pressure(p1: f64, v1: f64, v2: f64, gamma: f64) -> f64 {
+    assert!(v2 > 0.0, "final volume v2 must be positive");
     p1 * (v1 / v2).powf(gamma)
 }
 
@@ -103,6 +115,7 @@ pub fn adiabatic_final_pressure(p1: f64, v1: f64, v2: f64, gamma: f64) -> f64 {
 
 /// Entropy change for heat transfer at constant temperature: ΔS = Q / T
 pub fn entropy_change_isothermal(heat: f64, temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     heat / temperature
 }
 
@@ -115,6 +128,10 @@ pub fn entropy_change_ideal_gas(
     v1: f64,
     v2: f64,
 ) -> f64 {
+    assert!(t1 > 0.0, "initial temperature t1 must be positive");
+    assert!(t2 > 0.0, "final temperature t2 must be positive");
+    assert!(v1 > 0.0, "initial volume v1 must be positive");
+    assert!(v2 > 0.0, "final volume v2 must be positive");
     moles * cv * (t2 / t1).ln() + moles * constants::R * (v2 / v1).ln()
 }
 
@@ -122,21 +139,25 @@ pub fn entropy_change_ideal_gas(
 
 /// Carnot efficiency: η = 1 - T_cold / T_hot
 pub fn carnot_efficiency(t_cold: f64, t_hot: f64) -> f64 {
+    assert!(t_hot > 0.0, "hot reservoir temperature must be positive");
     1.0 - t_cold / t_hot
 }
 
 /// Thermal efficiency: η = W / Q_hot
 pub fn thermal_efficiency(work: f64, heat_input: f64) -> f64 {
+    assert!(heat_input > 0.0, "heat input must be positive");
     work / heat_input
 }
 
 /// Coefficient of performance (refrigerator): COP = Q_cold / W
 pub fn cop_refrigerator(heat_removed: f64, work: f64) -> f64 {
+    assert!(work > 0.0, "work input must be positive");
     heat_removed / work
 }
 
 /// Coefficient of performance (heat pump): COP = Q_hot / W
 pub fn cop_heat_pump(heat_delivered: f64, work: f64) -> f64 {
+    assert!(work > 0.0, "work input must be positive");
     heat_delivered / work
 }
 
@@ -150,6 +171,8 @@ pub fn latent_heat(mass: f64, specific_latent_heat: f64) -> f64 {
 /// Clausius-Clapeyron (approximate): ln(P2/P1) = (L/R) * (1/T1 - 1/T2)
 /// Returns P2 given P1, T1, T2, and molar latent heat L.
 pub fn clausius_clapeyron(p1: f64, t1: f64, t2: f64, molar_latent_heat: f64) -> f64 {
+    assert!(t1 > 0.0, "temperature t1 must be positive");
+    assert!(t2 > 0.0, "temperature t2 must be positive");
     p1 * (molar_latent_heat / constants::R * (1.0 / t1 - 1.0 / t2)).exp()
 }
 
@@ -162,6 +185,8 @@ pub fn convective_heat_rate(h: f64, area: f64, delta_temp: f64) -> f64 {
 
 /// Thermal diffusivity: α = k/(ρ×cₚ)
 pub fn thermal_diffusivity(conductivity: f64, density: f64, specific_heat: f64) -> f64 {
+    assert!(density > 0.0, "density must be positive");
+    assert!(specific_heat > 0.0, "specific heat must be positive");
     conductivity / (density * specific_heat)
 }
 
@@ -175,6 +200,7 @@ pub fn grashof_number(
     length: f64,
     kinematic_viscosity: f64,
 ) -> f64 {
+    assert!(kinematic_viscosity > 0.0, "kinematic viscosity must be positive");
     g * beta * delta_temp * length.powi(3) / kinematic_viscosity.powi(2)
 }
 
@@ -185,16 +211,19 @@ pub fn rayleigh_number(grashof: f64, prandtl: f64) -> f64 {
 
 /// Prandtl number: Pr = ν/α
 pub fn prandtl_number(kinematic_viscosity: f64, thermal_diffusivity: f64) -> f64 {
+    assert!(thermal_diffusivity > 0.0, "thermal diffusivity must be positive");
     kinematic_viscosity / thermal_diffusivity
 }
 
 /// Nusselt number: Nu = hL/k
 pub fn nusselt_number(h: f64, length: f64, conductivity: f64) -> f64 {
+    assert!(conductivity > 0.0, "thermal conductivity must be positive");
     h * length / conductivity
 }
 
 /// Biot number: Bi = hL/k (external convection vs internal conduction)
 pub fn biot_number(h: f64, length: f64, conductivity: f64) -> f64 {
+    assert!(conductivity > 0.0, "thermal conductivity must be positive");
     h * length / conductivity
 }
 
@@ -216,6 +245,7 @@ pub fn heat_equation_step_1d(temperatures: &mut [f64], dx: f64, dt: f64, diffusi
 
 /// Maximum stable time step for explicit finite difference: dt_max = dx²/(2α)
 pub fn heat_equation_stability(dx: f64, diffusivity: f64) -> f64 {
+    assert!(diffusivity > 0.0, "diffusivity must be positive");
     dx * dx / (2.0 * diffusivity)
 }
 
@@ -223,12 +253,15 @@ pub fn heat_equation_stability(dx: f64, diffusivity: f64) -> f64 {
 
 /// Wien's displacement law: λ_max = b/T where b = 2.898e-3 m·K
 pub fn wien_displacement(temperature: f64) -> f64 {
+    assert!(temperature > 0.0, "temperature must be positive");
     const WIEN_B: f64 = 2.898e-3;
     WIEN_B / temperature
 }
 
 /// Planck's law: M = (2πhc²/λ⁵) × 1/(e^(hc/λkT) - 1)
 pub fn spectral_exitance(wavelength: f64, temperature: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
+    assert!(temperature > 0.0, "temperature must be positive");
     let c = constants::C;
     let h = constants::H;
     let k = constants::K_B;
@@ -239,6 +272,7 @@ pub fn spectral_exitance(wavelength: f64, temperature: f64) -> f64 {
 
 /// Radiative equilibrium temperature: T = ((L(1-a))/(16πσd²))^(1/4)
 pub fn radiative_equilibrium_temperature(luminosity: f64, distance: f64, albedo: f64) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     let numerator = luminosity * (1.0 - albedo);
     let denominator = 16.0 * constants::PI * constants::SIGMA * distance * distance;
     (numerator / denominator).powf(0.25)
@@ -321,6 +355,7 @@ pub fn subcool_degree(saturation_temp: f64, actual_temp: f64) -> f64 {
 
 /// Steam quality (dryness fraction): x = m_vapor / m_total
 pub fn quality(mass_vapor: f64, mass_total: f64) -> f64 {
+    assert!(mass_total > 0.0, "total mass must be positive");
     mass_vapor / mass_total
 }
 
@@ -409,8 +444,7 @@ mod tests {
     fn test_grashof_number() {
         // g=9.81, β=3.4e-3, ΔT=20, L=0.5, ν=1.5e-5
         let gr = grashof_number(9.81, 3.4e-3, 20.0, 0.5, 1.5e-5);
-        let expected = 9.81 * 3.4e-3 * 20.0 * 0.5_f64.powi(3) / (1.5e-5_f64).powi(2);
-        assert!(approx_rel(gr, expected, 1e-9));
+        assert!(approx_rel(gr, 3.706e8, 0.01));
     }
 
     #[test]
@@ -608,5 +642,149 @@ mod tests {
         // hf=417.5 kJ/kg, hfg=2258 kJ/kg, x=0.8 → h = 417.5 + 0.8×2258 = 2223.9
         let h = specific_enthalpy_wet(417.5, 2258.0, 0.8);
         assert!(approx(h, 2223.9, 0.1));
+    }
+
+    // ── Ideal Gas Law (remaining) ──
+
+    #[test]
+    fn test_ideal_gas_volume() {
+        // 1 mol at 273.15 K, 101325 Pa → V ≈ 0.02241 m³
+        let v = ideal_gas_volume(1.0, 273.15, 101325.0);
+        assert!(approx_rel(v, 0.02241, 0.01));
+    }
+
+    #[test]
+    fn test_ideal_gas_temperature() {
+        // P=101325 Pa, V=0.02241 m³, n=1 mol → T ≈ 273.15 K
+        let t = ideal_gas_temperature(101325.0, 0.02241, 1.0);
+        assert!(approx_rel(t, 273.15, 0.01));
+    }
+
+    #[test]
+    fn test_ideal_gas_moles() {
+        // P=101325 Pa, V=0.02241 m³, T=273.15 K → n ≈ 1.0
+        let n = ideal_gas_moles(101325.0, 0.02241, 273.15);
+        assert!(approx_rel(n, 1.0, 0.01));
+    }
+
+    // ── Kinetic Theory ──
+
+    #[test]
+    fn test_average_kinetic_energy() {
+        // At 300 K: KE = 1.5 * 1.380649e-23 * 300 ≈ 6.213e-21 J
+        let ke = average_kinetic_energy(300.0);
+        assert!(approx_rel(ke, 6.213e-21, 0.01));
+    }
+
+    #[test]
+    fn test_rms_speed() {
+        // N₂ at 300 K: m = 28 * 1.66054e-27 = 4.6495e-26 kg
+        // v_rms = sqrt(3 * 1.38065e-23 * 300 / 4.6495e-26) ≈ 517 m/s
+        let v = rms_speed(300.0, 4.6495e-26);
+        assert!(approx_rel(v, 517.0, 0.02));
+    }
+
+    #[test]
+    fn test_mean_free_path() {
+        // Air at STP: d ≈ 3.7e-10 m, n/V ≈ 2.5e25 m⁻³
+        let lambda = mean_free_path(3.7e-10, 2.5e25);
+        // λ ≈ 6.6e-8 m
+        assert!(approx_rel(lambda, 6.6e-8, 0.1));
+    }
+
+    // ── Heat Transfer ──
+
+    #[test]
+    fn test_heat_conduction_rate() {
+        // k=200 W/(m·K), A=0.5 m², ΔT=50 K, d=0.02 m → Q/t = 200*0.5*50/0.02 = 250000 W
+        let q = heat_conduction_rate(200.0, 0.5, 50.0, 0.02);
+        assert!(approx(q, 250000.0, 0.1));
+    }
+
+    #[test]
+    fn test_heat_radiation_power() {
+        // ε=1.0 (blackbody), A=1 m², T=500 K
+        // P = 1.0 * 5.67e-8 * 1.0 * 500^4 = 1.0 * 5.67e-8 * 6.25e10 = 3543.75 W
+        let p = heat_radiation_power(1.0, 1.0, 500.0);
+        assert!(approx_rel(p, 3543.75, 0.01));
+    }
+
+    #[test]
+    fn test_net_radiation_power() {
+        // ε=0.9, A=2 m², T_hot=600 K, T_cold=300 K
+        let p = net_radiation_power(0.9, 2.0, 600.0, 300.0);
+        // P = 0.9 * 5.670374419e-8 * 2 * (600^4 - 300^4) ≈ 12401.1 W
+        assert!(approx_rel(p, 12401.1, 0.001));
+    }
+
+    // ── Thermodynamic Processes ──
+
+    #[test]
+    fn test_work_isobaric() {
+        // P=101325 Pa, ΔV=0.01 m³ → W = 1013.25 J
+        let w = work_isobaric(101325.0, 0.01);
+        assert!(approx(w, 1013.25, 0.01));
+    }
+
+    #[test]
+    fn test_work_adiabatic() {
+        // P1=200 kPa, V1=0.01 m³, P2=400 kPa, V2=0.006 m³, γ=1.4
+        // W = (200000*0.01 - 400000*0.006) / (1.4 - 1) = (2000 - 2400) / 0.4 = -1000 J
+        let w = work_adiabatic(200000.0, 0.01, 400000.0, 0.006, 1.4);
+        assert!(approx(w, -1000.0, 0.1));
+    }
+
+    #[test]
+    fn test_adiabatic_final_pressure() {
+        // P1=100 kPa, V1=1.0 m³, V2=0.5 m³, γ=1.4
+        // P2 = 100000 * (1/0.5)^1.4 = 100000 * 2^1.4
+        let p2 = adiabatic_final_pressure(100000.0, 1.0, 0.5, 1.4);
+        // P2 = 100000 * 2^1.4 ≈ 263901.58
+        assert!(approx_rel(p2, 263901.58, 0.001));
+    }
+
+    // ── Entropy ──
+
+    #[test]
+    fn test_entropy_change_ideal_gas() {
+        // n=1, Cv=20.8 J/(mol·K), T1=300, T2=600, V1=1, V2=2
+        // ΔS = 1*20.8*ln(2) + 1*8.314*ln(2) = (20.8 + 8.314)*ln(2)
+        let ds = entropy_change_ideal_gas(1.0, 20.8, 300.0, 600.0, 1.0, 2.0);
+        // ΔS = (20.8 + 8.314462618) × ln(2) ≈ 20.177 J/(mol·K)
+        assert!(approx_rel(ds, 20.177, 0.001));
+    }
+
+    // ── Heat Engines ──
+
+    #[test]
+    fn test_thermal_efficiency() {
+        // W=300 J, Q_hot=1000 J → η=0.3
+        let eff = thermal_efficiency(300.0, 1000.0);
+        assert!(approx(eff, 0.3, 1e-9));
+    }
+
+    #[test]
+    fn test_cop_refrigerator() {
+        // Q_cold=800 J, W=200 J → COP=4.0
+        let cop = cop_refrigerator(800.0, 200.0);
+        assert!(approx(cop, 4.0, 1e-9));
+    }
+
+    #[test]
+    fn test_cop_heat_pump() {
+        // Q_hot=1000 J, W=200 J → COP=5.0
+        let cop = cop_heat_pump(1000.0, 200.0);
+        assert!(approx(cop, 5.0, 1e-9));
+    }
+
+    // ── Phase Changes ──
+
+    #[test]
+    fn test_clausius_clapeyron() {
+        // Water: P1=101325 Pa, T1=373 K, T2=383 K, L=40700 J/mol
+        // P2 = P1 * exp(L/R * (1/T1 - 1/T2))
+        let p2 = clausius_clapeyron(101325.0, 373.0, 383.0, 40700.0);
+        // P2 = 101325 * exp(40700/R * (1/373 - 1/383)) ≈ 142739 Pa
+        assert!(approx_rel(p2, 142739.0, 0.001));
     }
 }

@@ -2,6 +2,7 @@ use crate::math::constants;
 
 /// Lorentz factor: γ = 1 / sqrt(1 - v^2/c^2)
 pub fn lorentz_factor(velocity: f64) -> f64 {
+    assert!(velocity.abs() < constants::C, "velocity must be less than speed of light");
     let beta = velocity / constants::C;
     1.0 / (1.0 - beta * beta).sqrt()
 }
@@ -67,17 +68,20 @@ pub fn lorentz_transform_t(t: f64, v: f64, x: f64) -> f64 {
 /// Relativistic Doppler effect (approaching): f' = f * sqrt((1+β)/(1-β))
 pub fn relativistic_doppler_approaching(frequency: f64, velocity: f64) -> f64 {
     let b = beta(velocity);
+    assert!(b < 1.0, "velocity must be less than speed of light");
     frequency * ((1.0 + b) / (1.0 - b)).sqrt()
 }
 
 /// Relativistic Doppler effect (receding): f' = f * sqrt((1-β)/(1+β))
 pub fn relativistic_doppler_receding(frequency: f64, velocity: f64) -> f64 {
     let b = beta(velocity);
+    assert!(b < 1.0, "velocity must be less than speed of light");
     frequency * ((1.0 - b) / (1.0 + b)).sqrt()
 }
 
 /// Gravitational redshift: f_obs = f_emit * sqrt(1 - 2GM/(rc^2))
 pub fn gravitational_redshift(emitted_freq: f64, mass: f64, radius: f64) -> f64 {
+    assert!(radius > 0.0, "radius must be positive");
     emitted_freq * (1.0 - 2.0 * constants::G * mass / (radius * constants::C * constants::C)).sqrt()
 }
 
@@ -122,8 +126,7 @@ mod tests {
     #[test]
     fn test_time_dilation() {
         let dilated = time_dilation(1.0, 0.8 * constants::C);
-        let gamma = lorentz_factor(0.8 * constants::C);
-        assert!(approx(dilated, gamma, 1e-6));
+        assert!(approx_rel(dilated, 5.0 / 3.0, 1e-6));
     }
 
     #[test]
@@ -169,7 +172,117 @@ mod tests {
     #[test]
     fn test_proper_time() {
         let tau = proper_time(2.0, 0.8 * constants::C);
-        let gamma = lorentz_factor(0.8 * constants::C);
-        assert!(approx(tau, 2.0 / gamma, 1e-6));
+        assert!(approx(tau, 1.2, 1e-6));
+    }
+
+    // ── Tests for previously untested functions ──
+
+    #[test]
+    fn test_beta() {
+        assert!(approx(beta(0.0), 0.0, 1e-15));
+        assert!(approx(beta(constants::C), 1.0, 1e-9));
+        assert!(approx(beta(0.5 * constants::C), 0.5, 1e-9));
+    }
+
+    #[test]
+    fn test_relativistic_momentum() {
+        let p = relativistic_momentum(1.0, 0.9 * constants::C);
+        assert!(approx_rel(p, 6.191e8, 1e-3));
+    }
+
+    #[test]
+    fn test_relativistic_momentum_low_speed() {
+        let v = 100.0;
+        let p = relativistic_momentum(2.0, v);
+        assert!(approx(p, 2.0 * v, 1e-6));
+    }
+
+    #[test]
+    fn test_relativistic_kinetic_energy() {
+        let ke = relativistic_kinetic_energy(constants::M_ELECTRON, 0.8 * constants::C);
+        assert!(approx_rel(ke, 5.458e-14, 1e-3));
+    }
+
+    #[test]
+    fn test_relativistic_kinetic_energy_at_rest() {
+        let ke = relativistic_kinetic_energy(1.0, 0.0);
+        assert!(approx(ke, 0.0, 1e-9));
+    }
+
+    #[test]
+    fn test_relativistic_total_energy() {
+        let e = relativistic_total_energy(constants::M_ELECTRON, 0.8 * constants::C);
+        assert!(approx_rel(e, 1.3645e-13, 1e-3));
+    }
+
+    #[test]
+    fn test_relativistic_total_energy_at_rest() {
+        let e = relativistic_total_energy(1.0, 0.0);
+        assert!(approx(e, constants::C * constants::C, 1.0));
+    }
+
+    #[test]
+    fn test_relativistic_mass() {
+        let m = relativistic_mass(constants::M_ELECTRON, 0.9 * constants::C);
+        assert!(approx_rel(m, 2.090e-30, 1e-3));
+    }
+
+    #[test]
+    fn test_relativistic_mass_at_rest() {
+        let m = relativistic_mass(1.0, 0.0);
+        assert!(approx(m, 1.0, 1e-9));
+    }
+
+    #[test]
+    fn test_lorentz_transform_x() {
+        let x_prime = lorentz_transform_x(0.0, 0.0, 1.0);
+        assert!(approx(x_prime, 0.0, 1e-9));
+
+        let v = 0.5 * constants::C;
+        let x_prime2 = lorentz_transform_x(1e8, v, 0.0);
+        assert!(approx_rel(x_prime2, 1.154_700_538e8, 1e-6));
+    }
+
+    #[test]
+    fn test_lorentz_transform_t() {
+        let t_prime = lorentz_transform_t(0.0, 0.0, 0.0);
+        assert!(approx(t_prime, 0.0, 1e-15));
+
+        let v = 0.5 * constants::C;
+        let t_prime2 = lorentz_transform_t(1.0, v, 0.0);
+        assert!(approx_rel(t_prime2, 1.154_700_538, 1e-6));
+    }
+
+    #[test]
+    fn test_relativistic_doppler_approaching() {
+        let f_obs = relativistic_doppler_approaching(1e9, 0.5 * constants::C);
+        assert!(approx_rel(f_obs, 1.732_050_808e9, 1e-6));
+        assert!(f_obs > 1e9); // blueshift
+    }
+
+    #[test]
+    fn test_relativistic_doppler_receding() {
+        let f_obs = relativistic_doppler_receding(1e9, 0.5 * constants::C);
+        assert!(approx_rel(f_obs, 5.773_508_076e8, 1e-6));
+        assert!(f_obs < 1e9); // redshift
+    }
+
+    #[test]
+    fn test_doppler_approaching_receding_inverse() {
+        let f0 = 1e9;
+        let v = 0.3 * constants::C;
+        let f_app = relativistic_doppler_approaching(f0, v);
+        let f_rec = relativistic_doppler_receding(f0, v);
+        assert!(approx_rel(f_app * f_rec, f0 * f0, 1e-6));
+    }
+
+    #[test]
+    fn test_gravitational_redshift() {
+        let f_obs = gravitational_redshift(1e14, constants::EARTH_MASS, constants::EARTH_RADIUS);
+        assert!(f_obs < 1e14);
+        assert!(f_obs > 0.0);
+
+        let ratio = f_obs / 1e14;
+        assert!(approx_rel(ratio, 1.0 - 6.964e-10, 1e-6));
     }
 }

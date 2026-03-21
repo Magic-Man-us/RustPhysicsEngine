@@ -15,6 +15,7 @@ pub struct Body {
 }
 
 impl Body {
+    /// Creates a new body with the given properties and zero initial acceleration.
     pub fn new(id: u32, mass: f64, radius: f64, position: Vec3, velocity: Vec3) -> Self {
         Self {
             id,
@@ -26,6 +27,7 @@ impl Body {
         }
     }
 
+    /// Computes kinetic energy of this body: KE = ½mv².
     pub fn kinetic_energy(&self) -> f64 {
         0.5 * self.mass * self.velocity.magnitude_squared()
     }
@@ -39,6 +41,7 @@ pub struct NBodySystem {
 }
 
 impl NBodySystem {
+    /// Initializes an N-body system with the given timestep and gravitational softening length, computing initial accelerations.
     pub fn new(bodies: Vec<Body>, dt: f64, softening: f64) -> Self {
         let mut system = Self {
             bodies,
@@ -50,25 +53,31 @@ impl NBodySystem {
         system
     }
 
+    /// Advances the simulation by one timestep using the velocity Verlet integrator.
     pub fn step(&mut self) {
         step_verlet(&mut self.bodies, self.dt, self.softening);
         self.time += self.dt;
     }
 
+    /// Computes the total mechanical energy (kinetic + potential) of the system.
     pub fn total_energy(&self) -> f64 {
         total_energy(&self.bodies, self.softening)
     }
 
+    /// Computes the mass-weighted center of mass of all bodies.
     pub fn center_of_mass(&self) -> Vec3 {
         center_of_mass(&self.bodies)
     }
 
+    /// Computes the total linear momentum of the system: p = Σ(m_i × v_i).
     pub fn total_momentum(&self) -> Vec3 {
         total_momentum(&self.bodies)
     }
 }
 
+/// Computes gravitational acceleration on body `idx` via direct O(N) pairwise summation with Plummer softening.
 pub fn compute_acceleration(bodies: &[Body], idx: usize, softening: f64) -> Vec3 {
+    assert!(softening > 0.0, "softening length must be positive to avoid division by zero");
     let bi = &bodies[idx];
     let soft_sq = softening * softening;
     let mut ax = 0.0_f64;
@@ -95,6 +104,7 @@ pub fn compute_acceleration(bodies: &[Body], idx: usize, softening: f64) -> Vec3
     Vec3::new(ax, ay, az)
 }
 
+/// Initializes acceleration vectors for all bodies by computing pairwise gravitational interactions.
 pub fn init_accelerations(bodies: &mut [Body], softening: f64) {
     let accels: Vec<Vec3> = (0..bodies.len())
         .map(|i| compute_acceleration(bodies, i, softening))
@@ -104,6 +114,7 @@ pub fn init_accelerations(bodies: &mut [Body], softening: f64) {
     }
 }
 
+/// Performs one velocity Verlet integration step: half-kick, drift, recompute accelerations, half-kick.
 pub fn step_verlet(bodies: &mut [Body], dt: f64, softening: f64) {
     let n = bodies.len();
     let half_dt = 0.5 * dt;
@@ -128,11 +139,14 @@ pub fn step_verlet(bodies: &mut [Body], dt: f64, softening: f64) {
     }
 }
 
+/// Computes the total kinetic energy of all bodies: KE = Σ ½m_i v_i².
 pub fn kinetic_energy(bodies: &[Body]) -> f64 {
     bodies.iter().map(|b| b.kinetic_energy()).sum()
 }
 
+/// Computes the total gravitational potential energy: PE = -Σ G m_i m_j / r_ij (with Plummer softening).
 pub fn potential_energy(bodies: &[Body], softening: f64) -> f64 {
+    assert!(softening > 0.0, "softening length must be positive to avoid division by zero");
     let soft_sq = softening * softening;
     let mut pe = 0.0;
     for (i, bi) in bodies.iter().enumerate() {
@@ -144,10 +158,12 @@ pub fn potential_energy(bodies: &[Body], softening: f64) -> f64 {
     pe
 }
 
+/// Computes the total mechanical energy as the sum of kinetic and potential energy.
 pub fn total_energy(bodies: &[Body], softening: f64) -> f64 {
     kinetic_energy(bodies) + potential_energy(bodies, softening)
 }
 
+/// Computes the center of mass position: R_cm = Σ(m_i r_i) / Σ(m_i).
 pub fn center_of_mass(bodies: &[Body]) -> Vec3 {
     let mut total_mass = 0.0;
     let mut com = Vec3::ZERO;
@@ -162,6 +178,7 @@ pub fn center_of_mass(bodies: &[Body]) -> Vec3 {
     }
 }
 
+/// Computes the total linear momentum: p = Σ(m_i v_i).
 pub fn total_momentum(bodies: &[Body]) -> Vec3 {
     let mut p = Vec3::ZERO;
     for b in bodies {
@@ -224,5 +241,138 @@ mod tests {
         let com = center_of_mass(&bodies);
         assert!(approx(com.x, 2.0, 1e-9));
         assert!(approx(com.y, 0.0, 1e-9));
+    }
+
+    #[test]
+    fn test_compute_acceleration_two_body() {
+        let bodies = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 1.0e24, 1.0, Vec3::new(1.0e11, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let acc0 = compute_acceleration(&bodies, 0, DEFAULT_SOFTENING);
+        let acc1 = compute_acceleration(&bodies, 1, DEFAULT_SOFTENING);
+        // Body 0 should be pulled toward body 1 (positive x)
+        assert!(acc0.x > 0.0, "Body 0 should accelerate toward body 1");
+        // Body 1 should be pulled toward body 0 (negative x)
+        assert!(acc1.x < 0.0, "Body 1 should accelerate toward body 0");
+    }
+
+    #[test]
+    fn test_compute_acceleration_symmetry() {
+        let m = 1.0e30;
+        let bodies = vec![
+            Body::new(0, m, 1.0, Vec3::new(-1.0e10, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, m, 1.0, Vec3::new(1.0e10, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let acc0 = compute_acceleration(&bodies, 0, DEFAULT_SOFTENING);
+        let acc1 = compute_acceleration(&bodies, 1, DEFAULT_SOFTENING);
+        assert!(approx(acc0.x, -acc1.x, 1e-20), "Equal masses should have equal and opposite accelerations");
+        assert!(approx(acc0.y, 0.0, 1e-20));
+        assert!(approx(acc0.z, 0.0, 1e-20));
+    }
+
+    #[test]
+    fn test_kinetic_energy_stationary() {
+        let bodies = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::ZERO, Vec3::ZERO),
+        ];
+        assert!(approx(kinetic_energy(&bodies), 0.0, 1e-20));
+    }
+
+    #[test]
+    fn test_kinetic_energy_moving() {
+        let m = 2.0;
+        let v = 3.0;
+        let bodies = vec![
+            Body::new(0, m, 1.0, Vec3::ZERO, Vec3::new(v, 0.0, 0.0)),
+        ];
+        let ke = kinetic_energy(&bodies);
+        assert!(approx(ke, 0.5 * m * v * v, 1e-12), "KE should be 0.5*m*v^2 = {}, got {ke}", 0.5 * m * v * v);
+    }
+
+    #[test]
+    fn test_potential_energy_negative() {
+        let bodies = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 1.0e30, 1.0, Vec3::new(1.0e11, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let pe = potential_energy(&bodies, DEFAULT_SOFTENING);
+        assert!(pe < 0.0, "Gravitational PE should be negative, got {pe}");
+    }
+
+    #[test]
+    fn test_potential_energy_closer_is_more_negative() {
+        let bodies_close = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 1.0e30, 1.0, Vec3::new(1.0e10, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let bodies_far = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 1.0e30, 1.0, Vec3::new(1.0e11, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let pe_close = potential_energy(&bodies_close, DEFAULT_SOFTENING);
+        let pe_far = potential_energy(&bodies_far, DEFAULT_SOFTENING);
+        assert!(pe_close < pe_far, "Closer bodies should have more negative PE");
+    }
+
+    #[test]
+    fn test_nbody_system_step_advances_time() {
+        let bodies = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 1.0e24, 1.0, Vec3::new(1.0e11, 0.0, 0.0), Vec3::new(0.0, 3.0e4, 0.0)),
+        ];
+        let mut system = NBodySystem::new(bodies, DEFAULT_DT, DEFAULT_SOFTENING);
+        assert!(approx(system.time, 0.0, 1e-20));
+        system.step();
+        assert!(approx(system.time, DEFAULT_DT, 1e-20), "Time should advance by dt after one step");
+        system.step();
+        assert!(approx(system.time, 2.0 * DEFAULT_DT, 1e-20));
+    }
+
+    #[test]
+    fn test_nbody_system_step_conserves_energy() {
+        let bodies = vec![
+            Body::new(0, 1.0e30, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 1.0e24, 1.0, Vec3::new(1.0e11, 0.0, 0.0), Vec3::new(0.0, 3.0e4, 0.0)),
+        ];
+        let mut system = NBodySystem::new(bodies, DEFAULT_DT, DEFAULT_SOFTENING);
+        let e0 = system.total_energy();
+        for _ in 0..100 {
+            system.step();
+        }
+        let e1 = system.total_energy();
+        let rel_err = ((e1 - e0) / e0).abs();
+        assert!(rel_err < 1e-4, "Energy not conserved via NBodySystem::step: relative error = {rel_err}");
+    }
+
+    #[test]
+    fn test_nbody_system_center_of_mass() {
+        let bodies = vec![
+            Body::new(0, 2.0, 1.0, Vec3::new(0.0, 0.0, 0.0), Vec3::ZERO),
+            Body::new(1, 2.0, 1.0, Vec3::new(4.0, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let system = NBodySystem::new(bodies, DEFAULT_DT, DEFAULT_SOFTENING);
+        let com = system.center_of_mass();
+        assert!(approx(com.x, 2.0, 1e-9));
+    }
+
+    #[test]
+    fn test_nbody_system_total_momentum() {
+        let bodies = vec![
+            Body::new(0, 1.0, 1.0, Vec3::ZERO, Vec3::new(3.0, 0.0, 0.0)),
+            Body::new(1, 2.0, 1.0, Vec3::new(10.0, 0.0, 0.0), Vec3::new(-1.5, 0.0, 0.0)),
+        ];
+        let system = NBodySystem::new(bodies, DEFAULT_DT, DEFAULT_SOFTENING);
+        let p = system.total_momentum();
+        assert!(approx(p.x, 0.0, 1e-9));
+    }
+
+    #[test]
+    fn test_center_of_mass_zero_mass() {
+        let bodies = vec![
+            Body::new(0, 0.0, 1.0, Vec3::new(5.0, 0.0, 0.0), Vec3::ZERO),
+        ];
+        let com = center_of_mass(&bodies);
+        assert!(approx(com.x, 0.0, 1e-12));
     }
 }

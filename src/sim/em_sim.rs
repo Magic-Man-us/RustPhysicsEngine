@@ -29,7 +29,9 @@ const COURANT_FACTOR_1D: f64 = 0.5;
 
 impl Fdtd1D {
     #[must_use]
+    /// Create a 1D FDTD simulation domain with nx cells and spacing dx.
     pub fn new(nx: usize, dx: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
         let dt = Self::stable_dt_for_dx(dx);
         Self {
             ez: vec![0.0; nx],
@@ -51,6 +53,7 @@ impl Fdtd1D {
         }
     }
 
+    /// Set relative permittivity, permeability, and conductivity for a range of cells.
     pub fn set_material(&mut self, start: usize, end: usize, epsilon_r: f64, mu_r: f64, sigma: f64) {
         for i in start..end.min(self.nx) {
             self.epsilon[i] = epsilon_r;
@@ -59,6 +62,7 @@ impl Fdtd1D {
         }
     }
 
+    /// Advance one FDTD leapfrog time step updating Hy then Ez with lossy material support.
     pub fn step(&mut self) {
         let dt = self.dt;
         let dx = self.dx;
@@ -92,24 +96,30 @@ impl Fdtd1D {
         self.time_step += 1;
     }
 
+    /// Add value to Ez at position (soft source, allows wave passage).
     pub fn add_source_soft(&mut self, position: usize, value: f64) {
         self.ez[position] += value;
     }
 
+    /// Set Ez at position to value (hard source, creates reflections).
     pub fn add_source_hard(&mut self, position: usize, value: f64) {
         self.ez[position] = value;
     }
 
     #[must_use]
+    /// Gaussian pulse: exp(-((t - t0)/spread)²)
     pub fn gaussian_pulse(t: f64, t0: f64, spread: f64) -> f64 {
+        assert!(spread != 0.0, "spread must be non-zero");
         (-((t - t0) / spread).powi(2)).exp()
     }
 
     #[must_use]
+    /// Sinusoidal source: sin(2πft)
     pub fn sinusoidal_source(t: f64, frequency: f64) -> f64 {
         (2.0 * PI * frequency * t).sin()
     }
 
+    /// Apply first-order Mur absorbing boundary conditions at both ends.
     pub fn apply_abc_mur(&mut self) {
         let coeff = (C * self.dt - self.dx) / (C * self.dt + self.dx);
 
@@ -122,6 +132,7 @@ impl Fdtd1D {
     }
 
     #[must_use]
+    /// Total electromagnetic energy: E = ½Σ(ε₀εᵣEz² + μ₀μᵣHy²)dx
     pub fn total_energy(&self) -> f64 {
         let mut energy = 0.0;
         for i in 0..self.nx {
@@ -134,7 +145,9 @@ impl Fdtd1D {
     }
 
     #[must_use]
+    /// CFL-stable time step for 1D FDTD: dt = dx·Courant/(c)
     pub fn stable_dt_for_dx(dx: f64) -> f64 {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
         // CFL for 1D: dt <= dx / (c * sqrt(1)) with Courant factor
         dx * COURANT_FACTOR_1D / C
     }
@@ -157,7 +170,10 @@ pub struct Fdtd2D {
 
 impl Fdtd2D {
     #[must_use]
+    /// Create a 2D FDTD simulation domain with nx-by-ny cells.
     pub fn new(nx: usize, ny: usize, dx: f64, dy: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(dy > 0.0, "grid spacing dy must be positive");
         let dt = Self::stable_dt_for_grid(dx, dy);
         let n = nx * ny;
         Self {
@@ -178,6 +194,7 @@ impl Fdtd2D {
         i * self.ny + j
     }
 
+    /// Advance one 2D FDTD leapfrog time step updating Hx, Hy, then Ez.
     pub fn step(&mut self) {
         let dt = self.dt;
         let dx = self.dx;
@@ -220,12 +237,14 @@ impl Fdtd2D {
         self.time_step += 1;
     }
 
+    /// Add a soft point source to Ez at grid point (i, j).
     pub fn add_source(&mut self, i: usize, j: usize, value: f64) {
         let idx = self.idx(i, j);
         self.ez[idx] += value;
     }
 
     #[must_use]
+    /// Total electromagnetic energy: E = ½Σ(ε₀εᵣEz² + μ₀(Hx² + Hy²))·dx·dy
     pub fn total_energy(&self) -> f64 {
         let cell_area = self.dx * self.dy;
         let mut energy = 0.0;
@@ -237,7 +256,10 @@ impl Fdtd2D {
     }
 
     #[must_use]
+    /// CFL-stable time step for 2D FDTD: dt = Courant/(c·√(1/dx² + 1/dy²))
     pub fn stable_dt_for_grid(dx: f64, dy: f64) -> f64 {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(dy > 0.0, "grid spacing dy must be positive");
         // CFL for 2D: dt <= 1 / (c * sqrt(1/dx^2 + 1/dy^2))
         // Apply Courant factor 0.5 for safety
         COURANT_FACTOR_1D / (C * (1.0 / (dx * dx) + 1.0 / (dy * dy)).sqrt())
@@ -336,21 +358,15 @@ mod tests {
         assert!(energy_after_injection > 0.0, "Should have nonzero energy after injection");
 
         // Propagate without source — energy should not increase
-        let mut max_energy = energy_after_injection;
         for _ in 0..100 {
             sim.step();
             sim.apply_abc_mur();
-            let e = sim.total_energy();
-            // Allow tiny floating-point overshoot
-            if e > max_energy * 1.001 {
-                panic!(
-                    "Energy increased from {max_energy} to {e}, simulation is unstable"
-                );
-            }
-            if e > max_energy {
-                max_energy = e;
-            }
         }
+        let energy_final = sim.total_energy();
+        assert!(
+            energy_final <= energy_after_injection * 1.001,
+            "Energy increased from {energy_after_injection} to {energy_final}, simulation is unstable"
+        );
     }
 
     #[test]
@@ -547,5 +563,61 @@ mod tests {
         let cfl_limit = dx / C;
         assert!(dt < cfl_limit, "dt must be strictly below CFL limit");
         assert!(dt > 0.0);
+    }
+
+    #[test]
+    fn test_add_source_hard_sets_value() {
+        let nx = 100;
+        let dx = 1e-3;
+        let mut sim = Fdtd1D::new(nx, dx);
+
+        sim.add_source_hard(50, 42.0);
+        let val1 = sim.ez[50];
+        assert!(
+            approx_rel(val1, 42.0, 1e-15),
+            "hard source should set Ez exactly, got {val1}",
+        );
+
+        sim.add_source_hard(50, -10.0);
+        let val2 = sim.ez[50];
+        assert!(
+            approx_rel(val2, -10.0, 1e-15),
+            "hard source should overwrite Ez, got {val2}",
+        );
+    }
+
+    #[test]
+    fn test_1d_total_energy() {
+        let nx = 100;
+        let dx = 1e-3;
+        let mut sim = Fdtd1D::new(nx, dx);
+        sim.add_source_hard(50, 1.0);
+        let e = sim.total_energy();
+        assert!(e > 0.0, "Energy should be positive with a nonzero Ez source");
+    }
+
+    #[test]
+    fn test_2d_total_energy() {
+        let nx = 20;
+        let ny = 20;
+        let dx = 1e-3;
+        let dy = 1e-3;
+        let mut sim = Fdtd2D::new(nx, ny, dx, dy);
+        sim.add_source(10, 10, 1.0);
+        let e = sim.total_energy();
+        assert!(e > 0.0, "2D energy should be positive with a nonzero Ez source");
+    }
+
+    #[test]
+    fn test_2d_stable_dt_for_grid() {
+        let dt = Fdtd2D::stable_dt_for_grid(1e-3, 1e-3);
+        assert!(dt > 0.0);
+        assert!(dt < 1e-3 / C);
+    }
+
+    #[test]
+    fn test_approx_rel_near_zero_b() {
+        assert!(approx_rel(0.0, 0.0, 1e-6));
+        assert!(!approx_rel(1.0, 0.0, 0.5));
     }
 }

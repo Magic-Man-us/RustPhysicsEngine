@@ -38,12 +38,15 @@ const ATMOS_HUMIDITY_FACTOR: f64 = 0.005;
 /// Sabine reverberation time: T60 = 0.161 V / A (seconds).
 #[must_use]
 pub fn sabine_reverberation(volume: f64, total_absorption: f64) -> f64 {
+    assert!(total_absorption > 0.0, "total_absorption must be positive");
     SABINE_CONSTANT * volume / total_absorption
 }
 
 /// Eyring reverberation time: T60 = 0.161 V / (-S × ln(1 - ā)) (seconds).
 #[must_use]
 pub fn eyring_reverberation(volume: f64, surface_area: f64, avg_absorption_coeff: f64) -> f64 {
+    assert!(surface_area > 0.0, "surface_area must be positive");
+    assert!(avg_absorption_coeff < 1.0, "avg_absorption_coeff must be less than 1");
     SABINE_CONSTANT * volume / (-surface_area * (1.0 - avg_absorption_coeff).ln())
 }
 
@@ -57,6 +60,7 @@ pub fn total_absorption(surfaces: &[(f64, f64)]) -> f64 {
 /// Room constant: R = S × ā / (1 - ā).
 #[must_use]
 pub fn room_constant(surface_area: f64, avg_absorption: f64) -> f64 {
+    assert!(avg_absorption < 1.0, "avg_absorption must be less than 1");
     surface_area * avg_absorption / (1.0 - avg_absorption)
 }
 
@@ -78,6 +82,9 @@ pub fn room_mode_frequency(
     nz: u32,
     speed: f64,
 ) -> f64 {
+    assert!(length > 0.0, "length must be positive");
+    assert!(width > 0.0, "width must be positive");
+    assert!(height > 0.0, "height must be positive");
     let nx = f64::from(nx);
     let ny = f64::from(ny);
     let nz = f64::from(nz);
@@ -113,6 +120,8 @@ pub fn subtract_db(total_db: f64, background_db: f64) -> f64 {
 /// Inverse-square distance attenuation: L2 = L1 - 20 × log₁₀(d2 / d1).
 #[must_use]
 pub fn distance_attenuation(db_at_ref: f64, ref_distance: f64, distance: f64) -> f64 {
+    assert!(ref_distance > 0.0, "ref_distance must be positive");
+    assert!(distance > 0.0, "distance must be positive");
     db_at_ref - 20.0 * (distance / ref_distance).log10()
 }
 
@@ -168,6 +177,8 @@ pub fn frequency_from_mel(mel: f64) -> f64 {
 /// Noise reduction through a partition: NR = TL + 10 × log₁₀(A / S).
 #[must_use]
 pub fn noise_reduction(tl: f64, receiving_absorption: f64, common_area: f64) -> f64 {
+    assert!(common_area > 0.0, "common_area must be positive");
+    assert!(receiving_absorption > 0.0, "receiving_absorption must be positive");
     tl + 10.0 * (receiving_absorption / common_area).log10()
 }
 
@@ -245,6 +256,7 @@ pub fn midi_to_frequency(midi_note: f64) -> f64 {
 /// MIDI note number from frequency: n = 69 + 12×log₂(f/440)
 #[must_use]
 pub fn frequency_to_midi(frequency: f64) -> f64 {
+    assert!(frequency > 0.0, "frequency must be positive");
     const A4_FREQ: f64 = 440.0;
     const A4_MIDI: f64 = 69.0;
     A4_MIDI + 12.0 * (frequency / A4_FREQ).log2()
@@ -253,6 +265,8 @@ pub fn frequency_to_midi(frequency: f64) -> f64 {
 /// Cents difference between two frequencies: c = 1200 × log₂(f2/f1)
 #[must_use]
 pub fn cents(f1: f64, f2: f64) -> f64 {
+    assert!(f1 > 0.0, "f1 must be positive");
+    assert!(f2 > 0.0, "f2 must be positive");
     1200.0 * (f2 / f1).log2()
 }
 
@@ -262,6 +276,7 @@ pub fn cents(f1: f64, f2: f64) -> f64 {
 /// (0,1)=2.405, (1,1)=3.832, (2,1)=5.136, (0,2)=5.520
 #[must_use]
 pub fn circular_membrane_frequency(bessel_zero: f64, wave_speed: f64, radius: f64) -> f64 {
+    assert!(radius > 0.0, "radius must be positive");
     bessel_zero * wave_speed / (2.0 * PI * radius)
 }
 
@@ -270,6 +285,8 @@ pub fn circular_membrane_frequency(bessel_zero: f64, wave_speed: f64, radius: f6
 /// Simplified: takes flexural rigidity D, density×thickness (ρh), and length
 #[must_use]
 pub fn rectangular_plate_fundamental(length: f64, flexural_rigidity: f64, mass_per_area: f64) -> f64 {
+    assert!(length > 0.0, "length must be positive");
+    assert!(mass_per_area > 0.0, "mass_per_area must be positive");
     (PI / (2.0 * length * length)) * (flexural_rigidity / mass_per_area).sqrt()
 }
 
@@ -325,15 +342,14 @@ mod tests {
     #[test]
     fn test_eyring_reverberation() {
         let t60 = eyring_reverberation(200.0, 100.0, 0.1);
-        let expected = SABINE_CONSTANT * 200.0 / (-100.0 * (0.9_f64).ln());
-        assert!(approx(t60, expected, TOLERANCE), "got {t60}, expected {expected}");
+        assert!(approx(t60, 3.056_2, 1e-3), "got {t60}");
     }
 
     #[test]
     fn test_total_absorption() {
         let surfaces = [(10.0, 0.1), (20.0, 0.3), (5.0, 0.5)];
         let a = total_absorption(&surfaces);
-        assert!(approx(a, 10.0 * 0.1 + 20.0 * 0.3 + 5.0 * 0.5, TOLERANCE));
+        assert!(approx(a, 9.5, TOLERANCE));
     }
 
     #[test]
@@ -405,8 +421,7 @@ mod tests {
     #[test]
     fn test_mass_law_tl() {
         let tl = transmission_loss_mass_law(10.0, 500.0);
-        let expected = 20.0 * (10.0 * 500.0_f64).log10() - MASS_LAW_OFFSET_DB;
-        assert!(approx(tl, expected, TOLERANCE), "got {tl}");
+        assert!(approx(tl, 26.9794, 1e-3), "got {tl}");
     }
 
     #[test]
@@ -524,5 +539,25 @@ mod tests {
         let exact = harmonic_frequency(100.0, 5);
         let stretched = inharmonic_frequency(100.0, 5, 0.001);
         assert!(stretched > exact);
+    }
+
+    #[test]
+    fn test_circular_membrane_frequency() {
+        let f = circular_membrane_frequency(2.405, 100.0, 0.5);
+        assert!(approx(f, 76.5535, 1e-3), "got {f}");
+    }
+
+    #[test]
+    fn test_rectangular_plate_fundamental() {
+        let f = rectangular_plate_fundamental(1.0, 100.0, 25.0);
+        assert!(approx(f, 3.14159, 1e-4), "got {f}");
+    }
+
+    #[test]
+    fn test_thd_zero_fundamental() {
+        let thd = total_harmonic_distortion(0.0, &[0.1, 0.2]);
+        assert!(approx(thd, 0.0, 1e-15));
+        let thd_neg = total_harmonic_distortion(-1.0, &[0.1]);
+        assert!(approx(thd_neg, 0.0, 1e-15));
     }
 }

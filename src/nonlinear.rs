@@ -3,11 +3,13 @@
 
 // ── Logistic Map ──────────────────────────────────────────────────────────────
 
+/// Computes one iteration of the logistic map: x_{n+1} = r × x × (1 - x).
 #[must_use]
 pub fn logistic_map(r: f64, x: f64) -> f64 {
     r * x * (1.0 - x)
 }
 
+/// Iterates the logistic map n times from x0, returning the full trajectory.
 #[must_use]
 pub fn logistic_map_iterate(r: f64, x0: f64, n: usize) -> Vec<f64> {
     let mut trajectory = Vec::with_capacity(n + 1);
@@ -20,6 +22,7 @@ pub fn logistic_map_iterate(r: f64, x0: f64, n: usize) -> Vec<f64> {
     trajectory
 }
 
+/// Discards an initial transient, then collects post-transient samples from the logistic map.
 #[must_use]
 pub fn logistic_map_converge(r: f64, x0: f64, transient: usize, samples: usize) -> Vec<f64> {
     let mut x = x0;
@@ -36,8 +39,10 @@ pub fn logistic_map_converge(r: f64, x0: f64, transient: usize, samples: usize) 
 
 // ── Lyapunov Exponent ─────────────────────────────────────────────────────────
 
+/// Computes the Lyapunov exponent of the logistic map: λ = (1/N) Σ ln|r(1 - 2x_n)|.
 #[must_use]
 pub fn lyapunov_exponent_logistic(r: f64, x0: f64, n: usize) -> f64 {
+    assert!(n > 0, "n must be positive");
     let mut x = x0;
     let mut sum = 0.0;
     for _ in 0..n {
@@ -52,6 +57,7 @@ pub fn lyapunov_exponent_logistic(r: f64, x0: f64, n: usize) -> f64 {
     sum / n as f64
 }
 
+/// Computes the Lyapunov exponent of a general 1D map: λ = (1/N) Σ ln|f'(x_n)|.
 #[must_use]
 pub fn lyapunov_exponent_1d(
     f: &dyn Fn(f64) -> f64,
@@ -59,6 +65,7 @@ pub fn lyapunov_exponent_1d(
     x0: f64,
     n: usize,
 ) -> f64 {
+    assert!(n > 0, "n must be positive");
     let mut x = x0;
     let mut sum = 0.0;
     for _ in 0..n {
@@ -74,6 +81,7 @@ pub fn lyapunov_exponent_1d(
 
 // ── Classic Attractors ────────────────────────────────────────────────────────
 
+/// Computes the Lorenz system derivatives: dx/dt = σ(y-x), dy/dt = x(ρ-z)-y, dz/dt = xy-βz.
 #[must_use]
 pub fn lorenz_derivatives(state: &[f64; 3], sigma: f64, rho: f64, beta: f64) -> [f64; 3] {
     let [x, y, z] = *state;
@@ -84,6 +92,7 @@ pub fn lorenz_derivatives(state: &[f64; 3], sigma: f64, rho: f64, beta: f64) -> 
     ]
 }
 
+/// Computes the Roessler system derivatives: dx/dt = -y-z, dy/dt = x+ay, dz/dt = b+z(x-c).
 #[must_use]
 pub fn rossler_derivatives(state: &[f64; 3], a: f64, b: f64, c: f64) -> [f64; 3] {
     let [x, y, z] = *state;
@@ -94,11 +103,13 @@ pub fn rossler_derivatives(state: &[f64; 3], a: f64, b: f64, c: f64) -> [f64; 3]
     ]
 }
 
+/// Computes one iteration of the Henon map: x_{n+1} = 1 - ax² + y, y_{n+1} = bx.
 #[must_use]
 pub fn henon_map(x: f64, y: f64, a: f64, b: f64) -> (f64, f64) {
     (1.0 - a * x * x + y, b * x)
 }
 
+/// Iterates the Henon map n times from (x0, y0), returning the full trajectory of (x, y) pairs.
 #[must_use]
 pub fn henon_iterate(x0: f64, y0: f64, a: f64, b: f64, n: usize) -> Vec<(f64, f64)> {
     let mut points = Vec::with_capacity(n + 1);
@@ -116,6 +127,7 @@ pub fn henon_iterate(x0: f64, y0: f64, a: f64, b: f64, n: usize) -> Vec<(f64, f6
 
 // ── Fractal Dimensions ────────────────────────────────────────────────────────
 
+/// Estimates the correlation integral C(r) as the fraction of pairwise distances below threshold r.
 #[must_use]
 pub fn correlation_dimension_estimate(distances: &[f64], r: f64) -> f64 {
     let total_pairs = distances.len();
@@ -126,6 +138,7 @@ pub fn correlation_dimension_estimate(distances: &[f64], r: f64) -> f64 {
     count as f64 / total_pairs as f64
 }
 
+/// Estimates the box-counting (Minkowski) dimension via least-squares fit of log(N) vs log(1/ε).
 #[must_use]
 pub fn box_counting_dimension(occupied_boxes: &[(usize, usize)], grid_sizes: &[usize]) -> f64 {
     // For each grid size, count distinct occupied boxes at that resolution,
@@ -180,6 +193,7 @@ fn linear_regression_slope(xs: &[f64], ys: &[f64]) -> f64 {
 
 // ── Fixed Points & Stability ──────────────────────────────────────────────────
 
+/// Finds a fixed point of f by iterating x_{n+1} = f(x_n) until convergence within tolerance.
 #[must_use]
 pub fn fixed_point_iterate(
     f: &dyn Fn(f64) -> f64,
@@ -198,6 +212,7 @@ pub fn fixed_point_iterate(
     None
 }
 
+/// Returns true if the fixed point is stable, i.e., |f'(x*)| < 1.
 #[must_use]
 pub fn is_stable_fixed_point(df_at_fixed: f64) -> bool {
     df_at_fixed.abs() < 1.0
@@ -310,5 +325,93 @@ mod tests {
             approx(lambda_specific, lambda_general, 1e-10),
             "specific={lambda_specific}, general={lambda_general}"
         );
+    }
+
+    #[test]
+    fn logistic_map_single_step() {
+        // r=4, x=0.5 => 4 * 0.5 * 0.5 = 1.0
+        let result = logistic_map(4.0, 0.5);
+        assert!(approx(result, 1.0, TOL), "got {result}");
+    }
+
+    #[test]
+    fn logistic_map_fixed_point() {
+        // Fixed point for r=2: x* = 1 - 1/r = 0.5
+        let result = logistic_map(2.0, 0.5);
+        assert!(approx(result, 0.5, TOL), "got {result}");
+    }
+
+    #[test]
+    fn henon_map_single_step() {
+        // x' = 1 - a*x^2 + y, y' = b*x
+        // x=0, y=0, a=1.4, b=0.3 => x'=1, y'=0
+        let (x, y) = henon_map(0.0, 0.0, 1.4, 0.3);
+        assert!(approx(x, 1.0, TOL), "x={x}");
+        assert!(approx(y, 0.0, TOL), "y={y}");
+    }
+
+    #[test]
+    fn box_counting_dimension_line() {
+        // Points along a line should give dimension ~1
+        let boxes: Vec<(usize, usize)> = (0..1000).map(|i| (i, 0)).collect();
+        let grid_sizes: Vec<usize> = vec![1, 2, 5, 10, 20, 50, 100];
+        let dim = box_counting_dimension(&boxes, &grid_sizes);
+        assert!(
+            dim > 0.5 && dim < 1.5,
+            "line dimension should be ~1, got {dim}"
+        );
+    }
+
+    #[test]
+    fn box_counting_dimension_insufficient_scales() {
+        let boxes = vec![(0, 0), (1, 1)];
+        let grid_sizes = vec![1];
+        let dim = box_counting_dimension(&boxes, &grid_sizes);
+        assert!(approx(dim, 0.0, TOL), "should return 0 for < 2 scales, got {dim}");
+    }
+
+    #[test]
+    fn lyapunov_exponent_zero_derivative() {
+        let f = |_x: f64| 0.5_f64;
+        let df = |_x: f64| 0.0_f64;
+        let lam = lyapunov_exponent_1d(&f, &df, 0.1, 10);
+        assert!(lam == f64::NEG_INFINITY);
+    }
+
+    #[test]
+    fn correlation_dimension_empty() {
+        let c = correlation_dimension_estimate(&[], 1.0);
+        assert!(approx(c, 0.0, TOL));
+    }
+
+    #[test]
+    fn box_counting_dimension_zero_grid_sizes() {
+        let boxes = vec![(0, 0), (1, 1)];
+        let grid_sizes = vec![0, 0];
+        let dim = box_counting_dimension(&boxes, &grid_sizes);
+        assert!(approx(dim, 0.0, TOL));
+    }
+
+    #[test]
+    fn box_counting_dimension_empty_boxes_at_scale() {
+        let boxes: Vec<(usize, usize)> = Vec::new();
+        let grid_sizes = vec![1, 2, 5];
+        let dim = box_counting_dimension(&boxes, &grid_sizes);
+        assert!(approx(dim, 0.0, TOL));
+    }
+
+    #[test]
+    fn linear_regression_slope_zero_denom() {
+        let xs = vec![1.0, 1.0, 1.0];
+        let ys = vec![1.0, 2.0, 3.0];
+        let slope = super::linear_regression_slope(&xs, &ys);
+        assert!(approx(slope, 0.0, TOL));
+    }
+
+    #[test]
+    fn fixed_point_iterate_no_convergence() {
+        let f = |x: f64| x + 1.0;
+        let result = fixed_point_iterate(&f, 0.0, 1e-12, 10);
+        assert!(result.is_none());
     }
 }

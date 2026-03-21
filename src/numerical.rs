@@ -1,5 +1,3 @@
-use crate::math::constants::PI;
-
 // 5-point Gauss-Legendre quadrature nodes on [-1, 1]
 const GL5_NODES: [f64; 5] = [
     -0.906_179_845_938_664,
@@ -274,10 +272,7 @@ pub fn cubic_interp(x_data: &[f64], y_data: &[f64], x: f64) -> f64 {
 
     // Interior equations: h[i-1]*M[i-1] + 2*(h[i-1]+h[i])*M[i] + h[i]*M[i+1] = 6*divided_diff
     // With M[0]=0 and M[n-1]=0, we solve for M[1..n-2] using Thomas algorithm.
-    let interior = n - 2; // number of interior unknowns
-    if interior == 0 {
-        return linear_interp(x_data, y_data, x);
-    }
+    let interior = n - 2; // number of interior unknowns (always >= 2 since n >= 4)
 
     let mut diag = vec![0.0; interior];
     let mut upper = vec![0.0; interior];
@@ -341,6 +336,7 @@ pub fn cubic_interp(x_data: &[f64], y_data: &[f64], x: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::math::constants::PI;
 
     const INTEGRATION_TOL: f64 = 1e-6;
     const ROOT_TOL: f64 = 1e-10;
@@ -420,9 +416,7 @@ mod tests {
 
     #[test]
     fn test_newton_raphson_zero_derivative() {
-        let f = |x: f64| x * x * x;
-        let df = |_x: f64| 0.0;
-        assert!(newton_raphson(&f, &df, 1.0, ROOT_TOL, 10).is_none());
+        assert!(newton_raphson(&|_: f64| 1.0, &|_: f64| 0.0, 1.0, ROOT_TOL, 10).is_none());
     }
 
     #[test]
@@ -452,7 +446,7 @@ mod tests {
         let f = |_t: f64, y: f64| -y;
         let dt = 0.1;
         let y1 = rk4_step(&f, 0.0, 1.0, dt);
-        let expected = (-dt).exp();
+        let expected = 0.9048374180359595;
         assert!(
             approx_eq(y1, expected, 1e-6),
             "rk4 step: expected {expected}, got {y1}"
@@ -488,10 +482,10 @@ mod tests {
             t += dt;
         }
         let exact_x = t.cos();
+        let got_x = y[0];
         assert!(
-            approx_eq(y[0], exact_x, 1e-6),
-            "rk4 vec at t={t}: expected x={exact_x}, got {}",
-            y[0]
+            approx_eq(got_x, exact_x, 1e-6),
+            "rk4 vec at t={t}: expected x={exact_x}, got {got_x}",
         );
     }
 
@@ -526,8 +520,7 @@ mod tests {
         // y = x^2 sampled at 5 points; natural cubic spline is close but not exact
         let xs: Vec<f64> = (0..5).map(|i| i as f64).collect();
         let ys: Vec<f64> = xs.iter().map(|&x| x * x).collect();
-        for &x in &[0.5, 1.5, 2.5, 3.5] {
-            let expected = x * x;
+        for (&x, &expected) in [0.5, 1.5, 2.5, 3.5].iter().zip(&[0.25, 2.25, 6.25, 12.25]) {
             let got = cubic_interp(&xs, &ys, x);
             assert!(
                 approx_eq(got, expected, 0.5),
@@ -537,11 +530,23 @@ mod tests {
     }
 
     #[test]
+    fn test_cubic_interp_two_points_falls_back() {
+        let xs = [0.0, 1.0];
+        let ys = [0.0, 1.0];
+        let got = cubic_interp(&xs, &ys, 0.5);
+        let expected = 0.5;
+        assert!(
+            approx_eq(got, expected, 1e-12),
+            "cubic 2-point fallback: expected {expected}, got {got}"
+        );
+    }
+
+    #[test]
     fn test_cubic_interp_few_points_falls_back() {
         let xs = [0.0, 1.0, 2.0];
         let ys = [0.0, 1.0, 4.0];
         let got = cubic_interp(&xs, &ys, 0.5);
-        let expected = linear_interp(&xs, &ys, 0.5);
+        let expected = 0.5;
         assert!(
             approx_eq(got, expected, 1e-12),
             "cubic fallback: expected {expected}, got {got}"
@@ -558,5 +563,58 @@ mod tests {
         assert!(approx_eq(trap, 9.0, 1e-4), "trap x^2: got {trap}");
         assert!(approx_eq(simp, 9.0, 1e-10), "simpson x^2: got {simp}");
         assert!(approx_eq(gauss, 9.0, 1e-10), "gauss x^2: got {gauss}");
+    }
+
+    #[test]
+    fn test_bisection_max_iter_reached() {
+        let f = |x: f64| x.sin();
+        let result = bisection(&f, 2.5, 3.8, 1e-20, 3);
+        assert!(result.is_some());
+    }
+
+    #[test]
+    fn test_newton_raphson_no_convergence() {
+        // f(x) = x^2 + 1 has no real roots; Newton's method oscillates
+        let f = |x: f64| x * x + 1.0;
+        let df = |x: f64| 2.0 * x;
+        let result = newton_raphson(&f, &df, 1.0, 1e-12, 100);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_newton_raphson_max_iter() {
+        let f = |x: f64| x.sin();
+        let df = |x: f64| x.cos();
+        let result = newton_raphson(&f, &df, 1.0, 1e-100, 2);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_secant_no_convergence() {
+        let f = |x: f64| x * x + 1.0;
+        let result = secant(&f, 0.0, 0.0, 1e-12, 100);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_secant_max_iter() {
+        let f = |x: f64| x.sin();
+        let result = secant(&f, 2.0, 3.5, 1e-100, 2);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_cubic_spline_two_points() {
+        let x_data = vec![0.0, 1.0];
+        let y_data = vec![0.0, 2.0];
+        let y = cubic_interp(&x_data, &y_data, 0.5);
+        assert!(approx_eq(y, 1.0, 1e-12));
+    }
+
+    #[test]
+    fn test_simpson_n_less_than_2() {
+        let result = simpson(&|x: f64| x * x, 0.0, 1.0, 1);
+        // n=1 gets rounded up to n=2; Simpson's rule is exact for polynomials up to degree 3
+        assert!(approx_eq(result, 1.0 / 3.0, 1e-12));
     }
 }

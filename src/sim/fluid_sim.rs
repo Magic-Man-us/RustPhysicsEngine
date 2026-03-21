@@ -63,7 +63,11 @@ pub struct ColumnFluid {
 
 impl ColumnFluid {
     #[must_use]
+    /// Create a column fluid with the given number of columns, spacing, density, and gravity.
     pub fn new(width: usize, dx: f64, density: f64, g: f64) -> Self {
+        assert!(dx > 0.0, "column spacing dx must be positive");
+        assert!(density > 0.0, "fluid density must be positive");
+        assert!(g > 0.0, "gravitational acceleration must be positive");
         Self {
             heights: vec![0.0; width],
             width,
@@ -73,6 +77,7 @@ impl ColumnFluid {
         }
     }
 
+    /// Set the water height in a specific column.
     pub fn set_height(&mut self, col: usize, h: f64) {
         assert!(col < self.width, "column index out of bounds");
         assert!(h >= 0.0, "height must be non-negative");
@@ -173,7 +178,10 @@ pub struct ShallowWater1D {
 
 impl ShallowWater1D {
     #[must_use]
+    /// Create a 1D shallow water solver with nx cells, spacing dx, and gravity g.
     pub fn new(nx: usize, dx: f64, g: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(g > 0.0, "gravitational acceleration must be positive");
         Self {
             h: vec![0.0; nx],
             hu: vec![0.0; nx],
@@ -356,7 +364,11 @@ fn idx(i: usize, j: usize, ny: usize) -> usize {
 
 impl EulerFluid2D {
     #[must_use]
+    /// Create a 2D incompressible Euler fluid solver on an nx-by-ny grid.
     pub fn new(nx: usize, ny: usize, dx: f64, dy: f64, density: f64) -> Self {
+        assert!(dx > 0.0, "grid spacing dx must be positive");
+        assert!(dy > 0.0, "grid spacing dy must be positive");
+        assert!(density > 0.0, "fluid density must be positive");
         let n = nx * ny;
         Self {
             vx: vec![0.0; n],
@@ -370,6 +382,7 @@ impl EulerFluid2D {
         }
     }
 
+    /// Set the velocity at grid point (i, j).
     pub fn set_velocity(&mut self, i: usize, j: usize, vx: f64, vy: f64) {
         let k = idx(i, j, self.ny);
         self.vx[k] = vx;
@@ -395,8 +408,8 @@ impl EulerFluid2D {
                 let v = self.vy[k];
 
                 // First-order upwind: (u·∇)φ
-                let advect_vx = self.upwind_advect_x(i, j, u, v, &self.vx);
-                let advect_vy = self.upwind_advect_x(i, j, u, v, &self.vy);
+                let advect_vx = self.upwind_advect(i, j, u, v, &self.vx);
+                let advect_vy = self.upwind_advect(i, j, u, v, &self.vy);
 
                 vx_star[k] = u - dt * advect_vx + dt * gravity_x;
                 vy_star[k] = v - dt * advect_vy + dt * gravity_y;
@@ -456,7 +469,7 @@ impl EulerFluid2D {
     ///
     /// Uses backward difference when local velocity is positive (information
     /// travels from left), forward difference when negative.
-    fn upwind_advect_x(&self, i: usize, j: usize, u: f64, v: f64, field: &[f64]) -> f64 {
+    fn upwind_advect(&self, i: usize, j: usize, u: f64, v: f64, field: &[f64]) -> f64 {
         let phi = field[idx(i, j, self.ny)];
 
         // ∂φ/∂x via upwind
@@ -625,15 +638,15 @@ mod tests {
             fluid.step(0.001);
         }
 
+        let h0 = fluid.heights[0];
         assert!(
-            approx_eq(fluid.heights[0], expected_height, 0.05),
-            "column 0: {} != {expected_height}",
-            fluid.heights[0],
+            approx_eq(h0, expected_height, 0.05),
+            "column 0: {h0} != {expected_height}",
         );
+        let h1 = fluid.heights[1];
         assert!(
-            approx_eq(fluid.heights[1], expected_height, 0.05),
-            "column 1: {} != {expected_height}",
-            fluid.heights[1],
+            approx_eq(h1, expected_height, 0.05),
+            "column 1: {h1} != {expected_height}",
         );
     }
 
@@ -787,6 +800,64 @@ mod tests {
     }
 
     #[test]
+    fn shallow_water_max_wave_speed_still_water() {
+        let nx = 50;
+        let dx = 0.1;
+        let g = 9.81;
+        let h0 = 2.0;
+        let mut sw = ShallowWater1D::new(nx, dx, g);
+        for i in 0..nx {
+            sw.h[i] = h0;
+        }
+        // With zero velocity, max wave speed = √(g h)
+        let s = sw.max_wave_speed();
+        let expected = 4.429446918070020;
+        assert!(
+            approx_rel_eq(s, expected, 1e-10),
+            "max_wave_speed={s}, expected {expected}"
+        );
+    }
+
+    #[test]
+    fn shallow_water_max_wave_speed_dry() {
+        let sw = ShallowWater1D::new(10, 0.1, 9.81);
+        assert!(approx_eq(sw.max_wave_speed(), 0.0, 1e-15));
+    }
+
+    #[test]
+    fn shallow_water_total_energy_still_water() {
+        let nx = 50;
+        let dx = 0.1;
+        let g = 9.81;
+        let h0 = 1.0;
+        let mut sw = ShallowWater1D::new(nx, dx, g);
+        for i in 0..nx {
+            sw.h[i] = h0;
+        }
+        // E = Σ (0.5 * g * h^2) * dx = nx * 0.5 * g * h0^2 * dx
+        let e = sw.total_energy();
+        let expected = 24.525;
+        assert!(
+            approx_rel_eq(e, expected, 1e-10),
+            "total_energy={e}, expected {expected}"
+        );
+    }
+
+    #[test]
+    fn shallow_water_velocity_dry_cell() {
+        let sw = ShallowWater1D::new(5, 0.1, 9.81);
+        assert!(approx_eq(sw.velocity(0), 0.0, 1e-15));
+    }
+
+    #[test]
+    fn shallow_water_velocity_wet_cell() {
+        let mut sw = ShallowWater1D::new(5, 0.1, 9.81);
+        sw.h[2] = 2.0;
+        sw.hu[2] = 6.0;
+        assert!(approx_rel_eq(sw.velocity(2), 3.0, 1e-10));
+    }
+
+    #[test]
     fn euler_2d_approximately_conserves_kinetic_energy() {
         // Inviscid Euler should conserve kinetic energy in the absence of
         // boundaries doing work. In practice, numerical dissipation (upwind
@@ -830,5 +901,134 @@ mod tests {
             ke_final > ke_initial * 0.001,
             "KE lost too much: {ke_initial} -> {ke_final}",
         );
+    }
+
+    #[test]
+    fn column_fluid_single_column_step() {
+        let mut fluid = ColumnFluid::new(1, 1.0, 1000.0, constants::G_ACCEL);
+        fluid.set_height(0, 5.0);
+        fluid.step(0.001);
+        assert!(approx_eq(fluid.heights[0], 5.0, 1e-12));
+    }
+
+    #[test]
+    fn column_fluid_negative_height_clamped() {
+        let mut fluid = ColumnFluid::new(3, 0.1, 1000.0, constants::G_ACCEL);
+        fluid.set_height(0, 0.001);
+        fluid.set_height(1, 10.0);
+        fluid.set_height(2, 0.001);
+        for _ in 0..50 {
+            fluid.step(0.01);
+        }
+        for h in &fluid.heights {
+            assert!(*h >= 0.0, "Height should never be negative, got {h}");
+        }
+    }
+
+    #[test]
+    fn shallow_water_small_nx_noop() {
+        let mut sw = ShallowWater1D::new(2, 1.0, constants::G_ACCEL);
+        sw.h[0] = 1.0;
+        sw.h[1] = 1.0;
+        sw.step_lax_friedrichs(0.01);
+        assert!(sw.h[0].is_finite());
+    }
+
+    #[test]
+    fn shallow_water_negative_depth_clamped() {
+        let mut sw = ShallowWater1D::new(5, 0.1, constants::G_ACCEL);
+        sw.h[2] = 100.0;
+        sw.hu[2] = 500.0;
+        let dt = sw.stable_dt() * 0.5;
+        for _ in 0..3 {
+            sw.step_lax_friedrichs(dt);
+        }
+        for &h in &sw.h {
+            assert!(h >= 0.0, "Depth should never be negative, got {h}");
+        }
+    }
+
+    #[test]
+    fn shallow_water_dry_stable_dt() {
+        let sw = ShallowWater1D::new(10, 0.5, constants::G_ACCEL);
+        let dt = sw.stable_dt();
+        assert!(approx_eq(dt, sw.dx, 1e-12));
+    }
+
+    #[test]
+    fn shallow_water_total_volume() {
+        let mut sw = ShallowWater1D::new(5, 0.5, constants::G_ACCEL);
+        sw.h = vec![1.0, 2.0, 3.0, 2.0, 1.0];
+        let v = sw.total_volume();
+        assert!(approx_eq(v, 9.0 * 0.5, 1e-12));
+    }
+
+    #[test]
+    fn column_fluid_large_dt_forces_negative_clamp() {
+        let mut fluid = ColumnFluid::new(2, 1.0, 1000.0, constants::G_ACCEL);
+        fluid.set_height(0, 10.0);
+        fluid.set_height(1, 0.0);
+        fluid.step(100.0);
+        assert!(fluid.heights[0] >= 0.0);
+        assert!(fluid.heights[1] >= 0.0);
+    }
+
+    #[test]
+    fn shallow_water_large_dt_forces_negative_clamp() {
+        let mut sw = ShallowWater1D::new(5, 0.5, constants::G_ACCEL);
+        sw.h = vec![0.0, 0.0, 10.0, 0.0, 0.0];
+        sw.hu = vec![0.0, 0.0, 50.0, 0.0, 0.0];
+        sw.step_lax_friedrichs(10.0);
+        for &h in &sw.h {
+            assert!(h >= 0.0);
+        }
+    }
+
+    #[test]
+    fn euler2d_upwind_boundary_edges() {
+        let nx = 5;
+        let ny = 5;
+        let dx = 0.1;
+        let dy = 0.1;
+        let mut sim = EulerFluid2D::new(nx, ny, dx, dy, 1.0);
+        // Set negative velocity everywhere so that at i=nx-1 and j=ny-1
+        // the upwind_advect hits the else branches (L485, L498)
+        for i in 0..nx {
+            for j in 0..ny {
+                let k = i * ny + j;
+                sim.vx[k] = -1.0;
+                sim.vy[k] = -1.0;
+            }
+        }
+        for k in 0..nx * ny {
+            sim.pressure[k] = 1.0;
+        }
+        sim.step(0.001, 0.0, 0.0);
+        assert!(sim.divergence().is_finite());
+    }
+
+    #[test]
+    fn euler2d_poisson_converges() {
+        let nx = 10;
+        let ny = 10;
+        let dx = 0.1;
+        let dy = 0.1;
+        let mut sim = EulerFluid2D::new(nx, ny, dx, dy, 1.0);
+        for i in 0..nx {
+            for j in 0..ny {
+                let k = i * ny + j;
+                sim.vx[k] = ((i as f64) * 0.1).sin();
+                sim.vy[k] = ((j as f64) * 0.1).cos();
+            }
+        }
+        sim.step(0.0001, 0.0, 0.0);
+        let div = sim.divergence();
+        assert!(div.is_finite());
+    }
+
+    #[test]
+    fn test_approx_rel_eq_near_zero_b() {
+        assert!(approx_rel_eq(0.0, 0.0, 1e-6));
+        assert!(!approx_rel_eq(1.0, 0.0, 0.5));
     }
 }

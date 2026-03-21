@@ -4,11 +4,13 @@ use crate::math::{Vec3, constants};
 
 /// Coulomb's law: F = k_e * |q1 * q2| / r^2
 pub fn coulomb_force(q1: f64, q2: f64, distance: f64) -> f64 {
+    assert!(distance != 0.0, "distance must not be zero");
     constants::K_E * (q1 * q2).abs() / (distance * distance)
 }
 
 /// Coulomb force (signed, 1D): positive = repulsive, negative = attractive
 pub fn coulomb_force_signed(q1: f64, q2: f64, distance: f64) -> f64 {
+    assert!(distance != 0.0, "distance must not be zero");
     constants::K_E * q1 * q2 / (distance * distance)
 }
 
@@ -24,6 +26,7 @@ pub fn coulomb_force_vec(q1: f64, pos1: Vec3, q2: f64, pos2: Vec3) -> Vec3 {
 
 /// Electric field due to a point charge: E = k_e * q / r^2
 pub fn electric_field_point_charge(charge: f64, distance: f64) -> f64 {
+    assert!(distance != 0.0, "distance must not be zero");
     constants::K_E * charge / (distance * distance)
 }
 
@@ -39,11 +42,13 @@ pub fn electric_field_vec(charge: f64, charge_pos: Vec3, field_point: Vec3) -> V
 
 /// Electric potential due to a point charge: V = k_e * q / r
 pub fn electric_potential(charge: f64, distance: f64) -> f64 {
+    assert!(distance != 0.0, "distance must not be zero");
     constants::K_E * charge / distance
 }
 
 /// Electric potential energy: U = k_e * q1 * q2 / r
 pub fn electric_potential_energy(q1: f64, q2: f64, distance: f64) -> f64 {
+    assert!(distance != 0.0, "distance must not be zero");
     constants::K_E * q1 * q2 / distance
 }
 
@@ -54,6 +59,7 @@ pub fn electric_flux_gauss(enclosed_charge: f64) -> f64 {
 
 /// Capacitance of a parallel plate capacitor: C = ε_0 * A / d
 pub fn capacitance_parallel_plate(area: f64, separation: f64) -> f64 {
+    assert!(separation > 0.0, "plate separation must be positive");
     constants::EPSILON_0 * area / separation
 }
 
@@ -71,11 +77,13 @@ pub fn ohms_law_voltage(current: f64, resistance: f64) -> f64 {
 
 /// Ohm's law: I = V / R
 pub fn ohms_law_current(voltage: f64, resistance: f64) -> f64 {
+    assert!(resistance != 0.0, "resistance must not be zero");
     voltage / resistance
 }
 
 /// Ohm's law: R = V / I
 pub fn ohms_law_resistance(voltage: f64, current: f64) -> f64 {
+    assert!(current != 0.0, "current must not be zero");
     voltage / current
 }
 
@@ -118,6 +126,8 @@ pub fn rc_time_constant(resistance: f64, capacitance: f64) -> f64 {
 
 /// Voltage across charging capacitor: V(t) = V0 * (1 - e^(-t/RC))
 pub fn rc_charging_voltage(v0: f64, resistance: f64, capacitance: f64, time: f64) -> f64 {
+    assert!(resistance > 0.0, "resistance must be positive");
+    assert!(capacitance > 0.0, "capacitance must be positive");
     v0 * (1.0 - (-time / (resistance * capacitance)).exp())
 }
 
@@ -135,21 +145,26 @@ pub fn lorentz_force(charge: f64, e_field: Vec3, velocity: Vec3, b_field: Vec3) 
 
 /// Magnetic field from a long straight wire: B = μ_0 * I / (2π * r)
 pub fn magnetic_field_wire(current: f64, distance: f64) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     constants::MU_0 * current / (2.0 * constants::PI * distance)
 }
 
 /// Magnetic force between two parallel wires per unit length: F/L = μ_0 * I1 * I2 / (2π * d)
 pub fn force_between_wires(i1: f64, i2: f64, distance: f64) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     constants::MU_0 * i1 * i2 / (2.0 * constants::PI * distance)
 }
 
 /// Cyclotron radius: r = m*v / (|q|*B)
 pub fn cyclotron_radius(mass: f64, velocity: f64, charge: f64, b_field: f64) -> f64 {
+    assert!(charge != 0.0, "charge must not be zero");
+    assert!(b_field > 0.0, "magnetic field must be positive");
     mass * velocity / (charge.abs() * b_field)
 }
 
 /// Cyclotron frequency: f = |q|*B / (2π*m)
 pub fn cyclotron_frequency(charge: f64, b_field: f64, mass: f64) -> f64 {
+    assert!(mass > 0.0, "mass must be positive");
     charge.abs() * b_field / (2.0 * constants::PI * mass)
 }
 
@@ -157,6 +172,7 @@ pub fn cyclotron_frequency(charge: f64, b_field: f64, mass: f64) -> f64 {
 
 /// Faraday's law (magnitude): EMF = -N * dΦ/dt
 pub fn faraday_emf(num_turns: f64, delta_flux: f64, delta_time: f64) -> f64 {
+    assert!(delta_time != 0.0, "time interval must not be zero");
     -(num_turns * delta_flux / delta_time)
 }
 
@@ -174,10 +190,13 @@ pub fn inductor_energy(inductance: f64, current: f64) -> f64 {
 
 /// Relationship between wavelength and frequency: c = λ * f
 pub fn wavelength_from_frequency(frequency: f64) -> f64 {
+    assert!(frequency > 0.0, "frequency must be positive");
     constants::C / frequency
 }
 
+/// Frequency from wavelength: f = c / λ
 pub fn frequency_from_wavelength(wavelength: f64) -> f64 {
+    assert!(wavelength > 0.0, "wavelength must be positive");
     constants::C / wavelength
 }
 
@@ -195,6 +214,7 @@ pub fn solenoid_field(mu0: f64, turns_per_length: f64, current: f64) -> f64 {
 
 /// Toroid magnetic field: B = μ₀NI/(2πr)
 pub fn toroid_field(mu0: f64, total_turns: f64, current: f64, radius: f64) -> f64 {
+    assert!(radius > 0.0, "radius must be positive");
     mu0 * total_turns * current / (2.0 * constants::PI * radius)
 }
 
@@ -215,6 +235,7 @@ pub fn mutual_inductance_coaxial(mu0: f64, n1: f64, n2: f64, area: f64, length: 
 
 /// Self-inductance of a solenoid: L = μ₀N²A/l
 pub fn self_inductance_solenoid(mu0: f64, turns: f64, area: f64, length: f64) -> f64 {
+    assert!(length > 0.0, "length must be positive");
     mu0 * turns * turns * area / length
 }
 
@@ -232,6 +253,8 @@ pub fn torque_on_dipole(moment: f64, b_field: f64, angle: f64) -> f64 {
 
 /// Capacitive reactance: Xc = 1/(2πfC)
 pub fn capacitive_reactance(frequency: f64, capacitance: f64) -> f64 {
+    assert!(frequency > 0.0, "frequency must be positive");
+    assert!(capacitance > 0.0, "capacitance must be positive");
     1.0 / (2.0 * constants::PI * frequency * capacitance)
 }
 
@@ -248,11 +271,14 @@ pub fn impedance_rlc_series(resistance: f64, inductive_reactance: f64, capacitiv
 
 /// Resonant frequency of an LC circuit: f₀ = 1/(2π√(LC))
 pub fn resonant_frequency_lc(inductance: f64, capacitance: f64) -> f64 {
+    assert!(inductance > 0.0, "inductance must be positive");
+    assert!(capacitance > 0.0, "capacitance must be positive");
     1.0 / (2.0 * constants::PI * (inductance * capacitance).sqrt())
 }
 
 /// Power factor: cos(φ) = R/Z
 pub fn power_factor(resistance: f64, impedance: f64) -> f64 {
+    assert!(impedance > 0.0, "impedance must be positive");
     resistance / impedance
 }
 
@@ -273,11 +299,13 @@ pub fn ac_power_average(vrms: f64, irms: f64, power_factor: f64) -> f64 {
 
 /// Quality factor of an RLC circuit: Q = (1/R)√(L/C)
 pub fn quality_factor_rlc(inductance: f64, capacitance: f64, resistance: f64) -> f64 {
+    assert!(resistance > 0.0, "resistance must be positive");
     (inductance / capacitance).sqrt() / resistance
 }
 
 /// Bandwidth of an RLC circuit: BW = f₀/Q
 pub fn bandwidth_rlc(resonant_freq: f64, quality: f64) -> f64 {
+    assert!(quality > 0.0, "quality factor must be positive");
     resonant_freq / quality
 }
 
@@ -323,11 +351,13 @@ pub fn larmor_power(charge: f64, acceleration: f64) -> f64 {
 
 /// Transformer secondary voltage: V₂ = V₁ × N₂/N₁
 pub fn transformer_voltage(v_primary: f64, n_primary: f64, n_secondary: f64) -> f64 {
+    assert!(n_primary > 0.0, "primary turns must be positive");
     v_primary * n_secondary / n_primary
 }
 
 /// Transformer secondary current: I₂ = I₁ × N₁/N₂
 pub fn transformer_current(i_primary: f64, n_primary: f64, n_secondary: f64) -> f64 {
+    assert!(n_secondary > 0.0, "secondary turns must be positive");
     i_primary * n_primary / n_secondary
 }
 
@@ -412,14 +442,13 @@ mod tests {
     #[test]
     fn test_solenoid_field() {
         let b = solenoid_field(constants::MU_0, 1000.0, 2.0);
-        assert!(approx_rel(b, constants::MU_0 * 1000.0 * 2.0, 1e-9));
+        assert!(approx_rel(b, 2.513_274_124_24e-3, 1e-9));
     }
 
     #[test]
     fn test_toroid_field() {
         let b = toroid_field(constants::MU_0, 500.0, 3.0, 0.1);
-        let expected = constants::MU_0 * 500.0 * 3.0 / (2.0 * constants::PI * 0.1);
-        assert!(approx_rel(b, expected, 1e-9));
+        assert!(approx_rel(b, 3.0e-3, 1e-6));
     }
 
     #[test]
@@ -434,22 +463,19 @@ mod tests {
     #[test]
     fn test_magnetic_energy_density() {
         let u = magnetic_energy_density(1.0);
-        let expected = 1.0 / (2.0 * constants::MU_0);
-        assert!(approx_rel(u, expected, 1e-9));
+        assert!(approx_rel(u, 397_887.357_7, 1e-6));
     }
 
     #[test]
     fn test_mutual_inductance_coaxial() {
         let m = mutual_inductance_coaxial(constants::MU_0, 100.0, 200.0, 0.01, 0.5);
-        let expected = constants::MU_0 * 100.0 * 200.0 * 0.01 * 0.5;
-        assert!(approx_rel(m, expected, 1e-9));
+        assert!(approx_rel(m, 1.256_637_062_12e-4, 1e-9));
     }
 
     #[test]
     fn test_self_inductance_solenoid() {
         let l = self_inductance_solenoid(constants::MU_0, 1000.0, 0.01, 0.5);
-        let expected = constants::MU_0 * 1e6 * 0.01 / 0.5;
-        assert!(approx_rel(l, expected, 1e-9));
+        assert!(approx_rel(l, 2.513_274_124_24e-2, 1e-9));
     }
 
     #[test]
@@ -471,15 +497,13 @@ mod tests {
     #[test]
     fn test_capacitive_reactance() {
         let xc = capacitive_reactance(60.0, 10e-6);
-        let expected = 1.0 / (2.0 * constants::PI * 60.0 * 10e-6);
-        assert!(approx_rel(xc, expected, 1e-9));
+        assert!(approx_rel(xc, 265.258_238_486, 1e-6));
     }
 
     #[test]
     fn test_inductive_reactance() {
         let xl = inductive_reactance(60.0, 0.1);
-        let expected = 2.0 * constants::PI * 60.0 * 0.1;
-        assert!(approx_rel(xl, expected, 1e-9));
+        assert!(approx_rel(xl, 37.699_111_843, 1e-6));
     }
 
     #[test]
@@ -494,8 +518,7 @@ mod tests {
     #[test]
     fn test_resonant_frequency_lc() {
         let f0 = resonant_frequency_lc(1e-3, 1e-6);
-        let expected = 1.0 / (2.0 * constants::PI * (1e-9_f64).sqrt());
-        assert!(approx_rel(f0, expected, 1e-9));
+        assert!(approx_rel(f0, 5_032.921_210, 1e-6));
     }
 
     #[test]
@@ -507,13 +530,13 @@ mod tests {
     #[test]
     fn test_rms_voltage() {
         let vrms = rms_voltage(170.0);
-        assert!(approx_rel(vrms, 170.0 / 2.0_f64.sqrt(), 1e-9));
+        assert!(approx_rel(vrms, 120.208_152_802, 1e-6));
     }
 
     #[test]
     fn test_rms_current() {
         let irms = rms_current(10.0);
-        assert!(approx_rel(irms, 10.0 / 2.0_f64.sqrt(), 1e-9));
+        assert!(approx_rel(irms, 7.071_067_812, 1e-6));
     }
 
     #[test]
@@ -525,8 +548,7 @@ mod tests {
     #[test]
     fn test_quality_factor_rlc() {
         let q = quality_factor_rlc(0.1, 1e-6, 10.0);
-        let expected = (0.1 / 1e-6_f64).sqrt() / 10.0;
-        assert!(approx_rel(q, expected, 1e-9));
+        assert!(approx_rel(q, 31.622_776_602, 1e-6));
     }
 
     #[test]
@@ -539,7 +561,7 @@ mod tests {
     #[test]
     fn test_em_wave_speed() {
         let v = em_wave_speed(constants::EPSILON_0, constants::MU_0);
-        assert!(approx_rel(v, constants::C, 0.01));
+        assert!(approx_rel(v, 299_792_458.0, 0.01));
     }
 
     #[test]
@@ -563,18 +585,16 @@ mod tests {
     #[test]
     fn test_energy_density_em() {
         let u = energy_density_em(100.0, 0.0);
-        let expected = constants::EPSILON_0 * 100.0 * 100.0 / 2.0;
-        assert!(approx_rel(u, expected, 1e-9));
+        assert!(approx_rel(u, 4.427_093_906_4e-8, 1e-6));
 
         let u2 = energy_density_em(0.0, 0.5);
-        let expected2 = 0.25 / (2.0 * constants::MU_0);
-        assert!(approx_rel(u2, expected2, 1e-9));
+        assert!(approx_rel(u2, 99_471.839_4, 1e-6));
     }
 
     #[test]
     fn test_radiation_intensity_dipole() {
         let i_at_90 = radiation_intensity_dipole(100.0, constants::PI / 2.0);
-        assert!(approx_rel(i_at_90, 3.0 * 100.0 / (8.0 * constants::PI), 1e-6));
+        assert!(approx_rel(i_at_90, 11.936_620_731, 1e-6));
 
         let i_at_0 = radiation_intensity_dipole(100.0, 0.0);
         assert!(approx(i_at_0, 0.0, 1e-9));
@@ -583,10 +603,7 @@ mod tests {
     #[test]
     fn test_larmor_power() {
         let p = larmor_power(constants::E_CHARGE, 1e15);
-        let c = constants::C;
-        let expected = constants::E_CHARGE * constants::E_CHARGE * 1e30
-            / (6.0 * constants::PI * constants::EPSILON_0 * c * c * c);
-        assert!(approx_rel(p, expected, 1e-6));
+        assert!(approx_rel(p, 5.71e-24, 0.01));
     }
 
     // ── Transformer Tests ──
@@ -604,5 +621,188 @@ mod tests {
     fn test_transformer_current() {
         let i2 = transformer_current(10.0, 100.0, 500.0);
         assert!(approx(i2, 2.0, 1e-9));
+    }
+
+    // ── Tests for previously untested functions ──
+
+    #[test]
+    fn test_coulomb_force_signed_repulsive() {
+        let f = coulomb_force_signed(1.0e-6, 1.0e-6, 1.0);
+        assert!(f > 0.0);
+        assert!(approx_rel(f, 8.987_551_792_3e-3, 1e-6));
+    }
+
+    #[test]
+    fn test_coulomb_force_signed_attractive() {
+        let f = coulomb_force_signed(1.0e-6, -1.0e-6, 1.0);
+        assert!(f < 0.0);
+        assert!(approx_rel(f.abs(), 8.987_551_792_3e-3, 1e-6));
+    }
+
+    #[test]
+    fn test_coulomb_force_vec_repulsive() {
+        let f = coulomb_force_vec(
+            1.0e-6,
+            Vec3::new(0.0, 0.0, 0.0),
+            1.0e-6,
+            Vec3::new(1.0, 0.0, 0.0),
+        );
+        // Force on q1 from q2: direction from q2 toward q1 is -x
+        // Same-sign charges → positive product → force along (pos1-pos2) = (-1,0,0)
+        assert!(f.x < 0.0);
+        assert!(approx(f.y, 0.0, 1e-15));
+    }
+
+    #[test]
+    fn test_coulomb_force_vec_zero_distance() {
+        let f = coulomb_force_vec(
+            1.0e-6,
+            Vec3::new(0.0, 0.0, 0.0),
+            1.0e-6,
+            Vec3::new(0.0, 0.0, 0.0),
+        );
+        assert!(approx(f.x, 0.0, 1e-15));
+        assert!(approx(f.y, 0.0, 1e-15));
+        assert!(approx(f.z, 0.0, 1e-15));
+    }
+
+    #[test]
+    fn test_electric_field_point_charge() {
+        let e = electric_field_point_charge(1.0e-6, 1.0);
+        assert!(approx_rel(e, 8_987.551_792_3, 1e-6));
+    }
+
+    #[test]
+    fn test_electric_field_vec() {
+        let e = electric_field_vec(
+            1.0e-6,
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(1.0, 0.0, 0.0),
+        );
+        assert!(e.x > 0.0);
+        assert!(approx_rel(e.x, 8_987.551_792_3, 1e-6));
+    }
+
+    #[test]
+    fn test_electric_field_vec_zero_distance() {
+        let e = electric_field_vec(
+            1.0e-6,
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(0.0, 0.0, 0.0),
+        );
+        assert!(approx(e.x, 0.0, 1e-15));
+    }
+
+    #[test]
+    fn test_electric_potential() {
+        let v = electric_potential(1.0e-6, 1.0);
+        assert!(approx_rel(v, 8_987.551_792_3, 1e-6));
+    }
+
+    #[test]
+    fn test_electric_potential_energy() {
+        let u = electric_potential_energy(1.0e-6, -1.0e-6, 1.0);
+        assert!(u < 0.0);
+        assert!(approx_rel(u.abs(), 8.987_551_792_3e-3, 1e-6));
+    }
+
+    #[test]
+    fn test_electric_flux_gauss() {
+        let phi = electric_flux_gauss(1.0e-6);
+        assert!(approx_rel(phi, 112_940.904_5, 1e-6));
+    }
+
+    #[test]
+    fn test_capacitance_parallel_plate() {
+        let c = capacitance_parallel_plate(1.0, 0.001);
+        assert!(approx_rel(c, 8.854_187_812_8e-9, 1e-6));
+    }
+
+    #[test]
+    fn test_capacitors_series() {
+        let c = capacitors_series(&[10.0e-6, 10.0e-6]);
+        assert!(approx_rel(c, 5.0e-6, 1e-6));
+    }
+
+    #[test]
+    fn test_capacitors_parallel() {
+        let c = capacitors_parallel(&[10.0e-6, 20.0e-6]);
+        assert!(approx(c, 30.0e-6, 1e-15));
+    }
+
+    #[test]
+    fn test_ohms_law_resistance() {
+        assert!(approx(ohms_law_resistance(10.0, 2.0), 5.0, 1e-9));
+    }
+
+    #[test]
+    fn test_electrical_power() {
+        assert!(approx(electrical_power(120.0, 5.0), 600.0, 1e-9));
+    }
+
+    #[test]
+    fn test_electrical_power_from_current() {
+        let p = electrical_power_from_current(3.0, 10.0);
+        assert!(approx(p, 90.0, 1e-9));
+    }
+
+    #[test]
+    fn test_rc_time_constant() {
+        let tau = rc_time_constant(1000.0, 1e-6);
+        assert!(approx(tau, 1e-3, 1e-12));
+    }
+
+    #[test]
+    fn test_magnetic_force_on_charge() {
+        let f = magnetic_force_on_charge(constants::E_CHARGE, 1e6, 0.5, constants::PI / 2.0);
+        assert!(approx_rel(f, 8.010_883_17e-14, 1e-6));
+    }
+
+    #[test]
+    fn test_magnetic_force_on_charge_parallel() {
+        let f = magnetic_force_on_charge(constants::E_CHARGE, 1e6, 0.5, 0.0);
+        assert!(approx(f, 0.0, 1e-20));
+    }
+
+    #[test]
+    fn test_force_between_wires() {
+        let f = force_between_wires(10.0, 10.0, 0.1);
+        assert!(approx_rel(f, 2.0e-4, 1e-6));
+    }
+
+    #[test]
+    fn test_cyclotron_radius() {
+        let r = cyclotron_radius(constants::M_PROTON, 1e6, constants::E_CHARGE, 1.0);
+        assert!(approx_rel(r, 1.043_968e-2, 1e-4));
+    }
+
+    #[test]
+    fn test_cyclotron_frequency() {
+        let f = cyclotron_frequency(constants::E_CHARGE, 1.0, constants::M_PROTON);
+        assert!(approx_rel(f, 1.524_47e7, 1e-4));
+    }
+
+    #[test]
+    fn test_faraday_emf() {
+        let emf = faraday_emf(100.0, 0.01, 0.1);
+        assert!(approx(emf, -10.0, 1e-9));
+    }
+
+    #[test]
+    fn test_motional_emf() {
+        let emf = motional_emf(0.5, 1.0, 10.0);
+        assert!(approx(emf, 5.0, 1e-9));
+    }
+
+    #[test]
+    fn test_inductor_energy() {
+        let u = inductor_energy(0.01, 5.0);
+        assert!(approx(u, 0.125, 1e-9));
+    }
+
+    #[test]
+    fn test_poynting_magnitude() {
+        let s = poynting_magnitude(100.0, 3.33e-7);
+        assert!(approx_rel(s, 26.497, 1e-3));
     }
 }

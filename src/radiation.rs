@@ -20,11 +20,13 @@ pub fn spectral_peak_frequency(temperature: f64) -> f64 {
 
 /// Inverse Wien's law: T = b / λ_max (color temperature from peak wavelength)
 pub fn color_temperature(peak_wavelength: f64) -> f64 {
+    assert!(peak_wavelength > 0.0, "peak_wavelength must be positive");
     WIEN_DISPLACEMENT_CONSTANT / peak_wavelength
 }
 
 /// Brightness temperature via the Rayleigh-Jeans approximation: T_b = Ic² / (2kf²)
 pub fn brightness_temperature(intensity: f64, frequency: f64) -> f64 {
+    assert!(frequency > 0.0, "frequency must be positive");
     intensity * constants::C * constants::C / (2.0 * constants::K_B * frequency * frequency)
 }
 
@@ -42,6 +44,7 @@ pub fn beer_lambert(initial_intensity: f64, absorption_coeff: f64, path_length: 
 
 /// Photon mean free path: l = 1/κ
 pub fn mean_free_path_photon(absorption_coeff: f64) -> f64 {
+    assert!(absorption_coeff > 0.0, "absorption_coeff must be positive");
     1.0 / absorption_coeff
 }
 
@@ -74,6 +77,7 @@ pub fn emissivity_from_absorptivity(absorptivity: f64) -> f64 {
 ///                     - X atan(X) - Y atan(Y) ]
 /// where X = W/D and Y = H/D.
 pub fn view_factor_parallel_plates(width: f64, height: f64, separation: f64) -> f64 {
+    assert!(separation > 0.0, "separation must be positive");
     let x = width / separation;
     let y = height / separation;
     let x2 = x * x;
@@ -99,6 +103,8 @@ pub fn radiative_exchange(
     t1: f64,
     t2: f64,
 ) -> f64 {
+    assert!(emissivity1 > 0.0, "emissivity1 must be positive");
+    assert!(emissivity2 > 0.0, "emissivity2 must be positive");
     let resistance = 1.0 / emissivity1 + 1.0 / emissivity2 - 1.0;
     constants::SIGMA * area * (t1.powi(4) - t2.powi(4)) / resistance
 }
@@ -107,6 +113,7 @@ pub fn radiative_exchange(
 
 /// Intensity at distance from a point source: I = L / (4πd²)
 pub fn intensity_at_distance(luminosity: f64, distance: f64) -> f64 {
+    assert!(distance > 0.0, "distance must be positive");
     luminosity / (4.0 * constants::PI * distance * distance)
 }
 
@@ -260,7 +267,7 @@ mod tests {
     fn test_radiative_exchange_blackbodies() {
         // Two blackbodies (ε=1): Q = σA(T₁⁴-T₂⁴)
         let q = radiative_exchange(1.0, 1.0, 1.0, 500.0, 300.0);
-        let expected = constants::SIGMA * (500.0_f64.powi(4) - 300.0_f64.powi(4));
+        let expected = 3084.683683936;
         assert!(approx_rel(q, expected, 1e-9));
     }
 
@@ -268,8 +275,7 @@ mod tests {
     fn test_radiative_exchange_gray_surfaces() {
         // ε₁=0.5, ε₂=0.8 → resistance = 2.0 + 1.25 - 1.0 = 2.25
         let q = radiative_exchange(0.5, 0.8, 2.0, 600.0, 300.0);
-        let resistance = 1.0 / 0.5 + 1.0 / 0.8 - 1.0;
-        let expected = constants::SIGMA * 2.0 * (600.0_f64.powi(4) - 300.0_f64.powi(4)) / resistance;
+        let expected = 6124.00437252;
         assert!(approx_rel(q, expected, 1e-9));
     }
 
@@ -304,5 +310,11 @@ mod tests {
         let i1 = intensity_at_distance(1e26, 1e10);
         let i2 = intensity_at_distance(1e26, 2e10);
         assert!(approx_rel(i2, i1 / 4.0, 1e-9));
+    }
+
+    #[test]
+    fn test_approx_rel_zero_b() {
+        assert!(approx_rel(0.0, 0.0, 1e-6));
+        assert!(!approx_rel(1.0, 0.0, 0.5));
     }
 }
