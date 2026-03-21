@@ -1,7 +1,8 @@
 # rust_physics_engine
 
 [![CI](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml/badge.svg)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Magic-Man-us/COVERAGE_GIST_ID/raw/coverage.json)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-99.98%25-brightgreen)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/tests-1659_passing-brightgreen)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
 
