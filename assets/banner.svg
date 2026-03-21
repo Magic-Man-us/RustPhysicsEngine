@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0e27;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1a1e3e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0d1117;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="rust" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f74c00;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff8c42;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#58a6ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#79c0ff;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="300" fill="url(#bg)" rx="8"/>
+
+  <!-- Grid lines (subtle) -->
+  <g stroke="#ffffff" stroke-opacity="0.03" stroke-width="1">
+    <line x1="0" y1="60" x2="1200" y2="60"/>
+    <line x1="0" y1="120" x2="1200" y2="120"/>
+    <line x1="0" y1="180" x2="1200" y2="180"/>
+    <line x1="0" y1="240" x2="1200" y2="240"/>
+    <line x1="200" y1="0" x2="200" y2="300"/>
+    <line x1="400" y1="0" x2="400" y2="300"/>
+    <line x1="600" y1="0" x2="600" y2="300"/>
+    <line x1="800" y1="0" x2="800" y2="300"/>
+    <line x1="1000" y1="0" x2="1000" y2="300"/>
+  </g>
+
+  <!-- Decorative equations (faded, background) -->
+  <g fill="#ffffff" fill-opacity="0.06" font-family="'Georgia', 'Times New Roman', serif" font-style="italic">
+    <text x="50" y="45" font-size="14">F = ma</text>
+    <text x="180" y="82" font-size="13">E = mc²</text>
+    <text x="820" y="45" font-size="13">iħ∂ψ/∂t = Ĥψ</text>
+    <text x="950" y="82" font-size="14">∇ × B = μ₀J</text>
+    <text x="90" y="265" font-size="13">PV = nRT</text>
+    <text x="280" y="280" font-size="12">dS ≥ 0</text>
+    <text x="880" y="258" font-size="13">G_μν = 8πT_μν</text>
+    <text x="1020" y="278" font-size="12">∇²φ = -ρ/ε₀</text>
+    <text x="450" y="40" font-size="12">ΔxΔp ≥ ħ/2</text>
+    <text x="620" y="275" font-size="13">λ = h/p</text>
+  </g>
+
+  <!-- Orbital paths (decorative) -->
+  <ellipse cx="150" cy="150" rx="80" ry="40" fill="none" stroke="#58a6ff" stroke-opacity="0.08" stroke-width="1" transform="rotate(-20, 150, 150)"/>
+  <ellipse cx="150" cy="150" rx="60" ry="25" fill="none" stroke="#58a6ff" stroke-opacity="0.06" stroke-width="1" transform="rotate(15, 150, 150)"/>
+  <circle cx="150" cy="150" r="4" fill="#ff8c42" fill-opacity="0.15"/>
+
+  <!-- Wave pattern (right side) -->
+  <path d="M 900,150 Q 920,120 940,150 Q 960,180 980,150 Q 1000,120 1020,150 Q 1040,180 1060,150 Q 1080,120 1100,150 Q 1120,180 1140,150"
+        fill="none" stroke="#58a6ff" stroke-opacity="0.1" stroke-width="2"/>
+  <path d="M 900,160 Q 920,130 940,160 Q 960,190 980,160 Q 1000,130 1020,160 Q 1040,190 1060,160 Q 1080,130 1100,160 Q 1120,190 1140,160"
+        fill="none" stroke="#f74c00" stroke-opacity="0.07" stroke-width="1.5"/>
+
+  <!-- Main title -->
+  <text x="600" y="120" text-anchor="middle" font-family="'SF Mono', 'Fira Code', 'Consolas', monospace" font-size="48" font-weight="bold" fill="url(#rust)" filter="url(#glow)">
+    rust_physics_engine
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="160" text-anchor="middle" font-family="'SF Mono', 'Fira Code', 'Consolas', monospace" font-size="16" fill="url(#accent)">
+    computational physics &amp; mathematics in pure Rust
+  </text>
+
+  <!-- Stats bar -->
+  <g font-family="'SF Mono', 'Fira Code', 'Consolas', monospace" font-size="13">
+    <!-- Modules -->
+    <rect x="230" y="190" width="130" height="32" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="295" y="211" text-anchor="middle" fill="#f0f6fc">50+ modules</text>
+
+    <!-- Functions -->
+    <rect x="380" y="190" width="145" height="32" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="452" y="211" text-anchor="middle" fill="#f0f6fc">1,600+ functions</text>
+
+    <!-- Tests -->
+    <rect x="545" y="190" width="130" height="32" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="610" y="211" text-anchor="middle" fill="#3fb950">1,659 tests</text>
+
+    <!-- Coverage -->
+    <rect x="695" y="190" width="150" height="32" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="770" y="211" text-anchor="middle" fill="#3fb950">99.98% coverage</text>
+
+    <!-- Zero deps -->
+    <rect x="865" y="190" width="120" height="32" rx="6" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="925" y="211" text-anchor="middle" fill="#f74c00">zero deps</text>
+  </g>
+
+  <!-- Bottom accent line -->
+  <rect x="300" y="245" width="600" height="2" rx="1" fill="url(#rust)" opacity="0.3"/>
+</svg>

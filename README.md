@@ -1,12 +1,17 @@
-# rust_physics_engine
+<p align="center">
+  <img src="assets/banner.svg" alt="rust_physics_engine" width="100%"/>
+</p>
 
-[![CI](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml/badge.svg)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-99.98%25-brightgreen)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/tests-1659_passing-brightgreen)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
+<p align="center">
+  <a href="https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml"><img src="https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml"><img src="https://img.shields.io/badge/coverage-99.98%25-brightgreen" alt="Coverage"></a>
+  <a href="https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml"><img src="https://img.shields.io/badge/tests-1659_passing-brightgreen" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
+  <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-stable-orange.svg" alt="Rust"></a>
+  <a href="https://github.com/Magic-Man-us/RustPhysicsEngine"><img src="https://img.shields.io/badge/dependencies-zero-blue" alt="Zero Dependencies"></a>
+</p>
 
-A comprehensive, zero-dependency Rust library covering physics, mathematics, and engineering computation. Built for correctness — every public function validates its inputs, and the entire codebase sits at 99.98% test coverage with 1,659 tests.
+A comprehensive, zero-dependency Rust library for physics, mathematics, and engineering computation. Every public function validates its inputs, every formula is tested against known values, and the entire codebase sits at 99.98% line coverage across 1,659 tests.
 
 ## What's in it
 
