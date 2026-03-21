@@ -1,5 +1,10 @@
 # rust_physics_engine
 
+[![CI](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml/badge.svg)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/Magic-Man-us/COVERAGE_GIST_ID/raw/coverage.json)](https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
+
 A comprehensive, zero-dependency Rust library covering physics, mathematics, and engineering computation. Built for correctness — every public function validates its inputs, and the entire codebase sits at 99.98% test coverage with 1,659 tests.
 
 ## What's in it
