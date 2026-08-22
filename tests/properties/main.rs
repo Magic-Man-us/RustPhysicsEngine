@@ -6,3 +6,4 @@ mod linalg_props;
 mod numerical_props;
 mod signal_props;
 mod special_props;
+mod statistics_props;

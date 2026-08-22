@@ -13,6 +13,8 @@ pub use descriptive::{
 };
 pub use distributions::{
     chi_squared_pdf, exponential_cdf, exponential_pdf, gaussian, gaussian_cdf, poisson_pmf,
+    Beta, Binomial, ChiSquared, Distribution, Exponential, FDist, Gamma, LogNormal, Normal,
+    Poisson, StudentT, Weibull,
 };
 #[allow(deprecated)]
 pub use distributions::gaussian_cdf_approx;
