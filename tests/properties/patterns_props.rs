@@ -203,3 +203,153 @@ fn prop_uniform_samplers_statistics() {
     let frac = left as f64 / n as f64;
     assert!((frac - 1.0 / 3.0).abs() < 0.015, "uniformity {frac}");
 }
+
+#[test]
+fn prop_hilbert_morton_roundtrips() {
+    use rust_physics_engine::patterns::space_filling::{
+        gray_code, gray_decode, hilbert_3d_d2xyz, hilbert_3d_xyz2d, hilbert_d2xy, hilbert_xy2d,
+        morton_decode_2d, morton_decode_3d, morton_encode_2d, morton_encode_3d,
+    };
+    let mut rng = Rng::new(809);
+    for order in [4u32, 8, 12, 16] {
+        for _ in 0..200 {
+            let d = rng.next_u64() % (1u64 << (2 * order));
+            let (x, y) = hilbert_d2xy(order, d);
+            assert_eq!(hilbert_xy2d(order, x, y), d);
+        }
+    }
+    for order in [4u32, 8, 16] {
+        for _ in 0..200 {
+            let d = rng.next_u64() % (1u64 << (3 * order));
+            let (x, y, z) = hilbert_3d_d2xyz(order, d);
+            assert_eq!(hilbert_3d_xyz2d(order, x, y, z), d);
+        }
+    }
+    for _ in 0..500 {
+        let (x, y) = (rng.next_u64() as u32, rng.next_u64() as u32);
+        assert_eq!(morton_decode_2d(morton_encode_2d(x, y)), (x, y));
+        let (a, b, c) = (
+            (rng.next_u64() % (1 << 21)) as u32,
+            (rng.next_u64() % (1 << 21)) as u32,
+            (rng.next_u64() % (1 << 21)) as u32,
+        );
+        assert_eq!(morton_decode_3d(morton_encode_3d(a, b, c)), (a, b, c));
+        let n = rng.next_u64() >> 1;
+        assert_eq!(gray_decode(gray_code(n)), n);
+    }
+}
+
+#[test]
+fn prop_packings_never_overlap() {
+    use rust_physics_engine::patterns::packing::{
+        apollonian_gasket_integral, circle_pack_hex, packing_density_2d, sphere_pack_fcc,
+    };
+    use rust_physics_engine::spatial::Aabb;
+    // Descartes theorem holds for every mutually tangent triple found
+    // in the gasket (spot check the seed chain).
+    let gasket = apollonian_gasket_integral(4);
+    for (i, a) in gasket.iter().enumerate().skip(1) {
+        for b in gasket.iter().skip(i + 1) {
+            assert!(
+                a.center.distance_to(&b.center) >= a.radius + b.radius - 1e-6,
+                "gasket circles overlap"
+            );
+        }
+    }
+    let region = rust_physics_engine::spatial::primitives::Rect {
+        min: Vec2::ZERO,
+        max: Vec2::new(24.0, 12.0 * 3.0f64.sqrt()),
+    };
+    let hex = circle_pack_hex(&region, 1.2);
+    let density = packing_density_2d(&hex, &region);
+    assert!((density - std::f64::consts::PI / (2.0 * 3.0f64.sqrt())).abs() < 1e-6);
+    let bx = Aabb {
+        min: Vec3::ZERO,
+        max: Vec3::new(
+            3.0 * 2.0 * std::f64::consts::SQRT_2,
+            3.0 * 2.0 * std::f64::consts::SQRT_2,
+            3.0 * 2.0 * std::f64::consts::SQRT_2,
+        ),
+    };
+    let fcc = sphere_pack_fcc(&bx, 1.0);
+    let d3 = rust_physics_engine::patterns::packing::packing_density_3d(&fcc, &bx);
+    assert!((d3 - std::f64::consts::PI / (3.0 * std::f64::consts::SQRT_2)).abs() < 1e-6);
+}
+
+#[test]
+fn prop_wallpaper_closure_and_point_group_orbits() {
+    use rust_physics_engine::patterns::symmetry::{
+        point_group_orbit, point_group_rotations, wallpaper_generators, wallpaper_group_order,
+        PointGroup3, WallpaperGroup,
+    };
+    for g in [
+        WallpaperGroup::Pgg,
+        WallpaperGroup::Cmm,
+        WallpaperGroup::P4g,
+        WallpaperGroup::P31m,
+        WallpaperGroup::P6m,
+    ] {
+        assert_eq!(wallpaper_generators(g).len(), wallpaper_group_order(g));
+    }
+    assert_eq!(point_group_rotations(PointGroup3::Tetrahedral).len(), 12);
+    assert_eq!(point_group_rotations(PointGroup3::Octahedral).len(), 24);
+    assert_eq!(point_group_rotations(PointGroup3::Icosahedral).len(), 60);
+    // Orbit sizes divide the group order for special points too.
+    let mut rng = Rng::new(810);
+    for _ in 0..5 {
+        let p = Vec3::new(rng.next_f64(), rng.next_f64(), rng.next_f64());
+        for (g, n) in [
+            (PointGroup3::Tetrahedral, 12usize),
+            (PointGroup3::Octahedral, 24),
+            (PointGroup3::Icosahedral, 60),
+        ] {
+            let orbit = point_group_orbit(g, p);
+            assert_eq!(n % orbit.len(), 0);
+        }
+    }
+}
+
+#[test]
+fn prop_archimedean_tilings_unit_edges() {
+    use rust_physics_engine::patterns::tilings::{archimedean, Archimedean};
+    let extent = rust_physics_engine::spatial::primitives::Rect {
+        min: Vec2::new(-6.0, -6.0),
+        max: Vec2::new(6.0, 6.0),
+    };
+    for kind in [
+        Archimedean::T3_3_4_3_4,
+        Archimedean::T3_3_3_3_6,
+        Archimedean::T4_6_12,
+        Archimedean::T3_12_12,
+    ] {
+        let t = archimedean(kind, &extent, 1.0);
+        assert!(!t.faces.is_empty());
+        for &(a, b) in &t.edges {
+            assert!((t.vertices[a].distance_to(&t.vertices[b]) - 1.0).abs() < 1e-6);
+        }
+        // Faces don't overlap: sample points lie in at most one face.
+        let polys = t.polygons();
+        let mut rng = Rng::new(811);
+        for _ in 0..100 {
+            let p = Vec2::new(rng.next_f64() * 8.0 - 4.0, rng.next_f64() * 8.0 - 4.0);
+            let count = polys
+                .iter()
+                .filter(|poly| {
+                    let v = &poly.vertices;
+                    let n = v.len();
+                    let mut ins = false;
+                    for i in 0..n {
+                        let (a, b) = (v[i], v[(i + 1) % n]);
+                        if (a.y > p.y) != (b.y > p.y)
+                            && p.x < a.x + (p.y - a.y) / (b.y - a.y) * (b.x - a.x)
+                        {
+                            ins = !ins;
+                        }
+                    }
+                    ins
+                })
+                .count();
+            assert!(count <= 1, "{kind:?} faces overlap at {p:?}");
+        }
+    }
+}
