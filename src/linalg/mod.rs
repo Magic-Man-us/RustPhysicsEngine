@@ -1,3 +1,11 @@
+pub mod cholesky;
+pub mod lu;
+pub mod matrix;
+
+pub use cholesky::{cholesky, cholesky_solve};
+pub use lu::{lu_decompose, solve, Lu};
+pub use matrix::Matrix;
+
 use std::ops::{Add, Mul, Sub};
 
 use crate::math::Vec3;

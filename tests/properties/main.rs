@@ -2,3 +2,4 @@
 //! own deterministic `Rng`, one module per library area.
 
 mod core_props;
+mod linalg_props;

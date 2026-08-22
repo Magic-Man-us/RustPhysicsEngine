@@ -50,3 +50,6 @@ pub mod photonics;
 pub mod fluid_instabilities;
 pub mod sim;
 pub mod continuum_mechanics;
+
+#[cfg(kani)]
+mod verification;
