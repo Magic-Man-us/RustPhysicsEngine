@@ -1,4 +1,6 @@
 pub mod math;
+pub mod error;
+pub mod core;
 pub mod classical;
 pub mod gravitation;
 pub mod thermodynamics;
