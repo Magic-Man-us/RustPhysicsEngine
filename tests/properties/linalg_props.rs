@@ -1,6 +1,8 @@
 //! Properties for `linalg`: Matrix algebra, LU, and Cholesky.
 
-use rust_physics_engine::linalg::{cholesky, lu_decompose, solve, Mat3, Matrix};
+use rust_physics_engine::linalg::{
+    cholesky, lu_decompose, qr_householder, solve, thomas_solve, Mat3, Matrix, Qr,
+};
 use rust_physics_engine::monte_carlo::Rng;
 
 fn random_matrix(rng: &mut Rng, rows: usize, cols: usize) -> Matrix {
@@ -90,6 +92,56 @@ fn prop_lu_determinant_matches_mat3() {
             Err(_) => {
                 assert!(m3.determinant().abs() < 1e-6);
             }
+        }
+    }
+}
+
+/// QᵀQ == I, Q·R == A, and R is upper triangular, for random rectangular A.
+#[test]
+fn prop_qr_invariants() {
+    let mut rng = Rng::new(6);
+    for trial in 0..50 {
+        let (m, n) = if trial % 2 == 0 { (5, 3) } else { (4, 4) };
+        let a = random_matrix(&mut rng, m, n);
+        let Qr { q, r } = qr_householder(&a);
+
+        let qtq = q.transpose().mul(&q).unwrap();
+        assert!(matrices_close(&qtq, &Matrix::identity(m), 1e-11), "Q not orthogonal");
+
+        let qr = q.mul(&r).unwrap();
+        assert!(matrices_close(&qr, &a, 1e-11), "QR != A");
+
+        for i in 1..m {
+            for j in 0..i.min(n) {
+                assert!(r.get(i, j).abs() <= 1e-12, "R not upper triangular");
+            }
+        }
+    }
+}
+
+/// thomas_solve matches lu::solve on the equivalent dense system.
+#[test]
+fn prop_thomas_matches_dense_lu() {
+    let mut rng = Rng::new(8);
+    for _ in 0..50 {
+        let n = 6;
+        let diag: Vec<f64> = (0..n).map(|_| rng.next_f64() + 4.0).collect();
+        let sub: Vec<f64> = (0..n - 1).map(|_| rng.next_f64() - 0.5).collect();
+        let sup: Vec<f64> = (0..n - 1).map(|_| rng.next_f64() - 0.5).collect();
+        let rhs: Vec<f64> = (0..n).map(|_| rng.next_f64() * 4.0 - 2.0).collect();
+
+        let mut dense = Matrix::zeros(n, n);
+        for i in 0..n {
+            dense.set(i, i, diag[i]);
+            if i + 1 < n {
+                dense.set(i + 1, i, sub[i]);
+                dense.set(i, i + 1, sup[i]);
+            }
+        }
+        let x_thomas = thomas_solve(&sub, &diag, &sup, &rhs).unwrap();
+        let x_dense = solve(&dense, &rhs).unwrap();
+        for (a, b) in x_thomas.iter().zip(&x_dense) {
+            assert!((a - b).abs() < 1e-10, "thomas {a} vs dense {b}");
         }
     }
 }

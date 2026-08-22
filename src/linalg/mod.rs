@@ -1,10 +1,14 @@
 pub mod cholesky;
 pub mod lu;
 pub mod matrix;
+pub mod qr;
+pub mod tridiagonal;
 
 pub use cholesky::{cholesky, cholesky_solve};
 pub use lu::{lu_decompose, solve, Lu};
 pub use matrix::Matrix;
+pub use qr::{least_squares, qr_householder, Qr};
+pub use tridiagonal::thomas_solve;
 
 use std::ops::{Add, Mul, Sub};
 

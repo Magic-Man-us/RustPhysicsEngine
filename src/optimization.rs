@@ -465,27 +465,29 @@ pub fn simulated_annealing(
 // Linear Least Squares
 // ---------------------------------------------------------------------------
 
-/// Ordinary linear regression via closed-form least-squares.
+/// Ordinary linear regression: minimizes ‖a0 + a1·x − y‖₂ via
+/// Householder-QR least squares (`linalg::qr::least_squares`).
 ///
 /// Returns `(slope, intercept)`.
 #[must_use]
 pub fn linear_regression(x: &[f64], y: &[f64]) -> (f64, f64) {
     assert_eq!(x.len(), y.len(), "x and y must have equal length");
-    let n = x.len() as f64;
-    let sum_x: f64 = x.iter().sum();
-    let sum_y: f64 = y.iter().sum();
-    let sum_xy: f64 = x.iter().zip(y.iter()).map(|(a, b)| a * b).sum();
-    let sum_x2: f64 = x.iter().map(|a| a * a).sum();
-
-    let denom = n * sum_x2 - sum_x * sum_x;
-    assert!(denom.abs() > f64::EPSILON, "linear_regression: x-values have zero variance");
-    let slope = (n * sum_xy - sum_x * sum_y) / denom;
-    let intercept = (sum_y - slope * sum_x) / n;
-    (slope, intercept)
+    assert!(x.len() >= 2, "linear_regression requires at least 2 points");
+    let n = x.len();
+    let mut a = crate::linalg::Matrix::zeros(n, 2);
+    for (i, &xi) in x.iter().enumerate() {
+        a.set(i, 0, 1.0);
+        a.set(i, 1, xi);
+    }
+    match crate::linalg::qr::least_squares(&a, y) {
+        Ok(c) => (c[1], c[0]),
+        Err(_) => panic!("linear_regression: x-values have zero variance"),
+    }
 }
 
-/// Fit a polynomial of the given degree to (x, y) data via normal equations
-/// solved with Gaussian elimination.
+/// Fit a polynomial of the given degree to (x, y) data by QR least
+/// squares on the Vandermonde matrix, falling back to normal equations
+/// with Gaussian elimination when the system is rank deficient.
 ///
 /// Returns coefficients `[a0, a1, …, a_degree]` such that
 /// ŷ = a0 + a1·x + a2·x² + …
@@ -495,7 +497,22 @@ pub fn polynomial_fit(x: &[f64], y: &[f64], degree: usize) -> Vec<f64> {
     let n = x.len();
     let m = degree + 1;
 
-    // Build Vandermonde matrix A (n × m) and form AᵀA (m × m), Aᵀy (m)
+    if n >= m {
+        let mut a = crate::linalg::Matrix::zeros(n, m);
+        for (k, &xk) in x.iter().enumerate() {
+            let mut p = 1.0;
+            for j in 0..m {
+                a.set(k, j, p);
+                p *= xk;
+            }
+        }
+        if let Ok(c) = crate::linalg::qr::least_squares(&a, y) {
+            return c;
+        }
+    }
+
+    // Rank-deficient or underdetermined input: legacy normal-equations
+    // path, which returns finite (if non-unique) coefficients.
     let mut ata = vec![vec![0.0; m]; m];
     let mut aty = vec![0.0; m];
 
@@ -512,7 +529,6 @@ pub fn polynomial_fit(x: &[f64], y: &[f64], degree: usize) -> Vec<f64> {
         }
     }
 
-    // Gaussian elimination with partial pivoting
     gaussian_eliminate(&mut ata, &mut aty)
 }
 
