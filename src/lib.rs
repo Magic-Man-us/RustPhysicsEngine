@@ -52,6 +52,7 @@ pub mod fluid_instabilities;
 pub mod sim;
 pub mod continuum_mechanics;
 pub mod spatial;
+pub mod mesh;
 
 #[cfg(kani)]
 mod verification;

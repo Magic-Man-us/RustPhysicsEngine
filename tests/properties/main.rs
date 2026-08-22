@@ -4,6 +4,7 @@
 mod core_props;
 mod geometry_props;
 mod linalg_props;
+mod mesh_props;
 mod numerical_props;
 mod signal_props;
 mod spatial_props;
