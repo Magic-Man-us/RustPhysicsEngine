@@ -114,29 +114,40 @@ pub fn init_accelerations(bodies: &mut [Body], softening: f64) {
     }
 }
 
-/// Performs one velocity Verlet integration step: half-kick, drift, recompute accelerations, half-kick.
+/// Performs one velocity Verlet integration step (kick-drift-kick) by
+/// delegating to the generic symplectic integrator
+/// `numerical::ode::symplectic::velocity_verlet` over the flattened
+/// phase-space state.
 pub fn step_verlet(bodies: &mut [Body], dt: f64, softening: f64) {
     let n = bodies.len();
-    let half_dt = 0.5 * dt;
-
-    // Half-kick + drift
-    for i in 0..n {
-        let acc = bodies[i].acceleration;
-        bodies[i].velocity = bodies[i].velocity + acc * half_dt;
-        let vel = bodies[i].velocity;
-        bodies[i].position = bodies[i].position + vel * dt;
+    let mut x = Vec::with_capacity(3 * n);
+    let mut v = Vec::with_capacity(3 * n);
+    for b in bodies.iter() {
+        x.extend_from_slice(&[b.position.x, b.position.y, b.position.z]);
+        v.extend_from_slice(&[b.velocity.x, b.velocity.y, b.velocity.z]);
     }
 
-    // Recompute accelerations at new positions
-    let new_accels: Vec<Vec3> = (0..n)
-        .map(|i| compute_acceleration(bodies, i, softening))
-        .collect();
+    let template: Vec<Body> = bodies.to_vec();
+    let acc = move |xs: &[f64]| -> Vec<f64> {
+        let mut temp = template.clone();
+        for (i, b) in temp.iter_mut().enumerate() {
+            b.position = Vec3::new(xs[3 * i], xs[3 * i + 1], xs[3 * i + 2]);
+        }
+        let mut out = Vec::with_capacity(xs.len());
+        for i in 0..temp.len() {
+            let a = compute_acceleration(&temp, i, softening);
+            out.extend_from_slice(&[a.x, a.y, a.z]);
+        }
+        out
+    };
+    crate::numerical::ode::symplectic::velocity_verlet(&acc, &mut x, &mut v, dt);
 
-    // Second half-kick
-    for i in 0..n {
-        bodies[i].velocity = bodies[i].velocity + new_accels[i] * half_dt;
-        bodies[i].acceleration = new_accels[i];
+    for (i, b) in bodies.iter_mut().enumerate() {
+        b.position = Vec3::new(x[3 * i], x[3 * i + 1], x[3 * i + 2]);
+        b.velocity = Vec3::new(v[3 * i], v[3 * i + 1], v[3 * i + 2]);
     }
+    // Refresh the cached accelerations at the new positions.
+    init_accelerations(bodies, softening);
 }
 
 /// Computes the total kinetic energy of all bodies: KE = Σ ½m_i v_i².
