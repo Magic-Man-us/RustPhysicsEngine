@@ -5,6 +5,8 @@
 pub mod descriptive;
 pub mod distributions;
 pub mod fourier;
+pub mod inference;
+pub mod resampling;
 
 pub use descriptive::{
     correlation, covariance, error_propagation_product, error_propagation_sum, mean, median,
@@ -19,6 +21,14 @@ pub use distributions::{
 #[allow(deprecated)]
 pub use distributions::gaussian_cdf_approx;
 pub use fourier::{dft, dominant_frequency, inverse_dft, power_spectrum};
+pub use inference::{
+    anova_one_way, chi_squared_gof, chi_squared_independence, confidence_interval_mean,
+    ks_test_one_sample, ks_test_two_sample, pearson_test, t_test_one_sample, t_test_paired,
+    t_test_two_sample, TestResult,
+};
+pub use resampling::{
+    bootstrap, bootstrap_bca, jackknife, permutation_test, BootstrapResult,
+};
 
 /// Compute factorial of n: n! = 1 × 2 × ... × n
 pub fn factorial(n: u64) -> f64 {

@@ -1,4 +1,5 @@
-//! Properties for `statistics::distributions`.
+//! Properties for `statistics::distributions`, inference, and
+//! resampling.
 
 use rust_physics_engine::monte_carlo::Rng;
 use rust_physics_engine::numerical::adaptive_quad;
@@ -62,4 +63,46 @@ fn prop_sample_mean_matches() {
             d.mean()
         );
     }
+}
+
+/// Under the null hypothesis, p-values are uniform: KS test on 1000
+/// simulated one-sample t-test p-values against the Uniform CDF,
+/// rejecting only below 1e-4.
+#[test]
+fn prop_p_values_uniform_under_null() {
+    use rust_physics_engine::statistics::{ks_test_one_sample, t_test_one_sample};
+    let mut rng = Rng::new(73);
+    let p_values: Vec<f64> = (0..1000)
+        .map(|_| {
+            let sample: Vec<f64> = (0..20).map(|_| rng.next_gaussian()).collect();
+            t_test_one_sample(&sample, 0.0).p_value
+        })
+        .collect();
+    let ks = ks_test_one_sample(&p_values, &|v| v.clamp(0.0, 1.0));
+    assert!(
+        ks.p_value > 1e-4,
+        "p-values not uniform under null: KS D = {}, p = {}",
+        ks.statistic,
+        ks.p_value
+    );
+}
+
+/// Bootstrap percentile CI covers the true mean at roughly the nominal
+/// rate (loose sanity band).
+#[test]
+fn prop_bootstrap_coverage() {
+    use rust_physics_engine::statistics::bootstrap;
+    let mut rng = Rng::new(74);
+    let mean_stat = |d: &[f64]| d.iter().sum::<f64>() / d.len() as f64;
+    let mut covered = 0;
+    let trials = 100;
+    for _ in 0..trials {
+        let data: Vec<f64> = (0..50).map(|_| rng.next_gaussian() * 2.0 + 1.0).collect();
+        let r = bootstrap(&data, &mean_stat, 500, 0.9, &mut rng);
+        if r.ci_low <= 1.0 && 1.0 <= r.ci_high {
+            covered += 1;
+        }
+    }
+    // Nominal 90%; accept a generous band for 100 trials.
+    assert!((75..=100).contains(&covered), "coverage {covered}/100");
 }
