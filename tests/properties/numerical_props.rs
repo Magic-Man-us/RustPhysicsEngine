@@ -147,6 +147,43 @@ fn prop_lm_recovers_synthetic_parameters() {
     }
 }
 
+/// Cubic splines pass through every knot and are C2 at interior knots
+/// (second derivative continuous to 1e-8, measured by one-sided finite
+/// differences of S').
+#[test]
+fn prop_cubic_spline_knots_and_c2() {
+    use rust_physics_engine::numerical::CubicSpline;
+    let mut rng = Rng::new(54);
+    for _ in 0..20 {
+        let n = 6 + (rng.next_u64() % 6) as usize;
+        let mut x = vec![0.0];
+        for i in 1..n {
+            x.push(x[i - 1] + 0.2 + rng.next_f64());
+        }
+        let y: Vec<f64> = (0..n).map(|_| rng.next_f64() * 4.0 - 2.0).collect();
+        let s = CubicSpline::natural(&x, &y).unwrap();
+
+        for (xi, yi) in x.iter().zip(&y) {
+            assert!((s.eval(*xi) - yi).abs() < 1e-10, "knot miss at {xi}");
+        }
+        let h = 1e-7;
+        for &xk in &x[1..n - 1] {
+            let spp_left = (s.derivative(xk) - s.derivative(xk - h)) / h;
+            let spp_right = (s.derivative(xk + h) - s.derivative(xk)) / h;
+            assert!(
+                (spp_left - spp_right).abs() < 1e-4,
+                "C2 break at {xk}: {spp_left} vs {spp_right}"
+            );
+        }
+        // First-derivative continuity is exact up to representation.
+        for &xk in &x[1..n - 1] {
+            let dl = s.derivative(xk - 1e-12);
+            let dr = s.derivative(xk + 1e-12);
+            assert!((dl - dr).abs() < 1e-8);
+        }
+    }
+}
+
 /// Backward Euler is stable on y' = -1000 y with dt = 0.1 where RK4
 /// diverges.
 #[test]

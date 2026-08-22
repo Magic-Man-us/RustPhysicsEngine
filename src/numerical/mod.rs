@@ -13,7 +13,10 @@ pub use integrate::{
     adaptive_quad, gauss_kronrod_15, gaussian_quadrature_5, integrate_infinite,
     richardson_extrapolate, romberg, simpson, trapezoid, QuadResult,
 };
-pub use interpolate::{cubic_interp, lerp, linear_interp};
+pub use interpolate::{
+    catmull_rom, catmull_rom_2d, cubic_interp, de_casteljau, lerp, linear_interp, BSpline,
+    CubicSpline,
+};
 pub use ode::{euler_step, rk4_solve, rk4_step, rk4_step_vec};
 pub use roots::{
     bisection, brent_root, newton_raphson, polynomial_eval, polynomial_eval_complex,
