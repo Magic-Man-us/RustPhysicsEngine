@@ -217,6 +217,33 @@ fn prop_svd_reconstruction() {
     }
 }
 
+/// CG/PCG drive the residual below tol on an SPD system.
+#[test]
+fn prop_cg_residual_below_tol() {
+    use rust_physics_engine::linalg::{conjugate_gradient, pcg_jacobi, CsrMatrix};
+    let mut rng = Rng::new(34);
+    for _ in 0..10 {
+        let a = CsrMatrix::laplacian_2d(8, 8, 0.25);
+        let n = 64;
+        let b: Vec<f64> = (0..n).map(|_| rng.next_f64() * 2.0 - 1.0).collect();
+        let tol = 1e-10;
+        let bnorm = b.iter().map(|x| x * x).sum::<f64>().sqrt().max(1.0);
+        for x in [
+            conjugate_gradient(&a, &b, &vec![0.0; n], tol, 10_000).unwrap(),
+            pcg_jacobi(&a, &b, tol, 10_000).unwrap(),
+        ] {
+            let ax = a.mul_vec(&x);
+            let res: f64 = ax
+                .iter()
+                .zip(&b)
+                .map(|(axi, bi)| (axi - bi) * (axi - bi))
+                .sum::<f64>()
+                .sqrt();
+            assert!(res <= tol * bnorm * 1.01, "residual {res} above tol");
+        }
+    }
+}
+
 /// L·Lᵀ == A for A = M·Mᵀ + n·I (symmetric positive definite by construction).
 #[test]
 fn prop_cholesky_reconstructs_spd() {

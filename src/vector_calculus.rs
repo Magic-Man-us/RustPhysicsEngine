@@ -511,11 +511,15 @@ pub fn curl_2d(
 // Poisson solver
 // ---------------------------------------------------------------------------
 
-/// Solve ∇²φ = ρ on a 2-D grid using Jacobi iteration with zero (Dirichlet)
-/// boundary conditions.
+/// Solve ∇²φ = ρ on a 2-D grid with zero (Dirichlet) boundary
+/// conditions.
 ///
-/// Returns the solution field φ. Iteration stops when the maximum update is
-/// below `tol` or after `max_iter` iterations.
+/// The interior unknowns are assembled into a sparse SPD system
+/// (−∇²φ = −ρ, 5-point stencil) and solved with Jacobi-preconditioned
+/// conjugate gradient (`linalg::sparse::pcg_jacobi`); if CG does not
+/// reach `tol` within `max_iter` iterations, the classic point-Jacobi
+/// sweep is used as a fallback so the historical behavior (best-effort
+/// answer, never an error) is preserved.
 #[must_use]
 pub fn poisson_jacobi_2d(
     rhs: &[f64],
@@ -529,42 +533,72 @@ pub fn poisson_jacobi_2d(
     let n = nx * ny;
     assert_eq!(rhs.len(), n);
 
-    let dx2 = dx * dx;
-    let dy2 = dy * dy;
-    let denom = 2.0 * (1.0 / dx2 + 1.0 / dy2);
+    if nx < 3 || ny < 3 {
+        return vec![0.0; n]; // no interior points: boundary is all zeros
+    }
 
+    let inv_dx2 = 1.0 / (dx * dx);
+    let inv_dy2 = 1.0 / (dy * dy);
+    let (mx, my) = (nx - 2, ny - 2); // interior grid size
+    let interior = mx * my;
+
+    // -Laplacian (SPD) over interior unknowns; b = -rho.
+    let mut entries = Vec::with_capacity(5 * interior);
+    let mut b = vec![0.0; interior];
+    for ii in 0..mx {
+        for jj in 0..my {
+            let row = ii * my + jj;
+            entries.push((row, row, 2.0 * (inv_dx2 + inv_dy2)));
+            if ii > 0 {
+                entries.push((row, row - my, -inv_dx2));
+            }
+            if ii + 1 < mx {
+                entries.push((row, row + my, -inv_dx2));
+            }
+            if jj > 0 {
+                entries.push((row, row - 1, -inv_dy2));
+            }
+            if jj + 1 < my {
+                entries.push((row, row + 1, -inv_dy2));
+            }
+            b[row] = -rhs[idx2(ii + 1, jj + 1, ny)];
+        }
+    }
+    let a = crate::linalg::sparse::CsrMatrix::from_triplets(interior, interior, &entries);
+
+    if tol > 0.0 {
+        if let Ok(x) = crate::linalg::sparse::pcg_jacobi(&a, &b, tol, max_iter.max(1)) {
+            let mut phi = vec![0.0; n];
+            for ii in 0..mx {
+                for jj in 0..my {
+                    phi[idx2(ii + 1, jj + 1, ny)] = x[ii * my + jj];
+                }
+            }
+            return phi;
+        }
+    }
+
+    // Fallback: legacy point-Jacobi iteration.
+    let denom = 2.0 * (inv_dx2 + inv_dy2);
     let mut phi = vec![0.0; n];
     let mut phi_new = vec![0.0; n];
-
     for _ in 0..max_iter {
         let mut max_diff: f64 = 0.0;
-
-        for i in 0..nx {
-            for j in 0..ny {
-                // Boundary cells stay at zero.
-                if i == 0 || i == nx - 1 || j == 0 || j == ny - 1 {
-                    phi_new[idx2(i, j, ny)] = 0.0;
-                    continue;
-                }
-
-                let val = (
-                    (phi[idx2(i + 1, j, ny)] + phi[idx2(i - 1, j, ny)]) / dx2
-                    + (phi[idx2(i, j + 1, ny)] + phi[idx2(i, j - 1, ny)]) / dy2
-                    - rhs[idx2(i, j, ny)]
-                ) / denom;
-
+        for i in 1..nx - 1 {
+            for j in 1..ny - 1 {
+                let val = ((phi[idx2(i + 1, j, ny)] + phi[idx2(i - 1, j, ny)]) * inv_dx2
+                    + (phi[idx2(i, j + 1, ny)] + phi[idx2(i, j - 1, ny)]) * inv_dy2
+                    - rhs[idx2(i, j, ny)])
+                    / denom;
                 phi_new[idx2(i, j, ny)] = val;
                 max_diff = max_diff.max((val - phi[idx2(i, j, ny)]).abs());
             }
         }
-
         std::mem::swap(&mut phi, &mut phi_new);
-
         if max_diff < tol {
             break;
         }
     }
-
     phi
 }
 

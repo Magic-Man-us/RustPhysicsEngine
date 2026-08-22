@@ -3,6 +3,7 @@ pub mod eigen;
 pub mod lu;
 pub mod matrix;
 pub mod qr;
+pub mod sparse;
 pub mod svd;
 pub mod tridiagonal;
 
@@ -11,6 +12,7 @@ pub use eigen::{eigen_symmetric, eigenvalues_general, SymEigen};
 pub use lu::{lu_decompose, solve, Lu};
 pub use matrix::Matrix;
 pub use qr::{least_squares, qr_householder, Qr};
+pub use sparse::{conjugate_gradient, pcg_jacobi, CsrMatrix};
 pub use svd::{kabsch, pseudoinverse, rank, svd, Svd};
 pub use tridiagonal::thomas_solve;
 
