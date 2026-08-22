@@ -231,3 +231,125 @@ fn prop_marching_squares_circle_length_and_area() {
     let joined: f64 = lp.windows(2).map(|w| w[0].distance_to(&w[1])).sum();
     assert!((joined - total).abs() < 1e-9);
 }
+
+#[test]
+fn prop_gauss_bonnet_survives_random_deformation() {
+    use rust_physics_engine::mesh::analyze::discrete_gaussian_curvature;
+    let mut rng = Rng::new(904);
+    for trial in 0..5 {
+        let (mut m, chi) = if trial % 2 == 0 {
+            (icosphere(1.0, 2), 2.0)
+        } else {
+            (torus(2.0, 0.5, 16, 8), 0.0)
+        };
+        // Angle deficit is purely intrinsic-topological in total: any
+        // vertex perturbation that keeps faces non-degenerate leaves
+        // the sum at 2 pi chi.
+        for v in &mut m.vertices {
+            *v = *v
+                + Vec3::new(
+                    (rng.next_f64() - 0.5) * 0.1,
+                    (rng.next_f64() - 0.5) * 0.1,
+                    (rng.next_f64() - 0.5) * 0.1,
+                );
+        }
+        let total: f64 = discrete_gaussian_curvature(&m).iter().sum();
+        assert!(
+            (total - 2.0 * std::f64::consts::PI * chi).abs() < 1e-9,
+            "Gauss-Bonnet after deformation: {total}"
+        );
+    }
+}
+
+#[test]
+fn prop_parametric_curvatures_random_points() {
+    use rust_physics_engine::mesh::surfaces::{
+        catenoid, fundamental_forms, gaussian_curvature, helicoid, mean_curvature,
+    };
+    let mut rng = Rng::new(905);
+    let r = 1.7;
+    let sphere =
+        |u: f64, v: f64| Vec3::new(r * v.sin() * u.cos(), r * v.cos(), r * v.sin() * u.sin());
+    for _ in 0..20 {
+        let u = rng.next_f64() * 6.0;
+        let v = 0.3 + rng.next_f64() * 2.5;
+        let ff = fundamental_forms(&sphere, u, v, 1e-4);
+        assert!((gaussian_curvature(&ff) - 1.0 / (r * r)).abs() < 1e-3);
+
+        let cat = |u: f64, v: f64| catenoid(u, v, 0.8);
+        let ffc = fundamental_forms(&cat, u, v - 1.5, 1e-4);
+        assert!(mean_curvature(&ffc).abs() < 1e-3, "catenoid is minimal");
+        let hel = |u: f64, v: f64| helicoid(u, v, 1.1);
+        let ffh = fundamental_forms(&hel, u, v, 1e-4);
+        assert!(mean_curvature(&ffh).abs() < 1e-3, "helicoid is minimal");
+    }
+}
+
+#[test]
+fn prop_nurbs_quadrics_exact_random_params() {
+    use rust_physics_engine::mesh::surfaces::NurbsSurface;
+    let mut rng = Rng::new(906);
+    let s = NurbsSurface::sphere(2.5);
+    let t = NurbsSurface::torus(3.0, 0.75);
+    for _ in 0..100 {
+        let (u, v) = (rng.next_f64(), rng.next_f64());
+        let p = s.eval(u, v);
+        assert!((p.magnitude() - 2.5).abs() < 1e-12, "NURBS sphere exact");
+        let q = t.eval(u, v);
+        let radial = (q.x * q.x + q.z * q.z).sqrt();
+        let d = ((radial - 3.0).powi(2) + q.y * q.y).sqrt();
+        assert!((d - 0.75).abs() < 1e-12, "NURBS torus exact");
+    }
+}
+
+#[test]
+fn prop_subdivision_topology_and_smoothing() {
+    use rust_physics_engine::mesh::subdivide::{
+        catmull_clark_n, laplacian_smooth, loop_subdivide_n, midpoint_subdivide, sqrt3_subdivide,
+        taubin_smooth, QuadMesh,
+    };
+    let base = icosphere(1.0, 1);
+    let l = loop_subdivide_n(&base, 2);
+    assert_eq!(euler_characteristic(&l), 2);
+    assert_watertight(&l, "loop");
+    assert_eq!(l.indices.len(), base.indices.len() * 16);
+
+    let s3 = sqrt3_subdivide(&base);
+    assert_eq!(euler_characteristic(&s3), 2);
+    assert_watertight(&s3, "sqrt3");
+
+    let mp = midpoint_subdivide(&base);
+    assert!((mp.volume() - base.volume()).abs() < 1e-12, "midpoint keeps geometry");
+
+    let cc = catmull_clark_n(&QuadMesh::from_box(Vec3::new(1.0, 1.0, 1.0)), 2);
+    let cct = cc.to_triangles();
+    assert_eq!(euler_characteristic(&cct), 2, "Catmull-Clark preserves Euler");
+    assert!(cct.volume() > 0.0);
+
+    // Taubin keeps volume; plain Laplacian shrinks.
+    let smooth_base = icosphere(1.0, 3);
+    let v0 = smooth_base.volume();
+    let mut a = smooth_base.clone();
+    taubin_smooth(&mut a, 10, 0.33, -0.34);
+    assert!((a.volume() - v0).abs() / v0 < 0.01);
+    let mut b = smooth_base.clone();
+    laplacian_smooth(&mut b, 10, 0.5);
+    assert!(b.volume() < v0 * 0.99);
+}
+
+#[test]
+fn prop_decimation_random_bumpy_sphere_keeps_genus() {
+    use rust_physics_engine::mesh::analyze::{decimate_edge_collapse, stats};
+    let mut rng = Rng::new(907);
+    let mut m = icosphere(1.0, 3);
+    for v in &mut m.vertices {
+        *v = *v * (1.0 + 0.1 * (rng.next_f64() - 0.5));
+    }
+    let d = decimate_edge_collapse(&m, 200);
+    assert!(d.indices.len() <= 200 && d.indices.len() > 50);
+    let s = stats(&d);
+    assert!(s.is_manifold && s.is_closed && s.is_oriented);
+    assert_eq!(s.genus, Some(0));
+    // Volume roughly preserved.
+    assert!((d.volume() - m.volume()).abs() / m.volume() < 0.1);
+}

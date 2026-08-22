@@ -1,8 +1,11 @@
 //! Indexed triangle meshes: construction, mass properties, cleanup,
 //! spatial queries, and OBJ/STL interchange.
 
+pub mod analyze;
 pub mod generate;
 pub mod isosurface;
+pub mod subdivide;
+pub mod surfaces;
 
 use crate::error::GeomError;
 use crate::linalg::Mat3;
