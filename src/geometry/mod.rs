@@ -426,3 +426,14 @@ mod tests {
         assert!(!approx_rel(1.0, 0.0));
     }
 }
+
+pub mod delaunay;
+pub mod geodesy;
+pub mod hull;
+
+pub use delaunay::{circumcircle, delaunay_2d, voronoi_cells_2d};
+pub use geodesy::{
+    ecef_to_enu, ecef_to_geodetic, geodetic_to_ecef, vincenty_direct, vincenty_inverse,
+    Ellipsoid,
+};
+pub use hull::{convex_hull_2d, convex_hull_3d, point_in_polygon, polygon_area_signed};
