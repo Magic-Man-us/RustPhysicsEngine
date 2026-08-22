@@ -2,3 +2,4 @@
 //! automatic differentiation, and interval arithmetic.
 
 pub mod compensated;
+pub mod dual;
