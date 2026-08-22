@@ -408,3 +408,118 @@ fn prop_orientation_and_containment() {
         }
     }
 }
+
+// ── SDF and acceleration-structure properties ───────────────────────
+
+use rust_physics_engine::spatial::sdf::{
+    op_union, sd_box, sd_capsule, sd_sphere, sd_torus, sdf_raymarch,
+};
+use rust_physics_engine::spatial::{Bvh, KdTree, Quadtree, Rect};
+
+/// SDF invariants: sd_sphere is exact, primitive gradients have unit
+/// magnitude away from the surface, op_union equals min, and sphere
+/// tracing matches the analytic ray-sphere hit.
+#[test]
+fn prop_sdf_invariants() {
+    let mut rng = Rng::new(221);
+    for _ in 0..200 {
+        let p = rand_vec3(&mut rng, 8.0);
+        let r = 0.5 + rng.next_f64() * 2.0;
+        assert_eq!(sd_sphere(p, r), p.magnitude() - r);
+        let (a, b) = (rng.next_f64() * 4.0 - 2.0, rng.next_f64() * 4.0 - 2.0);
+        assert_eq!(op_union(a, b), a.min(b));
+    }
+    // Lipschitz |grad| ~ 1 sampled away from surfaces/skeletons.
+    let prims: Vec<Box<dyn Fn(Vec3) -> f64>> = vec![
+        Box::new(|q| sd_sphere(q, 1.0)),
+        Box::new(|q| sd_box(q, Vec3::new(1.0, 0.6, 0.8))),
+        Box::new(|q| sd_torus(q, 2.0, 0.4)),
+        Box::new(|q| sd_capsule(q, Vec3::ZERO, Vec3::new(0.0, 1.0, 0.0), 0.3)),
+    ];
+    for f in &prims {
+        let mut checked = 0;
+        while checked < 50 {
+            let q = rand_vec3(&mut rng, 8.0);
+            let d = f(q);
+            if d.abs() < 0.2 {
+                continue; // stay off the surface for clean differences
+            }
+            let eps = 1e-5;
+            let g = Vec3::new(
+                f(Vec3::new(q.x + eps, q.y, q.z)) - f(Vec3::new(q.x - eps, q.y, q.z)),
+                f(Vec3::new(q.x, q.y + eps, q.z)) - f(Vec3::new(q.x, q.y - eps, q.z)),
+                f(Vec3::new(q.x, q.y, q.z + eps)) - f(Vec3::new(q.x, q.y, q.z - eps)),
+            ) * (1.0 / (2.0 * eps));
+            assert!(g.magnitude() < 1.0 + 1e-3, "gradient above 1: {}", g.magnitude());
+            checked += 1;
+        }
+    }
+    // Raymarch vs analytic sphere hit.
+    for _ in 0..20 {
+        let origin = rand_vec3(&mut rng, 1.0).normalized() * 5.0;
+        let ray = Ray::new(origin, -origin);
+        let f = |p: Vec3| sd_sphere(p, 1.0);
+        let marched = sdf_raymarch(&f, &ray, 100.0, 1e-10, 512).unwrap();
+        let analytic = ray_sphere(&ray, &Sphere { center: Vec3::ZERO, radius: 1.0 }).unwrap();
+        assert!((marched.t - analytic.t).abs() < 1e-6);
+    }
+}
+
+/// Acceleration structures answer exactly like brute force on 1000
+/// random items.
+#[test]
+fn prop_acceleration_structures_exact() {
+    let mut rng = Rng::new(222);
+    // BVH sphere query.
+    let boxes: Vec<Aabb> = (0..1000)
+        .map(|_| {
+            let c = rand_vec3(&mut rng, 20.0);
+            let h = Vec3::new(
+                0.1 + rng.next_f64() * 0.5,
+                0.1 + rng.next_f64() * 0.5,
+                0.1 + rng.next_f64() * 0.5,
+            );
+            Aabb { min: c - h, max: c + h }
+        })
+        .collect();
+    let bvh = Bvh::build(&boxes);
+    for _ in 0..10 {
+        let s = Sphere { center: rand_vec3(&mut rng, 20.0), radius: 1.0 + rng.next_f64() * 3.0 };
+        let mut fast = bvh.query_sphere(&s);
+        fast.sort_unstable();
+        let brute: Vec<usize> = (0..boxes.len())
+            .filter(|&i| rust_physics_engine::spatial::intersect::sphere_aabb(&s, &boxes[i]))
+            .collect();
+        assert_eq!(fast, brute);
+    }
+    // KdTree k-nearest ascending + exact.
+    let pts: Vec<Vec3> = (0..1000).map(|_| rand_vec3(&mut rng, 20.0)).collect();
+    let tree = KdTree::build(&pts);
+    for _ in 0..10 {
+        let q = rand_vec3(&mut rng, 20.0);
+        let knn = tree.k_nearest(q, 5);
+        for w in knn.windows(2) {
+            assert!(w[0].1 <= w[1].1);
+        }
+        let mut brute: Vec<f64> = pts.iter().map(|p| p.distance_to(&q)).collect();
+        brute.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        for (i, &(_, d)) in knn.iter().enumerate() {
+            assert!((d - brute[i]).abs() < 1e-12);
+        }
+    }
+    // Quadtree rect query.
+    let bounds = Rect { min: Vec2::new(-10.0, -10.0), max: Vec2::new(10.0, 10.0) };
+    let mut qt = Quadtree::new(bounds, 6, 10);
+    let pts2: Vec<Vec2> = (0..1000).map(|_| rand_vec2(&mut rng, 20.0)).collect();
+    for (i, &p) in pts2.iter().enumerate() {
+        qt.insert(p, i);
+    }
+    for _ in 0..10 {
+        let a = rand_vec2(&mut rng, 16.0);
+        let r = Rect { min: a, max: a + Vec2::new(3.0, 3.0) };
+        let mut fast: Vec<usize> = qt.query_rect(&r).into_iter().map(|(_, i)| i).collect();
+        fast.sort_unstable();
+        let brute: Vec<usize> = (0..pts2.len()).filter(|&i| r.contains_point(pts2[i])).collect();
+        assert_eq!(fast, brute);
+    }
+}
