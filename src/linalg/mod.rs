@@ -168,6 +168,84 @@ impl Mat3 {
         Ok((values, axes))
     }
 
+    /// Eigen-decomposition of a symmetric 3×3 matrix by a local cyclic
+    /// Jacobi iteration (no dense-matrix machinery): eigenvalues in
+    /// descending order paired with unit eigenvector columns.
+    ///
+    /// # Panics
+    /// Panics if the matrix is not symmetric within 1e-8·‖A‖.
+    #[must_use]
+    pub fn principal_axes_3x3(&self) -> ([f64; 3], Mat3) {
+        let d = &self.data;
+        let scale = self
+            .data
+            .iter()
+            .flatten()
+            .fold(0.0_f64, |m, &v| m.max(v.abs()))
+            .max(1.0);
+        assert!(
+            (d[0][1] - d[1][0]).abs() <= 1e-8 * scale
+                && (d[0][2] - d[2][0]).abs() <= 1e-8 * scale
+                && (d[1][2] - d[2][1]).abs() <= 1e-8 * scale,
+            "principal_axes_3x3 requires a symmetric matrix"
+        );
+        let mut a = self.data;
+        let mut v = [[0.0; 3]; 3];
+        for (i, row) in v.iter_mut().enumerate() {
+            row[i] = 1.0;
+        }
+        for _sweep in 0..64 {
+            let off = a[0][1] * a[0][1] + a[0][2] * a[0][2] + a[1][2] * a[1][2];
+            if off < 1e-30 * scale * scale {
+                break;
+            }
+            for &(p, q) in &[(0usize, 1usize), (0, 2), (1, 2)] {
+                let apq = a[p][q];
+                if apq.abs() <= f64::EPSILON * scale {
+                    continue;
+                }
+                let theta = (a[q][q] - a[p][p]) / (2.0 * apq);
+                let t = if theta >= 0.0 {
+                    1.0 / (theta + (1.0 + theta * theta).sqrt())
+                } else {
+                    -1.0 / (-theta + (1.0 + theta * theta).sqrt())
+                };
+                let c = 1.0 / (1.0 + t * t).sqrt();
+                let s = t * c;
+                for k in 0..3 {
+                    let akp = a[k][p];
+                    let akq = a[k][q];
+                    a[k][p] = c * akp - s * akq;
+                    a[k][q] = s * akp + c * akq;
+                }
+                for k in 0..3 {
+                    let apk = a[p][k];
+                    let aqk = a[q][k];
+                    a[p][k] = c * apk - s * aqk;
+                    a[q][k] = s * apk + c * aqk;
+                }
+                for row in v.iter_mut() {
+                    let vp = row[p];
+                    let vq = row[q];
+                    row[p] = c * vp - s * vq;
+                    row[q] = s * vp + c * vq;
+                }
+            }
+        }
+        // Sort eigenvalues descending, permuting the eigenvector columns.
+        let mut order = [0usize, 1, 2];
+        let vals = [a[0][0], a[1][1], a[2][2]];
+        order.sort_by(|&i, &j| vals[j].partial_cmp(&vals[i]).unwrap_or(std::cmp::Ordering::Equal));
+        let sorted_vals = [vals[order[0]], vals[order[1]], vals[order[2]]];
+        let mut axes = [[0.0; 3]; 3];
+        for (new_c, &old_c) in order.iter().enumerate() {
+            for r in 0..3 {
+                axes[r][new_c] = v[r][old_c];
+            }
+        }
+        (sorted_vals, Mat3 { data: axes })
+    }
+
     /// Multiplies every element of the matrix by a scalar.
     #[must_use]
     pub fn mul_scalar(&self, s: f64) -> Self {

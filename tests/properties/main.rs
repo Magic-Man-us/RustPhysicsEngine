@@ -6,6 +6,7 @@ mod geometry_props;
 mod linalg_props;
 mod numerical_props;
 mod signal_props;
+mod spatial_props;
 mod special_props;
 mod monte_carlo_props;
 mod statistics_props;
