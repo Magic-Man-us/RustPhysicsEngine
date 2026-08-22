@@ -1,7 +1,10 @@
 //! Spatial data structures, transforms, geometric primitives, and
 //! queries.
 
+pub mod contain;
+pub mod distance;
 pub mod frame;
+pub mod intersect;
 pub mod mat4;
 pub mod octree;
 pub mod primitives;
@@ -9,6 +12,7 @@ pub mod projective;
 pub mod transform2d;
 
 pub use frame::Frame;
+pub use intersect::RayHit;
 pub use mat4::Mat4;
 pub use octree::Octree;
 pub use primitives::{
