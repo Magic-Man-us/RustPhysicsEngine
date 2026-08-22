@@ -644,3 +644,6 @@ mod tests {
         assert_eq!(walk.len(), 6);
     }
 }
+
+pub mod quasi;
+pub use quasi::{mc_integrate_sobol, scrambled, Halton, Sobol};

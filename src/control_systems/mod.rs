@@ -434,3 +434,6 @@ mod transfer_function_tests {
         }
     }
 }
+
+pub mod kalman;
+pub use kalman::{ExtendedKalmanFilter, KalmanFilter};
