@@ -276,8 +276,8 @@ mod tests {
 
     #[test]
     fn test_erfc_large_x_no_underflow_to_wrong_value() {
-        // erfc(5) = 1.5374597944280349e-12 (mpmath)
-        assert!((erfc(5.0) / 1.5374597944280349e-12 - 1.0).abs() < 1e-12);
+        // erfc(5) = 1.537459794428035e-12 (mpmath)
+        assert!((erfc(5.0) / 1.537459794428035e-12 - 1.0).abs() < 1e-12);
         // erfc(10) = 2.0884875837625447e-45
         assert!((erfc(10.0) / 2.0884875837625447e-45 - 1.0).abs() < 1e-12);
         assert_eq!(erfc(27.0), 0.0);

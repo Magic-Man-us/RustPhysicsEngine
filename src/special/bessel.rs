@@ -9,7 +9,7 @@
 use crate::error::SolveError;
 use crate::numerical::roots::brent_root;
 
-const TWO_OVER_PI: f64 = 0.636_619_772;
+const TWO_OVER_PI: f64 = std::f64::consts::FRAC_2_PI;
 
 /// Bessel function of the first kind, order 0: J₀(x).
 #[must_use]

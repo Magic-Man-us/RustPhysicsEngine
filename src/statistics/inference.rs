@@ -298,7 +298,7 @@ mod tests {
     fn test_one_sample_t_matches_r() {
         // R: t.test(c(1,2,3,4,5), mu=2): t = 1.4142, df = 4, p = 0.2302.
         let r = t_test_one_sample(&[1.0, 2.0, 3.0, 4.0, 5.0], 2.0);
-        assert!(approx(r.statistic, 1.414_2, 1e-4));
+        assert!(approx(r.statistic, std::f64::consts::SQRT_2, 1e-10));
         assert!(approx(r.df, 4.0, 1e-12));
         assert!(approx(r.p_value, 0.230_2, 1e-3));
         // Exact null: t = 0, p = 1.
