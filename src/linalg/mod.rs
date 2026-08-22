@@ -1,13 +1,17 @@
 pub mod cholesky;
+pub mod eigen;
 pub mod lu;
 pub mod matrix;
 pub mod qr;
+pub mod svd;
 pub mod tridiagonal;
 
 pub use cholesky::{cholesky, cholesky_solve};
+pub use eigen::{eigen_symmetric, eigenvalues_general, SymEigen};
 pub use lu::{lu_decompose, solve, Lu};
 pub use matrix::Matrix;
 pub use qr::{least_squares, qr_householder, Qr};
+pub use svd::{kabsch, pseudoinverse, rank, svd, Svd};
 pub use tridiagonal::thomas_solve;
 
 use std::ops::{Add, Mul, Sub};
@@ -143,6 +147,23 @@ impl Mat3 {
                 [0.0, 0.0, s],
             ],
         }
+    }
+
+    /// Principal axes of a symmetric 3×3 matrix (e.g. an inertia
+    /// tensor): eigenvalues in descending order paired with unit
+    /// eigenvectors as the columns of the returned matrix.
+    ///
+    /// Fails with `InvalidArgument` when the matrix is not symmetric.
+    pub fn principal_axes(&self) -> Result<([f64; 3], Mat3), crate::error::SolveError> {
+        let e = eigen_symmetric(&Matrix::from_mat3(self), 1e-13, 100)?;
+        let values = [e.values[0], e.values[1], e.values[2]];
+        let v = &e.vectors;
+        let axes = Mat3::from_rows(
+            [v.get(0, 0), v.get(0, 1), v.get(0, 2)],
+            [v.get(1, 0), v.get(1, 1), v.get(1, 2)],
+            [v.get(2, 0), v.get(2, 1), v.get(2, 2)],
+        );
+        Ok((values, axes))
     }
 
     /// Multiplies every element of the matrix by a scalar.

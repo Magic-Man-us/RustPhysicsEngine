@@ -1,7 +1,8 @@
 //! Properties for `linalg`: Matrix algebra, LU, and Cholesky.
 
 use rust_physics_engine::linalg::{
-    cholesky, lu_decompose, qr_householder, solve, thomas_solve, Mat3, Matrix, Qr,
+    cholesky, eigen_symmetric, eigenvalues_general, lu_decompose, qr_householder, solve, svd,
+    thomas_solve, Mat3, Matrix, Qr, Svd,
 };
 use rust_physics_engine::monte_carlo::Rng;
 
@@ -143,6 +144,76 @@ fn prop_thomas_matches_dense_lu() {
         for (a, b) in x_thomas.iter().zip(&x_dense) {
             assert!((a - b).abs() < 1e-10, "thomas {a} vs dense {b}");
         }
+    }
+}
+
+/// Symmetric eigen: A·v == λ·v per pair; eigenvalues sum to the trace
+/// and multiply to the determinant.
+#[test]
+fn prop_symmetric_eigen_invariants() {
+    let mut rng = Rng::new(31);
+    for _ in 0..30 {
+        let n = 4;
+        let m = random_matrix(&mut rng, n, n);
+        // Symmetrize: A = (M + Mᵀ)/2.
+        let a = m.add(&m.transpose()).unwrap().scale(0.5);
+        let e = eigen_symmetric(&a, 1e-13, 100).unwrap();
+
+        for k in 0..n {
+            let v: Vec<f64> = (0..n).map(|r| e.vectors.get(r, k)).collect();
+            let av = a.mul_vec(&v).unwrap();
+            for r in 0..n {
+                assert!((av[r] - e.values[k] * v[r]).abs() < 1e-9, "A v != lambda v");
+            }
+        }
+
+        let trace: f64 = (0..n).map(|i| a.get(i, i)).sum();
+        let sum: f64 = e.values.iter().sum();
+        assert!((trace - sum).abs() < 1e-9);
+
+        let det = lu_decompose(&a).map(|f| f.determinant()).unwrap_or(0.0);
+        let prod: f64 = e.values.iter().product();
+        assert!((det - prod).abs() < 1e-8 * det.abs().max(1.0));
+    }
+}
+
+/// General eigenvalues sum to the trace (complex parts cancel).
+#[test]
+fn prop_general_eigenvalues_trace() {
+    let mut rng = Rng::new(32);
+    for _ in 0..30 {
+        let n = 5;
+        let a = random_matrix(&mut rng, n, n);
+        let eig = eigenvalues_general(&a, 60).unwrap();
+        let trace: f64 = (0..n).map(|i| a.get(i, i)).sum();
+        let sum_re: f64 = eig.iter().map(|c| c.re).sum();
+        let sum_im: f64 = eig.iter().map(|c| c.im).sum();
+        assert!((trace - sum_re).abs() < 1e-8, "trace {trace} vs {sum_re}");
+        assert!(sum_im.abs() < 1e-8);
+    }
+}
+
+/// U·Σ·Vᵀ == A; singular values descending and non-negative.
+#[test]
+fn prop_svd_reconstruction() {
+    let mut rng = Rng::new(33);
+    for trial in 0..30 {
+        let (m, n) = if trial % 2 == 0 { (5, 3) } else { (3, 5) };
+        let a = random_matrix(&mut rng, m, n);
+        let Svd { u, sigma, vt } = svd(&a).unwrap();
+
+        for w in sigma.windows(2) {
+            assert!(w[0] >= w[1], "singular values not descending");
+        }
+        assert!(sigma.iter().all(|&s| s >= 0.0));
+
+        let k = sigma.len();
+        let mut sig = Matrix::zeros(k, k);
+        for i in 0..k {
+            sig.set(i, i, sigma[i]);
+        }
+        let back = u.mul(&sig).unwrap().mul(&vt).unwrap();
+        assert!(matrices_close(&back, &a, 1e-9), "U S Vt != A");
     }
 }
 

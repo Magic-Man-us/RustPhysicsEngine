@@ -14,3 +14,6 @@ authors = ["Magic-Man <mimsec-contact@mimsec.com>"]
 exclude = ["assets/", ".github/", "*.profraw"]
 
 [dependencies]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)"] }
