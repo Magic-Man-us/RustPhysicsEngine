@@ -110,6 +110,43 @@ fn prop_symplectic_energy_bounded() {
     }
 }
 
+/// Levenberg-Marquardt recovers synthetic parameters with noise to 3
+/// significant figures.
+#[test]
+fn prop_lm_recovers_synthetic_parameters() {
+    use rust_physics_engine::optimization::{fit_exponential_decay, fit_gaussian_peak};
+    let mut rng = Rng::new(53);
+    for _ in 0..10 {
+        let a_true = 1.0 + rng.next_f64() * 4.0;
+        let k_true = 0.2 + rng.next_f64() * 2.0;
+        let t: Vec<f64> = (0..100).map(|i| i as f64 * 0.05).collect();
+        let y: Vec<f64> = t
+            .iter()
+            .map(|&ti| a_true * (-k_true * ti).exp() * (1.0 + 2e-4 * (rng.next_f64() - 0.5)))
+            .collect();
+        let (a, k) = fit_exponential_decay(&t, &y).unwrap();
+        assert!((a / a_true - 1.0).abs() < 1e-3, "A {a} vs {a_true}");
+        assert!((k / k_true - 1.0).abs() < 1e-3, "k {k} vs {k_true}");
+    }
+    for _ in 0..10 {
+        let a_true = 1.0 + rng.next_f64() * 3.0;
+        let mu_true = rng.next_f64() * 2.0;
+        let s_true = 0.2 + rng.next_f64();
+        let x: Vec<f64> = (0..120).map(|i| -2.0 + i as f64 * 0.05).collect();
+        let y: Vec<f64> = x
+            .iter()
+            .map(|&xi| {
+                let z = (xi - mu_true) / s_true;
+                a_true * (-0.5 * z * z).exp() + 1e-4 * (rng.next_f64() - 0.5)
+            })
+            .collect();
+        let (a, mu, s) = fit_gaussian_peak(&x, &y).unwrap();
+        assert!((a / a_true - 1.0).abs() < 1e-3);
+        assert!((mu - mu_true).abs() < 1e-3);
+        assert!((s / s_true - 1.0).abs() < 1e-3);
+    }
+}
+
 /// Backward Euler is stable on y' = -1000 y with dt = 0.1 where RK4
 /// diverges.
 #[test]

@@ -1,5 +1,11 @@
 // Numerical optimization algorithms: 1D search, gradient-based, derivative-free,
-// and linear least-squares fitting.
+// and linear/nonlinear least-squares fitting.
+
+pub mod least_squares;
+
+pub use least_squares::{
+    fit_exponential_decay, fit_gaussian_peak, levenberg_marquardt, LmResult,
+};
 
 // ---------------------------------------------------------------------------
 // Named constants — no magic numbers
