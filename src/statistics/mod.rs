@@ -2,8 +2,6 @@
 //! Fourier utilities. Submodules are re-exported so historical paths such
 //! as `crate::statistics::mean` keep working.
 
-use crate::math::constants::PI;
-
 pub mod descriptive;
 pub mod distributions;
 pub mod fourier;
@@ -14,49 +12,28 @@ pub use descriptive::{
     weighted_mean_error,
 };
 pub use distributions::{
-    chi_squared_pdf, exponential_cdf, exponential_pdf, gaussian, gaussian_cdf_approx, poisson_pmf,
+    chi_squared_pdf, exponential_cdf, exponential_pdf, gaussian, gaussian_cdf, poisson_pmf,
 };
+#[allow(deprecated)]
+pub use distributions::gaussian_cdf_approx;
 pub use fourier::{dft, dominant_frequency, inverse_dft, power_spectrum};
-
-// Lanczos approximation coefficients (g=7, n=9)
-const LANCZOS_G: f64 = 7.0;
-const LANCZOS_COEFFICIENTS: [f64; 9] = [
-    0.999_999_999_999_809_93,
-    676.520_368_121_885_1,
-    -1259.139_216_722_402_8,
-    771.323_428_777_653_1,
-    -176.615_029_162_140_6,
-    12.507_343_278_686_905,
-    -0.138_571_095_265_720_12,
-    9.984_369_578_019_572e-6,
-    1.505_632_735_149_311_6e-7,
-];
 
 /// Compute factorial of n: n! = 1 × 2 × ... × n
 pub fn factorial(n: u64) -> f64 {
     (1..=n).fold(1.0, |acc, i| acc * i as f64)
 }
 
-/// Compute the gamma function via Lanczos approximation: Γ(z)
+/// Compute the gamma function via Lanczos approximation: Γ(z).
+/// Thin wrapper over [`crate::special::gamma::gamma`], kept for
+/// backwards compatibility.
 pub fn gamma_lanczos(z: f64) -> f64 {
-    if z < 0.5 {
-        // Reflection formula: Γ(z) = π / (sin(πz) × Γ(1-z))
-        return PI / ((PI * z).sin() * gamma_lanczos(1.0 - z));
-    }
-
-    let z = z - 1.0;
-    let mut x = LANCZOS_COEFFICIENTS[0];
-    for (i, &coeff) in LANCZOS_COEFFICIENTS.iter().enumerate().skip(1) {
-        x += coeff / (z + i as f64);
-    }
-
-    let t = z + LANCZOS_G + 0.5;
-    (2.0 * PI).sqrt() * t.powf(z + 0.5) * (-t).exp() * x
+    crate::special::gamma::gamma(z)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::math::constants::PI;
 
     const EPSILON: f64 = 1e-9;
     const LOOSE_EPSILON: f64 = 1e-4;
@@ -109,17 +86,17 @@ mod tests {
 
     #[test]
     fn test_gaussian_cdf_symmetry() {
-        let cdf_0 = gaussian_cdf_approx(0.0, 0.0, 1.0);
+        let cdf_0 = gaussian_cdf(0.0, 0.0, 1.0);
         assert!(approx_loose(cdf_0, 0.5));
     }
 
     #[test]
     fn test_gaussian_cdf_nonunit_sigma() {
         // Φ(mu + sigma) should be ~0.8413 for any sigma
-        let cdf = gaussian_cdf_approx(10.0, 5.0, 5.0);
+        let cdf = gaussian_cdf(10.0, 5.0, 5.0);
         assert!(approx_loose(cdf, 0.8413));
         // Φ(mu - sigma) should be ~0.1587
-        let cdf_neg = gaussian_cdf_approx(0.0, 5.0, 5.0);
+        let cdf_neg = gaussian_cdf(0.0, 5.0, 5.0);
         assert!(approx_loose(cdf_neg, 0.1587));
     }
 

@@ -1,14 +1,9 @@
 //! Probability distributions: densities, mass functions, and CDFs.
 
 use crate::math::constants::PI;
+use crate::special::erf::erfc;
 
 use super::{factorial, gamma_lanczos};
-
-// Abramowitz & Stegun CDF approximation constants
-const AS_B1: f64 = 0.436_183_6;
-const AS_B2: f64 = -0.120_167_6;
-const AS_B3: f64 = 0.937_298_0;
-const AS_P: f64 = 0.332_67;
 
 /// Gaussian probability density function: f(x) = (1/(σ√(2π))) · exp(-½((x-μ)/σ)²)
 pub fn gaussian(x: f64, mu: f64, sigma: f64) -> f64 {
@@ -17,16 +12,18 @@ pub fn gaussian(x: f64, mu: f64, sigma: f64) -> f64 {
     (1.0 / (sigma * (2.0 * PI).sqrt())) * (-0.5 * z * z).exp()
 }
 
-/// Approximate Gaussian CDF using the Abramowitz & Stegun method: Φ(x) ≈ 1 - φ(x)·P(t)
-pub fn gaussian_cdf_approx(x: f64, mu: f64, sigma: f64) -> f64 {
+/// Gaussian CDF: Φ(x) = ½·erfc(−(x−μ)/(σ√2)), full double precision.
+pub fn gaussian_cdf(x: f64, mu: f64, sigma: f64) -> f64 {
     assert!(sigma > 0.0, "sigma must be positive");
     let z = (x - mu) / sigma;
-    if z < 0.0 {
-        return 1.0 - gaussian_cdf_approx(mu - (x - mu), mu, sigma);
-    }
-    let phi_z = (-0.5 * z * z).exp() / (2.0 * PI).sqrt();
-    let t = 1.0 / (1.0 + AS_P * z);
-    1.0 - phi_z * (AS_B1 * t + AS_B2 * t * t + AS_B3 * t * t * t)
+    0.5 * erfc(-z / std::f64::consts::SQRT_2)
+}
+
+/// Deprecated alias of [`gaussian_cdf`]; the historical Abramowitz &
+/// Stegun approximation has been replaced by the exact erfc form.
+#[deprecated(note = "use gaussian_cdf; this alias now computes the exact value")]
+pub fn gaussian_cdf_approx(x: f64, mu: f64, sigma: f64) -> f64 {
+    gaussian_cdf(x, mu, sigma)
 }
 
 /// Poisson probability mass function: P(k;λ) = λᵏ · e⁻λ / k!
