@@ -35,8 +35,24 @@ pub fn inverse_dft(spectrum: &[(f64, f64)]) -> Vec<f64> {
         .collect()
 }
 
-/// Power spectrum: |X[k]|² = Re² + Im² for each frequency bin
+/// Power spectrum: |X[k]|² = Re² + Im² for each frequency bin.
+///
+/// Power-of-two lengths use the O(n log n) real FFT and reconstruct the
+/// upper half from conjugate symmetry; other lengths fall back to the
+/// direct DFT. Output length always equals `signal.len()`.
 pub fn power_spectrum(signal: &[f64]) -> Vec<f64> {
+    let n = signal.len();
+    if n > 0 && n.is_power_of_two() {
+        let half = crate::signal_processing::fft::rfft(signal);
+        let mut ps = vec![0.0; n];
+        for (k, c) in half.iter().enumerate() {
+            ps[k] = c.norm_sq();
+            if k > 0 && k < n - k {
+                ps[n - k] = ps[k]; // |X[n-k]| = |X[k]| for real input
+            }
+        }
+        return ps;
+    }
     dft(signal)
         .iter()
         .map(|&(re, im)| re * re + im * im)

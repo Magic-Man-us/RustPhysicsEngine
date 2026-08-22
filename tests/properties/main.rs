@@ -3,3 +3,4 @@
 
 mod core_props;
 mod linalg_props;
+mod signal_props;

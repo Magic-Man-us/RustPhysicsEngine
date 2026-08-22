@@ -1,3 +1,7 @@
+pub mod fft;
+
+pub use fft::{fft, fft_convolve, ifft, next_power_of_two, rfft};
+
 use crate::math::constants::PI;
 
 const TWO_PI: f64 = 2.0 * PI;
