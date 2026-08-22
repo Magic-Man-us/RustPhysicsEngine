@@ -187,6 +187,18 @@ pub fn routh_criterion_2nd(a0: f64, a1: f64, a2: f64) -> bool {
     a0 > 0.0 && a1 > 0.0 && a2 > 0.0
 }
 
+// ── Transfer function analysis ─────────────────────────────────────────
+
+/// Poles of a transfer function: the complex roots of the denominator
+/// polynomial (coefficients highest degree first), via
+/// `numerical::roots::polynomial_roots`. A system is BIBO-stable when
+/// every pole has a negative real part.
+pub fn transfer_function_poles(
+    denominator: &[f64],
+) -> Result<Vec<crate::fractals::Complex>, crate::error::SolveError> {
+    crate::numerical::roots::polynomial_roots(denominator)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -396,5 +408,29 @@ mod tests {
     fn test_approx_rel_zero_b() {
         assert!(approx_rel(0.0, 0.0, 1e-6));
         assert!(!approx_rel(1.0, 0.0, 0.5));
+    }
+}
+
+#[cfg(test)]
+mod transfer_function_tests {
+    use super::*;
+
+    #[test]
+    fn test_poles_second_order() {
+        // s² + 3s + 2 = (s+1)(s+2): poles at -1, -2.
+        let mut poles = transfer_function_poles(&[1.0, 3.0, 2.0]).unwrap();
+        poles.sort_by(|a, b| a.re.partial_cmp(&b.re).unwrap());
+        assert!((poles[0].re + 2.0).abs() < 1e-9 && poles[0].im.abs() < 1e-9);
+        assert!((poles[1].re + 1.0).abs() < 1e-9 && poles[1].im.abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_poles_underdamped_pair() {
+        // s² + 2s + 5: poles -1 ± 2i.
+        let poles = transfer_function_poles(&[1.0, 2.0, 5.0]).unwrap();
+        for p in &poles {
+            assert!((p.re + 1.0).abs() < 1e-9);
+            assert!((p.im.abs() - 2.0).abs() < 1e-9);
+        }
     }
 }
