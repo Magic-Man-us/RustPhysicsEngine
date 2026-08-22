@@ -53,6 +53,7 @@ pub mod sim;
 pub mod continuum_mechanics;
 pub mod spatial;
 pub mod mesh;
+pub mod patterns;
 
 #[cfg(kani)]
 mod verification;
