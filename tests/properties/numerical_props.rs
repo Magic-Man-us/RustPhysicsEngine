@@ -5,6 +5,50 @@ use rust_physics_engine::monte_carlo::Rng;
 use rust_physics_engine::numerical::ode::{
     backward_euler, dormand_prince, rk4_step_vec, velocity_verlet, yoshida4,
 };
+use rust_physics_engine::numerical::{
+    adaptive_quad, gauss_kronrod_15, polynomial_eval_complex, polynomial_roots,
+};
+
+/// The reported quadrature error bound dominates the true error on
+/// smooth integrands.
+#[test]
+fn prop_quadrature_error_bound_holds() {
+    let cases: Vec<(Box<dyn Fn(f64) -> f64>, f64, f64, f64)> = vec![
+        (Box::new(f64::sin), 0.0, std::f64::consts::PI, 2.0),
+        (Box::new(|x: f64| x.exp()), 0.0, 1.0, std::f64::consts::E - 1.0),
+        (Box::new(|x: f64| 1.0 / (1.0 + x * x)), 0.0, 1.0, std::f64::consts::PI / 4.0),
+    ];
+    for (f, a, b, exact) in &cases {
+        let r = gauss_kronrod_15(f.as_ref(), *a, *b);
+        assert!(
+            r.error + 1e-15 >= (r.value - exact).abs(),
+            "GK15 bound {} < true error {}",
+            r.error,
+            (r.value - exact).abs()
+        );
+        let r = adaptive_quad(f.as_ref(), *a, *b, 1e-10, 30).unwrap();
+        assert!(r.error + 1e-15 >= (r.value - exact).abs(), "adaptive bound too small");
+    }
+}
+
+/// Every reported polynomial root satisfies |p(root)| < 1e-8, and the
+/// root count equals the degree.
+#[test]
+fn prop_polynomial_roots_satisfy_polynomial() {
+    let mut rng = Rng::new(52);
+    for _ in 0..30 {
+        let degree = 2 + (rng.next_u64() % 5) as usize;
+        let coeffs: Vec<f64> = std::iter::once(1.0)
+            .chain((0..degree).map(|_| rng.next_f64() * 4.0 - 2.0))
+            .collect();
+        let roots = polynomial_roots(&coeffs).unwrap();
+        assert_eq!(roots.len(), degree);
+        for &z in &roots {
+            let residual = polynomial_eval_complex(&coeffs, z).norm();
+            assert!(residual < 1e-8, "residual {residual} for degree {degree}");
+        }
+    }
+}
 
 /// Two-body (Kepler) orbit: relative energy drift below 1e-8 over 100
 /// periods at rtol = 1e-10.

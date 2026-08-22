@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, Sub};
+use std::ops::{Add, Div, Mul, Sub};
 
 use crate::math::constants::PI;
 
@@ -86,6 +86,19 @@ impl Mul for Complex {
         Self {
             re: self.re * rhs.re - self.im * rhs.im,
             im: self.re * rhs.im + self.im * rhs.re,
+        }
+    }
+}
+
+impl Div for Complex {
+    type Output = Self;
+    /// Complex division: z/w = z·w̄ / |w|²
+    #[inline]
+    fn div(self, rhs: Self) -> Self {
+        let denom = rhs.norm_sq();
+        Self {
+            re: (self.re * rhs.re + self.im * rhs.im) / denom,
+            im: (self.im * rhs.re - self.re * rhs.im) / denom,
         }
     }
 }

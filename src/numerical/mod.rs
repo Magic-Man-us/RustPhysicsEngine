@@ -2,15 +2,23 @@
 //! interpolation. Submodules are re-exported so historical paths such as
 //! `crate::numerical::trapezoid` keep working.
 
+pub mod bvp;
 pub mod integrate;
 pub mod interpolate;
 pub mod ode;
 pub mod roots;
 
-pub use integrate::{gaussian_quadrature_5, simpson, trapezoid};
+pub use bvp::{finite_difference_linear_bvp, shooting};
+pub use integrate::{
+    adaptive_quad, gauss_kronrod_15, gaussian_quadrature_5, integrate_infinite,
+    richardson_extrapolate, romberg, simpson, trapezoid, QuadResult,
+};
 pub use interpolate::{cubic_interp, lerp, linear_interp};
 pub use ode::{euler_step, rk4_solve, rk4_step, rk4_step_vec};
-pub use roots::{bisection, newton_raphson, secant};
+pub use roots::{
+    bisection, brent_root, newton_raphson, polynomial_eval, polynomial_eval_complex,
+    polynomial_roots, secant,
+};
 
 #[cfg(test)]
 mod tests {
@@ -295,5 +303,119 @@ mod tests {
         let result = simpson(&|x: f64| x * x, 0.0, 1.0, 1);
         // n=1 gets rounded up to n=2; Simpson's rule is exact for polynomials up to degree 3
         assert!(approx_eq(result, 1.0 / 3.0, 1e-12));
+    }
+
+    // ── Gauss-Kronrod / adaptive / Romberg ─────────────────────────
+
+    #[test]
+    fn test_gauss_kronrod_15_sin() {
+        let r = gauss_kronrod_15(&f64::sin, 0.0, PI);
+        assert!(approx_eq(r.value, 2.0, 1e-10), "got {}", r.value);
+        assert!(r.error >= (r.value - 2.0).abs());
+        assert_eq!(r.evals, 15);
+    }
+
+    #[test]
+    fn test_adaptive_quad_oscillatory() {
+        // ∫0..1 sin(50x) dx = (1 - cos 50)/50, needs subdivision.
+        let f = |x: f64| (50.0 * x).sin();
+        let exact = (1.0 - 50.0_f64.cos()) / 50.0;
+        let r = adaptive_quad(&f, 0.0, 1.0, 1e-12, 40).unwrap();
+        assert!(approx_eq(r.value, exact, 1e-10), "got {} vs {exact}", r.value);
+        assert!(r.evals > 15);
+    }
+
+    #[test]
+    fn test_adaptive_quad_invalid_tol() {
+        assert!(adaptive_quad(&f64::sin, 0.0, 1.0, 0.0, 10).is_err());
+    }
+
+    #[test]
+    fn test_romberg_exact_polynomial() {
+        let r = romberg(&|x: f64| x * x * x, 0.0, 2.0, 20, 1e-12).unwrap();
+        assert!(approx_eq(r.value, 4.0, 1e-10), "got {}", r.value);
+    }
+
+    #[test]
+    fn test_romberg_no_convergence() {
+        assert!(matches!(
+            romberg(&f64::sin, 0.0, PI, 2, 1e-14),
+            Err(crate::error::SolveError::NoConvergence { .. })
+        ));
+    }
+
+    #[test]
+    fn test_richardson_extrapolate_trapezoid_sequence() {
+        // Trapezoid estimates of ∫0..pi sin = 2 at n = 4, 8, 16 (error ~ h²).
+        let estimates: Vec<f64> = [4usize, 8, 16]
+            .iter()
+            .map(|&n| trapezoid(&f64::sin, 0.0, PI, n))
+            .collect();
+        let extrapolated = richardson_extrapolate(&estimates, 2.0, 2);
+        assert!(
+            (extrapolated - 2.0).abs() < (estimates[2] - 2.0).abs() / 100.0,
+            "extrapolated {extrapolated}"
+        );
+    }
+
+    #[test]
+    fn test_integrate_infinite_gaussian() {
+        // ∫ e^{-x²} dx = sqrt(pi)
+        let r = integrate_infinite(&|x: f64| (-x * x).exp(), 1e-10).unwrap();
+        assert!(approx_eq(r.value, PI.sqrt(), 1e-8), "got {}", r.value);
+    }
+
+    // ── Polynomial roots and Brent ─────────────────────────────────
+
+    #[test]
+    fn test_polynomial_eval_horner() {
+        // 2x³ - 3x + 1 at x = 2: 16 - 6 + 1 = 11
+        assert!(approx_eq(polynomial_eval(&[2.0, 0.0, -3.0, 1.0], 2.0), 11.0, 1e-12));
+    }
+
+    #[test]
+    fn test_polynomial_roots_cubic() {
+        // (x-1)(x-2)(x-3) = x³ - 6x² + 11x - 6
+        let mut roots = polynomial_roots(&[1.0, -6.0, 11.0, -6.0]).unwrap();
+        assert_eq!(roots.len(), 3);
+        roots.sort_by(|a, b| a.re.partial_cmp(&b.re).unwrap());
+        for (r, expected) in roots.iter().zip(&[1.0, 2.0, 3.0]) {
+            assert!(approx_eq(r.re, *expected, 1e-8), "{} vs {expected}", r.re);
+            assert!(r.im.abs() < 1e-8);
+        }
+    }
+
+    #[test]
+    fn test_polynomial_roots_complex_pair() {
+        // x² + 1 → ±i
+        let roots = polynomial_roots(&[1.0, 0.0, 1.0]).unwrap();
+        assert_eq!(roots.len(), 2);
+        for r in &roots {
+            assert!(r.re.abs() < 1e-9);
+            assert!(approx_eq(r.im.abs(), 1.0, 1e-9));
+        }
+    }
+
+    #[test]
+    fn test_polynomial_roots_leading_zeros_and_errors() {
+        // Leading zeros stripped: [0, 1, -1] is x - 1.
+        let roots = polynomial_roots(&[0.0, 1.0, -1.0]).unwrap();
+        assert_eq!(roots.len(), 1);
+        assert!(approx_eq(roots[0].re, 1.0, 1e-10));
+        assert!(polynomial_roots(&[0.0, 0.0]).is_err());
+        assert!(polynomial_roots(&[5.0]).is_err());
+    }
+
+    #[test]
+    fn test_brent_root_sqrt2() {
+        let f = |x: f64| x * x - 2.0;
+        let root = brent_root(&f, 0.0, 2.0, 1e-14, 100).unwrap();
+        assert!(approx_eq(root, std::f64::consts::SQRT_2, 1e-12));
+    }
+
+    #[test]
+    fn test_brent_root_errors() {
+        let f = |x: f64| x * x + 1.0;
+        assert!(brent_root(&f, 0.0, 1.0, 1e-12, 100).is_err());
     }
 }
