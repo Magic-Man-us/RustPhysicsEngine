@@ -60,3 +60,44 @@ mod tests {
         assert_ne!(e, SolveError::Singular);
     }
 }
+
+/// Failure modes reported by the geometric algorithms (spatial, mesh,
+/// patterns modules).
+#[derive(Debug, Clone, PartialEq)]
+pub enum GeomError {
+    /// Degenerate input: zero-area triangle, coincident points, etc.
+    Degenerate(&'static str),
+    /// The mesh is not manifold where the operation requires it.
+    NotManifold,
+    /// The input contains no elements.
+    Empty,
+    /// An argument violated a documented precondition.
+    InvalidArgument(&'static str),
+}
+
+impl fmt::Display for GeomError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            GeomError::Degenerate(msg) => write!(f, "degenerate geometry: {msg}"),
+            GeomError::NotManifold => write!(f, "mesh is not manifold"),
+            GeomError::Empty => write!(f, "empty input"),
+            GeomError::InvalidArgument(msg) => write!(f, "invalid argument: {msg}"),
+        }
+    }
+}
+
+impl std::error::Error for GeomError {}
+
+#[cfg(test)]
+mod geom_tests {
+    use super::*;
+
+    #[test]
+    fn test_geom_error_display() {
+        assert!(GeomError::Degenerate("x").to_string().contains('x'));
+        assert!(GeomError::NotManifold.to_string().contains("manifold"));
+        assert!(GeomError::Empty.to_string().contains("empty"));
+        assert!(GeomError::InvalidArgument("y").to_string().contains('y'));
+        assert_eq!(GeomError::Empty.clone(), GeomError::Empty);
+    }
+}

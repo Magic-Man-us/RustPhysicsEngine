@@ -1,6 +1,6 @@
 use crate::math::Vec3;
 use crate::math::constants::G;
-use super::nbody::Body;
+use crate::astrophysics::nbody::Body;
 
 pub const BH_THETA: f64 = 0.5;
 pub const BH_CROSSOVER: usize = 800;
@@ -196,7 +196,7 @@ impl Octree {
 pub fn compute_all_accelerations(bodies: &[Body], theta: f64, softening: f64) -> Vec<Vec3> {
     if bodies.len() < BH_CROSSOVER {
         return (0..bodies.len())
-            .map(|i| super::nbody::compute_acceleration(bodies, i, softening))
+            .map(|i| crate::astrophysics::nbody::compute_acceleration(bodies, i, softening))
             .collect();
     }
 
@@ -209,7 +209,7 @@ pub fn compute_all_accelerations(bodies: &[Body], theta: f64, softening: f64) ->
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::nbody;
+    use crate::astrophysics::nbody;
 
     #[test]
     fn test_octree_vs_direct() {
