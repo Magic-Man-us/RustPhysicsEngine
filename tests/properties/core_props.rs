@@ -71,6 +71,53 @@ fn prop_sums_agree_on_random_data() {
     }
 }
 
+/// Inclusion property: for any x ∈ X, f(x) ∈ f(X) — checked with 1000
+/// random samples per interval on a composed expression.
+#[test]
+fn prop_interval_inclusion() {
+    use rust_physics_engine::core::interval::Interval;
+    let f_real = |x: f64| (x * x - 2.0 * x).sin() + (0.5 * x).exp() / (x * x + 1.0);
+    let f_interval = |x: Interval| {
+        (x * x - Interval::point(2.0) * x).sin()
+            + (Interval::point(0.5) * x).exp() / (x * x + Interval::point(1.0))
+    };
+    let mut rng = Rng::new(43);
+    for _ in 0..20 {
+        let a = rng.next_f64() * 6.0 - 3.0;
+        let b = a + rng.next_f64() * 0.5;
+        let iv = Interval::new(a, b);
+        let fiv = f_interval(iv);
+        for _ in 0..1000 {
+            let x = a + rng.next_f64() * (b - a);
+            let y = f_real(x);
+            assert!(
+                fiv.contains(y),
+                "f({x}) = {y} outside f([{a}, {b}]) = [{}, {}]",
+                fiv.lo,
+                fiv.hi
+            );
+        }
+    }
+}
+
+/// interval_newton returns rigorous enclosures of all roots.
+#[test]
+fn prop_interval_newton_encloses_roots() {
+    use rust_physics_engine::core::interval::{interval_newton, Interval};
+    // (x-1)(x+2)x = x^3 + x^2 - 2x: roots -2, 0, 1.
+    let f = |x: Interval| x.powi(3) + x.powi(2) - Interval::point(2.0) * x;
+    let df = |x: Interval| {
+        Interval::point(3.0) * x.powi(2) + Interval::point(2.0) * x - Interval::point(2.0)
+    };
+    let roots = interval_newton(&f, &df, Interval::new(-5.0, 5.0), 1e-10, 300);
+    for target in [-2.0, 0.0, 1.0] {
+        assert!(
+            roots.iter().any(|r| r.contains(target)),
+            "missing root {target}: {roots:?}"
+        );
+    }
+}
+
 /// dot_compensated matches the naive dot product on well-conditioned data.
 #[test]
 fn prop_dot_matches_naive_when_well_conditioned() {

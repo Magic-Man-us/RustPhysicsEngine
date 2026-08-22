@@ -3,3 +3,4 @@
 
 pub mod compensated;
 pub mod dual;
+pub mod interval;
