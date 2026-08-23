@@ -41,7 +41,7 @@ impl Perlin {
             *v = i as u8;
         }
         for i in (1..256).rev() {
-            let j = (rng.next_u64() % (i as u64 + 1)) as usize;
+            let j = (rng.next_f64() * (i + 1) as f64) as usize % (i + 1);
             p.swap(i, j);
         }
         let mut perm = [0u8; 512];
@@ -1333,7 +1333,7 @@ pub fn blue_noise_texture(w: usize, h: usize, seed: u64) -> Vec<f64> {
     let ones = (n / 10).max(2);
     let mut placed = 0;
     while placed < ones {
-        let idx = (rng.next_u64() % n as u64) as usize;
+        let idx = (rng.next_f64() * n as f64) as usize % n;
         if !pattern[idx] {
             pattern[idx] = true;
             splat(&mut energy, idx % w, idx / w, 1.0);

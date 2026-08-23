@@ -145,3 +145,73 @@ fn prop_julia_c_zero_unit_circle() {
         assert!(julia(zo, c, &params).escaped, "|z| > 1 escapes");
     }
 }
+
+#[test]
+fn prop_rule90_has_sierpinski_dimension() {
+    use rust_physics_engine::fractals::automata::Ca1D;
+    use rust_physics_engine::fractals::box_count_2d;
+    // Rule 90 from a single seed draws the Sierpinski gasket; its
+    // box-count slope matches log 3 / log 2.
+    let mut ca = Ca1D::new(90, 257, false);
+    ca.seed_center();
+    let rows = ca.run(128);
+    let points: Vec<(f64, f64)> = rows
+        .iter()
+        .enumerate()
+        .flat_map(|(y, row)| {
+            row.iter()
+                .enumerate()
+                .filter(|&(_, &alive)| alive)
+                .map(move |(x, _)| (x as f64, y as f64))
+        })
+        .collect();
+    let bounds = (0.0, 257.0, 0.0, 129.0);
+    let n1 = box_count_2d(&points, 16, bounds) as f64;
+    let n2 = box_count_2d(&points, 64, bounds) as f64;
+    let dim = (n2 / n1).ln() / 4.0f64.ln();
+    let expected = 3.0f64.ln() / 2.0f64.ln();
+    assert!((dim - expected).abs() < 0.12, "rule 90 dimension {dim} vs {expected}");
+}
+
+#[test]
+fn prop_lyapunov_signs_distinguish_chaos() {
+    use rust_physics_engine::fractals::attractors::{presets, Attractor3};
+    use rust_physics_engine::math::Vec3;
+    // Chaotic flows have a positive largest exponent; a damped
+    // linear oscillator has all exponents negative.
+    let lorenz = presets::lorenz(10.0, 28.0, 8.0 / 3.0);
+    let l = lorenz.lyapunov_spectrum(Vec3::new(1.0, 1.0, 1.0), 20_000, 0.005);
+    assert!(l[0] > 0.5, "Lorenz is chaotic ({})", l[0]);
+    let damped = Attractor3 {
+        derivs: Box::new(|p: Vec3| Vec3::new(p.y, -p.x - 0.5 * p.y, -p.z)),
+        dt: 0.01,
+    };
+    let d = damped.lyapunov_spectrum(Vec3::new(1.0, 0.0, 1.0), 20_000, 0.01);
+    assert!(d[0] < 0.0, "damped flow contracts ({})", d[0]);
+    // Rossler: weakly chaotic, positive but small.
+    let rossler = presets::rossler(0.2, 0.2, 5.7);
+    let r = rossler.lyapunov_spectrum(Vec3::new(1.0, 1.0, 1.0), 40_000, 0.02);
+    assert!(r[0] > 0.02 && r[0] < 0.2, "Rossler exponent {}", r[0]);
+}
+
+#[test]
+fn prop_gray_scott_regimes_bounded_and_deterministic() {
+    use rust_physics_engine::fractals::automata::GrayScott;
+    for make in [
+        GrayScott::mitosis as fn(usize, usize) -> GrayScott,
+        GrayScott::coral,
+        GrayScott::worms,
+        GrayScott::maze,
+    ] {
+        let mut a = make(24, 24);
+        a.seed_square(10, 10, 4);
+        a.run(120);
+        for (&u, &v) in a.u.iter().zip(&a.v) {
+            assert!((0.0..=1.5).contains(&u) && (0.0..=1.5).contains(&v));
+        }
+        let mut b = make(24, 24);
+        b.seed_square(10, 10, 4);
+        b.run(120);
+        assert_eq!(a.u, b.u, "deterministic evolution");
+    }
+}

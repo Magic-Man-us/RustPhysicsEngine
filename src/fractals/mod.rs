@@ -1,3 +1,5 @@
+pub mod attractors;
+pub mod automata;
 pub mod escape_time;
 pub mod ifs;
 pub mod lsystem;
