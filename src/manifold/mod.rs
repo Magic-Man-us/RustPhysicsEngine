@@ -4,6 +4,7 @@
 //! algebras, embeddings, discrete exterior calculus, and spacetimes.
 
 pub mod clifford;
+pub mod embedding;
 pub mod geodesic;
 pub mod hyperbolic;
 pub mod lie;
@@ -15,6 +16,17 @@ pub mod vecn;
 pub use clifford::{
     algebra_dimension, blade_name, cayley_table, cga3, cl3, is_isomorphic_to_known, pga3, sta,
     Multivector,
+};
+pub use embedding::{
+    blobs, classical_mds, continuity, diffusion_maps, dist_matrix, geodesic_distance_matrix,
+    geodesic_kmeans, grassmann_distance, helix_sample, intrinsic_dimension_correlation,
+    intrinsic_dimension_mle, intrinsic_dimension_two_nn, isomap, kernel_pca, klein_sample,
+    knn_graph, laplacian_eigenmaps, lle, manifold_curvature_estimate,
+    manifold_interpolation_rbf, metric_mds_smacof, mobius_sample, neighborhood_preservation,
+    nonmetric_mds, pca, procrustes_align, riemannian_gradient_descent_sphere,
+    riemannian_gradient_descent_stiefel, s_curve, sphere_sample, spectral_embedding,
+    stiefel_project, stress, swiss_roll, tangent_space_estimate, torus_sample,
+    trustworthiness, tsne, two_moons, umap_lite,
 };
 pub use geodesic::{
     geodesics_on_mesh_exact, great_circle_check, heat_method_geodesic, light_deflection,
