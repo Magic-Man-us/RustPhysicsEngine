@@ -1,5 +1,93 @@
 use std::ops::{Add, Sub, Mul, Neg};
 
+/// 2D vector (fluid grids, planar geometry).
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct Vec2 {
+    pub x: f64,
+    pub y: f64,
+}
+
+impl Vec2 {
+    pub const ZERO: Vec2 = Vec2 { x: 0.0, y: 0.0 };
+
+    /// Constructs a new 2D vector.
+    #[must_use]
+    pub fn new(x: f64, y: f64) -> Self {
+        Self { x, y }
+    }
+
+    /// Euclidean length.
+    #[must_use]
+    pub fn magnitude(&self) -> f64 {
+        (self.x * self.x + self.y * self.y).sqrt()
+    }
+
+    /// Squared length.
+    #[must_use]
+    pub fn magnitude_squared(&self) -> f64 {
+        self.x * self.x + self.y * self.y
+    }
+
+    /// Unit vector in this direction (zero vector maps to zero).
+    #[must_use]
+    pub fn normalized(&self) -> Self {
+        let m = self.magnitude();
+        if m > 0.0 { Self::new(self.x / m, self.y / m) } else { *self }
+    }
+
+    /// Dot product.
+    #[must_use]
+    pub fn dot(&self, other: &Vec2) -> f64 {
+        self.x * other.x + self.y * other.y
+    }
+
+    /// Scalar (z-component of the 3D) cross product.
+    #[must_use]
+    pub fn cross(&self, other: &Vec2) -> f64 {
+        self.x * other.y - self.y * other.x
+    }
+
+    /// Counterclockwise perpendicular (-y, x).
+    #[must_use]
+    pub fn perp(&self) -> Vec2 {
+        Vec2::new(-self.y, self.x)
+    }
+
+    /// Linear interpolation toward `other`.
+    #[must_use]
+    pub fn lerp(&self, other: &Vec2, t: f64) -> Vec2 {
+        Vec2::new(self.x + (other.x - self.x) * t, self.y + (other.y - self.y) * t)
+    }
+}
+
+impl Add for Vec2 {
+    type Output = Vec2;
+    fn add(self, rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x + rhs.x, self.y + rhs.y)
+    }
+}
+
+impl Sub for Vec2 {
+    type Output = Vec2;
+    fn sub(self, rhs: Vec2) -> Vec2 {
+        Vec2::new(self.x - rhs.x, self.y - rhs.y)
+    }
+}
+
+impl Mul<f64> for Vec2 {
+    type Output = Vec2;
+    fn mul(self, rhs: f64) -> Vec2 {
+        Vec2::new(self.x * rhs, self.y * rhs)
+    }
+}
+
+impl Neg for Vec2 {
+    type Output = Vec2;
+    fn neg(self) -> Vec2 {
+        Vec2::new(-self.x, -self.y)
+    }
+}
+
 /// 3D vector used throughout the physics engine.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Vec3 {

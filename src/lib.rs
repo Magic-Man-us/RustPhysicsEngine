@@ -39,6 +39,7 @@ pub mod signal_processing;
 pub mod transforms;
 pub mod dsp;
 pub mod resonance;
+pub mod cfd;
 pub mod fields;
 pub mod audio;
 pub mod curves;
