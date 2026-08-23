@@ -2420,7 +2420,7 @@ mod tests {
             sta::event(1.0, Vec3::new(0.6, 0.0, 0.0)),
         ];
         assert!((sta::proper_time(&path) - 0.8).abs() < 1e-12);
-        assert!((sta::rapidity(0.6) - 0.6931471805599453).abs() < 1e-10);
+        assert!((sta::rapidity(0.6) - std::f64::consts::LN_2).abs() < 1e-10);
         // Lorentz force: static E field accelerates along E
         let fe = sta::bivector_em(Vec3::new(1.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
         let u = sta::event(1.0, Vec3::new(0.0, 0.0, 0.0)); // rest 4-velocity

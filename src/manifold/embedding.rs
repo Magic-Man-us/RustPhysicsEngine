@@ -1297,10 +1297,8 @@ mod tests {
         let adj = Matrix::from_fn(2 * n, 2 * n, |i, j| {
             if i == j {
                 0.0
-            } else if (i < n) == (j < n) {
-                1.0
-            } else if (i + j) % 37 == 0 {
-                1.0 // sparse cross links
+            } else if (i < n) == (j < n) || (i + j) % 37 == 0 {
+                1.0 // in-cluster, plus sparse cross links
             } else {
                 0.0
             }

@@ -890,8 +890,8 @@ mod tests {
         };
         let mv = TensorN::einsum("ij,j->i", &[&ta, &v]).unwrap();
         let exact_mv = a.mul_vec(&v.data).unwrap();
-        for i in 0..3 {
-            assert!((mv.get(&[i]) - exact_mv[i]).abs() < 1e-12);
+        for (i, &want) in exact_mv.iter().enumerate() {
+            assert!((mv.get(&[i]) - want).abs() < 1e-12);
         }
         // transpose round trip
         let t3 = TensorN::from_fn(&[2, 3, 4], |idx| (idx[0] * 100 + idx[1] * 10 + idx[2]) as f64);

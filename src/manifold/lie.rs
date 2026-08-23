@@ -2583,7 +2583,7 @@ mod tests {
     fn test_pose_graph_and_calibration() {
         let mut rng = Rng::new(9);
         // ground-truth square loop
-        let truth = vec![
+        let truth = [
             Se3::identity(),
             Se3 {
                 r: So3::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), 0.5),
