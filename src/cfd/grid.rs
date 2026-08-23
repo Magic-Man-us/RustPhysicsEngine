@@ -227,6 +227,9 @@ impl MacGrid2 {
                 }
             }
             FluidBc::NoSlip => {
+                // Normal faces vanish at the walls; the tangential
+                // no-slip condition is enforced through ghost cells in
+                // the viscous solve, not by zeroing interior faces.
                 for j in 0..ny {
                     let (l, r) = (self.u_idx(0, j), self.u_idx(nx, j));
                     self.u[l] = 0.0;
@@ -236,13 +239,6 @@ impl MacGrid2 {
                     let (b, t) = (self.v_idx(i, 0), self.v_idx(i, ny));
                     self.v[b] = 0.0;
                     self.v[t] = 0.0;
-                }
-                // Tangential: zero the first interior tangential faces
-                // adjacent to the walls (ghost-free approximation).
-                for i in 0..=nx {
-                    let (b, t) = (self.u_idx(i.min(nx), 0), self.u_idx(i.min(nx), ny - 1));
-                    self.u[b] = 0.0;
-                    self.u[t] = 0.0;
                 }
                 self.zero_solid_faces();
             }

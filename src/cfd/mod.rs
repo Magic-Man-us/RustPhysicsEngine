@@ -4,6 +4,7 @@
 
 pub mod advection;
 pub mod grid;
+pub mod stable_fluids;
 
 pub use advection::{
     advect_bfecc_2d, advect_flux_limited_2d, advect_lax_wendroff_1d, advect_maccormack_2d,
@@ -13,3 +14,8 @@ pub use advection::{
     weno5_reconstruct, Limiter, Scheme,
 };
 pub use grid::{CellField2, FluidBc, MacGrid2, MacGrid3};
+pub use stable_fluids::{
+    flow_past_cylinder, lid_driven_cavity, multigrid_vcycle, pressure_poisson_cg,
+    rayleigh_benard, taylor_green_exact, taylor_green_vortex, PressureSolver, StableFluid2,
+    StableFluid3,
+};
