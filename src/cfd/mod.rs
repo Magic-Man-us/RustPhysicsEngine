@@ -5,6 +5,8 @@
 pub mod advection;
 pub mod grid;
 pub mod lbm;
+pub mod level_set;
+pub mod potential_flow;
 pub mod riemann;
 pub mod sph;
 pub mod shallow_water;
@@ -21,6 +23,20 @@ pub use grid::{CellField2, FluidBc, MacGrid2, MacGrid3};
 pub use lbm::{
     lbm_cavity_step, lbm_cylinder, lbm_lid_cavity, lbm_poiseuille_2d, lbm_thermal,
     lbm_to_physical, poiseuille_exact, thermal_step, Collision, LbmD2Q9, LbmD3Q19, LbmD3Q27,
+};
+pub use level_set::{
+    capillary_wave_dispersion, contact_angle_young, droplet_shape_pendant, minnaert_frequency,
+    ohnesorge, rayleigh_plesset, single_vortex_deformation_test, taylor_bubble_velocity,
+    weber_breakup_regime, young_laplace_pressure, zalesak_disk, zalesak_rotate,
+    FreeSurfaceFluid2, LevelSet2, LevelSet3, Segment2, Vof2, WenoOrUpwind,
+};
+pub use potential_flow::{
+    added_mass_cylinder, added_mass_sphere, conformal_map_flow, cylinder_cp_exact, cylinder_flow,
+    doublet, elliptic_wing_cl, ground_effect_factor, induced_drag, inverse_joukowski,
+    joukowski_airfoil, joukowski_airfoil_flow, joukowski_transform, karman_trefftz_airfoil,
+    lifting_line, method_of_images_wall, naca4, naca5, oswald_efficiency_estimate, rankine_oval,
+    sink, source, thin_airfoil_cl, thin_airfoil_cl_flat, uniform_flow, vortex, vortex_lattice,
+    Element, PanelMethod, Plane2, PotentialFlow2, WingGeometry,
 };
 pub use riemann::{
     blast_wave_woodward_colella, cons_to_prim, flux, flux_ausm_plus, flux_hll, flux_hllc,
