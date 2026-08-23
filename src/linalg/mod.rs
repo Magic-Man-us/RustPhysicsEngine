@@ -340,6 +340,127 @@ pub fn cartesian_to_polar(x: f64, y: f64) -> (f64, f64) {
     (r, theta)
 }
 
+/// A dense 4x4 matrix with fixed-size storage.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Mat4 {
+    pub data: [[f64; 4]; 4],
+}
+
+impl Mat4 {
+    /// The 4x4 zero matrix.
+    #[must_use]
+    pub fn zero() -> Self {
+        Self { data: [[0.0; 4]; 4] }
+    }
+
+    /// The 4x4 identity matrix.
+    #[must_use]
+    pub fn identity() -> Self {
+        let mut m = Self::zero();
+        for i in 0..4 {
+            m.data[i][i] = 1.0;
+        }
+        m
+    }
+
+    /// Construct from four row arrays.
+    #[must_use]
+    pub fn from_rows(r0: [f64; 4], r1: [f64; 4], r2: [f64; 4], r3: [f64; 4]) -> Self {
+        Self {
+            data: [r0, r1, r2, r3],
+        }
+    }
+
+    /// Matrix product.
+    #[must_use]
+    pub fn mul_mat(&self, other: &Mat4) -> Mat4 {
+        let mut out = Mat4::zero();
+        for i in 0..4 {
+            for j in 0..4 {
+                let mut s = 0.0;
+                for (k, ok) in other.data.iter().enumerate() {
+                    s += self.data[i][k] * ok[j];
+                }
+                out.data[i][j] = s;
+            }
+        }
+        out
+    }
+
+    /// Matrix-vector product.
+    #[must_use]
+    pub fn mul_vec4(&self, v: [f64; 4]) -> [f64; 4] {
+        let mut out = [0.0; 4];
+        for (o, row) in out.iter_mut().zip(&self.data) {
+            *o = row.iter().zip(&v).map(|(a, b)| a * b).sum();
+        }
+        out
+    }
+
+    /// Transpose.
+    #[must_use]
+    pub fn transpose(&self) -> Mat4 {
+        let mut out = Mat4::zero();
+        for i in 0..4 {
+            for j in 0..4 {
+                out.data[i][j] = self.data[j][i];
+            }
+        }
+        out
+    }
+
+    /// Trace.
+    #[must_use]
+    pub fn trace(&self) -> f64 {
+        (0..4).map(|i| self.data[i][i]).sum()
+    }
+
+    /// Determinant via LU on the general dense matrix.
+    #[must_use]
+    pub fn determinant(&self) -> f64 {
+        match lu_decompose(&self.to_matrix()) {
+            Ok(lu) => lu.determinant(),
+            Err(_) => 0.0,
+        }
+    }
+
+    /// Inverse (None if singular).
+    #[must_use]
+    pub fn inverse(&self) -> Option<Mat4> {
+        let inv = lu_decompose(&self.to_matrix()).and_then(|lu| lu.inverse()).ok()?;
+        Some(Mat4::from_matrix(&inv))
+    }
+
+    /// Convert to a general dense matrix.
+    #[must_use]
+    pub fn to_matrix(&self) -> Matrix {
+        Matrix::from_fn(4, 4, |i, j| self.data[i][j])
+    }
+
+    /// Convert from a 4x4 general dense matrix.
+    ///
+    /// # Panics
+    /// Panics unless `m` is 4x4.
+    #[must_use]
+    pub fn from_matrix(m: &Matrix) -> Mat4 {
+        assert!(m.rows == 4 && m.cols == 4, "Mat4::from_matrix needs 4x4");
+        let mut out = Mat4::zero();
+        for i in 0..4 {
+            for j in 0..4 {
+                out.data[i][j] = m.get(i, j);
+            }
+        }
+        out
+    }
+}
+
+impl Mul<Mat4> for Mat4 {
+    type Output = Mat4;
+    fn mul(self, rhs: Mat4) -> Mat4 {
+        self.mul_mat(&rhs)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
