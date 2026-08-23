@@ -5,6 +5,7 @@
 pub mod advection;
 pub mod grid;
 pub mod riemann;
+pub mod sph;
 pub mod shallow_water;
 pub mod stable_fluids;
 
@@ -23,6 +24,11 @@ pub use riemann::{
     quasi_1d_nozzle, rankine_hugoniot, riemann_exact, riemann_exact_star, sedov_1d,
     shu_osher, sod_exact, sod_shock_tube, sound_speed, wave_speeds_einfeldt, Cons, Euler1D,
     Euler2D, EulerBc, FluxKind, Prim,
+};
+pub use sph::{
+    dam_break_2d, dam_break_exact_front, droplet_oscillation, hydrostatic_tank, kernel_grad,
+    kernel_laplacian, kernel_support, kernel_w, poiseuille_sph, Kernel, Kind, Plane, Sph,
+    SphParticle, SphScheme, SpatialHash,
 };
 pub use shallow_water::{
     dispersion_deep, dispersion_full, dispersion_shallow, gerstner_wave, jonswap_spectrum,
