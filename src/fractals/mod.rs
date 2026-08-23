@@ -1,5 +1,7 @@
+pub mod escape_time;
 pub mod ifs;
 pub mod lsystem;
+pub mod noise;
 
 use std::ops::{Add, Div, Mul, Sub};
 

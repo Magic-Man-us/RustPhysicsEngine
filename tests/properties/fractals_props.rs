@@ -68,3 +68,80 @@ fn prop_chaos_game_reproducible_and_attractor_invariant() {
         assert!(d < 0.05, "image of attractor point stays on the attractor ({d})");
     }
 }
+
+#[test]
+fn prop_mandelbrot_interior_regions_never_escape() {
+    use rust_physics_engine::fractals::escape_time::{
+        mandelbrot, mandelbrot_in_main_cardioid, mandelbrot_in_period2_bulb, EscapeParams,
+    };
+    use rust_physics_engine::fractals::Complex;
+    let params = EscapeParams { max_iter: 10_000, ..EscapeParams::default() };
+    let mut rng = Rng::new(41);
+    let mut tested = 0;
+    while tested < 40 {
+        let c = Complex::new(rng.next_f64() * 3.0 - 2.25, rng.next_f64() * 2.5 - 1.25);
+        if mandelbrot_in_main_cardioid(c) || mandelbrot_in_period2_bulb(c) {
+            assert!(
+                !mandelbrot(c, &params).escaped,
+                "known interior point ({}, {}) escaped",
+                c.re,
+                c.im
+            );
+            tested += 1;
+        }
+    }
+}
+
+#[test]
+fn prop_noise_seeds_uncorrelated() {
+    use rust_physics_engine::fractals::noise::{OpenSimplex2, Perlin};
+    let pa = Perlin::new(100);
+    let pb = Perlin::new(200);
+    let sa = OpenSimplex2::new(100);
+    let sb = OpenSimplex2::new(200);
+    let mut rng = Rng::new(77);
+    let n = 20_000;
+    let (mut sum_a, mut sum_b, mut sum_ab, mut sum_a2, mut sum_b2) = (0.0, 0.0, 0.0, 0.0, 0.0);
+    let (mut t_a, mut t_b, mut t_ab, mut t_a2, mut t_b2) = (0.0, 0.0, 0.0, 0.0, 0.0);
+    for _ in 0..n {
+        let (x, y) = (rng.next_f64() * 100.0, rng.next_f64() * 100.0);
+        let (a, b) = (pa.noise_2d(x, y), pb.noise_2d(x, y));
+        sum_a += a;
+        sum_b += b;
+        sum_ab += a * b;
+        sum_a2 += a * a;
+        sum_b2 += b * b;
+        let (u, v) = (sa.noise_2d(x, y), sb.noise_2d(x, y));
+        t_a += u;
+        t_b += v;
+        t_ab += u * v;
+        t_a2 += u * u;
+        t_b2 += v * v;
+    }
+    let nf = n as f64;
+    let r_perlin = (sum_ab / nf - sum_a / nf * (sum_b / nf))
+        / ((sum_a2 / nf - (sum_a / nf).powi(2)).sqrt()
+            * (sum_b2 / nf - (sum_b / nf).powi(2)).sqrt());
+    assert!(r_perlin.abs() < 0.05, "Perlin seeds correlated (r = {r_perlin})");
+    let r_simplex = (t_ab / nf - t_a / nf * (t_b / nf))
+        / ((t_a2 / nf - (t_a / nf).powi(2)).sqrt() * (t_b2 / nf - (t_b / nf).powi(2)).sqrt());
+    assert!(r_simplex.abs() < 0.05, "simplex seeds correlated (r = {r_simplex})");
+}
+
+#[test]
+fn prop_julia_c_zero_unit_circle() {
+    use rust_physics_engine::fractals::escape_time::{julia, EscapeParams};
+    use rust_physics_engine::fractals::Complex;
+    let params = EscapeParams { max_iter: 3000, ..EscapeParams::default() };
+    let mut rng = Rng::new(55);
+    for _ in 0..60 {
+        let angle = rng.next_f64() * std::f64::consts::TAU;
+        let inner = 0.999 * rng.next_f64();
+        let outer = 1.001 + rng.next_f64();
+        let zi = Complex::new(inner * angle.cos(), inner * angle.sin());
+        let zo = Complex::new(outer * angle.cos(), outer * angle.sin());
+        let c = Complex::new(0.0, 0.0);
+        assert!(!julia(zi, c, &params).escaped, "|z| < 1 bounded");
+        assert!(julia(zo, c, &params).escaped, "|z| > 1 escapes");
+    }
+}
