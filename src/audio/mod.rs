@@ -1,5 +1,6 @@
 //! Audio synthesis, analysis, effects, and I/O.
 
+pub mod analysis;
 pub mod effects;
 pub mod envelope;
 pub mod oscillators;
@@ -7,6 +8,19 @@ pub mod physical;
 pub mod synthesis;
 pub mod wav;
 
+pub use analysis::{
+    audio_fingerprint, autocorrelation_fft, beat_track, c50, c80, chord_estimate, chroma, d50,
+    delta_features, dynamic_time_warping, edt_from_ir, enob, estimate_snr, fluctuation_strength,
+    formant_track, harmonic_to_noise_ratio, impulse_response_from_sweep, inharmonicity_measure,
+    key_estimate, loudness_sone, lpc, lpc_spectrum, lpc_to_formants, lpc_to_lsp, lsp_to_lpc, mfcc,
+    onset_complex_domain, onset_detect, onset_hfc, onset_strength, peak_pick,
+    pitch_autocorrelation, pitch_cepstral, pitch_hps, pitch_mpm, pitch_to_midi_track, pitch_track,
+    pitch_yin, roughness, rt60_from_ir, sharpness, silence_detect, sinad, spectral_centroid,
+    spectral_crest, spectral_decrease, spectral_entropy_mag, spectral_features_track,
+    spectral_flatness_mag, spectral_flux, spectral_kurtosis, spectral_rolloff, spectral_skewness,
+    spectral_slope, spectral_spread, sti_approx, tempo_estimate, thd_n, transient_detect,
+    zero_crossing_rate, PitchMethod, SpectralFeatures,
+};
 pub use effects::{
     bitcrush, convolution_reverb, dc_offset_remove, declick, distortion_foldback,
     distortion_hard_clip, distortion_soft_clip, distortion_tube, dither_tpdf, gain_db, haas_delay,
