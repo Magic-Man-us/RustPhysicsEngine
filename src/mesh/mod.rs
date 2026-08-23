@@ -4,6 +4,7 @@
 pub mod analyze;
 pub mod generate;
 pub mod isosurface;
+pub mod parameterize;
 pub mod subdivide;
 pub mod surfaces;
 

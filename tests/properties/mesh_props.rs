@@ -353,3 +353,74 @@ fn prop_decimation_random_bumpy_sphere_keeps_genus() {
     // Volume roughly preserved.
     assert!((d.volume() - m.volume()).abs() / m.volume() < 0.1);
 }
+
+#[test]
+fn prop_parameterization_invariance_and_injectivity() {
+    use rust_physics_engine::mesh::parameterize::{
+        area_distortion, conformal_distortion, harmonic_parameterization, lscm, BoundaryShape,
+    };
+    use rust_physics_engine::quaternion::Quaternion;
+    // Random bumpy disk meshes: harmonic maps into a convex target
+    // stay injective, and LSCM's conformal distortion is invariant
+    // under rigid motion of the input.
+    let mut rng = Rng::new(901);
+    for trial in 0..5 {
+        let rings = 3 + trial % 2;
+        let segments = 10 + 2 * trial;
+        let mut vertices = vec![Vec3::ZERO];
+        for k in 1..=rings {
+            let r = k as f64 / rings as f64;
+            for j in 0..segments {
+                let a = std::f64::consts::TAU * j as f64 / segments as f64;
+                // Gentle out-of-plane bumps keep the mesh a graph
+                // over the disk.
+                let z = 0.15 * rng.next_f64() * (3.0 * a).sin();
+                vertices.push(Vec3::new(r * a.cos(), r * a.sin(), z));
+            }
+        }
+        let ring_start = |k: usize| 1 + (k - 1) * segments;
+        let mut indices = Vec::new();
+        for j in 0..segments {
+            indices.push([0, ring_start(1) + j, ring_start(1) + (j + 1) % segments]);
+        }
+        for k in 1..rings {
+            for j in 0..segments {
+                let (a, b) = (ring_start(k) + j, ring_start(k) + (j + 1) % segments);
+                let (c, d) = (ring_start(k + 1) + j, ring_start(k + 1) + (j + 1) % segments);
+                indices.push([a, c, d]);
+                indices.push([a, d, b]);
+            }
+        }
+        let m = Mesh { vertices, indices, normals: None, uvs: None };
+        for shape in [BoundaryShape::Circle, BoundaryShape::Square, BoundaryShape::Free] {
+            let uv = harmonic_parameterization(&m, shape);
+            for &[a, b, c] in &m.indices {
+                let area = (uv[b] - uv[a]).cross(&(uv[c] - uv[a]));
+                assert!(area > 0.0, "harmonic {shape:?} map stays injective");
+            }
+        }
+        // LSCM distortion is a rigid invariant.
+        let pins = [(1usize, Vec2::new(0.0, 0.0)), (1 + segments / 2, Vec2::new(1.0, 0.0))];
+        let d0 = conformal_distortion(&m, &lscm(&m, pins));
+        let q = Quaternion::from_axis_angle(
+            Vec3::new(rng.next_f64(), rng.next_f64(), 1.0).normalized(),
+            rng.next_f64() * 3.0,
+        );
+        let shift = Vec3::new(5.0, -2.0, 1.0);
+        let moved = Mesh {
+            vertices: m.vertices.iter().map(|&v| q.rotate_vec(v) + shift).collect(),
+            indices: m.indices.clone(),
+            normals: None,
+            uvs: None,
+        };
+        let d1 = conformal_distortion(&moved, &lscm(&moved, pins));
+        for (a, b) in d0.iter().zip(&d1) {
+            assert!((a - b).abs() < 1e-6, "distortion is rigid-invariant ({a} vs {b})");
+        }
+        // Area distortion of the harmonic circle map averages to 1.
+        let uv = harmonic_parameterization(&m, BoundaryShape::Circle);
+        let ad = area_distortion(&m, &uv);
+        let mean: f64 = ad.iter().sum::<f64>() / ad.len() as f64;
+        assert!(mean > 0.5 && mean < 2.0, "area distortion near its normalized mean ({mean})");
+    }
+}
