@@ -7,12 +7,15 @@ pub mod boundary_layer;
 pub mod grid;
 pub mod lbm;
 pub mod level_set;
+pub mod multiphase;
+pub mod porous;
 pub mod potential_flow;
 pub mod riemann;
 pub mod sph;
 pub mod shallow_water;
 pub mod stable_fluids;
 pub mod turbulence;
+pub mod vortex;
 
 pub use advection::{
     advect_bfecc_2d, advect_flux_limited_2d, advect_lax_wendroff_1d, advect_maccormack_2d,
@@ -41,6 +44,29 @@ pub use level_set::{
     ohnesorge, rayleigh_plesset, single_vortex_deformation_test, taylor_bubble_velocity,
     weber_breakup_regime, young_laplace_pressure, zalesak_disk, zalesak_rotate,
     FreeSurfaceFluid2, LevelSet2, LevelSet3, Segment2, Vof2, WenoOrUpwind,
+};
+pub use multiphase::{
+    boiling_heat_flux_rohsenow, breakup_rate_luo_svendsen, bubble_drag_coefficient,
+    bubble_rise_velocity, cavitation_number, chisholm, coalescence_rate_prince_blanch,
+    condensation_nusselt_film, critical_heat_flux_zuber, drift_flux_velocity,
+    droplet_terminal_velocity, eotvos, evaporation_rate_hertz_knudsen,
+    fluidization_minimum_velocity, flow_pattern_taitel_dukler, friedel_correlation,
+    hindered_settling_exponent, martinelli_parameter, mixture_density,
+    mixture_viscosity_dukler, mixture_viscosity_mcadams, morton_number,
+    particle_response_time, particle_tracking_step, population_balance_1d, rosin_rammler,
+    sauter_mean_diameter, sedimentation_richardson_zaki, settling_velocity,
+    spray_penetration_hiroyasu, stokes_number, two_phase_pressure_drop_lockhart_martinelli,
+    void_fraction_drift_flux, void_fraction_homogeneous, void_fraction_lockhart_martinelli,
+    FlowPattern, SaturatedFluid,
+};
+pub use porous::{
+    advection_dispersion_1d, bioclogging_porosity_change, brinkman_velocity_profile,
+    brooks_corey, buckley_leverett, capillary_pressure_leverett, carman_kozeny_fibers,
+    darcy_flow_rate, darcy_velocity, dispersion_coefficient, dupuit_unconfined,
+    effective_thermal_conductivity_porous, ergun_pressure_drop, forchheimer,
+    groundwater_flow_2d, hydraulic_conductivity, ogata_banks, peclet_porous,
+    permeability_kozeny_carman, relative_permeability_corey, richards_equation_1d,
+    theis_drawdown, thiem_steady, VanGenuchten,
 };
 pub use potential_flow::{
     added_mass_cylinder, added_mass_sphere, conformal_map_flow, cylinder_cp_exact, cylinder_flow,
@@ -73,6 +99,14 @@ pub use stable_fluids::{
     flow_past_cylinder, lid_driven_cavity, multigrid_vcycle, pressure_poisson_cg,
     rayleigh_benard, taylor_green_exact, taylor_green_vortex, PressureSolver, StableFluid2,
     StableFluid3,
+};
+pub use vortex::{
+    biot_savart_ring, biot_savart_segment, burgers_vortex, crow_instability_growth,
+    helicity_density, hill_spherical_vortex, kelvin_helmholtz_growth_exact,
+    lamb_oseen_velocity, point_vortex_hamiltonian, point_vortex_step, rankine_vortex,
+    strouhal_from_re, tip_vortex_decay, vortex_line_trace, vortex_pair_velocity,
+    vortex_ring_self_velocity, vortex_shedding_frequency, VortexKernel, VortexMethod2,
+    VortexMethod3, VortexParticle,
 };
 pub use turbulence::{
     channel_flow_dns_reference, decaying_isotropic_turbulence, delta_criterion,
