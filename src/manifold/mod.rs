@@ -3,6 +3,7 @@
 //! geodesics, Lie groups, constant-curvature spaces, polytopes, Clifford
 //! algebras, embeddings, discrete exterior calculus, and spacetimes.
 
+pub mod clifford;
 pub mod geodesic;
 pub mod hyperbolic;
 pub mod lie;
@@ -11,6 +12,10 @@ pub mod polytope4;
 pub mod spherical;
 pub mod vecn;
 
+pub use clifford::{
+    algebra_dimension, blade_name, cayley_table, cga3, cl3, is_isomorphic_to_known, pga3, sta,
+    Multivector,
+};
 pub use geodesic::{
     geodesics_on_mesh_exact, great_circle_check, heat_method_geodesic, light_deflection,
     perihelion_precession, photon_orbit_stability, schwarzschild_orbit, shapiro_delay,
