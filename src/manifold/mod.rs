@@ -4,6 +4,7 @@
 //! algebras, embeddings, discrete exterior calculus, and spacetimes.
 
 pub mod clifford;
+pub mod dec;
 pub mod embedding;
 pub mod geodesic;
 pub mod hyperbolic;
@@ -16,6 +17,9 @@ pub mod vecn;
 pub use clifford::{
     algebra_dimension, blade_name, cayley_table, cga3, cl3, is_isomorphic_to_known, pga3, sta,
     Multivector,
+};
+pub use dec::{
+    betti_curve, persistence_diagram_bottleneck, persistent_homology_vietoris_rips, DecMesh,
 };
 pub use embedding::{
     blobs, classical_mds, continuity, diffusion_maps, dist_matrix, geodesic_distance_matrix,
