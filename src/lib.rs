@@ -38,6 +38,7 @@ pub mod optimization;
 pub mod signal_processing;
 pub mod transforms;
 pub mod dsp;
+pub mod resonance;
 pub mod curves;
 pub mod trigonometry;
 pub mod neutronics;
