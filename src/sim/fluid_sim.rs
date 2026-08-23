@@ -204,6 +204,23 @@ impl ShallowWater1D {
         }
     }
 
+    /// HLL (Harten-Lax-van Leer) time step with reflective boundary
+    /// conditions — the Part 3 rewire onto the CFD module's Riemann
+    /// machinery. Sharper than [`Self::step_lax_friedrichs`] on bores.
+    pub fn step_hll(&mut self, dt: f64) {
+        let b = vec![0.0; self.nx];
+        crate::cfd::shallow_water::swe_1d_step_hll(
+            &mut self.h,
+            &mut self.hu,
+            &b,
+            self.dx,
+            self.g,
+            dt,
+            DRY_TOLERANCE,
+            true,
+        );
+    }
+
     /// Lax-Friedrichs time step with reflective boundary conditions.
     ///
     /// Scheme (interior, 1 ≤ i ≤ nx-2):
