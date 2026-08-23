@@ -7,6 +7,7 @@ pub mod geodesic;
 pub mod hyperbolic;
 pub mod lie;
 pub mod metric;
+pub mod polytope4;
 pub mod spherical;
 pub mod vecn;
 
@@ -38,6 +39,15 @@ pub use lie::{
 pub use metric::{
     frw_metric, kerr_boyer_lindquist, schwarzschild_metric_fn,
     surface_metric_from_parametrization, warped_product, Metric, Sig,
+};
+pub use polytope4::{
+    clifford_torus, clifford_torus_mesh, coxeter_plane_projection, cross_polytope_n,
+    d4_lattice_points, e8_lattice_nearest, e8_roots, f4_roots, gaussian_concentration_radius,
+    h4_roots, hypercube_graph_n, hypercube_n, hypercube_slicing_volume,
+    hypersphere_cap_fraction, hypersphere_s3_points, hypersphere_volume, kissing_number_known,
+    leech_lattice_min_vectors_count, petrie_polygon_projection, project_n_to_2, project_n_to_3,
+    random_walk_n_return_prob, rotate_4d, rotate_4d_double, rotation_4d_planes, simplex_n,
+    volume_ball_vs_cube_ratio, Polytope4, Vec4,
 };
 pub use spherical::{
     azimuthal_equidistant, equirectangular, gauss_legendre_sphere, gnomonic, haversine,
