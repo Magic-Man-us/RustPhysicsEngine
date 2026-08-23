@@ -36,6 +36,8 @@ pub mod information_theory;
 pub mod vector_calculus;
 pub mod optimization;
 pub mod signal_processing;
+pub mod transforms;
+pub mod dsp;
 pub mod curves;
 pub mod trigonometry;
 pub mod neutronics;
