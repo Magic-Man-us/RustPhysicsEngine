@@ -126,7 +126,7 @@ fn prop_hull_contains_all_points() {
     for _ in 0..10 {
         let pts: Vec<Vec2> = (0..100)
             .map(|_| {
-                let a = rng.next_f64() * 6.283;
+                let a = rng.next_f64() * std::f64::consts::TAU;
                 let r = rng.next_f64().sqrt();
                 Vec2::new(r * a.cos() * 2.0, r * a.sin())
             })
@@ -352,4 +352,133 @@ fn prop_archimedean_tilings_unit_edges() {
             assert!(count <= 1, "{kind:?} faces overlap at {p:?}");
         }
     }
+}
+
+#[test]
+fn prop_conway_operators_preserve_euler() {
+    use rust_physics_engine::patterns::polyhedra::conway_apply;
+    for seed in ["T", "C", "O", "D", "I"] {
+        for op in ["d", "a", "k", "t", "j", "e", "o", "g", "p", "b", "m", "n", "z", "c"] {
+            let p = conway_apply(
+                &rust_physics_engine::patterns::polyhedra::tetrahedron(),
+                &format!("{op}{seed}"),
+            )
+            .unwrap();
+            // Genus-0 surface: V - E + F = 2, with the edge count
+            // consistent with the face lists.
+            assert_eq!(p.euler(), 2, "{op}{seed}");
+            let e = p.edges().len();
+            assert_eq!(p.vertices.len() + p.faces.len(), e + 2, "{op}{seed}");
+            assert!(p.volume() > 0.0, "{op}{seed} volume");
+            // The dual has swapped counts and the same Euler number.
+            let d = p.dual();
+            assert_eq!(d.vertices.len(), p.faces.len());
+            assert_eq!(d.faces.len(), p.vertices.len());
+            assert_eq!(d.euler(), 2);
+        }
+    }
+}
+
+#[test]
+fn prop_geodesic_goldberg_counts() {
+    use rust_physics_engine::patterns::polyhedra::{geodesic_sphere, goldberg};
+    for f in 1..=4u32 {
+        let g = geodesic_sphere(f);
+        let t = (f * f) as usize;
+        assert_eq!(g.vertices.len(), 10 * t + 2);
+        assert_eq!(g.faces.len(), 20 * t);
+        assert_eq!(g.euler(), 2);
+        assert!(g.faces.iter().all(|f| f.len() == 3));
+        for v in &g.vertices {
+            assert!(
+                (v.magnitude() - 1.0).abs() < 1e-9,
+                "geodesic vertices on the unit sphere"
+            );
+        }
+    }
+    for (m, n) in [(1u32, 0u32), (2, 0), (3, 0), (1, 1), (2, 2)] {
+        let p = goldberg(m, n);
+        let t = (m * m + m * n + n * n) as usize;
+        assert_eq!(p.faces.len(), 10 * t + 2, "GP({m},{n}) faces");
+        assert_eq!(p.vertices.len(), 20 * t, "GP({m},{n}) vertices");
+        assert_eq!(p.euler(), 2);
+        let pentagons = p.faces.iter().filter(|f| f.len() == 5).count();
+        let hexagons = p.faces.iter().filter(|f| f.len() == 6).count();
+        assert_eq!(pentagons, 12, "GP({m},{n}) has 12 pentagons");
+        assert_eq!(hexagons, p.faces.len() - 12);
+    }
+}
+
+#[test]
+fn prop_penrose_deflation_scale_invariance() {
+    use rust_physics_engine::patterns::aperiodic::{
+        penrose_p2_deflate, penrose_p2_seed, penrose_p3_deflate, penrose_p3_sun, PenroseTile,
+    };
+    let count = |tiles: &[rust_physics_engine::patterns::aperiodic::PlacedTile]| {
+        let thick = tiles
+            .iter()
+            .filter(|t| matches!(t.kind, PenroseTile::Kite | PenroseTile::ThickRhomb))
+            .count();
+        (thick, tiles.len() - thick)
+    };
+    let area = |tiles: &[rust_physics_engine::patterns::aperiodic::PlacedTile]| -> f64 {
+        tiles
+            .iter()
+            .map(|t| {
+                rust_physics_engine::spatial::primitives::Polygon2::new(t.vertices.clone()).area()
+            })
+            .sum()
+    };
+    let base_p2 = penrose_p2_deflate(&penrose_p2_seed(1.0), 3);
+    let base_p3 = penrose_p3_deflate(&penrose_p3_sun(1.0), 3);
+    for r in [0.5, 2.0, 7.0] {
+        let p2 = penrose_p2_deflate(&penrose_p2_seed(r), 3);
+        let p3 = penrose_p3_deflate(&penrose_p3_sun(r), 3);
+        // Tile counts are scale-free; total area scales by r^2.
+        assert_eq!(count(&p2), count(&base_p2));
+        assert_eq!(count(&p3), count(&base_p3));
+        assert!((area(&p2) - r * r * area(&base_p2)).abs() < 1e-6 * r * r);
+        assert!((area(&p3) - r * r * area(&base_p3)).abs() < 1e-6 * r * r);
+    }
+}
+
+#[test]
+fn prop_fibonacci_word_and_chain() {
+    use rust_physics_engine::patterns::aperiodic::{cut_and_project_1d, fibonacci_word};
+    let phi = (1.0 + 5.0f64.sqrt()) / 2.0;
+    let word = fibonacci_word(1000);
+    assert_eq!(word.len(), 1000);
+    // No two consecutive b's, and letter frequencies in golden ratio.
+    for w in word.windows(2) {
+        assert!(w[0] || w[1], "the Fibonacci word never has bb");
+    }
+    let a = word.iter().filter(|&&c| c).count();
+    let b = word.len() - a;
+    assert!((a as f64 / b as f64 - phi).abs() < 0.01);
+    // Fixed point of the substitution a -> ab, b -> a.
+    let mut image = Vec::new();
+    for &c in &word {
+        image.push(true);
+        if c {
+            image.push(false);
+        }
+    }
+    assert_eq!(&image[..1000], &word[..]);
+    // The projected chain has two gap lengths in golden ratio, with
+    // the long gaps roughly phi times as frequent.
+    let pts = cut_and_project_1d(1.0 / phi, 50.0);
+    assert!(pts.len() > 100);
+    let gaps: Vec<f64> = pts.windows(2).map(|w| w[1] - w[0]).collect();
+    let lo = gaps.iter().cloned().fold(f64::INFINITY, f64::min);
+    let hi = gaps.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+    assert!((hi / lo - phi).abs() < 1e-9, "gap ratio {} vs phi", hi / lo);
+    let long = gaps.iter().filter(|&&g| (g - hi).abs() < 1e-9).count();
+    let short = gaps.len() - long;
+    for g in &gaps {
+        assert!(
+            (g - hi).abs() < 1e-9 || (g - lo).abs() < 1e-9,
+            "two gap classes"
+        );
+    }
+    assert!((long as f64 / short as f64 - phi).abs() < 0.1);
 }
