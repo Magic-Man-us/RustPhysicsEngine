@@ -14,7 +14,13 @@ pub use fir::{
     fir_kaiser_design, fir_least_squares, fir_lowpass, fir_parks_mcclellan, fir_raised_cosine,
     fir_root_raised_cosine, fir_savitzky_golay, FirState,
 };
-pub use iir::{first_order_highpass, first_order_lowpass};
+pub use iir::{
+    a_weighting_filter, bessel, bilinear_transform, butterworth, butterworth_order,
+    c_weighting_filter, chebyshev1, chebyshev2, dc_blocker, elliptic, filtfilt,
+    first_order_highpass, first_order_lowpass, group_delay, iir_apply, impulse_response,
+    one_pole_lowpass, rbj_q_from_bandwidth, state_variable_filter, step_response, tf_to_zpk,
+    zpk_to_sos, Biquad, IirKind, Sos, Svf,
+};
 pub use windows::{
     blackman_window, hamming_window, hann_window, kaiser_beta_for_attenuation, rectangular_window,
     window, window_metrics, WindowKind, WindowMetrics,

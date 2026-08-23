@@ -14,7 +14,7 @@ pub use bessel::{
 };
 pub use beta::{beta, beta_inc};
 pub use elliptic::{
-    ellipse_perimeter_exact, elliptic_e, elliptic_e_inc, elliptic_f, elliptic_k,
+    ellipse_perimeter_exact, elliptic_e, elliptic_e_inc, elliptic_f, elliptic_k, jacobi_elliptic,
     pendulum_period_exact,
 };
 pub use erf::{erf, erfc, erfinv};
