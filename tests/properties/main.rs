@@ -2,6 +2,7 @@
 //! own deterministic `Rng`, one module per library area.
 
 mod core_props;
+mod fractals_props;
 mod geometry_props;
 mod linalg_props;
 mod mesh_props;

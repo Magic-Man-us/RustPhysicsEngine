@@ -3,6 +3,7 @@
 //! curves, polyhedra, aperiodic tilings, and knots.
 
 pub mod aperiodic;
+pub mod knots;
 pub mod phyllotaxis;
 pub mod packing;
 pub mod polygon_ops;

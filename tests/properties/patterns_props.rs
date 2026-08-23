@@ -482,3 +482,32 @@ fn prop_fibonacci_word_and_chain() {
     }
     assert!((long as f64 / short as f64 - phi).abs() < 0.1);
 }
+
+#[test]
+fn prop_torus_knot_pushoff_linking() {
+    use rust_physics_engine::patterns::knots::{linking_number, torus_knot_curve, writhe};
+    // The push-off of a (p, q) torus knot along the torus normal
+    // links the knot p*q times.
+    for (p, q) in [(2u32, 3u32), (3, 2), (2, 5)] {
+        let a = torus_knot_curve(p, q, 3.0, 1.0, 240);
+        let b = torus_knot_curve(p, q, 3.0, 1.15, 240);
+        let lk = linking_number(&a, &b);
+        assert_eq!(lk.unsigned_abs(), p * q, "T({p},{q}) push-off linking {lk}");
+    }
+    // Writhe is invariant under rigid motion and uniform scaling.
+    let a = torus_knot_curve(2, 3, 3.0, 1.0, 200);
+    let w0 = writhe(&a);
+    let q = rust_physics_engine::quaternion::Quaternion::from_axis_angle(
+        Vec3::new(1.0, 2.0, 0.5).normalized(),
+        1.234,
+    );
+    let moved = rust_physics_engine::spatial::primitives::Polyline {
+        points: a
+            .points
+            .iter()
+            .map(|&p| q.rotate_vec(p * 2.5) + Vec3::new(4.0, -1.0, 7.0))
+            .collect(),
+        closed: true,
+    };
+    assert!((writhe(&moved) - w0).abs() < 1e-9, "writhe is a similarity invariant");
+}

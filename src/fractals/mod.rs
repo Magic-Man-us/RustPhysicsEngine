@@ -1,3 +1,6 @@
+pub mod ifs;
+pub mod lsystem;
+
 use std::ops::{Add, Div, Mul, Sub};
 
 use crate::math::constants::PI;
