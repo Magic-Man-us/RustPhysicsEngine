@@ -14,7 +14,7 @@ pub use matrix::Matrix;
 pub use qr::{least_squares, qr_householder, Qr};
 pub use sparse::{conjugate_gradient, pcg_jacobi, CsrMatrix};
 pub use svd::{kabsch, pseudoinverse, rank, svd, Svd};
-pub use tridiagonal::thomas_solve;
+pub use tridiagonal::{eigen_symmetric_tridiagonal, thomas_solve};
 
 use std::ops::{Add, Mul, Sub};
 
