@@ -3,6 +3,7 @@
 pub mod effects;
 pub mod envelope;
 pub mod oscillators;
+pub mod physical;
 pub mod synthesis;
 pub mod wav;
 
@@ -24,6 +25,12 @@ pub use oscillators::{
     chirp_linear, chirp_exponential, dc, impulse, multisine, polyblep_saw, polyblep_square,
     polyblep_triangle, pulse_train, schroeder_phase_multisine, sine_sweep_with_inverse, NoiseColor,
     NoiseGen, Oscillator, Waveform, Wavetable,
+};
+pub use physical::{
+    banded_waveguide, commuted_synthesis, glottal_pulse_lf, hammer_string_interaction,
+    inharmonic_partials, jet_nonlinearity, lip_model, reed_nonlinearity, rosenberg_pulse,
+    string_tension_from_freq, sympathetic_resonance, vocal_tract, BowedString, KellyLochbaum,
+    MassSpringString, Membrane2D, ModalSynth, Plate2D, WaveguideString, WaveguideTube,
 };
 pub use synthesis::{
     additive, additive_evolving, am, chebyshev_waveshaper, drum_clap, drum_hihat, drum_kick,
