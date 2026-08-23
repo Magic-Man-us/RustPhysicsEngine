@@ -430,6 +430,7 @@ mod tests {
 pub mod delaunay;
 pub mod geodesy;
 pub mod hull;
+pub mod mesh;
 
 pub use delaunay::{circumcircle, delaunay_2d, voronoi_cells_2d};
 pub use geodesy::{
@@ -437,3 +438,4 @@ pub use geodesy::{
     Ellipsoid,
 };
 pub use hull::{convex_hull_2d, convex_hull_3d, point_in_polygon, polygon_area_signed};
+pub use mesh::{Mesh, RayHit};

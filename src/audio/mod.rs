@@ -5,7 +5,10 @@ pub mod effects;
 pub mod envelope;
 pub mod oscillators;
 pub mod physical;
+pub mod spatial;
 pub mod synthesis;
+pub mod tuning;
+pub mod vocoder;
 pub mod wav;
 
 pub use analysis::{
@@ -45,6 +48,26 @@ pub use physical::{
     inharmonic_partials, jet_nonlinearity, lip_model, reed_nonlinearity, rosenberg_pulse,
     string_tension_from_freq, sympathetic_resonance, vocal_tract, BowedString, KellyLochbaum,
     MassSpringString, Membrane2D, ModalSynth, Plate2D, WaveguideString, WaveguideTube,
+};
+pub use spatial::{
+    air_absorption_filter, ambisonics_decode, ambisonics_encode, ambisonics_encode_1st,
+    ambisonics_rotate, beamforming_delay_sum, beamforming_mvdr, binaural_simple, distance_gain,
+    doppler_resample, early_reflections, ild_spherical_head, image_source_ir, itd_woodworth,
+    localize_tdoa, pan_constant_power, pan_linear, pan_minus_4_5_db, pan_vbap_2d, pan_vbap_3d,
+    ray_tracing_ir, sonar_equation, sonar_range, speaker_baffle_step, speaker_crossover_lr4,
+    spherical_head_hrtf, tdoa_gcc_phat, thiele_small_response,
+};
+pub use tuning::{
+    bohlen_pierce, cents_between, cents_to_ratio, chord_tones, circle_of_fifths,
+    consonance_plomp_levelt, dissonance_curve, equal_temperament, harmonic_series_scale,
+    interval_name, just_intonation_5limit, kirnberger_iii, meantone_quarter_comma,
+    midi_to_freq_tuned, nearest_note, pythagorean, pythagorean_comma, ratio_to_cents, scala_parse,
+    scale_degrees, schisma, stretch_tuning_railsback, syntonic_comma, werckmeister_iii, young,
+    ChordQuality, Mode,
+};
+pub use vocoder::{
+    autotune, channel_vocoder, cross_synthesis, harmonizer, lpc_vocoder, psola_pitch_shift,
+    spectral_morph, wsola_time_stretch, Excitation, PhaseVocoder,
 };
 pub use synthesis::{
     additive, additive_evolving, am, chebyshev_waveshaper, drum_clap, drum_hihat, drum_kick,
