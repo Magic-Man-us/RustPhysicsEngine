@@ -3,6 +3,7 @@
 //! LBM, level sets, and turbulence models.
 
 pub mod advection;
+pub mod boundary_layer;
 pub mod grid;
 pub mod lbm;
 pub mod level_set;
@@ -11,6 +12,7 @@ pub mod riemann;
 pub mod sph;
 pub mod shallow_water;
 pub mod stable_fluids;
+pub mod turbulence;
 
 pub use advection::{
     advect_bfecc_2d, advect_flux_limited_2d, advect_lax_wendroff_1d, advect_maccormack_2d,
@@ -18,6 +20,16 @@ pub use advection::{
     advect_velocity_semi_lagrangian, advect_weno5_1d, advection_diffusion_1d,
     burgers_exact_cole_hopf, burgers_step, peclet_cell, rk3_ssp, total_variation,
     weno5_reconstruct, Limiter, Scheme,
+};
+pub use boundary_layer::{
+    blasius_cf, blasius_drag_plate, blasius_profile, blasius_solve, blasius_thickness,
+    couette_flow, ekman_depth, ekman_spiral, falkner_skan_separation_beta, falkner_skan_solve,
+    first_cell_height, flat_plate_heat_transfer_laminar, head_entrainment_method, law_of_the_wall,
+    michel_transition_criterion, pohlhausen_profile, spalding, stokes_first_problem,
+    stokes_second_problem, stratford_separation_criterion, thermal_bl_ratio, thwaites_method,
+    thwaites_separation_point, transition_re_x_estimate, turbulent_bl_power_law,
+    turbulent_cf_prandtl, turbulent_cf_schlichting, turbulent_thickness_1_7, u_tau,
+    van_driest_damping, y_plus,
 };
 pub use grid::{CellField2, FluidBc, MacGrid2, MacGrid3};
 pub use lbm::{
@@ -61,4 +73,16 @@ pub use stable_fluids::{
     flow_past_cylinder, lid_driven_cavity, multigrid_vcycle, pressure_poisson_cg,
     rayleigh_benard, taylor_green_exact, taylor_green_vortex, PressureSolver, StableFluid2,
     StableFluid3,
+};
+pub use turbulence::{
+    channel_flow_dns_reference, decaying_isotropic_turbulence, delta_criterion,
+    dissipation_rate_from_spectrum, dynamic_smagorinsky_cs, energy_spectrum_1d,
+    energy_spectrum_2d, energy_spectrum_3d, inertial_range_exponent, integral_scale,
+    kolmogorov_scales, kolmogorov_spectrum, lambda2_criterion, log_law_fit, pao_spectrum,
+    q_criterion, rans_step, re_lambda, reynolds_stress, richardson_cascade_time,
+    rotation_tensor, smagorinsky_nu_t, strain_tensor, structure_function,
+    synthetic_eddy_method, synthetic_turbulence_kraichnan, taylor_microscale,
+    turbulence_intensity, turbulent_diffusivity, two_point_correlation, von_karman_spectrum,
+    vortex_identify_q, vreman_nu_t, wale_nu_t, KEpsilon, KEpsilonVariant, KOmegaSst, RansModel,
+    SpalartAllmaras,
 };
