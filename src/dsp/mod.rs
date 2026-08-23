@@ -5,6 +5,8 @@
 //! `signal_processing` moved here; the old paths re-export them.
 
 pub mod fir;
+pub mod phase;
+pub mod resample;
 pub mod iir;
 pub mod windows;
 
@@ -20,6 +22,14 @@ pub use iir::{
     first_order_highpass, first_order_lowpass, group_delay, iir_apply, impulse_response,
     one_pole_lowpass, rbj_q_from_bandwidth, state_variable_filter, step_response, tf_to_zpk,
     zpk_to_sos, Biquad, IirKind, Sos, Svf,
+};
+pub use phase::{
+    group_delay_from_phase, phase_difference, phase_locked_loop, phase_vs_reference,
+    unwrap_phase, unwrap_phase_2d, wrap_phase, zero_crossing_times,
+};
+pub use resample::{
+    cic_decimate, decimate, half_band_filter, resample_cubic, resample_linear,
+    resample_rational, resample_sinc, resample_to_rate, sinc_interpolate, upsample,
 };
 pub use windows::{
     blackman_window, hamming_window, hann_window, kaiser_beta_for_attenuation, rectangular_window,
