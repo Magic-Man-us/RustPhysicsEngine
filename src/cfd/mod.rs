@@ -4,6 +4,7 @@
 
 pub mod advection;
 pub mod grid;
+pub mod lbm;
 pub mod riemann;
 pub mod sph;
 pub mod shallow_water;
@@ -17,6 +18,10 @@ pub use advection::{
     weno5_reconstruct, Limiter, Scheme,
 };
 pub use grid::{CellField2, FluidBc, MacGrid2, MacGrid3};
+pub use lbm::{
+    lbm_cavity_step, lbm_cylinder, lbm_lid_cavity, lbm_poiseuille_2d, lbm_thermal,
+    lbm_to_physical, poiseuille_exact, thermal_step, Collision, LbmD2Q9, LbmD3Q19, LbmD3Q27,
+};
 pub use riemann::{
     blast_wave_woodward_colella, cons_to_prim, flux, flux_ausm_plus, flux_hll, flux_hllc,
     flux_roe, flux_rusanov, isentropic_vortex_exact, lax_problem, normal_shock_relations,
