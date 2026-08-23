@@ -4,8 +4,18 @@
 //! The radix-2 FFT that used to live in `signal_processing::fft` moved
 //! here; the old paths re-export everything so no caller changes.
 
+pub mod dct;
 pub mod fft;
+pub mod stft;
 
+pub use dct::{
+    dct_2d, dct_compress, dct_i, dct_ii, dct_iii, dct_iv, dct_poisson_1d, dst_i, dst_ii,
+    hartley, idct_2d, idct_ii, Bc,
+};
+pub use stft::{
+    chirp_z, constant_q_transform, dtmf_decode, goertzel, goertzel_bank, mel_filterbank,
+    mel_spectrogram, reassigned_spectrogram, spectrogram, zoom_fft, Stft,
+};
 pub use fft::{
     fft, fft_2d, fft_3d, fft_any, fft_convolve, fft_convolve_2d, fft_correlate,
     fft_differentiate, fft_freqs, fft_integrate, fft_interpolate, fft_poisson_2d, fft_shift,
