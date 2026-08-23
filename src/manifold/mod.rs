@@ -11,6 +11,7 @@ pub mod hyperbolic;
 pub mod lie;
 pub mod metric;
 pub mod polytope4;
+pub mod spacetime;
 pub mod spherical;
 pub mod vecn;
 
@@ -69,6 +70,18 @@ pub use polytope4::{
     leech_lattice_min_vectors_count, petrie_polygon_projection, project_n_to_2, project_n_to_3,
     random_walk_n_return_prob, rotate_4d, rotate_4d_double, rotation_4d_planes, simplex_n,
     volume_ball_vs_cube_ratio, Polytope4, Vec4,
+};
+pub use spacetime::{
+    bekenstein_entropy, black_hole_shadow_radius, cosmological_distances, eddington_finkelstein,
+    evaporation_time, extra_dimension_gravity_law, frw_geodesic,
+    gravitational_lens_einstein_radius, gw_chirp_mass, gw_waveform_inspiral, hawking_temperature,
+    kaluza_klein_metric, kerr_geodesic_constants, kk_compactification_mass_spectrum,
+    kk_reduce_geodesic_to_charged, kruskal_from_schwarzschild, lens_equation_solve,
+    light_cone_check, orbit_schwarzschild_full, penrose_diagram_coords,
+    photon_ray_trace_schwarzschild, point_lens_magnification, relativistic_rocket,
+    rindler_coords, rindler_horizon, schwarzschild_geodesic_metric, simultaneity_plane,
+    sta_vs_matrix_lorentz_check, twin_paradox_ages, unruh_temperature, Causal, FourVector,
+    KerrConstants, LorentzTransform, Plane,
 };
 pub use spherical::{
     azimuthal_equidistant, equirectangular, gauss_legendre_sphere, gnomonic, haversine,

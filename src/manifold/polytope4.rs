@@ -1824,7 +1824,6 @@ pub fn volume_ball_vs_cube_ratio(n: usize) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::math::Vec3;
 
     #[test]
     fn test_regular_f_vectors() {
