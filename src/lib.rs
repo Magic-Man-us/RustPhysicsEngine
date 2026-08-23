@@ -40,6 +40,7 @@ pub mod transforms;
 pub mod dsp;
 pub mod resonance;
 pub mod fields;
+pub mod audio;
 pub mod curves;
 pub mod trigonometry;
 pub mod neutronics;
