@@ -12,6 +12,7 @@ mod fractals_props;
 mod geometry_props;
 mod graph_flow_props;
 mod graph_props;
+mod graph_structure_props;
 mod linalg_props;
 mod mesh_props;
 mod numerical_props;
