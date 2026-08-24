@@ -97,7 +97,14 @@ jobs:
       # allows, so a test asserting an exact float value fails under Miri
       # whatever the code does. Those five are exactness assertions and are
       # skipped here; they run everywhere else.
+      #
+      # A libtest filter is a substring match, not a path prefix, so a bare
+      # `core::` also selects `graph::core::` and `verification::core::` --
+      # brute-force combinatorial tests that Miri needs tens of minutes for.
+      # Skipping `::core::` anchors the filter to the top-level module: a
+      # top-level path starts with `core::` and so has nothing before it to
+      # match, while every nested one does.
       - name: Run core numerics tests under Miri
-        run: "cargo miri test --lib -- core::"
+        run: "cargo miri test --lib -- core:: --skip ::core::"
         env:
           MIRIFLAGS: "-Zmiri-strict-provenance"
