@@ -55,16 +55,24 @@ jobs:
   kani:
     name: Kani model checking
     runs-on: ubuntu-latest
-    # The harnesses quantify over whole f64 domains and several take a square
-    # root, which the solver has to bit-blast. Without a bound a single slow
-    # harness would hold a runner for the six-hour job default; this fails the
-    # job instead, which is the signal that a harness needs narrowing.
-    timeout-minutes: 90
+    # Thirteen harnesses at 24 to 68 seconds each, run in parallel with -j.
+    # Sequentially that is seven minutes; the bound is generous against a
+    # slower runner while still failing rather than holding a runner for the
+    # six-hour job default.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+      # The seven harnesses CBMC cannot decide in a CI-sized budget are behind
+      # the `kani-slow` feature and are not enabled here. Every harness was
+      # timed individually against a five-minute budget; the split and the
+      # measured times are recorded in src/verification/mod.rs. Briefly:
+      # asserting panic-freedom or finiteness lands in well under a minute,
+      # while asserting a numeric relation between symbolic float expressions
+      # exceeds five minutes, because CBMC has to bit-blast the full mantissa
+      # of every intermediate.
       - uses: model-checking/kani-github-action@v1
         with:
-          args: "--output-format terse"
+          args: "-j --output-format terse"
 
   miri:
     name: Miri (UB check)

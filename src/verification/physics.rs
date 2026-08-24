@@ -84,6 +84,8 @@ fn escape_velocity_finite_nonnegative() {
     assert!(v >= 0.0);
 }
 
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 fn orbital_velocity_below_escape_velocity() {
     // v_orb = sqrt(GM/r) < v_esc = sqrt(2GM/r) for M > 0.
@@ -111,6 +113,8 @@ fn vec3_dot_with_self_nonnegative() {
 
 // ---------- linalg ----------
 
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 fn mat3_inverse_never_divides_by_zero() {
     let mut data = [[0.0f64; 3]; 3];
@@ -145,6 +149,8 @@ fn mat3_identity_inverse_is_identity() {
 
 // ---------- numerical ----------
 
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 #[kani::unwind(34)]
 fn bisection_result_is_inside_bracket() {
@@ -172,6 +178,8 @@ fn factorial_is_monotone_and_finite_below_171() {
     assert!(g >= f);
 }
 
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 #[kani::unwind(9)]
 fn mean_of_bounded_slice_is_bounded() {
@@ -185,6 +193,8 @@ fn mean_of_bounded_slice_is_bounded() {
     assert!(m.abs() <= 1e100 + 1e-300);
 }
 
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 #[kani::unwind(9)]
 fn variance_is_nonnegative() {
