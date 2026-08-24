@@ -823,6 +823,147 @@ mod distribution_tests {
     }
 
     #[test]
+    fn test_gaussian_cdf_approx_matches_the_exact_erfc_form() {
+        // The alias is documented as now computing the exact value, so
+        // it must agree with `gaussian_cdf` bit for bit; it is also
+        // strictly monotone and hits the standard reference points.
+        #[allow(deprecated)]
+        let approx_cdf = |x: f64, mu: f64, sigma: f64| gaussian_cdf_approx(x, mu, sigma);
+        for &(mu, sigma) in &[(0.0, 1.0), (2.5, 0.5), (-1.0, 3.0)] {
+            let mut prev = f64::NEG_INFINITY;
+            for k in -80..=80 {
+                let x = mu + sigma * k as f64 / 10.0;
+                let v = approx_cdf(x, mu, sigma);
+                assert_eq!(v, gaussian_cdf(x, mu, sigma), "exact alias at x={x}");
+                assert!(v > prev, "monotone at x={x}: {v} <= {prev}");
+                assert!((0.0..=1.0).contains(&v), "CDF in [0, 1] at x={x}");
+                prev = v;
+            }
+            // Symmetry about the mean and the classic 1σ/2σ/3σ masses.
+            assert!(approx(approx_cdf(mu, mu, sigma), 0.5, 1e-15));
+            for k in 1..=3 {
+                let hi = approx_cdf(mu + k as f64 * sigma, mu, sigma);
+                let lo = approx_cdf(mu - k as f64 * sigma, mu, sigma);
+                assert!(approx(hi + lo, 1.0, 1e-14), "symmetry at {k} sigma");
+            }
+            assert!(approx(
+                approx_cdf(mu + sigma, mu, sigma) - approx_cdf(mu - sigma, mu, sigma),
+                0.682_689_492_137_086,
+                1e-4
+            ));
+            assert!(approx(
+                approx_cdf(mu + 2.0 * sigma, mu, sigma)
+                    - approx_cdf(mu - 2.0 * sigma, mu, sigma),
+                0.954_499_736_103_642,
+                1e-4
+            ));
+            assert!(approx(
+                approx_cdf(mu + 3.0 * sigma, mu, sigma)
+                    - approx_cdf(mu - 3.0 * sigma, mu, sigma),
+                0.997_300_203_936_740,
+                1e-4
+            ));
+        }
+        // Standard-normal table values.
+        assert!(approx(approx_cdf(1.96, 0.0, 1.0), 0.975_002_104_851_780, 1e-4));
+        assert!(approx(approx_cdf(-1.644_853_626_951_472, 0.0, 1.0), 0.05, 1e-4));
+    }
+
+    #[test]
+    fn test_poisson_distribution_trait_impl() {
+        for &lambda in &[0.5_f64, 3.0, 12.0] {
+            let d = Poisson::new(lambda);
+            // The trait mean/variance are both λ.
+            assert_eq!(d.mean(), lambda);
+            assert_eq!(d.variance(), lambda);
+            // pdf is the mass at the nearest integer: it agrees with
+            // pmf and is invariant to sub-half perturbations of x.
+            let kmax = (lambda + 12.0 * lambda.sqrt()).ceil() as u64 + 40;
+            let mut total = 0.0;
+            for k in 0..=kmax {
+                let m = d.pmf(k);
+                assert!(approx(d.pdf(k as f64), m, 1e-15), "pdf({k}) vs pmf");
+                assert!(approx(d.pdf(k as f64 + 0.3), m, 1e-15), "rounds down");
+                assert!(approx(d.pdf(k as f64 - 0.3), m, 1e-15), "rounds up");
+                total += m;
+            }
+            // The mass function sums to 1 over its whole support.
+            assert!(approx(total, 1.0, 1e-12), "lambda={lambda} total {total}");
+            // Negative arguments carry no mass.
+            assert_eq!(d.pdf(-1.0), 0.0);
+            assert_eq!(d.pdf(-7.5), 0.0);
+            // Mean and variance recovered from the mass function.
+            let mean: f64 = (0..=kmax).map(|k| k as f64 * d.pmf(k)).sum();
+            let var: f64 =
+                (0..=kmax).map(|k| (k as f64 - lambda).powi(2) * d.pmf(k)).sum();
+            assert!(approx(mean, d.mean(), 1e-9), "E[X] {mean} vs {lambda}");
+            assert!(approx(var, d.variance(), 1e-9), "Var[X] {var} vs {lambda}");
+            // Recurrence P(k+1) = P(k)·λ/(k+1).
+            for k in 0..20u64 {
+                assert!(approx(
+                    d.pdf(k as f64 + 1.0),
+                    d.pdf(k as f64) * lambda / (k as f64 + 1.0),
+                    1e-14
+                ));
+            }
+            // quantile inverts the CDF on the lattice.
+            for k in 0..8u64 {
+                assert_eq!(d.quantile(d.cdf(k as f64)), k as f64, "quantile roundtrip");
+            }
+        }
+    }
+
+    #[test]
+    fn test_binomial_distribution_trait_impl() {
+        for &(n, p) in &[(10u64, 0.3_f64), (25, 0.5), (7, 0.85)] {
+            let d = Binomial::new(n, p);
+            // pdf is the mass at the nearest integer and sums to 1.
+            let mut total = 0.0;
+            for k in 0..=n {
+                let m = d.pmf(k);
+                assert!(approx(d.pdf(k as f64), m, 1e-15), "pdf({k})");
+                assert!(approx(d.pdf(k as f64 + 0.4), m, 1e-15));
+                assert!(approx(d.pdf(k as f64 - 0.4), m, 1e-15));
+                total += m;
+            }
+            assert!(approx(total, 1.0, 1e-12), "n={n} p={p} total {total}");
+            // No mass outside 0..=n.
+            assert_eq!(d.pdf(-1.0), 0.0);
+            assert_eq!(d.pdf(n as f64 + 1.0), 0.0);
+            // Moments from the mass function match the closed forms.
+            let mean: f64 = (0..=n).map(|k| k as f64 * d.pmf(k)).sum();
+            let var: f64 =
+                (0..=n).map(|k| (k as f64 - d.mean()).powi(2) * d.pmf(k)).sum();
+            assert!(approx(mean, n as f64 * p, 1e-12));
+            assert!(approx(var, n as f64 * p * (1.0 - p), 1e-12));
+            // quantile(cdf(k)) == k on the lattice, for every k whose
+            // mass is resolvable (F is strictly increasing there).
+            for k in 0..n {
+                let c = d.cdf(k as f64);
+                if c < 1.0 && d.pmf(k) > 1e-12 {
+                    assert_eq!(d.quantile(c), k as f64, "n={n} p={p} k={k}");
+                }
+            }
+            // quantile is the smallest k with F(k) >= q, hence monotone
+            // and bracketed by the CDF.
+            for q in [0.01, 0.25, 0.5, 0.75, 0.99] {
+                let k = d.quantile(q);
+                assert!(d.cdf(k) >= q - 1e-12, "F(quantile) >= q");
+                if k > 0.0 {
+                    assert!(d.cdf(k - 1.0) < q, "quantile is minimal");
+                }
+            }
+        }
+        // Degenerate success probabilities are point masses.
+        let sure = Binomial::new(5, 1.0);
+        assert_eq!(sure.pdf(5.0), 1.0);
+        assert_eq!(sure.pdf(4.0), 0.0);
+        let never = Binomial::new(5, 0.0);
+        assert_eq!(never.pdf(0.0), 1.0);
+        assert_eq!(never.pdf(1.0), 0.0);
+    }
+
+    #[test]
     fn test_binomial_pmf_and_cdf() {
         let d = Binomial::new(10, 0.3);
         // P(X = 3) for B(10, 0.3) = 0.266827932

@@ -769,6 +769,171 @@ mod tests {
     }
 
     #[test]
+    fn test_bezier_patch_to_mesh_grid_and_corner_interpolation() {
+        let mut control = [[Vec3::ZERO; 4]; 4];
+        for (i, row) in control.iter_mut().enumerate() {
+            for (j, p) in row.iter_mut().enumerate() {
+                *p = Vec3::new(i as f64, j as f64, (i as f64 - 1.5) * (j as f64 - 1.5));
+            }
+        }
+        let patch = BezierPatch { control };
+        for &(nu, nv) in &[(1usize, 1usize), (4, 6), (12, 12)] {
+            let m = patch.to_mesh(nu, nv);
+            // Open in both directions: (nu+1)·(nv+1) vertices and
+            // 2·nu·nv triangles.
+            assert_eq!(m.vertices.len(), (nu + 1) * (nv + 1), "{nu}x{nv} vertices");
+            assert_eq!(m.indices.len(), 2 * nu * nv, "{nu}x{nv} triangles");
+            // Row-major (i along u, j along v) sampling of eval.
+            for i in 0..=nu {
+                for j in 0..=nv {
+                    let u = i as f64 / nu as f64;
+                    let v = j as f64 / nv as f64;
+                    let got = m.vertices[i * (nv + 1) + j];
+                    assert!(
+                        (got - patch.eval(u, v)).magnitude() < 1e-15,
+                        "vertex ({i}, {j})"
+                    );
+                }
+            }
+            // Endpoint interpolation: the four mesh corners are the
+            // four corner control points, exactly.
+            assert!((m.vertices[0] - control[0][0]).magnitude() < 1e-15);
+            assert!((m.vertices[nv] - control[0][3]).magnitude() < 1e-15);
+            assert!(
+                (m.vertices[nu * (nv + 1)] - control[3][0]).magnitude() < 1e-15
+            );
+            assert!(
+                (m.vertices[nu * (nv + 1) + nv] - control[3][3]).magnitude() < 1e-15
+            );
+            // Convex hull property: every vertex lies inside the
+            // control net's bounding box.
+            let (mut lo, mut hi) = (Vec3::ZERO, Vec3::ZERO);
+            for (i, row) in control.iter().enumerate() {
+                for (j, p) in row.iter().enumerate() {
+                    if i == 0 && j == 0 {
+                        lo = *p;
+                        hi = *p;
+                    }
+                    lo = Vec3::new(lo.x.min(p.x), lo.y.min(p.y), lo.z.min(p.z));
+                    hi = Vec3::new(hi.x.max(p.x), hi.y.max(p.y), hi.z.max(p.z));
+                }
+            }
+            for v in &m.vertices {
+                assert!(v.x >= lo.x - 1e-12 && v.x <= hi.x + 1e-12);
+                assert!(v.y >= lo.y - 1e-12 && v.y <= hi.y + 1e-12);
+                assert!(v.z >= lo.z - 1e-12 && v.z <= hi.z + 1e-12);
+            }
+        }
+        // A planar patch tessellates to exactly its own area: control
+        // points on the z = 0 plane spanning [0, 3]².
+        let mut flat = [[Vec3::ZERO; 4]; 4];
+        for (i, row) in flat.iter_mut().enumerate() {
+            for (j, p) in row.iter_mut().enumerate() {
+                *p = Vec3::new(i as f64, j as f64, 0.0);
+            }
+        }
+        let plane = BezierPatch { control: flat };
+        let m = plane.to_mesh(5, 7);
+        assert!((m.surface_area() - 9.0).abs() < 1e-12, "flat patch area");
+        // Refining the curved patch converges: the tessellated area
+        // approaches the analytic parametric integral from below.
+        let exact = surface_area_parametric(
+            &|u, v| patch.eval(u, v),
+            (0.0, 1.0),
+            (0.0, 1.0),
+            256,
+            256,
+        );
+        let coarse = patch.to_mesh(4, 4).surface_area();
+        let fine = patch.to_mesh(64, 64).surface_area();
+        assert!((coarse - exact).abs() / exact < 0.05, "coarse {coarse} vs {exact}");
+        assert!((fine - exact).abs() / exact < 1e-3, "fine {fine} vs {exact}");
+        assert!(
+            (fine - exact).abs() < (coarse - exact).abs(),
+            "refinement converges: {coarse} then {fine} toward {exact}"
+        );
+    }
+
+    #[test]
+    fn test_nurbs_to_mesh_lands_exactly_on_the_exact_surfaces() {
+        // The NURBS sphere is exact, so every tessellation vertex must
+        // sit on the sphere to machine precision.
+        let r = 1.7;
+        let s = NurbsSurface::sphere(r);
+        for &(nu, nv) in &[(8usize, 6usize), (24, 16)] {
+            let m = s.to_mesh(nu, nv);
+            assert_eq!(m.vertices.len(), (nu + 1) * (nv + 1));
+            assert_eq!(m.indices.len(), 2 * nu * nv);
+            for v in &m.vertices {
+                assert!(
+                    (v.magnitude() - r).abs() < 1e-12,
+                    "sphere vertex at radius {}",
+                    v.magnitude()
+                );
+            }
+            // Clamped knots: the mesh corners interpolate the corner
+            // control points, which for the sphere are the poles.
+            assert!((m.vertices[0] - s.control[0][0]).magnitude() < 1e-12);
+            assert!((m.vertices[nv] - s.control[0][4]).magnitude() < 1e-12);
+            let last_row = nu * (nv + 1);
+            assert!((m.vertices[last_row] - s.control[8][0]).magnitude() < 1e-12);
+            assert!((m.vertices[last_row + nv] - s.control[8][4]).magnitude() < 1e-12);
+            assert!((m.vertices[0] - Vec3::new(0.0, -r, 0.0)).magnitude() < 1e-12);
+            assert!((m.vertices[nv] - Vec3::new(0.0, r, 0.0)).magnitude() < 1e-12);
+            // Grid vertices reproduce eval on the whole domain.
+            for i in 0..=nu {
+                for j in 0..=nv {
+                    let (u, v) = (i as f64 / nu as f64, j as f64 / nv as f64);
+                    assert!(
+                        (m.vertices[i * (nv + 1) + j] - s.eval(u, v)).magnitude() < 1e-12
+                    );
+                }
+            }
+        }
+        // Refining converges to 4πr² from below (inscribed polyhedron).
+        let exact = 4.0 * std::f64::consts::PI * r * r;
+        let coarse = s.to_mesh(16, 12).surface_area();
+        let fine = s.to_mesh(96, 64).surface_area();
+        assert!(coarse < fine, "refinement increases the inscribed area");
+        assert!(fine < exact + 1e-9, "inscribed area below the exact one");
+        assert!((fine - exact).abs() / exact < 2e-3, "{fine} vs {exact}");
+
+        // The NURBS cylinder: every vertex at radius r, heights spanning
+        // the full [0, h] and matching the v parameter linearly.
+        let (rc, h) = (1.0, 3.0);
+        let c = NurbsSurface::cylinder(rc, h);
+        let m = c.to_mesh(16, 4);
+        assert_eq!(m.vertices.len(), 17 * 5);
+        for (k, v) in m.vertices.iter().enumerate() {
+            let radial = (v.x * v.x + v.z * v.z).sqrt();
+            assert!((radial - rc).abs() < 1e-12, "cylinder radius {radial}");
+            let j = k % 5;
+            assert!(
+                (v.y - h * j as f64 / 4.0).abs() < 1e-12,
+                "cylinder height {} at row {j}",
+                v.y
+            );
+        }
+        // Lateral area 2πrh, approached from below by the inscribed
+        // 16-sided prism and recovered to <1e-4 when refined.
+        let lateral = 2.0 * std::f64::consts::PI * rc * h;
+        let a16 = m.surface_area();
+        assert!(a16 < lateral, "inscribed prism area {a16} exceeds {lateral}");
+        assert!((lateral - a16) / lateral < 0.01, "16 sides: {a16} vs {lateral}");
+        let a256 = c.to_mesh(256, 4).surface_area();
+        assert!(a256 < lateral);
+        assert!((lateral - a256) / lateral < 1e-4, "256 sides: {a256} vs {lateral}");
+
+        // The NURBS torus: every vertex on the tube.
+        let t = NurbsSurface::torus(2.0, 0.5);
+        for v in &t.to_mesh(20, 12).vertices {
+            let radial = (v.x * v.x + v.z * v.z).sqrt();
+            let d = ((radial - 2.0).powi(2) + v.y * v.y).sqrt();
+            assert!((d - 0.5).abs() < 1e-12, "torus vertex off the tube: {d}");
+        }
+    }
+
+    #[test]
     fn test_curvatures_of_classic_surfaces() {
         let r = 2.0;
         let sphere = |u: f64, v: f64| {

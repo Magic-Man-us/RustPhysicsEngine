@@ -908,6 +908,225 @@ mod tests {
     }
 
     #[test]
+    fn test_periodic_restores_wraparound() {
+        // A lattice configured with Zou-He open boundaries is closed in x;
+        // `periodic()` must put the torus back and drop the open-boundary
+        // bookkeeping.
+        let (nx, ny) = (16, 8);
+        let u0 = Vec2::new(0.05, 0.0);
+
+        let mut torus = LbmD2Q9::new(nx, ny, 0.8);
+        torus.periodic_x = false;
+        torus.periodic_y = false;
+        torus.periodic();
+        assert!(torus.periodic_x && torus.periodic_y);
+        torus.init_equilibrium(1.0, u0);
+
+        // On a torus with no solids and no forcing, a uniform equilibrium
+        // state is an exact fixed point: collision leaves f = f_eq and
+        // streaming just permutes identical values. Mass and momentum are
+        // conserved to round-off.
+        let mass0: f64 = torus.density().iter().sum();
+        let px0: f64 = torus
+            .velocity()
+            .iter()
+            .zip(torus.density())
+            .map(|(v, r)| v.x * r)
+            .sum();
+        torus.run(60);
+        for (c, (rho, v)) in torus.density().iter().zip(torus.velocity()).enumerate() {
+            assert!((rho - 1.0).abs() < 1e-12, "density {rho} at {c}");
+            assert!((v.x - u0.x).abs() < 1e-12, "u {v:?} at {c}");
+            assert!(v.y.abs() < 1e-12, "v {v:?} at {c}");
+        }
+        let mass: f64 = torus.density().iter().sum();
+        let px: f64 = torus
+            .velocity()
+            .iter()
+            .zip(torus.density())
+            .map(|(v, r)| v.x * r)
+            .sum();
+        assert!((mass - mass0).abs() < 1e-12, "mass drift {mass} vs {mass0}");
+        assert!((px - px0).abs() < 1e-12, "momentum drift {px} vs {px0}");
+
+        // The same uniform state on a closed lattice does not survive:
+        // the stream bounces off the walls, so this is not a vacuous
+        // check of the torus.
+        let mut closed = LbmD2Q9::new(nx, ny, 0.8);
+        closed.periodic_x = false;
+        closed.periodic_y = false;
+        closed.init_equilibrium(1.0, u0);
+        closed.run(60);
+        let closed_dev = closed
+            .velocity()
+            .iter()
+            .map(|v| (v.x - u0.x).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(closed_dev > 1e-3, "closed lattice was undisturbed: {closed_dev}");
+
+        // `periodic()` also drops the Zou-He inlet/outlet: a uniform
+        // ρ = 1.2 lattice at rest is then an exact fixed point, whereas a
+        // live pressure outlet would drive the last column back to ρ = 1.
+        let mut cleared = LbmD2Q9::new(nx, ny, 0.8);
+        cleared.zou_he_velocity_inlet(0.05);
+        cleared.zou_he_pressure_outlet(1.0);
+        cleared.periodic();
+        cleared.init_equilibrium(1.2, Vec2::ZERO);
+        cleared.run(30);
+        let rho_dev = cleared
+            .density()
+            .iter()
+            .map(|r| (r - 1.2).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(rho_dev < 1e-12, "open boundaries still active: {rho_dev}");
+        let mut still_open = LbmD2Q9::new(nx, ny, 0.8);
+        still_open.zou_he_velocity_inlet(0.05);
+        still_open.zou_he_pressure_outlet(1.0);
+        still_open.init_equilibrium(1.2, Vec2::ZERO);
+        still_open.run(30);
+        let open_dev = still_open
+            .density()
+            .iter()
+            .map(|r| (r - 1.2).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(open_dev > 1e-3, "the outlet should have pulled ρ down: {open_dev}");
+
+        // Wrap-around distance: with the collision switched off (τ → ∞,
+        // ω ≈ 0) a population injected in the +x direction advects one
+        // node per step and must return to its origin after exactly nx
+        // steps.
+        let mut ballistic = LbmD2Q9::new(nx, ny, 1e9);
+        ballistic.periodic();
+        let (i0, j0) = (3_usize, 4_usize);
+        let delta = 0.02;
+        let base = ballistic.f[j0 * nx + i0][1];
+        ballistic.f[j0 * nx + i0][1] += delta;
+        let mass_b: f64 = ballistic.density().iter().sum();
+        for s in 1..=nx {
+            ballistic.step();
+            let here = (i0 + s) % nx;
+            let carried = ballistic.f[j0 * nx + here][1] - base;
+            assert!(
+                (carried - delta).abs() < 1e-6,
+                "step {s}: perturbation {carried} not at column {here}"
+            );
+        }
+        // Back where it started after a full lap.
+        assert!(
+            (ballistic.f[j0 * nx + i0][1] - base - delta).abs() < 1e-6,
+            "no wrap-around after {nx} steps"
+        );
+        assert!(
+            (ballistic.density().iter().sum::<f64>() - mass_b).abs() < 1e-12,
+            "mass lost during the lap"
+        );
+    }
+
+    #[test]
+    fn test_d3q19_viscosity_matches_shear_wave_decay() {
+        // ν = (τ − 1/2)/3 in lattice units (c_s² = 1/3, dt = 1).
+        for &tau in &[0.6_f64, 0.8, 1.0, 1.5] {
+            let lbm = LbmD3Q19::new(2, 2, 2, tau);
+            assert!(
+                (lbm.viscosity() - (tau - 0.5) / 3.0).abs() < 1e-15,
+                "tau {tau}: nu {}",
+                lbm.viscosity()
+            );
+        }
+        // Physical check: a transverse shear wave u_x = U sin(k z) on a
+        // fully periodic lattice decays as exp(−ν k² t). Measuring the
+        // decay recovers the viscosity the formula reports.
+        let (nx, ny, nz) = (4_usize, 4_usize, 16_usize);
+        let tau = 0.8;
+        let mut lbm = LbmD3Q19::new(nx, ny, nz, tau);
+        let k = 2.0 * std::f64::consts::PI / nz as f64;
+        let amp = 0.01;
+        for z in 0..nz {
+            let ux = amp * (k * z as f64).sin();
+            for y in 0..ny {
+                for x in 0..nx {
+                    let c = (z * ny + y) * nx + x;
+                    let u2 = ux * ux;
+                    for k19 in 0..19 {
+                        let eu = E19[k19].0 as f64 * ux;
+                        lbm.f[c][k19] =
+                            w19(k19) * (1.0 + 3.0 * eu + 4.5 * eu * eu - 1.5 * u2);
+                    }
+                }
+            }
+        }
+        // Fourier amplitude of the sin(kz) mode of the plane-averaged u_x.
+        let mode = |lbm: &LbmD3Q19| -> f64 {
+            let vel = lbm.velocity();
+            let mut a = 0.0;
+            for z in 0..nz {
+                let mut mean = 0.0;
+                for y in 0..ny {
+                    for x in 0..nx {
+                        mean += vel[(z * ny + y) * nx + x].x;
+                    }
+                }
+                mean /= (nx * ny) as f64;
+                a += mean * (k * z as f64).sin();
+            }
+            2.0 * a / nz as f64
+        };
+        // Skip a short start-up transient, then measure the decay rate
+        // over a window.
+        for _ in 0..20 {
+            lbm.step();
+        }
+        let a0 = mode(&lbm);
+        let window = 100;
+        for _ in 0..window {
+            lbm.step();
+        }
+        let a1 = mode(&lbm);
+        assert!(a0 > 0.5 * amp && a1 > 0.0, "mode collapsed: {a0} -> {a1}");
+        let nu_measured = -(a1 / a0).ln() / (k * k * window as f64);
+        let nu_formula = lbm.viscosity();
+        // The lattice-Boltzmann shear mode decays at exactly ν k² up to
+        // O((k dx)²) lattice corrections; here k dx = 0.39, so a few
+        // percent is the expected accuracy.
+        assert!(
+            (nu_measured / nu_formula - 1.0).abs() < 0.05,
+            "measured nu {nu_measured} vs (tau-0.5)/3 = {nu_formula}"
+        );
+        // Doubling (τ − 1/2) doubles the viscosity and so doubles the
+        // decay rate: an independent confirmation of the linear relation.
+        let tau2 = 0.5 + 2.0 * (tau - 0.5);
+        let mut fast = LbmD3Q19::new(nx, ny, nz, tau2);
+        for z in 0..nz {
+            let ux = amp * (k * z as f64).sin();
+            for y in 0..ny {
+                for x in 0..nx {
+                    let c = (z * ny + y) * nx + x;
+                    let u2 = ux * ux;
+                    for k19 in 0..19 {
+                        let eu = E19[k19].0 as f64 * ux;
+                        fast.f[c][k19] =
+                            w19(k19) * (1.0 + 3.0 * eu + 4.5 * eu * eu - 1.5 * u2);
+                    }
+                }
+            }
+        }
+        assert!((fast.viscosity() - 2.0 * nu_formula).abs() < 1e-15);
+        for _ in 0..20 {
+            fast.step();
+        }
+        let b0 = mode(&fast);
+        for _ in 0..window {
+            fast.step();
+        }
+        let b1 = mode(&fast);
+        let rate_ratio = (b0 / b1).ln() / (a0 / a1).ln();
+        assert!(
+            (rate_ratio - 2.0).abs() < 0.1,
+            "decay-rate ratio {rate_ratio} for doubled viscosity"
+        );
+    }
+
+    #[test]
     fn test_thermal_plume_and_units() {
         let (mut flow, mut temp) = lbm_thermal(24, 24, 0.7, 0.7);
         for _ in 0..200 {

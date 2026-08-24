@@ -964,6 +964,207 @@ mod tests {
     }
 
     #[test]
+    fn test_uniform_in_sphere_radial_law() {
+        let mut rng = Rng::new(70);
+        let s = Sphere { center: Vec3::new(-1.0, 2.0, 0.5), radius: 2.5 };
+        let n = 100_000;
+        let mut sum_r3 = 0.0;
+        let mut sum_r = 0.0;
+        let mut mean = Vec3::ZERO;
+        // Equal-volume shells: r³ is uniform on [0, R³], so the count
+        // in each of 20 shells of equal volume is n/20.
+        let mut shells = [0usize; 20];
+        for _ in 0..n {
+            let p = uniform_in_sphere(&s, &mut rng);
+            let r = (p - s.center).magnitude();
+            assert!(r <= s.radius + 1e-12, "sample outside the sphere ({r})");
+            let u = r / s.radius;
+            sum_r3 += u * u * u;
+            sum_r += u;
+            shells[((u * u * u * 20.0) as usize).min(19)] += 1;
+            mean = mean + p;
+        }
+        // E[(r/R)³] = 1/2 and E[r/R] = 3/4 for a uniform ball.
+        let m3 = sum_r3 / n as f64;
+        let m1 = sum_r / n as f64;
+        assert!((m3 - 0.5).abs() < 0.01, "E[(r/R)^3] = {m3}, expected 0.5");
+        assert!((m1 - 0.75).abs() < 0.01, "E[r/R] = {m1}, expected 0.75");
+        // Chi-squared over the equal-volume shells (19 dof: p > 0.001
+        // needs chi2 < ~44).
+        let expected = n as f64 / 20.0;
+        let chi2: f64 =
+            shells.iter().map(|&b| (b as f64 - expected).powi(2) / expected).sum();
+        assert!(chi2 < 44.0, "equal-volume shell chi-squared {chi2}");
+        // The sample mean converges to the centre.
+        let mean = mean * (1.0 / n as f64);
+        assert!(
+            (mean - s.center).magnitude() < 0.05,
+            "mean {mean:?} vs centre {:?}",
+            s.center
+        );
+    }
+
+    #[test]
+    fn test_uniform_on_circle_is_on_the_rim_and_isotropic() {
+        let mut rng = Rng::new(71);
+        let c = Circle { center: Vec2::new(3.0, -2.0), radius: 1.5 };
+        let n = 60_000;
+        let bins_count = 36;
+        let mut bins = vec![0usize; bins_count];
+        let mut mean = Vec2::ZERO;
+        for _ in 0..n {
+            let p = uniform_on_circle(&c, &mut rng);
+            // Exactly on the boundary, never inside.
+            let r = (p - c.center).magnitude();
+            assert!((r - c.radius).abs() < 1e-12, "off the rim by {}", r - c.radius);
+            let mut a = (p.y - c.center.y).atan2(p.x - c.center.x);
+            if a < 0.0 {
+                a += 2.0 * std::f64::consts::PI;
+            }
+            let b = ((a / (2.0 * std::f64::consts::PI)) * bins_count as f64) as usize;
+            bins[b.min(bins_count - 1)] += 1;
+            mean = mean + p;
+        }
+        // Angles are uniform: chi-squared with 35 dof stays below ~67
+        // at p = 0.001.
+        let expected = n as f64 / bins_count as f64;
+        let chi2: f64 =
+            bins.iter().map(|&b| (b as f64 - expected).powi(2) / expected).sum();
+        assert!(chi2 < 67.0, "angle chi-squared {chi2}");
+        // Isotropy: the mean of the rim points is the centre.
+        let mean = mean * (1.0 / n as f64);
+        assert!((mean - c.center).magnitude() < 0.02, "mean {mean:?}");
+        // A unit circle at the origin: every sample has magnitude 1.
+        let unit = Circle { center: Vec2::ZERO, radius: 1.0 };
+        for _ in 0..1000 {
+            let p = uniform_on_circle(&unit, &mut rng);
+            assert!((p.magnitude() - 1.0).abs() < 1e-15);
+        }
+    }
+
+    #[test]
+    fn test_uniform_in_triangle_3d_stays_in_the_plane_and_is_area_uniform() {
+        let mut rng = Rng::new(72);
+        let t = Triangle {
+            a: Vec3::new(1.0, 0.0, 0.0),
+            b: Vec3::new(0.0, 2.0, 1.0),
+            c: Vec3::new(-1.0, 0.5, 3.0),
+        };
+        let n = 40_000;
+        let normal = t.normal();
+        let d = normal.dot(&t.a);
+        let mut centroid = Vec3::ZERO;
+        // Split the triangle by the barycentric coordinate u: the
+        // region u > 1/2 is a similar triangle of 1/4 the area.
+        let mut u_half = 0usize;
+        for _ in 0..n {
+            let p = uniform_in_triangle_3d(&t, &mut rng);
+            // In the triangle's plane, exactly.
+            assert!(
+                (normal.dot(&p) - d).abs() < 1e-12,
+                "off-plane by {}",
+                normal.dot(&p) - d
+            );
+            let (u, v, w) = t.barycentric(p);
+            assert!(u >= -1e-12 && v >= -1e-12 && w >= -1e-12, "({u}, {v}, {w})");
+            assert!(u <= 1.0 + 1e-12 && v <= 1.0 + 1e-12 && w <= 1.0 + 1e-12);
+            assert!((u + v + w - 1.0).abs() < 1e-12, "barycentric sum");
+            if u > 0.5 {
+                u_half += 1;
+            }
+            centroid = centroid + p;
+        }
+        // Uniform sampling puts a quarter of the mass in that corner.
+        let frac = u_half as f64 / n as f64;
+        assert!((frac - 0.25).abs() < 0.01, "corner fraction {frac}, expected 0.25");
+        // The sample mean is the triangle's centroid (each barycentric
+        // coordinate has mean 1/3).
+        let centroid = centroid * (1.0 / n as f64);
+        assert!(
+            (centroid - t.centroid()).magnitude() < 0.02,
+            "mean {centroid:?} vs centroid {:?}",
+            t.centroid()
+        );
+        // A degenerate (zero-area) triangle collapses onto its point.
+        let deg = Triangle { a: t.a, b: t.a, c: t.a };
+        for _ in 0..50 {
+            assert!((uniform_in_triangle_3d(&deg, &mut rng) - t.a).magnitude() < 1e-15);
+        }
+    }
+
+    #[test]
+    fn test_uniform_in_obb_maps_back_into_the_unit_box() {
+        let mut rng = Rng::new(73);
+        let rotation = crate::linalg::rotation_axis_angle(
+            Vec3::new(1.0, 2.0, -0.5).normalized(),
+            0.9,
+        );
+        let b = Obb {
+            center: Vec3::new(2.0, -1.0, 0.5),
+            half_extents: Vec3::new(1.0, 3.0, 0.25),
+            rotation,
+        };
+        let axes = b.axes();
+        let h = [b.half_extents.x, b.half_extents.y, b.half_extents.z];
+        let n = 40_000;
+        // Octant counts: a uniform box puts n/8 in each.
+        let mut octants = [0usize; 8];
+        let mut mean = Vec3::ZERO;
+        let mut extremes = [f64::NEG_INFINITY; 3];
+        for _ in 0..n {
+            let p = uniform_in_obb(&b, &mut rng);
+            let rel = p - b.center;
+            let mut octant = 0usize;
+            for k in 0..3 {
+                // Project onto the local axes: |coordinate| <= half
+                // extent is exactly "inside the box".
+                let s = rel.dot(&axes[k]);
+                assert!(
+                    s.abs() <= h[k] + 1e-12,
+                    "axis {k} coordinate {s} outside +-{}",
+                    h[k]
+                );
+                extremes[k] = extremes[k].max(s.abs() / h[k]);
+                if s > 0.0 {
+                    octant |= 1 << k;
+                }
+            }
+            octants[octant] += 1;
+            mean = mean + p;
+        }
+        let expected = n as f64 / 8.0;
+        let chi2: f64 =
+            octants.iter().map(|&o| (o as f64 - expected).powi(2) / expected).sum();
+        // 7 dof: p > 0.001 needs chi2 < ~24.3.
+        assert!(chi2 < 24.3, "octant chi-squared {chi2}");
+        // Samples reach close to every face (the box is filled).
+        for (k, &e) in extremes.iter().enumerate() {
+            assert!(e > 0.99, "axis {k} only reached {e} of the half extent");
+        }
+        let mean = mean * (1.0 / n as f64);
+        assert!(
+            (mean - b.center).magnitude() < 0.05,
+            "mean {mean:?} vs centre {:?}",
+            b.center
+        );
+        // With the identity rotation the OBB is an AABB and the samples
+        // must satisfy the AABB containment test.
+        let axis_aligned = Obb {
+            center: Vec3::new(0.0, 0.0, 0.0),
+            half_extents: Vec3::new(1.0, 2.0, 3.0),
+            rotation: crate::linalg::Mat3::identity(),
+        };
+        let aabb = Aabb {
+            min: Vec3::new(-1.0, -2.0, -3.0),
+            max: Vec3::new(1.0, 2.0, 3.0),
+        };
+        for _ in 0..2000 {
+            let p = uniform_in_obb(&axis_aligned, &mut rng);
+            assert!(aabb.contains_point(p), "{p:?} outside the equivalent AABB");
+        }
+    }
+
+    #[test]
     fn test_random_polygons_and_rotations() {
         let mut rng = Rng::new(56);
         for n in [3usize, 5, 8, 20] {

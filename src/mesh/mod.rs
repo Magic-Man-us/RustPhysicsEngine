@@ -781,6 +781,130 @@ mod tests {
     }
 
     #[test]
+    fn test_principal_inertia_of_symmetric_and_asymmetric_boxes() {
+        // A cube is inertially isotropic: all three principal moments
+        // equal m·a²/6 for edge a, and the axes are orthonormal.
+        let a = 1.4_f64;
+        let cube = box_mesh(Vec3::new(a / 2.0, a / 2.0, a / 2.0));
+        let rho = 3.0;
+        let mass = rho * cube.volume();
+        let (moments, axes) = cube.principal_inertia(rho);
+        let expect = mass * a * a / 6.0;
+        for (k, &m) in moments.iter().enumerate() {
+            assert!((m - expect).abs() < 1e-9, "cube moment {k}: {m} vs {expect}");
+        }
+        // Axes matrix is orthonormal: AᵀA = I and det = ±1.
+        let col = |j: usize| Vec3::new(axes.data[0][j], axes.data[1][j], axes.data[2][j]);
+        for i in 0..3 {
+            assert!((col(i).magnitude() - 1.0).abs() < 1e-12, "axis {i} unit");
+            for j in 0..3 {
+                let d = col(i).dot(&col(j));
+                let want = f64::from(u8::from(i == j));
+                assert!((d - want).abs() < 1e-12, "axes {i}·{j} = {d}");
+            }
+        }
+        let det = col(0).dot(&col(1).cross(&col(2)));
+        assert!((det.abs() - 1.0).abs() < 1e-12, "det {det}");
+
+        // An asymmetric box: the moments are the diagonal of the
+        // closed-form tensor, returned in descending order, and the
+        // axes are the coordinate axes (up to sign and order).
+        let half = Vec3::new(0.5, 1.0, 1.5);
+        let b = box_mesh(half);
+        let mass = rho * b.volume();
+        let (moments, axes) = b.principal_inertia(rho);
+        let mut closed = [
+            mass / 3.0 * (half.y * half.y + half.z * half.z),
+            mass / 3.0 * (half.x * half.x + half.z * half.z),
+            mass / 3.0 * (half.x * half.x + half.y * half.y),
+        ];
+        closed.sort_by(|p, q| q.partial_cmp(p).unwrap());
+        for k in 0..3 {
+            assert!(
+                (moments[k] - closed[k]).abs() < 1e-9,
+                "box moment {k}: {} vs {}",
+                moments[k],
+                closed[k]
+            );
+        }
+        assert!(moments[0] >= moments[1] && moments[1] >= moments[2], "descending");
+        // Each principal axis is a coordinate axis for a box.
+        for j in 0..3 {
+            let c = Vec3::new(axes.data[0][j], axes.data[1][j], axes.data[2][j]);
+            let biggest = c.x.abs().max(c.y.abs()).max(c.z.abs());
+            assert!((biggest - 1.0).abs() < 1e-9, "axis {j} is not a coordinate axis");
+        }
+        // The moments must satisfy the triangle inequality for any
+        // physical rigid body: I₁ ≤ I₂ + I₃ and cyclic.
+        assert!(moments[0] <= moments[1] + moments[2] + 1e-9);
+
+        // The principal moments reproduce the trace of the tensor
+        // (invariant under the eigen-rotation).
+        let t = b.inertia_tensor(rho);
+        let trace = t.data[0][0] + t.data[1][1] + t.data[2][2];
+        assert!((moments.iter().sum::<f64>() - trace).abs() < 1e-9);
+
+        // A sphere is isotropic too: I = 2/5·m·r² for a solid ball.
+        let s = icosphere(1.0, 4);
+        let (sm, _) = s.principal_inertia(1.0);
+        let sm_expect = 0.4 * s.volume() * 1.0;
+        for &m in &sm {
+            assert!((m - sm_expect).abs() < 5e-3, "sphere moment {m} vs {sm_expect}");
+        }
+        assert!((sm[0] - sm[2]).abs() < 1e-3, "sphere moments equal");
+    }
+
+    #[test]
+    fn test_center_of_mass_surface_matches_area_weighted_sum() {
+        // A box centred at the origin has its shell centre of mass at
+        // the origin, exactly, by symmetry.
+        let b = box_mesh(Vec3::new(0.5, 1.0, 1.5));
+        assert!(b.center_of_mass_surface().magnitude() < 1e-15);
+        // Translating the shell translates its centre of mass.
+        let mut moved = b.clone();
+        let t = Vec3::new(3.0, -2.5, 0.75);
+        moved.translate(t);
+        assert!((moved.center_of_mass_surface() - t).magnitude() < 1e-12);
+        // For a cube the surface and volume centroids coincide.
+        let cube = box_mesh(Vec3::new(1.0, 1.0, 1.0));
+        assert!(
+            (cube.center_of_mass_surface() - cube.centroid()).magnitude() < 1e-14
+        );
+
+        // Brute-force area-weighted triangle centroids on a mesh with
+        // no symmetry left to lean on.
+        let m = tetra();
+        let mut area = 0.0;
+        let mut acc = Vec3::ZERO;
+        for t in m.triangles() {
+            let a = t.area();
+            area += a;
+            acc = acc + t.centroid() * a;
+        }
+        let brute = acc * (1.0 / area);
+        assert!((m.center_of_mass_surface() - brute).magnitude() < 1e-15);
+        // The shell centroid of this tetrahedron differs from its solid
+        // centroid (the faces are not equal-area), which is what makes
+        // the distinction meaningful.
+        assert!((m.center_of_mass_surface() - m.centroid()).magnitude() > 1e-3);
+        // It still lies inside the convex hull: every barycentric-like
+        // coordinate against the vertices stays in [0, 1].
+        let bb = m.bounding_box();
+        let c = m.center_of_mass_surface();
+        assert!(c.x >= bb.min.x && c.x <= bb.max.x);
+        assert!(c.y >= bb.min.y && c.y <= bb.max.y);
+        assert!(c.z >= bb.min.z && c.z <= bb.max.z);
+
+        // A sphere's shell centre of mass is its centre.
+        let mut s = icosphere(2.0, 3);
+        assert!(s.center_of_mass_surface().magnitude() < 1e-12);
+        s.translate(Vec3::new(-4.0, 1.0, 2.0));
+        assert!(
+            (s.center_of_mass_surface() - Vec3::new(-4.0, 1.0, 2.0)).magnitude() < 1e-12
+        );
+    }
+
+    #[test]
     fn test_inertia_translation_invariant_about_com() {
         let mut m = icosphere(1.0, 2);
         let i0 = m.inertia_tensor(1.0);

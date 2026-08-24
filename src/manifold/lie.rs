@@ -2683,4 +2683,528 @@ mod tests {
         let avg = rotation_averaging(&rots, &[1.0; 4]);
         assert!(avg.distance(&center) < 0.01);
     }
+
+    /// Multiply a 6x6 matrix by a 6-vector.
+    fn mat6_vec(a: &[[f64; 6]; 6], x: &[f64; 6]) -> [f64; 6] {
+        let mut y = [0.0; 6];
+        for (i, yi) in y.iter_mut().enumerate() {
+            *yi = a[i].iter().zip(x).map(|(m, v)| m * v).sum();
+        }
+        y
+    }
+
+    fn se3_to_array(x: &se3) -> [f64; 6] {
+        [x.rho.x, x.rho.y, x.rho.z, x.phi.x, x.phi.y, x.phi.z]
+    }
+
+    fn mat3_close(a: &Mat3, b: &Mat3, tol: f64) {
+        for i in 0..3 {
+            for j in 0..3 {
+                assert!(
+                    close(a.data[i][j], b.data[i][j], tol),
+                    "entry ({i},{j}): {} vs {}",
+                    a.data[i][j],
+                    b.data[i][j]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_so3_trait_adjoint_interpolate_jacobian_inv() {
+        let mut rng = Rng::new(17);
+
+        // --- LieGroup trait wiring ---------------------------------------
+        let id = <So3 as LieGroup>::identity();
+        mat3_close(&id.0, &Mat3::identity(), 0.0);
+        for _ in 0..10 {
+            let r = So3::random(&mut rng);
+            // exp(log(R)) = R going through the trait methods
+            let w = LieGroup::log(&r);
+            let r2 = <So3 as LieGroup>::exp(&w);
+            mat3_close(&r2.0, &r.0, 1e-12);
+            // R R^-1 = R^-1 R = I exactly (orthogonality)
+            let inv: So3 = LieGroup::inverse(&r);
+            mat3_close(&LieGroup::compose(&r, &inv).0, &Mat3::identity(), 1e-14);
+            mat3_close(&LieGroup::compose(&inv, &r).0, &Mat3::identity(), 1e-14);
+            // identity is a two-sided unit
+            mat3_close(&LieGroup::compose(&r, &id).0, &r.0, 0.0);
+            mat3_close(&LieGroup::compose(&id, &r).0, &r.0, 0.0);
+        }
+
+        // --- adjoint: R exp(w) R^-1 = exp(Adj_R w), exactly --------------
+        let r = So3::from_axis_angle(Vec3::new(0.3, -1.0, 0.5), 1.1);
+        let adj = r.adjoint();
+        // the SO(3) adjoint representation is the rotation itself
+        mat3_close(&adj, &r.0, 0.0);
+        for &w in &[
+            Vec3::new(0.4, -0.2, 0.7),
+            Vec3::new(0.0, 0.0, 2.5),
+            Vec3::new(-1.2, 0.3, 0.1),
+        ] {
+            let lhs = r.compose(&So3::exp(w)).compose(&r.inverse());
+            let rhs = So3::exp(adj.mul_vec(w));
+            mat3_close(&lhs.0, &rhs.0, 1e-13);
+            // the trait's adjoint_action is exactly this matrix action
+            let acted: Vec3 = LieGroup::adjoint_action(&r, &w);
+            assert!((acted - adj.mul_vec(w)).magnitude() < 1e-15);
+        }
+
+        // --- interpolate: endpoints, constant speed, metric bisection ----
+        let a = So3::random(&mut rng);
+        let b = So3::random(&mut rng);
+        mat3_close(&a.interpolate(&b, 0.0).0, &a.0, 1e-14);
+        mat3_close(&a.interpolate(&b, 1.0).0, &b.0, 1e-12);
+        let d = a.distance(&b);
+        assert!(d > 0.5, "need a non-degenerate pair, got {d}");
+        for &t in &[0.25_f64, 0.5, 0.75] {
+            let m = a.interpolate(&b, t);
+            // a geodesic splits the distance in proportion to t
+            assert!((a.distance(&m) - t * d).abs() < 1e-9, "t = {t}");
+            assert!((m.distance(&b) - (1.0 - t) * d).abs() < 1e-9, "t = {t}");
+        }
+        // constant angular velocity: equal parameter steps produce equal
+        // relative rotation vectors
+        let mut prev: Option<Vec3> = None;
+        for k in 0..4 {
+            let t0 = k as f64 * 0.25;
+            let rel = a
+                .interpolate(&b, t0)
+                .inverse()
+                .compose(&a.interpolate(&b, t0 + 0.25))
+                .log();
+            if let Some(p) = prev {
+                assert!((rel - p).magnitude() < 1e-10, "non-uniform interpolation");
+            }
+            prev = Some(rel);
+        }
+
+        // --- right_jacobian_inv ------------------------------------------
+        let w = Vec3::new(0.4, -0.2, 0.7);
+        mat3_close(
+            &So3::right_jacobian(w).mul_mat(&So3::right_jacobian_inv(w)),
+            &Mat3::identity(),
+            1e-12,
+        );
+        mat3_close(
+            &So3::right_jacobian_inv(w).mul_mat(&So3::right_jacobian(w)),
+            &Mat3::identity(),
+            1e-12,
+        );
+        // J_r^-1(w) - J_l^-1(w) = hat(w) (the two Jacobians differ by the
+        // adjoint action of the group element)
+        let diff = So3::right_jacobian_inv(w) - So3::left_jacobian_inv(w);
+        mat3_close(&diff, &So3::hat(w), 1e-12);
+        // inverting the first-order group increment: with
+        // exp(w) exp(J_r(w) dw) = exp(w + dw), applying J_r^-1 to the
+        // measured relative rotation must return dw
+        let dw = Vec3::new(1e-6, -2e-6, 1.5e-6);
+        let delta = So3::exp(w).inverse().compose(&So3::exp(w + dw)).log();
+        let recovered = So3::right_jacobian_inv(w).mul_vec(delta);
+        assert!(
+            (recovered - dw).magnitude() < 1e-11,
+            "recovered {recovered:?} vs {dw:?}"
+        );
+    }
+
+    #[test]
+    fn test_se3_trait_frames_adjoint_and_jacobians() {
+        let mut rng = Rng::new(23);
+        let g = Se3::random(&mut rng);
+
+        // --- LieGroup trait wiring ---------------------------------------
+        let id = <Se3 as LieGroup>::identity();
+        assert!(id.t.magnitude() == 0.0);
+        mat3_close(&id.r.0, &Mat3::identity(), 0.0);
+        let xi: se3 = LieGroup::log(&g);
+        let g2 = <Se3 as LieGroup>::exp(&xi);
+        mat3_close(&g2.r.0, &g.r.0, 1e-12);
+        assert!((g2.t - g.t).magnitude() < 1e-12);
+        let inv: Se3 = LieGroup::inverse(&g);
+        let e1 = LieGroup::compose(&g, &inv);
+        let e2 = LieGroup::compose(&inv, &g);
+        for e in [e1, e2] {
+            mat3_close(&e.r.0, &Mat3::identity(), 1e-14);
+            assert!(e.t.magnitude() < 1e-14);
+        }
+
+        // --- from_frame / to_frame / apply_vector -------------------------
+        let (rot, origin) = g.to_frame();
+        mat3_close(&rot, &g.r.0, 0.0);
+        assert!((origin - g.t).magnitude() == 0.0);
+        let g3 = Se3::from_frame(&rot, origin);
+        mat3_close(&g3.r.0, &g.r.0, 0.0);
+        assert!((g3.t - g.t).magnitude() == 0.0);
+        // the frame origin is the image of the coordinate origin
+        assert!((g.apply_point(Vec3::new(0.0, 0.0, 0.0)) - origin).magnitude() < 1e-15);
+        // apply_vector is translation-free: it is the difference of images
+        let p = Vec3::new(0.7, -0.3, 1.4);
+        let v = Vec3::new(0.3, -0.7, 0.2);
+        let av = g.apply_vector(v);
+        assert!((av - (g.apply_point(p + v) - g.apply_point(p))).magnitude() < 1e-12);
+        // and it is an isometry of the tangent space
+        assert!((av.magnitude() - v.magnitude()).abs() < 1e-14);
+        // the columns of the frame are the images of the basis vectors
+        for (k, e) in [
+            Vec3::new(1.0, 0.0, 0.0),
+            Vec3::new(0.0, 1.0, 0.0),
+            Vec3::new(0.0, 0.0, 1.0),
+        ]
+        .iter()
+        .enumerate()
+        {
+            let img = g.apply_vector(*e);
+            let col = Vec3::new(rot.data[0][k], rot.data[1][k], rot.data[2][k]);
+            assert!((img - col).magnitude() < 1e-15);
+        }
+
+        // --- 6x6 adjoint: g exp(xi) g^-1 = exp(Ad_g xi), exactly ----------
+        let ad = g.adjoint();
+        // block structure [[R, hat(t) R], [0, R]]
+        for i in 0..3 {
+            for j in 0..3 {
+                assert!(close(ad[i][j], g.r.0.data[i][j], 0.0));
+                assert!(close(ad[i + 3][j + 3], g.r.0.data[i][j], 0.0));
+                assert!(close(ad[i + 3][j], 0.0, 0.0), "lower-left block");
+            }
+        }
+        let x = se3 {
+            rho: Vec3::new(0.4, -0.3, 0.2),
+            phi: Vec3::new(0.1, 0.5, -0.2),
+        };
+        let y = mat6_vec(&ad, &se3_to_array(&x));
+        let rhs = g.compose(&Se3::exp(x)).compose(&g.inverse()).log();
+        assert!((Vec3::new(y[0], y[1], y[2]) - rhs.rho).magnitude() < 1e-11);
+        assert!((Vec3::new(y[3], y[4], y[5]) - rhs.phi).magnitude() < 1e-11);
+        // the trait's adjoint_action is exactly this matrix action
+        let acted: se3 = LieGroup::adjoint_action(&g, &x);
+        assert!((acted.rho - Vec3::new(y[0], y[1], y[2])).magnitude() < 1e-15);
+        assert!((acted.phi - Vec3::new(y[3], y[4], y[5])).magnitude() < 1e-15);
+        // Ad is a homomorphism: Ad_{gh} = Ad_g Ad_h
+        let h = Se3::random(&mut rng);
+        let gh = g.compose(&h).adjoint();
+        let composed = mat6_vec(&g.adjoint(), &mat6_vec(&h.adjoint(), &se3_to_array(&x)));
+        let direct = mat6_vec(&gh, &se3_to_array(&x));
+        for (a, b) in composed.iter().zip(&direct) {
+            assert!(close(*a, *b, 1e-12), "Ad homomorphism {a} vs {b}");
+        }
+
+        // --- Jacobians against a numerical derivative of the group law ----
+        let xi = se3 {
+            rho: Vec3::new(0.3, -0.2, 0.5),
+            phi: Vec3::new(0.4, 0.1, -0.3),
+        };
+        let base = Se3::exp(xi);
+        let step = 1e-6;
+        // columns of d/d(delta) log(exp(xi + delta) exp(xi)^-1)   (left)
+        // and         d/d(delta) log(exp(xi)^-1 exp(xi + delta))  (right)
+        let mut num_left = [[0.0; 6]; 6];
+        let mut num_right = [[0.0; 6]; 6];
+        for c in 0..6 {
+            let perturbed = |sign: f64| -> se3 {
+                let mut d = [0.0; 6];
+                d[c] = sign * step;
+                se3 {
+                    rho: xi.rho + Vec3::new(d[0], d[1], d[2]),
+                    phi: xi.phi + Vec3::new(d[3], d[4], d[5]),
+                }
+            };
+            let gp = Se3::exp(perturbed(1.0));
+            let gm = Se3::exp(perturbed(-1.0));
+            let lp = se3_to_array(&gp.compose(&base.inverse()).log());
+            let lm = se3_to_array(&gm.compose(&base.inverse()).log());
+            let rp = se3_to_array(&base.inverse().compose(&gp).log());
+            let rm = se3_to_array(&base.inverse().compose(&gm).log());
+            for r in 0..6 {
+                num_left[r][c] = (lp[r] - lm[r]) / (2.0 * step);
+                num_right[r][c] = (rp[r] - rm[r]) / (2.0 * step);
+            }
+        }
+        let jl = Se3::jacobian_left(&xi);
+        let jr = Se3::jacobian_right(&xi);
+        for r in 0..6 {
+            for c in 0..6 {
+                assert!(
+                    close(jl[r][c], num_left[r][c], 1e-6),
+                    "J_l({r},{c}): {} vs numeric {}",
+                    jl[r][c],
+                    num_left[r][c]
+                );
+                assert!(
+                    close(jr[r][c], num_right[r][c], 1e-6),
+                    "J_r({r},{c}): {} vs numeric {}",
+                    jr[r][c],
+                    num_right[r][c]
+                );
+            }
+        }
+        // J_r(xi) = J_l(-xi)
+        let jl_neg = Se3::jacobian_left(&se3 {
+            rho: xi.rho * -1.0,
+            phi: xi.phi * -1.0,
+        });
+        for r in 0..6 {
+            for c in 0..6 {
+                assert!(close(jr[r][c], jl_neg[r][c], 0.0));
+            }
+        }
+        // rotation blocks of J_l are the SO(3) left Jacobian, and the
+        // lower-left block vanishes
+        let jso3 = So3::left_jacobian(xi.phi);
+        for r in 0..3 {
+            for c in 0..3 {
+                assert!(close(jl[r][c], jso3.data[r][c], 0.0));
+                assert!(close(jl[r + 3][c + 3], jso3.data[r][c], 0.0));
+                assert!(close(jl[r + 3][c], 0.0, 0.0));
+            }
+        }
+
+        // --- Barfoot Q matrix --------------------------------------------
+        let q = se3_q_matrix(xi.rho, xi.phi);
+        // Q is exactly the (rho, phi) block of the SE(3) left Jacobian,
+        // which the numerical derivative above has just validated
+        for r in 0..3 {
+            for c in 0..3 {
+                assert!(close(q.data[r][c], jl[r][c + 3], 0.0));
+                assert!(close(q.data[r][c], num_left[r][c + 3], 1e-6));
+            }
+        }
+        // Q is linear in rho
+        let q_scaled = se3_q_matrix(xi.rho * 2.5, xi.phi);
+        mat3_close(&q_scaled, &q.mul_scalar(2.5), 1e-12);
+        // zero rotation: Q(rho, 0) = hat(rho)/2, and the small-angle branch
+        // joins the general formula continuously
+        let rho = Vec3::new(0.6, -0.2, 0.9);
+        let zero = Vec3::new(0.0, 0.0, 0.0);
+        mat3_close(&se3_q_matrix(rho, zero), &So3::hat(rho).mul_scalar(0.5), 0.0);
+        mat3_close(
+            &se3_q_matrix(rho, Vec3::new(1e-6, 0.0, 0.0)),
+            &So3::hat(rho).mul_scalar(0.5),
+            1e-6,
+        );
+    }
+
+    #[test]
+    fn test_planar_and_higher_group_laws() {
+        // --- SO(2) inverse ------------------------------------------------
+        let a = So2(0.7);
+        let v = Vec2::new(0.3, -1.2);
+        let back = a.inverse().apply(a.apply(v));
+        assert!((back - v).magnitude() < 1e-15);
+        assert!(a.compose(&a.inverse()).0.abs() < 1e-16);
+        // the inverse is the rotation by -theta
+        let img = a.inverse().apply(Vec2::new(1.0, 0.0));
+        assert!(close(img.x, 0.7_f64.cos(), 1e-15));
+        assert!(close(img.y, -0.7_f64.sin(), 1e-15));
+        // rotations are isometries
+        assert!(close(a.inverse().apply(v).magnitude(), v.magnitude(), 1e-15));
+
+        // --- SE(2) adjoint intertwines conjugation ------------------------
+        let g = Se2 {
+            theta: 0.6,
+            t: Vec2::new(1.0, -0.4),
+        };
+        let xi = [0.3, -0.2, 0.4];
+        let ad = g.adjoint();
+        let mut y = [0.0; 3];
+        for (i, yi) in y.iter_mut().enumerate() {
+            *yi = ad[i].iter().zip(&xi).map(|(m, v)| m * v).sum();
+        }
+        let lhs = Se2::exp(y);
+        let rhs = g.compose(&Se2::exp(xi)).compose(&g.inverse());
+        assert!(close(lhs.theta, rhs.theta, 1e-12), "Ad_g theta");
+        assert!((lhs.t - rhs.t).magnitude() < 1e-12, "Ad_g translation");
+        // the adjoint preserves the rotation component (last row is e_3)
+        assert!(close(ad[2][2], 1.0, 0.0) && ad[2][0].abs() + ad[2][1].abs() == 0.0);
+        // identity is a two-sided unit for SE(2)
+        let e = Se2::identity();
+        for k in [g.compose(&e), e.compose(&g)] {
+            assert!(close(k.theta, g.theta, 1e-15) && (k.t - g.t).magnitude() < 1e-15);
+        }
+
+        // --- SO(4) identity and inverse -----------------------------------
+        let mut rng = Rng::new(31);
+        let r4 = So4::random(&mut rng);
+        let id4 = So4::identity();
+        for i in 0..4 {
+            for j in 0..4 {
+                assert!(close(id4.0.data[i][j], if i == j { 1.0 } else { 0.0 }, 0.0));
+            }
+        }
+        let prod = r4.compose(&r4.inverse());
+        for i in 0..4 {
+            for j in 0..4 {
+                let want = if i == j { 1.0 } else { 0.0 };
+                assert!(close(prod.0.data[i][j], want, 1e-13), "R R^T at ({i},{j})");
+                assert!(close(r4.compose(&id4).0.data[i][j], r4.0.data[i][j], 1e-15));
+                assert!(close(id4.compose(&r4).0.data[i][j], r4.0.data[i][j], 1e-15));
+            }
+        }
+        // the inverse map undoes the action, and preserves the norm
+        let x = [0.3, -1.2, 0.7, 0.5];
+        let rx = r4.apply(x);
+        let xr = r4.inverse().apply(rx);
+        let n_before: f64 = x.iter().map(|v| v * v).sum();
+        let n_after: f64 = rx.iter().map(|v| v * v).sum();
+        assert!(close(n_before, n_after, 1e-13));
+        for (a, b) in x.iter().zip(&xr) {
+            assert!(close(*a, *b, 1e-13));
+        }
+        // inverse of a simple rotation is the opposite rotation
+        let s = So4::simple_rotation((0, 2), 0.7);
+        let sneg = So4::simple_rotation((0, 2), -0.7);
+        for i in 0..4 {
+            for j in 0..4 {
+                assert!(close(s.inverse().0.data[i][j], sneg.0.data[i][j], 1e-15));
+            }
+        }
+
+        // --- SU(2) compose / inverse --------------------------------------
+        let u = Su2::exp(Vec3::new(0.4, -0.7, 0.2));
+        let w = Su2::exp(Vec3::new(-0.1, 0.3, 0.9));
+        // U U^-1 = 1 (the identity quaternion)
+        let e = u.compose(&u.inverse());
+        assert!(close(e.0.w, 1.0, 1e-15));
+        assert!(e.0.x.abs() + e.0.y.abs() + e.0.z.abs() < 1e-15);
+        assert!(close(e.trace(), 2.0, 1e-15));
+        // the double cover is a homomorphism onto SO(3)
+        let lhs = u.compose(&w).to_so3();
+        let rhs = u.to_so3().compose(&w.to_so3());
+        mat3_close(&lhs.0, &rhs.0, 1e-13);
+        // and compose agrees with the 2x2 matrix product
+        let ma = u.to_matrix_2x2();
+        let mb = w.to_matrix_2x2();
+        let mprod = {
+            let mut m = [[Complex::new(0.0, 0.0); 2]; 2];
+            for (i, mi) in m.iter_mut().enumerate() {
+                for (j, mij) in mi.iter_mut().enumerate() {
+                    *mij = ma[i][0] * mb[0][j] + ma[i][1] * mb[1][j];
+                }
+            }
+            m
+        };
+        let mc = u.compose(&w).to_matrix_2x2();
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!(close(mprod[i][j].re, mc[i][j].re, 1e-12), "SU(2) product re");
+                assert!(close(mprod[i][j].im, mc[i][j].im, 1e-12), "SU(2) product im");
+            }
+        }
+        // the inverse is the conjugate transpose of the matrix
+        let minv = u.inverse().to_matrix_2x2();
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!(close(minv[i][j].re, ma[j][i].re, 1e-15));
+                assert!(close(minv[i][j].im, -ma[j][i].im, 1e-15));
+            }
+        }
+        // inverting reverses the rotation
+        mat3_close(&u.inverse().to_so3().0, &u.to_so3().inverse().0, 1e-13);
+    }
+
+    #[test]
+    fn test_sim3_sl2r_heisenberg_group_laws() {
+        // --- Sim(3) --------------------------------------------------------
+        let a = Sim3 {
+            s: 1.7,
+            r: So3::from_axis_angle(Vec3::new(1.0, 0.2, -0.3), 0.6),
+            t: Vec3::new(0.5, -1.0, 2.0),
+        };
+        let b = Sim3 {
+            s: 0.6,
+            r: So3::from_axis_angle(Vec3::new(-0.4, 1.0, 0.1), 1.3),
+            t: Vec3::new(-0.2, 0.4, 0.7),
+        };
+        let p = Vec3::new(0.3, -0.2, 1.1);
+        // compose is composition of the maps it represents
+        let ab = a.compose(&b);
+        assert!((ab.apply(p) - a.apply(b.apply(p))).magnitude() < 1e-12);
+        // scales multiply, rotations compose
+        assert!(close(ab.s, a.s * b.s, 1e-15));
+        mat3_close(&ab.r.0, &a.r.compose(&b.r).0, 1e-13);
+        // identity is a two-sided unit
+        let id = Sim3::identity();
+        assert!(close(id.s, 1.0, 0.0) && id.t.magnitude() == 0.0);
+        for k in [a.compose(&id), id.compose(&a)] {
+            assert!(close(k.s, a.s, 1e-15));
+            assert!((k.t - a.t).magnitude() < 1e-15);
+            mat3_close(&k.r.0, &a.r.0, 1e-14);
+        }
+        // inverse: a a^-1 = a^-1 a = identity, and it undoes the action
+        for k in [a.compose(&a.inverse()), a.inverse().compose(&a)] {
+            assert!(close(k.s, 1.0, 1e-15), "Sim3 inverse scale {}", k.s);
+            assert!(k.t.magnitude() < 1e-14, "Sim3 inverse translation");
+            mat3_close(&k.r.0, &Mat3::identity(), 1e-14);
+        }
+        assert!((a.inverse().apply(a.apply(p)) - p).magnitude() < 1e-14);
+        // a similarity scales all distances by s
+        let q = Vec3::new(-0.6, 0.9, 0.2);
+        assert!(close(
+            (a.apply(p) - a.apply(q)).magnitude(),
+            a.s * (p - q).magnitude(),
+            1e-12
+        ));
+
+        // --- SL(2, R) log and identity ------------------------------------
+        let id2 = Sl2R::identity();
+        let l0 = id2.log();
+        for row in &l0 {
+            for v in row {
+                assert!(v.abs() < 1e-12, "log(I) = {v}");
+            }
+        }
+        // identity is a unit for compose
+        let gen = [[0.3, 0.7], [0.2, -0.3]];
+        let g = Sl2R::exp(gen);
+        for k in [g.compose(&id2), id2.compose(&g)] {
+            for i in 0..2 {
+                for j in 0..2 {
+                    assert!(close(k.m[i][j], g.m[i][j], 1e-15));
+                }
+            }
+        }
+        // log recovers the traceless generator, and exp(log(g)) = g
+        let lg = g.log();
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!(close(lg[i][j], gen[i][j], 1e-9), "log entry ({i},{j})");
+            }
+        }
+        assert!(close(lg[0][0] + lg[1][1], 0.0, 1e-9), "log is traceless");
+        let g2 = Sl2R::exp(lg);
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!(close(g2.m[i][j], g.m[i][j], 1e-10));
+            }
+        }
+        // log of a pure boost diag(e^t, e^-t) is diag(t, -t)
+        let t = 0.9_f64;
+        let boost = Sl2R {
+            m: [[t.exp(), 0.0], [0.0, (-t).exp()]],
+        };
+        let lb = boost.log();
+        assert!(close(lb[0][0], t, 1e-10) && close(lb[1][1], -t, 1e-10));
+        assert!(lb[0][1].abs() < 1e-10 && lb[1][0].abs() < 1e-10);
+
+        // --- Heisenberg identity ------------------------------------------
+        let h = Heisenberg3 {
+            x: 1.0,
+            y: 0.5,
+            z: 0.2,
+        };
+        let e = Heisenberg3::identity();
+        assert!(e.x == 0.0 && e.y == 0.0 && e.z == 0.0);
+        for k in [h.compose(&e), e.compose(&h)] {
+            assert!(close(k.x, h.x, 1e-15) && close(k.y, h.y, 1e-15) && close(k.z, h.z, 1e-15));
+        }
+        for k in [h.compose(&h.inverse()), h.inverse().compose(&h)] {
+            assert!(
+                k.x.abs() < 1e-15 && k.y.abs() < 1e-15 && k.z.abs() < 1e-15,
+                "Heisenberg inverse: {k:?}"
+            );
+        }
+        // the identity is fixed by the commutator, which is central
+        let c = h.commutator(&e);
+        assert!(c.x.abs() + c.y.abs() + c.z.abs() < 1e-15);
+    }
 }

@@ -228,6 +228,111 @@ mod tests {
     }
 
     #[test]
+    fn test_derivative_exact_on_polynomials() {
+        // Dual arithmetic is exact on polynomials: no truncation error,
+        // so equality (not a tolerance) is the right assertion.
+        // p(x) = x^4 - 5x^2 + 7x - 3, p'(x) = 4x^3 - 10x + 7.
+        let p = |x: Dual| {
+            x.powi(4) - Dual::constant(5.0) * x.powi(2) + Dual::constant(7.0) * x
+                - Dual::constant(3.0)
+        };
+        for &x in &[-3.0_f64, -1.0, 0.0, 0.5, 2.0, 6.0] {
+            assert_eq!(derivative(p, x), 4.0 * x * x * x - 10.0 * x + 7.0, "p' at {x}");
+        }
+        // A constant function has zero derivative everywhere, exactly.
+        assert_eq!(derivative(|_| Dual::constant(11.5), 4.25), 0.0);
+        // The identity has derivative 1 everywhere, exactly.
+        assert_eq!(derivative(|x| x, -8.75), 1.0);
+        // Product rule on (x+1)(x+2) = x^2 + 3x + 2 -> 2x + 3.
+        let q = |x: Dual| (x + Dual::constant(1.0)) * (x + Dual::constant(2.0));
+        for &x in &[-2.0_f64, 0.0, 3.0] {
+            assert_eq!(derivative(q, x), 2.0 * x + 3.0);
+        }
+    }
+
+    #[test]
+    fn test_gradient_of_quadratic_form_matches_analytic() {
+        // f(x) = ½ xᵀ A x + bᵀ x with A symmetric: ∇f = A x + b.
+        let a = [[2.0, -1.0, 0.5], [-1.0, 4.0, 1.5], [0.5, 1.5, 3.0]];
+        let b = [0.7, -2.0, 1.25];
+        let f = |v: &[Dual]| {
+            let mut acc = Dual::constant(0.0);
+            for (i, ai) in a.iter().enumerate() {
+                for (j, &aij) in ai.iter().enumerate() {
+                    acc = acc + Dual::constant(0.5 * aij) * v[i] * v[j];
+                }
+                acc = acc + Dual::constant(b[i]) * v[i];
+            }
+            acc
+        };
+        for x in [[1.0, 2.0, -1.0], [0.0, 0.0, 0.0], [-3.5, 0.25, 4.0]] {
+            let g = gradient(f, &x);
+            for i in 0..3 {
+                let expected: f64 =
+                    (0..3).map(|j| a[i][j] * x[j]).sum::<f64>() + b[i];
+                assert!((g[i] - expected).abs() < 1e-12, "grad[{i}] {} vs {expected}", g[i]);
+            }
+        }
+        // A linear functional has a constant gradient equal to its
+        // coefficient vector, independent of the evaluation point.
+        let lin = |v: &[Dual]| Dual::constant(3.0) * v[0] - Dual::constant(0.5) * v[1];
+        assert_eq!(gradient(lin, &[0.0, 0.0]), vec![3.0, -0.5]);
+        assert_eq!(gradient(lin, &[100.0, -7.0]), vec![3.0, -0.5]);
+    }
+
+    #[test]
+    fn test_jacobian_of_linear_map_is_the_matrix() {
+        // f(x) = M x has Jacobian M exactly, at every point.
+        let m = [[1.0, -2.0, 3.0], [0.0, 4.0, -0.5]];
+        let f = |v: &[Dual]| {
+            m.iter()
+                .map(|row| {
+                    row.iter()
+                        .enumerate()
+                        .fold(Dual::constant(0.0), |acc, (j, &c)| {
+                            acc + Dual::constant(c) * v[j]
+                        })
+                })
+                .collect::<Vec<Dual>>()
+        };
+        for x in [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0], [-2.5, 9.0, 0.125]] {
+            let j = jacobian(f, &x);
+            assert_eq!(j.rows, 2);
+            assert_eq!(j.cols, 3);
+            for r in 0..2 {
+                for c in 0..3 {
+                    assert_eq!(j.get(r, c), m[r][c], "J[{r}][{c}] at {x:?}");
+                }
+            }
+        }
+        // Jacobian of the identity map is the identity matrix (exact).
+        let id = |v: &[Dual]| v.to_vec();
+        let j = jacobian(id, &[3.0, -1.0, 0.5, 2.0]);
+        for r in 0..4 {
+            for c in 0..4 {
+                assert_eq!(j.get(r, c), f64::from(u8::from(r == c)));
+            }
+        }
+    }
+
+    #[test]
+    fn test_gradient_and_jacobian_agree_on_a_scalar_field() {
+        // The Jacobian of a 1-output function is the gradient row.
+        let f = |v: &[Dual]| v[0].sin() * v[1].exp() + v[2].powi(3);
+        let x = [0.7, -0.4, 1.3];
+        let g = gradient(f, &x);
+        let j = jacobian(|v| vec![f(v)], &x);
+        assert_eq!(j.rows, 1);
+        for (c, &gi) in g.iter().enumerate() {
+            assert!((j.get(0, c) - gi).abs() < 1e-15);
+        }
+        // Cross-check against analytic partials.
+        assert!(approx(g[0], x[0].cos() * x[1].exp(), 1e-13));
+        assert!(approx(g[1], x[0].sin() * x[1].exp(), 1e-13));
+        assert!(approx(g[2], 3.0 * x[2] * x[2], 1e-13));
+    }
+
+    #[test]
     fn test_jacobian() {
         // f(x, y) = (x*y, x + y, sin(x)) → J = [[y, x], [1, 1], [cos x, 0]]
         let f = |v: &[Dual]| vec![v[0] * v[1], v[0] + v[1], v[0].sin()];

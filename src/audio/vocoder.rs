@@ -625,6 +625,7 @@ pub fn autotune(x: &[f64], fs: f64, scale: &[u8], strength: f64) -> Vec<f64> {
 mod tests {
     use super::*;
     use crate::audio::analysis::{pitch_yin, PitchMethod};
+    use crate::transforms::stft::goertzel;
 
     fn tone(fs: f64, n: usize) -> Vec<f64> {
         (0..n)
@@ -691,6 +692,63 @@ mod tests {
         let (f2, _) = pitch_yin(&fp[8000..8000 + 4096], fs, 50.0, 2000.0, 0.4)
             .unwrap_or((220.0 * 1.4983, 0.0));
         assert!((f2 / (220.0 * 1.4983) - 1.0).abs() < 0.05, "formant-preserving pitch {f2}");
+    }
+
+    #[test]
+    fn test_phase_lock_preserves_harmonics_and_waveform() {
+        let fs = 48000.0;
+        let x = tone(fs, 24000); // 220 + 440/2 + 660/4, exactly periodic
+        let stretch = |locked: bool| -> Vec<f64> {
+            let mut pv = PhaseVocoder::new(2048, 512, fs);
+            pv.phase_lock(locked);
+            pv.time_stretch(&x, 2.0)
+        };
+        let out = stretch(true);
+        let plain = stretch(false);
+        assert!(out.len() > (1.8 * x.len() as f64) as usize, "length {}", out.len());
+        assert!(out.iter().all(|v| v.is_finite()));
+
+        // Enabling the lock actually changes the synthesis phases.
+        let diff = out
+            .iter()
+            .zip(&plain)
+            .map(|(a, b)| (a - b).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(diff > 0.01, "phase_lock(true) changed nothing (max diff {diff})");
+
+        // The three partials keep their 1 : 0.5 : 0.25 amplitudes.
+        let seg = &out[8192..8192 + 8192];
+        let amp = |f: f64| 2.0 * goertzel(seg, f, fs).0 / seg.len() as f64;
+        let (a1, a2, a3) = (amp(220.0), amp(440.0), amp(660.0));
+        assert!((a1 - 1.0).abs() < 0.1, "220 Hz amplitude {a1}");
+        assert!((a2 / a1 - 0.5).abs() < 0.08, "440/220 ratio {}", a2 / a1);
+        assert!((a3 / a1 - 0.25).abs() < 0.08, "660/220 ratio {}", a3 / a1);
+        // Nothing between the harmonics.
+        assert!(amp(330.0) < 0.05 * a1, "inter-harmonic junk {}", amp(330.0));
+
+        // Pitch is unchanged by the stretch.
+        let (f, _) = pitch_yin(&out[8192..8192 + 4096], fs, 50.0, 2000.0, 0.3).unwrap();
+        assert!((f / 220.0 - 1.0).abs() < 0.01, "locked pitch {f}");
+
+        // Identity phase locking keeps the partials in their original
+        // relative phase, so a window of the output is a time-shifted copy
+        // of the (periodic) input waveform. Search one 220 Hz period of
+        // lags for the best match.
+        let best_shape_match = |y: &[f64]| -> f64 {
+            let win = &y[10000..10000 + 4096];
+            let mut best = f64::NEG_INFINITY;
+            for lag in 0..(fs / 220.0).ceil() as usize {
+                best = best.max(correlation(win, &x[lag..lag + 4096]));
+            }
+            best
+        };
+        let locked_match = best_shape_match(&out);
+        let plain_match = best_shape_match(&plain);
+        assert!(locked_match > 0.9, "locked waveform match {locked_match}");
+        assert!(
+            locked_match > plain_match,
+            "locking did not improve waveform coherence: {locked_match} vs {plain_match}"
+        );
     }
 
     #[test]

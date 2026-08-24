@@ -1605,4 +1605,67 @@ mod tests {
             / (4.0 * PI);
         assert!((z2 - 1.0 / 3.0).abs() < 1e-12);
     }
+
+    #[test]
+    fn test_sphere_uniform_points_n_moments() {
+        let mut rng = Rng::new(2024);
+        for dim in [2usize, 3, 5] {
+            let n = 4000;
+            let pts = sphere_uniform_points_n(n, dim, &mut rng);
+            assert_eq!(pts.len(), n);
+            // every sample is a unit vector of the requested dimension
+            for p in &pts {
+                assert_eq!(p.dim(), dim);
+                assert!((p.norm() - 1.0).abs() < 1e-12, "unit norm {}", p.norm());
+            }
+            // the mean vanishes by symmetry: each coordinate mean has
+            // standard error 1/sqrt(dim n), so the mean vector norm is about
+            // sqrt(1/n); allow five standard errors
+            let mut mean = VecN::zeros(dim);
+            for p in &pts {
+                mean = mean.add(p);
+            }
+            mean = mean.scale(1.0 / n as f64);
+            let tol = 5.0 / (n as f64).sqrt();
+            assert!(
+                mean.norm() < tol,
+                "dim {dim} mean {} exceeds {tol}",
+                mean.norm()
+            );
+            // isotropy: E[x_i x_j] = delta_ij / dim
+            for i in 0..dim {
+                for j in 0..dim {
+                    let m2: f64 =
+                        pts.iter().map(|p| p[i] * p[j]).sum::<f64>() / n as f64;
+                    let want = if i == j { 1.0 / dim as f64 } else { 0.0 };
+                    assert!(
+                        (m2 - want).abs() < 6.0 / (n as f64).sqrt(),
+                        "dim {dim} second moment ({i},{j}) = {m2}, want {want}"
+                    );
+                }
+            }
+            // pairwise geodesic distances average to pi/2 (antipodal
+            // symmetry of the uniform measure)
+            let sample = &pts[..200];
+            let mut sum = 0.0;
+            let mut count = 0.0;
+            for (i, a) in sample.iter().enumerate() {
+                for b in sample.iter().skip(i + 1) {
+                    sum += sphere_distance_n(a, b);
+                    count += 1.0;
+                }
+            }
+            let mean_angle = sum / count;
+            assert!(
+                (mean_angle - PI / 2.0).abs() < 0.05,
+                "dim {dim} mean angle {mean_angle}"
+            );
+        }
+        // the sequence is deterministic for a fixed seed
+        let a = sphere_uniform_points_n(5, 3, &mut Rng::new(7));
+        let b = sphere_uniform_points_n(5, 3, &mut Rng::new(7));
+        for (x, y) in a.iter().zip(&b) {
+            assert!(x.sub(y).norm() < 1e-15, "reproducible for a fixed seed");
+        }
+    }
 }

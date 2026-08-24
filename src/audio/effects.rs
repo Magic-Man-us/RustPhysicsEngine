@@ -1220,6 +1220,135 @@ mod tests {
     }
 
     #[test]
+    fn test_freeverb_topology_predelay_and_decay() {
+        let fs = 44100.0; // the classic Freeverb tunings are exact here
+        let mut fv = Freeverb::new(fs);
+        let n = (2.0 * fs) as usize;
+        let mut l = Vec::with_capacity(n);
+        let mut r = Vec::with_capacity(n);
+        for i in 0..n {
+            let (a, b) = fv.process(if i == 0 { 1.0 } else { 0.0 });
+            l.push(a);
+            r.push(b);
+        }
+        // Pre-delay: nothing escapes before the shortest comb loop
+        // (1116 samples on the left, +23 stereo spread on the right).
+        assert!(l[..1116].iter().all(|&v| v == 0.0), "left leaks before its comb");
+        assert!(r[..1139].iter().all(|&v| v == 0.0), "right leaks before its comb");
+        assert!(l[1116..1139].iter().any(|&v| v.abs() > 1e-6), "left never fires");
+        // The stereo spread genuinely decorrelates the two channels.
+        assert!(l != r, "stereo channels are identical");
+        // Stable over the whole tail.
+        assert!(l.iter().chain(&r).all(|v| v.is_finite() && v.abs() < 4.0), "unstable");
+        // The wet output is a real reverb tail, not a single echo.
+        let e: f64 = l.iter().map(|v| v * v).sum();
+        assert!(e > 1e-4, "wet energy {e}");
+
+        // Cross-check the documented topology against the same 8 combs and
+        // 4 all-passes built from the independently tested primitives.
+        let mut combs: Vec<CombFilter> = [1116, 1188, 1277, 1356, 1422, 1491, 1557, 1617]
+            .iter()
+            .map(|&d| CombFilter::new(d, 0.84, 0.2))
+            .collect();
+        let mut aps: Vec<AllpassFilter> = [556, 441, 341, 225]
+            .iter()
+            .map(|&d| AllpassFilter::new(d, 0.5))
+            .collect();
+        for (i, &want) in l.iter().enumerate().take(20000) {
+            let x = if i == 0 { 1.0 } else { 0.0 };
+            let mut v: f64 = combs.iter_mut().map(|c| c.process(x)).sum::<f64>() / 8.0;
+            for ap in aps.iter_mut() {
+                v = ap.process(v);
+            }
+            assert!((v - want).abs() < 1e-12, "topology mismatch at {i}: {v} vs {want}");
+        }
+
+        // Exponential decay. Every comb has DC loop gain 0.84 (the damping
+        // one-pole is unity at DC), so over half a second a comb of length
+        // D decays by 0.84^(0.5·fs/D). The tail must fall between the
+        // fastest (D = 1116) and slowest (D = 1617) of the eight.
+        let rms = |s: &[f64]| (s.iter().map(|v| v * v).sum::<f64>() / s.len() as f64).sqrt();
+        let a = rms(&l[(0.5 * fs) as usize..(0.6 * fs) as usize]);
+        let b = rms(&l[(1.0 * fs) as usize..(1.1 * fs) as usize]);
+        let slowest = 0.84_f64.powf(0.5 * fs / 1617.0);
+        let fastest = 0.84_f64.powf(0.5 * fs / 1116.0);
+        let ratio = b / a;
+        assert!(
+            ratio > 0.5 * fastest && ratio < 1.5 * slowest,
+            "half-second decay {ratio} outside [{fastest}, {slowest}]"
+        );
+        // Later windows are quieter than earlier ones, monotonically.
+        let mut prev = f64::MAX;
+        for w in 0..8 {
+            let lo = ((0.2 + 0.2 * w as f64) * fs) as usize;
+            let cur = rms(&l[lo..lo + (0.1 * fs) as usize]);
+            assert!(cur < prev, "energy grew in window {w}");
+            prev = cur;
+        }
+    }
+
+    #[test]
+    fn test_eq_parametric_hits_its_band_gains() {
+        let fs = 48000.0;
+        // A 0 dB band is exactly transparent (numerator and denominator of
+        // the RBJ peaking design coincide when A = 1).
+        let mut flat = Eq::parametric(&[(1000.0, 1.0, 0.0)], fs);
+        for i in 0..500 {
+            let x = ((i * 7919) % 200) as f64 / 100.0 - 1.0;
+            assert!((flat.process(x) - x).abs() < 1e-12, "0 dB band is not transparent");
+        }
+
+        let bands = [(120.0, 1.0, 8.0), (3000.0, 4.0, -10.0)];
+        let mut eq = Eq::parametric(&bands, fs);
+        assert_eq!(eq.bands.len(), 2);
+        // parametric() must build exactly one RBJ peaking section per
+        // (freq, Q, gain) triple.
+        let design: Vec<Biquad> = bands
+            .iter()
+            .map(|&(f, q, g)| Biquad::peaking(f, fs, q, g))
+            .collect();
+        assert_eq!(eq.bands, design, "parametric bands are not RBJ peaking sections");
+        // Analytic cascade response, straight from the biquad coefficients.
+        let analytic_db = |f: f64| -> f64 {
+            let h = design
+                .iter()
+                .fold(Complex::new(1.0, 0.0), |acc, b| acc * b.freq_response(f, fs));
+            20.0 * h.norm().log10()
+        };
+        // Each band reaches its design gain at its own center; the two are
+        // far enough apart (4.6 octaves) that the cross-talk stays small.
+        assert!((analytic_db(120.0) - 8.0).abs() < 0.3, "120 Hz {}", analytic_db(120.0));
+        assert!((analytic_db(3000.0) + 10.0).abs() < 0.3, "3 kHz {}", analytic_db(3000.0));
+        // Far outside both bands the EQ is essentially flat.
+        assert!(analytic_db(20.0).abs() < 0.5, "20 Hz {}", analytic_db(20.0));
+        assert!(analytic_db(20000.0).abs() < 0.6, "20 kHz {}", analytic_db(20000.0));
+
+        // Measured steady-state tone gain must match that analytic response.
+        let mut tone_gain = |f: f64| -> f64 {
+            let n = (0.5 * fs) as usize;
+            let mut peak = 0.0_f64;
+            for i in 0..n {
+                let y = eq.process((TWO_PI * f * i as f64 / fs).sin());
+                if i > n / 2 {
+                    peak = peak.max(y.abs());
+                }
+            }
+            20.0 * peak.log10()
+        };
+        for &f in &[120.0, 400.0, 1000.0, 3000.0, 9000.0] {
+            let measured = tone_gain(f);
+            let want = analytic_db(f);
+            assert!(
+                (measured - want).abs() < 0.05,
+                "at {f} Hz: measured {measured} dB vs response {want} dB"
+            );
+        }
+        // Boost really boosts and cut really cuts, relative to a bypass.
+        assert!(tone_gain(120.0) > 7.0);
+        assert!(tone_gain(3000.0) < -9.0);
+    }
+
+    #[test]
     fn test_fdn_lossless_and_decaying() {
         let fs = 16000.0;
         // Unit gains + orthogonal matrix: energy neither explodes nor

@@ -444,6 +444,72 @@ mod tests {
     }
 
     #[test]
+    fn test_yn_matches_the_recurrence_and_orders_0_1() {
+        // Y_n is defined by upward recurrence from Y0/Y1, so it must
+        // reproduce Y_{n+1}(x) = (2n/x)·Y_n(x) − Y_{n−1}(x) exactly to
+        // rounding (the recurrence is the implementation's contract).
+        for &x in &[0.7_f64, 1.0, 2.5, 5.0, 8.0, 13.0, 20.0] {
+            assert_eq!(bessel_yn(0, x), bessel_y0(x));
+            assert_eq!(bessel_yn(1, x), bessel_y1(x));
+            let mut ym = bessel_y0(x);
+            let mut y = bessel_y1(x);
+            for n in 1..=6u32 {
+                let yp = 2.0 * f64::from(n) / x * y - ym;
+                let scale = yp.abs().max(1.0);
+                assert!(
+                    approx(bessel_yn(n + 1, x), yp, 1e-10 * scale),
+                    "Y_{}({x}) = {} vs recurrence {yp}",
+                    n + 1,
+                    bessel_yn(n + 1, x)
+                );
+                ym = y;
+                y = yp;
+            }
+        }
+    }
+
+    #[test]
+    fn test_yn_known_values_and_wronskian() {
+        // Reference values built from high-precision Y0/Y1 (mpmath)
+        // through the exact recurrence; NR approximations carry ~1e-8.
+        assert!(approx(bessel_yn(2, 1.0), -1.650_682_606_816_254_4, 1e-6));
+        assert!(approx(bessel_yn(2, 10.0), -0.005_868_082_389_354_4, 1e-6));
+        assert!(approx(bessel_yn(3, 5.0), 0.146_267_162_693_154_8, 1e-6));
+        assert!(approx(bessel_yn(5, 12.0), -0.229_817_946_553_838_8, 1e-6));
+        // Wronskian identity at general order:
+        // J_{n+1}(x)Y_n(x) − J_n(x)Y_{n+1}(x) = 2/(π x).
+        for n in 0..=5u32 {
+            for &x in &[1.5_f64, 4.0, 9.0, 15.0] {
+                let w = bessel_jn(n + 1, x) * bessel_yn(n, x)
+                    - bessel_jn(n, x) * bessel_yn(n + 1, x);
+                assert!(
+                    approx(w, 2.0 / (PI * x), 2e-6),
+                    "Wronskian n={n} x={x}: {w} vs {}",
+                    2.0 / (PI * x)
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_yn_satisfies_bessels_equation() {
+        // x²y'' + xy' + (x² − n²)y = 0, derivatives by central
+        // differences (h = 1e-4 gives ~1e-8 truncation error, and the
+        // NR approximations themselves carry ~1e-8).
+        let h = 1e-4;
+        for n in 2..=4u32 {
+            for &x in &[3.0_f64, 6.5, 11.0] {
+                let y = bessel_yn(n, x);
+                let yp = (bessel_yn(n, x + h) - bessel_yn(n, x - h)) / (2.0 * h);
+                let ypp =
+                    (bessel_yn(n, x + h) - 2.0 * y + bessel_yn(n, x - h)) / (h * h);
+                let residual = x * x * ypp + x * yp + (x * x - f64::from(n * n)) * y;
+                assert!(residual.abs() < 1e-3, "n={n} x={x}: residual {residual}");
+            }
+        }
+    }
+
+    #[test]
     fn test_j_zeros_first_of_j0() {
         let zeros = bessel_j_zeros(0, 3);
         // First three zeros of J0: 2.404825557, 5.520078110, 8.653727913

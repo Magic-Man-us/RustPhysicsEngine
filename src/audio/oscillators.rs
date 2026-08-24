@@ -700,6 +700,164 @@ mod tests {
     }
 
     #[test]
+    fn test_chirp_hyperbolic_sweeps_linearly_in_period() {
+        let fs = 16000.0;
+        let (f0, f1, dur) = (100.0_f64, 400.0_f64, 1.0_f64);
+        let x = chirp_hyperbolic(f0, f1, dur, fs);
+        assert_eq!(x.len(), 16000);
+        let f_of = |t: f64| f0 * f1 * dur / (f1 * dur - (f1 - f0) * t);
+        assert!((f_of(0.0) - f0).abs() < 1e-9);
+        assert!((f_of(dur) - f1).abs() < 1e-9);
+        // Accumulated phase has the closed form
+        //   φ(t) = f0·f1·T/(f1−f0)·ln(f1·T/(f1·T − (f1−f0)·t)),
+        // so the positive-going zero-crossing count over a window equals
+        // φ(t2) − φ(t1) to within one crossing.
+        let phase = |t: f64| {
+            f0 * f1 * dur / (f1 - f0) * (f1 * dur / (f1 * dur - (f1 - f0) * t)).ln()
+        };
+        let mut prev_rate = 0.0_f64;
+        for w in 0..5 {
+            let (i0, i1) = (w * 3000, w * 3000 + 3000);
+            let count = x[i0..i1].windows(2).filter(|s| s[0] < 0.0 && s[1] >= 0.0).count() as f64;
+            let (t0, t1) = (i0 as f64 / fs, i1 as f64 / fs);
+            let expect = phase(t1) - phase(t0);
+            assert!((count - expect).abs() <= 1.5, "window {w}: {count} vs {expect}");
+            // The mean rate over a window of a monotone sweep lies between
+            // the instantaneous frequencies at its two ends.
+            let rate = count / (t1 - t0);
+            assert!(
+                rate > f_of(t0) - 6.0 && rate < f_of(t1) + 6.0,
+                "window {w}: {rate} outside [{}, {}]",
+                f_of(t0),
+                f_of(t1)
+            );
+            assert!(rate > prev_rate, "sweep not monotone at window {w}");
+            prev_rate = rate;
+        }
+        // "Hyperbolic" means the *period* sweeps linearly:
+        // 1/f(t) = 1/f0 − (f1−f0)/(f0·f1·T)·t.
+        let mut times = Vec::new();
+        for i in 0..x.len() - 1 {
+            if x[i] < 0.0 && x[i + 1] >= 0.0 {
+                let frac = -x[i] / (x[i + 1] - x[i]);
+                times.push((i as f64 + frac) / fs);
+            }
+        }
+        assert!(times.len() > 150, "only {} crossings", times.len());
+        let mid: Vec<f64> = times.windows(2).map(|w| 0.5 * (w[0] + w[1])).collect();
+        let per: Vec<f64> = times.windows(2).map(|w| w[1] - w[0]).collect();
+        let m = mid.len() as f64;
+        let sx: f64 = mid.iter().sum();
+        let sy: f64 = per.iter().sum();
+        let sxx: f64 = mid.iter().map(|v| v * v).sum();
+        let sxy: f64 = mid.iter().zip(&per).map(|(a, b)| a * b).sum();
+        let slope = (m * sxy - sx * sy) / (m * sxx - sx * sx);
+        let expect_slope = -(f1 - f0) / (f0 * f1 * dur);
+        assert!(
+            (slope - expect_slope).abs() / expect_slope.abs() < 0.02,
+            "period slope {slope} vs {expect_slope}"
+        );
+    }
+
+    #[test]
+    fn test_wavetable_square_triangle_fourier_series() {
+        let fs = 48000.0;
+        let sq = Wavetable::square(fs);
+        assert_eq!(sq.tables.len(), 10);
+        let n = sq.tables[0].len();
+        assert_eq!(n, 2048);
+        // The widest-band mip keeps every designed harmonic, so its
+        // spectrum is exactly the square wave's Fourier series 4/(πk) on
+        // the odd harmonics and zero on the even ones.
+        let spec = rfft(&sq.tables[0]);
+        let amp = |k: usize| 2.0 * spec[k].norm() / n as f64;
+        for k in 1..=63 {
+            let expect = if k % 2 == 1 { 4.0 / (PI * k as f64) } else { 0.0 };
+            assert!((amp(k) - expect).abs() < 1e-9, "square h{k}: {} vs {expect}", amp(k));
+        }
+        // No DC, and half-wave (odd) symmetry s(p + 1/2) = −s(p), which is
+        // what an odd-harmonics-only series must satisfy.
+        assert!(sq.tables[0].iter().sum::<f64>().abs() < 1e-9, "square has DC");
+        for i in 0..n / 2 {
+            assert!((sq.tables[0][i] + sq.tables[0][i + n / 2]).abs() < 1e-9, "asymmetry at {i}");
+        }
+        // The only excursion past ±1 is the Gibbs overshoot, whose height
+        // is the Wilbraham-Gibbs constant (2/π)·Si(π) = 1.178980 (i.e. 9%
+        // of the unit jump of 2), reached one lobe away from the step.
+        let peak = sq.tables[0].iter().map(|v| v.abs()).fold(0.0_f64, f64::max);
+        let gibbs = 2.0 / PI * 1.851_937_051_982_466_2;
+        assert!((peak - gibbs).abs() < 1e-5, "square peak {peak} vs Gibbs {gibbs}");
+        // Away from the two steps the table really is flat at ±1: over 95%
+        // of the cycle sits within 1% of unity.
+        let flat = sq.tables[0].iter().filter(|v| (v.abs() - 1.0).abs() < 0.01).count();
+        assert!(flat > 95 * n / 100, "only {flat}/{n} samples on the flat top");
+        // A quarter and three quarters through the cycle sit on the flat
+        // top and bottom.
+        assert!((sq.lookup(0.25, 20.0) - 1.0).abs() < 0.01, "{}", sq.lookup(0.25, 20.0));
+        assert!((sq.lookup(0.75, 20.0) + 1.0).abs() < 0.01, "{}", sq.lookup(0.75, 20.0));
+
+        let tri = Wavetable::triangle(fs);
+        let tspec = rfft(&tri.tables[0]);
+        let tamp = |k: usize| 2.0 * tspec[k].norm() / n as f64;
+        for k in 1..=63 {
+            let expect = if k % 2 == 1 { 8.0 / (PI * PI * (k * k) as f64) } else { 0.0 };
+            assert!((tamp(k) - expect).abs() < 1e-9, "triangle h{k}: {} vs {expect}", tamp(k));
+        }
+        // Σ_odd 8/(π²k²) = 1, so the triangle peaks at ±1 with no overshoot
+        // (its series converges uniformly — no Gibbs phenomenon).
+        let tpeak = tri.tables[0].iter().map(|v| v.abs()).fold(0.0_f64, f64::max);
+        assert!(tpeak > 0.998 && tpeak <= 1.0 + 1e-12, "triangle peak {tpeak}");
+        assert!((tri.lookup(0.25, 20.0) - 1.0).abs() < 2e-3, "{}", tri.lookup(0.25, 20.0));
+        assert!((tri.lookup(0.75, 20.0) + 1.0).abs() < 2e-3, "{}", tri.lookup(0.75, 20.0));
+        // Triangle harmonics roll off 12 dB/octave against the square's 6.
+        let sq_ratio = amp(3) / amp(1);
+        let tri_ratio = tamp(3) / tamp(1);
+        assert!((sq_ratio - 1.0 / 3.0).abs() < 1e-9);
+        assert!((tri_ratio - 1.0 / 9.0).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_wavetable_from_fn_reproduces_its_source() {
+        let fs = 48000.0;
+        // A two-harmonic source: from_fn must recover exactly those
+        // amplitudes and invent nothing else.
+        let wt = Wavetable::from_fn(
+            |p| (TWO_PI * p).sin() + 0.5 * (TWO_PI * 3.0 * p).sin(),
+            2048,
+            10,
+            fs,
+        );
+        let n = wt.tables[0].len();
+        let spec = rfft(&wt.tables[0]);
+        let amp = |k: usize| 2.0 * spec[k].norm() / n as f64;
+        assert!((amp(1) - 1.0).abs() < 1e-9, "h1 {}", amp(1));
+        assert!((amp(3) - 0.5).abs() < 1e-9, "h3 {}", amp(3));
+        for k in [2usize, 4, 5, 6, 7, 20] {
+            assert!(amp(k) < 1e-9, "spurious harmonic {k}: {}", amp(k));
+        }
+        // Mips band-limit from the top down: the highest mip (rated 10240
+        // Hz, so only two harmonics fit under Nyquist) has dropped the
+        // third harmonic that the widest mip keeps.
+        let top = wt.tables.len() - 1;
+        let tspec = rfft(&wt.tables[top]);
+        assert!((2.0 * tspec[1].norm() / n as f64 - 1.0).abs() < 1e-9);
+        assert!(2.0 * tspec[3].norm() / (n as f64) < 1e-9, "top mip kept h3");
+
+        // A sine table read back matches the analytic sine to within the
+        // linear-interpolation error of a 2048-point table, (π/N)²/2 ≈ 1.2e-6.
+        let sine = Wavetable::from_fn(|p| (TWO_PI * p).sin(), 2048, 10, fs);
+        let freq = 110.0;
+        let mut osc = Oscillator::new(Waveform::Sine, freq, fs);
+        let mut worst = 0.0_f64;
+        for i in 0..4800 {
+            let phase = (i as f64 * freq / fs).rem_euclid(1.0);
+            worst = worst.max((sine.lookup(phase, freq) - osc.next()).abs());
+        }
+        assert!(worst < 5e-6, "wavetable sine deviates by {worst}");
+        assert!(worst > 0.0, "expected a nonzero interpolation error");
+    }
+
+    #[test]
     fn test_farina_sweep_gives_impulse() {
         let fs = 8000.0;
         let (sweep, inverse) = sine_sweep_with_inverse(50.0, 3000.0, 0.5, fs);
