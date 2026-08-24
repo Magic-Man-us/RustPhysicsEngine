@@ -73,6 +73,7 @@ pub mod fluid_instabilities;
 pub mod sim;
 pub mod continuum_mechanics;
 pub mod spatial;
+pub mod stochastic;
 pub mod mesh;
 pub mod codes;
 pub mod patterns;
