@@ -372,6 +372,27 @@ mod tests {
     }
 
     #[test]
+    fn test_closest_point_plane() {
+        let pl = Plane::from_point_normal(Vec3::new(1.0, 2.0, 3.0), Vec3::new(1.0, 2.0, -2.0));
+        for p in [
+            Vec3::new(5.0, -1.0, 2.0),
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(-3.0, 7.0, 1.5),
+        ] {
+            let q = closest_point_plane(p, &pl);
+            // The returned point satisfies the plane equation n·q + d = 0.
+            assert!(pl.signed_distance(q).abs() < 1e-12);
+            // The displacement is parallel to the normal.
+            assert!((p - q).cross(&pl.normal).magnitude() < 1e-12);
+            // Its length is exactly |signed distance| (orthogonality:
+            // no point of the plane is closer).
+            assert!((p.distance_to(&q) - pl.signed_distance(p).abs()).abs() < 1e-12);
+            // A point already on the plane is its own projection.
+            assert!(closest_point_plane(q, &pl).distance_to(&q) < 1e-12);
+        }
+    }
+
+    #[test]
     fn test_closest_point_boxes_and_sphere() {
         let b = Aabb { min: Vec3::ZERO, max: Vec3::new(1.0, 1.0, 1.0) };
         assert!(closest_point_aabb(Vec3::new(2.0, 0.5, -1.0), &b)

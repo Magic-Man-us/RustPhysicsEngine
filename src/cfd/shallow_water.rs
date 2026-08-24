@@ -646,6 +646,158 @@ mod tests {
     }
 
     #[test]
+    fn test_add_source_deposits_exact_volume() {
+        // `add_source` raises the water column of one cell, so the total
+        // volume must grow by exactly rate·dx².
+        let (nx, ny) = (33_usize, 33_usize);
+        let dx = 1.0 / nx as f64;
+        let mut sw = ShallowWater2D::new(nx, ny, dx, 9.81);
+        sw.h.iter_mut().for_each(|h| *h = 0.2);
+        let v0 = sw.total_volume();
+        let cell = dx * dx;
+        let rate = 0.35;
+        sw.add_source(nx / 2, ny / 2, rate);
+        let v1 = sw.total_volume();
+        assert!(
+            (v1 - v0 - rate * cell).abs() < 1e-14 * v0.max(1.0),
+            "deposited {} instead of {}",
+            v1 - v0,
+            rate * cell
+        );
+        assert!((sw.h[(ny / 2) * nx + nx / 2] - 0.55).abs() < 1e-15);
+        // Repeated deposits add linearly.
+        for _ in 0..4 {
+            sw.add_source(nx / 2, ny / 2, rate);
+        }
+        assert!(
+            (sw.total_volume() - v0 - 5.0 * rate * cell).abs() < 1e-14 * v0.max(1.0),
+            "five deposits are not five times one"
+        );
+
+        // The deposited mound then spreads under gravity while the solver
+        // conserves the volume exactly (reflective walls), and it spreads
+        // symmetrically because the source sits on the centre cell of an
+        // odd grid and the scheme is unsplit.
+        let mut pond = ShallowWater2D::new(nx, ny, dx, 9.81);
+        pond.h.iter_mut().for_each(|h| *h = 0.1);
+        let before = pond.total_volume();
+        pond.add_source(nx / 2, ny / 2, 0.4);
+        let expected = before + 0.4 * cell;
+        assert!((pond.total_volume() - expected).abs() < 1e-14 * expected);
+        let peak0 = pond.max_depth();
+        for _ in 0..40 {
+            pond.step(0.4);
+        }
+        assert!(
+            (pond.total_volume() / expected - 1.0).abs() < 1e-12,
+            "volume drift {} vs {expected}",
+            pond.total_volume()
+        );
+        // The mound collapses: the peak drops and the disturbance travels
+        // outward.
+        assert!(pond.max_depth() < peak0, "mound did not collapse");
+        // Four-fold symmetry of the spread about the source cell.
+        let (ci, cj) = (nx / 2, ny / 2);
+        let mut worst = 0.0_f64;
+        for j in 0..ny {
+            for i in 0..nx {
+                let mirrored = pond.h[(2 * cj - j) * nx + (2 * ci - i)];
+                let transposed = pond.h[i * nx + j];
+                worst = worst.max((pond.h[j * nx + i] - mirrored).abs());
+                worst = worst.max((pond.h[j * nx + i] - transposed).abs());
+            }
+        }
+        assert!(worst < 1e-12, "spread lost its symmetry: {worst}");
+    }
+
+    #[test]
+    fn test_set_bathymetry_stores_bed_and_stays_well_balanced() {
+        // The bed is sampled at cell centres.
+        let (nx, ny) = (24_usize, 16_usize);
+        let dx = 0.125;
+        let bed = |x: f64, y: f64| 0.4 - 0.2 * x + 0.05 * y;
+        let mut sw = ShallowWater2D::new(nx, ny, dx, 9.81);
+        sw.set_bathymetry(bed);
+        for j in 0..ny {
+            for i in 0..nx {
+                let want = bed((i as f64 + 0.5) * dx, (j as f64 + 0.5) * dx);
+                assert!(
+                    (sw.bathymetry[j * nx + i] - want).abs() < 1e-15,
+                    "bed at ({i},{j}) = {} vs {want}",
+                    sw.bathymetry[j * nx + i]
+                );
+            }
+        }
+        // Lake at rest over the sloping bed: h = η − b with a flat free
+        // surface η. The Audusse hydrostatic reconstruction is
+        // well-balanced, so the pressure gradient and the bed source term
+        // must cancel exactly and nothing may move.
+        let eta = 1.0;
+        for c in 0..nx * ny {
+            sw.h[c] = (eta - sw.bathymetry[c]).max(0.0);
+        }
+        assert!(sw.h.iter().all(|&h| h > 0.0), "the lake must be wet");
+        let v0 = sw.total_volume();
+        let e0 = sw.total_energy();
+        for _ in 0..60 {
+            sw.step(0.4);
+        }
+        let max_speed = (0..nx * ny)
+            .map(|c| {
+                if sw.h[c] > sw.dry_tol {
+                    (sw.hu[c].abs() + sw.hv[c].abs()) / sw.h[c]
+                } else {
+                    0.0
+                }
+            })
+            .fold(0.0_f64, f64::max);
+        assert!(max_speed < 1e-12, "sloping lake at rest disturbed: {max_speed}");
+        // The free surface stays flat at η and the volume is untouched.
+        let max_eta_dev = (0..nx * ny)
+            .map(|c| (sw.h[c] + sw.bathymetry[c] - eta).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(max_eta_dev < 1e-12, "free surface tilted by {max_eta_dev}");
+        assert!((sw.total_volume() / v0 - 1.0).abs() < 1e-12, "volume drift");
+        assert!((sw.total_energy() / e0 - 1.0).abs() < 1e-12, "energy drift at rest");
+
+        // A raised bed really does hold back water: filling the same
+        // basin to a level below the crest of a bump leaves the crest dry
+        // while the rest stays at rest.
+        let mut bump = ShallowWater2D::new(nx, ny, dx, 9.81);
+        bump.set_bathymetry(|x, y| {
+            0.6 * (-((x - 1.5_f64).powi(2) + (y - 1.0).powi(2)) / 0.05).exp()
+        });
+        let crest = bump.bathymetry.iter().cloned().fold(0.0_f64, f64::max);
+        assert!(crest > 0.3, "bump too flat to test: {crest}");
+        let level = 0.3;
+        for c in 0..nx * ny {
+            bump.h[c] = (level - bump.bathymetry[c]).max(0.0);
+        }
+        let dry_before = bump.h.iter().filter(|&&h| h <= bump.dry_tol).count();
+        assert!(dry_before > 0, "the crest should stand out of the water");
+        let vol = bump.total_volume();
+        for _ in 0..60 {
+            bump.step(0.4);
+        }
+        assert!((bump.total_volume() / vol - 1.0).abs() < 1e-12, "volume drift over bump");
+        let speed = (0..nx * ny)
+            .map(|c| {
+                if bump.h[c] > bump.dry_tol {
+                    (bump.hu[c].abs() + bump.hv[c].abs()) / bump.h[c]
+                } else {
+                    0.0
+                }
+            })
+            .fold(0.0_f64, f64::max);
+        assert!(speed < 1e-12, "wet/dry lake at rest disturbed: {speed}");
+        assert_eq!(
+            bump.h.iter().filter(|&&h| h <= bump.dry_tol).count(),
+            dry_before,
+            "the dry crest changed size"
+        );
+    }
+
+    #[test]
     fn test_stoker_dam_break() {
         let n = 400;
         let domain = 40.0;

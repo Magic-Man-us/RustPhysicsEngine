@@ -937,6 +937,351 @@ mod tests {
     }
 
     #[test]
+    fn test_vortex_sheet_tangential_jump() {
+        // A flat sheet of total circulation Gamma spread over length L has
+        // sheet strength gamma = Gamma/L. At height h above the midpoint
+        // of a finite sheet the exact induced velocity is
+        //   u_x = -(gamma/pi) atan(L/(2h)),
+        // which tends to the classical -gamma/2 as h -> 0. Below the sheet
+        // the sign flips, so the jump across it is gamma.
+        let (n, gamma_total, length) = (600_usize, 1.4_f64, 1.0_f64);
+        let delta = 1e-4;
+        let sheet = VortexMethod2::vortex_sheet(n, gamma_total, length, delta);
+        assert_eq!(sheet.particles.len(), n);
+        assert!((sheet.delta - delta).abs() < 1e-15);
+        // Circulation is distributed evenly and sums to the total.
+        let total: f64 = sheet.particles.iter().map(|&(_, g)| g).sum();
+        assert!((total - gamma_total).abs() < 1e-12, "sheet circulation {total}");
+        for (i, &(p, g)) in sheet.particles.iter().enumerate() {
+            assert!((g - gamma_total / n as f64).abs() < 1e-15);
+            assert!((p.x - length * (i as f64 + 0.5) / n as f64).abs() < 1e-15);
+            assert!(p.y.abs() < 1e-15, "the sheet must be flat");
+        }
+
+        let gamma = gamma_total / length;
+        let mid = 0.5 * length;
+        for &h in &[0.02_f64, 0.01, 0.005] {
+            let above = sheet.velocity_at(Vec2::new(mid, h));
+            let below = sheet.velocity_at(Vec2::new(mid, -h));
+            let exact = -(gamma / std::f64::consts::PI) * (length / (2.0 * h)).atan();
+            // The blob spacing is L/600 and delta = 1e-4, both well under
+            // h, so the discrete sum is within a few tenths of a percent
+            // of the continuous sheet integral.
+            assert!(
+                (above.x - exact).abs() < 0.005 * exact.abs(),
+                "u above at h = {h}: {} vs exact {exact}",
+                above.x
+            );
+            assert!(
+                (below.x + exact).abs() < 0.005 * exact.abs(),
+                "u below at h = {h}: {} vs exact {}",
+                below.x,
+                -exact
+            );
+            // Antisymmetry about the sheet is exact by construction.
+            assert!((above.x + below.x).abs() < 1e-12, "no antisymmetry");
+            // No normal velocity through the middle of a flat sheet.
+            assert!(above.y.abs() < 1e-9, "normal velocity {} above", above.y);
+            assert!(below.y.abs() < 1e-9, "normal velocity {} below", below.y);
+            // The tangential jump approaches gamma as h -> 0.
+            let jump = below.x - above.x;
+            assert!(jump > 0.0);
+            assert!(jump < gamma, "jump {jump} exceeds the sheet strength {gamma}");
+            assert!(
+                (jump / gamma) > 1.0 - 1.5 * h / length,
+                "jump {jump} too small for h = {h} (gamma = {gamma})"
+            );
+        }
+        // Close to the sheet the jump is within a percent of gamma.
+        let tight = 0.002;
+        let jump = sheet.velocity_at(Vec2::new(mid, -tight)).x
+            - sheet.velocity_at(Vec2::new(mid, tight)).x;
+        assert!(
+            (jump / gamma - 1.0).abs() < 0.01,
+            "near-field jump {jump} vs gamma {gamma}"
+        );
+        // Far above the sheet it looks like a single point vortex of
+        // strength Gamma: u_x -> -Gamma/(2 pi r).
+        let far = 60.0;
+        let u_far = sheet.velocity_at(Vec2::new(mid, far)).x;
+        let point = -gamma_total / (TWO_PI * far);
+        assert!(
+            (u_far / point - 1.0).abs() < 1e-3,
+            "far field {u_far} vs point vortex {point}"
+        );
+    }
+
+    #[test]
+    fn test_vortex_method_3d_invariants() {
+        let (radius, strength, core, n) = (1.0_f64, 1.3_f64, 0.08_f64, 120_usize);
+        let ring = VortexMethod3::vortex_ring(Vec3::new(0.0, 0.0, 0.0), radius, strength, core, n);
+
+        // Enstrophy proxy: every particle carries |alpha| = Gamma * ds with
+        // ds = 2 pi R / n, so the sum is exactly Gamma^2 (2 pi R)^2 / n.
+        let seg = TWO_PI * radius / n as f64;
+        let enstrophy_exact = n as f64 * (strength * seg).powi(2);
+        assert!(
+            (ring.enstrophy() / enstrophy_exact - 1.0).abs() < 1e-12,
+            "ring enstrophy {} vs {enstrophy_exact}",
+            ring.enstrophy()
+        );
+        assert!(ring.enstrophy() > 0.0, "enstrophy is a sum of squares");
+        // Enstrophy is quadratic in the strengths and independent of where
+        // the ring sits.
+        let mut doubled = ring.clone();
+        doubled.particles.iter_mut().for_each(|p| p.strength = p.strength * 2.0);
+        assert!(
+            (doubled.enstrophy() / ring.enstrophy() - 4.0).abs() < 1e-12,
+            "enstrophy is not quadratic"
+        );
+        let mut moved = ring.clone();
+        moved
+            .particles
+            .iter_mut()
+            .for_each(|p| p.pos = p.pos + Vec3::new(3.0, -2.0, 5.0));
+        assert!(
+            (moved.enstrophy() - ring.enstrophy()).abs() < 1e-12,
+            "enstrophy is not translation invariant"
+        );
+
+        // Helicity of a planar vortex ring vanishes: the self-induced
+        // velocity of a circular filament is axial (plus radial), while
+        // the particle strengths are purely tangential, so u . alpha = 0
+        // at every particle.
+        let scale = ring.velocity_at(ring.particles[0].pos).magnitude()
+            * ring.particles[0].strength.magnitude()
+            * n as f64;
+        assert!(scale > 0.0, "the ring must induce a velocity");
+        assert!(
+            ring.helicity().abs() < 1e-10 * scale,
+            "planar ring helicity {} (scale {scale})",
+            ring.helicity()
+        );
+        // Two coaxial planar rings are still helicity free.
+        let stack = VortexMethod3::two_rings_leapfrog(radius, strength, core, 0.5, n);
+        assert!(
+            stack.helicity().abs() < 1e-10 * scale,
+            "coaxial rings helicity {}",
+            stack.helicity()
+        );
+        // Helicity is a pseudo-scalar built from u . alpha, so reversing
+        // every strength leaves it unchanged while reversing the sign of
+        // one of a linked pair flips it. Build a linked pair: ring A in the
+        // xy plane, ring B in the xz plane threaded through it. The
+        // classical result for two linked vortex tubes is
+        // H = 2 * Lk * Gamma_A * Gamma_B.
+        let a = VortexMethod3::vortex_ring(Vec3::ZERO, 1.0, 1.0, 0.05, 400);
+        let b = VortexMethod3::ring_with_normal(
+            Vec3::new(1.0, 0.0, 0.0),
+            1.0,
+            1.0,
+            0.05,
+            400,
+            Vec3::new(0.0, 1.0, 0.0),
+        );
+        let mut linked = a.clone();
+        linked.particles.extend(b.particles.iter().copied());
+        let h_linked = linked.helicity();
+        // Each ring on its own is helicity free, so the whole of H comes
+        // from the linkage; the discrete sum with finite cores reproduces
+        // the +/- 2 Gamma_A Gamma_B value to a few percent.
+        assert!(
+            (h_linked.abs() / 2.0 - 1.0).abs() < 0.1,
+            "linked-ring helicity {h_linked} vs +/-2"
+        );
+        // Reversing one ring's circulation flips the sign of the linking
+        // number and hence of the helicity.
+        let mut flipped = a.clone();
+        flipped.particles.extend(
+            VortexMethod3::ring_with_normal(
+                Vec3::new(1.0, 0.0, 0.0),
+                1.0,
+                -1.0,
+                0.05,
+                400,
+                Vec3::new(0.0, 1.0, 0.0),
+            )
+            .particles,
+        );
+        assert!(
+            (flipped.helicity() + h_linked).abs() < 1e-6 * h_linked.abs(),
+            "helicity did not flip: {} vs {h_linked}",
+            flipped.helicity()
+        );
+
+        // Kinetic energy: quadratic in the strengths, invariant under a
+        // rigid translation, and positive for a like-signed ring.
+        let e = ring.kinetic_energy();
+        assert!(e > 0.0, "ring kinetic energy {e}");
+        assert!(
+            (doubled.kinetic_energy() / e - 4.0).abs() < 1e-12,
+            "kinetic energy is not quadratic in the strengths"
+        );
+        assert!(
+            (moved.kinetic_energy() / e - 1.0).abs() < 1e-12,
+            "kinetic energy is not translation invariant"
+        );
+        // Classical thin-core ring energy E = (1/2) Gamma^2 R (ln(8R/a) - 7/4).
+        let e_thin = 0.5 * strength * strength * radius
+            * ((8.0 * radius / core).ln() - 7.0 / 4.0);
+        assert!(
+            (e / e_thin - 1.0).abs() < 0.25,
+            "ring energy {e} vs thin-core {e_thin}"
+        );
+        // Interaction energy of two well-separated coaxial rings. A closed
+        // ring carries no net strength (sum alpha = 0), so the 1/d and
+        // 1/d^2 terms of the pair sum
+        //   E_int = (1/4 pi) sum_{i in A, j in B} alpha_i . alpha_j / r_ij
+        // both cancel and the leading behaviour is 1/d^3: doubling the gap
+        // divides the interaction energy by eight.
+        let pair = |gap: f64| -> f64 {
+            let mut s = VortexMethod3::vortex_ring(Vec3::ZERO, radius, strength, core, n);
+            s.particles.extend(
+                VortexMethod3::vortex_ring(
+                    Vec3::new(0.0, 0.0, gap),
+                    radius,
+                    strength,
+                    core,
+                    n,
+                )
+                .particles,
+            );
+            s.kinetic_energy()
+        };
+        let (near, far) = (pair(20.0) - 2.0 * e, pair(40.0) - 2.0 * e);
+        assert!(near > 0.0 && far > 0.0, "like-signed coaxial rings raise the energy");
+        assert!(
+            (7.0..9.2).contains(&(near / far)),
+            "interaction energy does not decay like 1/d^3: {near} vs {far}"
+        );
+
+        // Remeshing conserves the total vector circulation exactly (the
+        // strengths are summed, not resampled) and never increases the
+        // particle count.
+        let mut coarse = ring.clone();
+        let sum0 = coarse
+            .particles
+            .iter()
+            .fold(Vec3::ZERO, |acc, p| acc + p.strength);
+        let imp0 = coarse.impulse();
+        let count0 = coarse.particles.len();
+        coarse.remesh(4.0 * TWO_PI * radius / n as f64);
+        let sum1 = coarse
+            .particles
+            .iter()
+            .fold(Vec3::ZERO, |acc, p| acc + p.strength);
+        assert!(
+            (sum1 - sum0).magnitude() < 1e-12 * strength * seg * n as f64,
+            "remesh changed the total circulation: {sum0:?} -> {sum1:?}"
+        );
+        assert!(coarse.particles.len() < count0, "remesh merged nothing");
+        assert!(!coarse.particles.is_empty());
+        // Strength-weighted centroids keep the hydrodynamic impulse
+        // I = 1/2 sum x x alpha close to its original value, and it stays
+        // aligned with the ring axis.
+        let imp1 = coarse.impulse();
+        assert!(
+            (imp1.z / imp0.z - 1.0).abs() < 0.05,
+            "remesh moved the impulse: {imp0:?} -> {imp1:?}"
+        );
+        assert!(imp1.x.abs() < 0.02 * imp0.z.abs() && imp1.y.abs() < 0.02 * imp0.z.abs());
+        // Remeshing onto a lattice much finer than the particle spacing is
+        // a no-op on the strengths, and each particle stays where it was
+        // (a weighted centroid of one point is that point).
+        let mut fine = ring.clone();
+        fine.remesh(0.1 * TWO_PI * radius / n as f64);
+        assert_eq!(fine.particles.len(), count0, "fine remesh merged particles");
+        let sum2 = fine.particles.iter().fold(Vec3::ZERO, |acc, p| acc + p.strength);
+        assert!((sum2 - sum0).magnitude() < 1e-12 * strength * seg * n as f64);
+        for p in &fine.particles {
+            let nearest = ring
+                .particles
+                .iter()
+                .map(|q| (q.pos - p.pos).magnitude())
+                .fold(f64::INFINITY, f64::min);
+            assert!(nearest < 1e-12, "fine remesh moved a particle by {nearest}");
+        }
+        // Particles land on the lattice cell nearest their position, one
+        // merged particle per occupied cell.
+        let spacing = 4.0 * TWO_PI * radius / n as f64;
+        let mut group_sizes: std::collections::HashMap<(i64, i64, i64), usize> =
+            std::collections::HashMap::new();
+        for p in &ring.particles {
+            let key = (
+                (p.pos.x / spacing).round() as i64,
+                (p.pos.y / spacing).round() as i64,
+                (p.pos.z / spacing).round() as i64,
+            );
+            *group_sizes.entry(key).or_insert(0) += 1;
+        }
+        assert_eq!(
+            coarse.particles.len(),
+            group_sizes.len(),
+            "remesh did not produce one particle per occupied lattice cell"
+        );
+        // Merging adds strengths as vectors, so neighbouring, nearly
+        // parallel segments of a ring reinforce and the enstrophy proxy
+        // sum |alpha|^2 rises. Cauchy-Schwarz caps that growth at the
+        // largest group size: |sum_g alpha|^2 <= m_g sum_g |alpha|^2.
+        let max_group = *group_sizes.values().max().unwrap();
+        assert!(
+            coarse.enstrophy() > ring.enstrophy(),
+            "merging parallel strengths should raise the enstrophy proxy"
+        );
+        assert!(
+            coarse.enstrophy() <= max_group as f64 * ring.enstrophy() * (1.0 + 1e-9),
+            "remesh violated the Cauchy-Schwarz bound: {} > {} x {}",
+            coarse.enstrophy(),
+            max_group,
+            ring.enstrophy()
+        );
+
+        // Opposite strengths in one cell cancel exactly, and the merged
+        // particle sits at the strength-weighted centroid with the
+        // strength-weighted core.
+        let cancelling = VortexMethod3::new(
+            vec![
+                VortexParticle {
+                    pos: Vec3::new(0.0, 0.0, 0.0),
+                    strength: Vec3::new(0.0, 0.0, 1.0),
+                    core: 0.2,
+                },
+                VortexParticle {
+                    pos: Vec3::new(0.01, 0.0, 0.0),
+                    strength: Vec3::new(0.0, 0.0, -1.0),
+                    core: 0.2,
+                },
+            ],
+            VortexKernel::HighOrder(0.2),
+        );
+        let mut merged = cancelling.clone();
+        merged.remesh(1.0);
+        assert_eq!(merged.particles.len(), 1);
+        assert!(
+            merged.particles[0].strength.magnitude() < 1e-15,
+            "opposite strengths did not cancel: {:?}",
+            merged.particles[0].strength
+        );
+        assert!(merged.enstrophy() < 1e-30, "enstrophy {} after cancellation", merged.enstrophy());
+        assert!(
+            (merged.particles[0].pos.x - 0.005).abs() < 1e-15,
+            "merged position {:?}",
+            merged.particles[0].pos
+        );
+        assert!((merged.particles[0].core - 0.2).abs() < 1e-15);
+        // Total circulation is unchanged (zero before and after).
+        let before = cancelling
+            .particles
+            .iter()
+            .fold(Vec3::ZERO, |acc, p| acc + p.strength);
+        let after = merged
+            .particles
+            .iter()
+            .fold(Vec3::ZERO, |acc, p| acc + p.strength);
+        assert!((after - before).magnitude() < 1e-15);
+    }
+
+    #[test]
     fn test_phenomenology() {
         assert!((kelvin_helmholtz_growth_exact(2.0, 3.0) - 3.0).abs() < 1e-15);
         assert!((vortex_shedding_frequency(0.2, 10.0, 0.1) - 20.0).abs() < 1e-12);

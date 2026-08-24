@@ -1280,4 +1280,143 @@ mod tests {
         let q = h.geodesic_polar_coords(&p, 1.0, 0.7);
         assert!((q.norm() - (0.5_f64).tanh()).abs() < 1e-4);
     }
+
+    #[test]
+    fn test_geodesic_rhs() {
+        // --- flat space: straight lines, zero coordinate acceleration -----
+        let e = Metric::euclidean(3);
+        let st = GeodesicState {
+            x: VecN::from(&[0.4, -1.2, 2.0]),
+            v: VecN::from(&[0.3, 0.7, -0.5]),
+            tau: 0.0,
+        };
+        let (dx, dv) = e.geodesic_rhs(&st);
+        // x' = v exactly
+        assert!(dx.data.iter().zip(&st.v.data).all(|(a, b)| a == b));
+        assert!(dv.norm() < 1e-10, "flat acceleration {dv:?}");
+        let mk = Metric::minkowski(4, Sig::MostlyPlus);
+        let stm = GeodesicState {
+            x: VecN::from(&[1.0, 2.0, 3.0, 4.0]),
+            v: VecN::from(&[1.0, 0.4, -0.2, 0.1]),
+            tau: 0.0,
+        };
+        assert!(mk.geodesic_rhs(&stm).1.norm() < 1e-10);
+
+        // --- sphere: closed-form Christoffel symbols ----------------------
+        // g = diag(r^2, r^2 sin^2 theta) gives Gamma^th_ph,ph = -sin cos and
+        // Gamma^ph_th,ph = cot theta, so
+        //   a^th = sin(th) cos(th) (v^ph)^2,  a^ph = -2 cot(th) v^th v^ph
+        let r = 1.5;
+        let s = Metric::sphere(2, r);
+        let th = 1.0_f64;
+        let sp = GeodesicState {
+            x: VecN::from(&[th, 0.4]),
+            v: VecN::from(&[0.3, 0.7]),
+            tau: 0.0,
+        };
+        let (dxs, a) = s.geodesic_rhs(&sp);
+        assert!(dxs.data.iter().zip(&sp.v.data).all(|(x, y)| x == y));
+        let want_th = th.sin() * th.cos() * 0.7 * 0.7;
+        let want_ph = -2.0 * (th.cos() / th.sin()) * 0.3 * 0.7;
+        assert!((a[0] - want_th).abs() < 1e-6, "a^theta {} vs {want_th}", a[0]);
+        assert!((a[1] - want_ph).abs() < 1e-6, "a^phi {} vs {want_ph}", a[1]);
+        // the acceleration is independent of the sphere radius (the
+        // Christoffel symbols are scale invariant)
+        let s2 = Metric::sphere(2, 4.0);
+        let a2 = s2.geodesic_rhs(&sp).1;
+        assert!((a2[0] - a[0]).abs() < 1e-6 && (a2[1] - a[1]).abs() < 1e-6);
+
+        // --- the RHS conserves g(v, v): the geodesic equation is metric ----
+        // d/dtau [g_ij v^i v^j] = (d_k g_ij) v^k v^i v^j + 2 g_ij a^i v^j = 0
+        let speed_rate = |m: &Metric, st: &GeodesicState| -> f64 {
+            let n = m.dim;
+            let acc = m.geodesic_rhs(st).1;
+            let g = m.at(&st.x);
+            let mut total = 0.0;
+            for k in 0..n {
+                let dg = m.dg(&st.x, k);
+                for i in 0..n {
+                    for j in 0..n {
+                        total += dg.get(i, j) * st.v[k] * st.v[i] * st.v[j];
+                    }
+                }
+            }
+            for i in 0..n {
+                for j in 0..n {
+                    total += 2.0 * g.get(i, j) * acc[i] * st.v[j];
+                }
+            }
+            total
+        };
+        assert!(speed_rate(&s, &sp).abs() < 1e-6, "sphere speed drift");
+        let sch = Metric::schwarzschild(1.0);
+        let stg = GeodesicState {
+            x: VecN::from(&[0.0, 8.0, 1.1, 0.3]),
+            v: VecN::from(&[1.2, 0.15, -0.05, 0.04]),
+            tau: 0.0,
+        };
+        assert!(speed_rate(&sch, &stg).abs() < 1e-5, "Schwarzschild speed drift");
+        // the static Killing vector gives a conserved energy g_00 v^0:
+        // d/dtau (g_00 v^0) = (d_k g_00) v^k v^0 + g_00 a^0 = 0
+        let acc = sch.geodesic_rhs(&stg).1;
+        let mut de = sch.at(&stg.x).get(0, 0) * acc[0];
+        for k in 0..4 {
+            de += sch.dg(&stg.x, k).get(0, 0) * stg.v[k] * stg.v[0];
+        }
+        assert!(de.abs() < 1e-6, "Schwarzschild energy drift {de}");
+
+        // --- consistency with the integrator built on the same RHS --------
+        let dt = 1e-5;
+        let path = s.geodesic(&sp.x, &sp.v, dt, dt, Integrator::Rk4);
+        let end = path.last().unwrap();
+        let num_a = end.v.sub(&sp.v).scale(1.0 / dt);
+        assert!(
+            num_a.sub(&a).norm() < 1e-3,
+            "rhs {a:?} vs integrated {num_a:?}"
+        );
+        let num_v = end.x.sub(&sp.x).scale(1.0 / dt);
+        assert!(num_v.sub(&sp.v).norm() < 1e-3);
+    }
+
+    #[test]
+    fn test_cut_locus_estimate_2d() {
+        // On the unit sphere the cut locus of a point is its antipode: the
+        // first conjugate point along every unit-speed geodesic is at
+        // tau = pi, where the geodesic has reached -p.
+        let s = Metric::sphere(2, 1.0);
+        let p = VecN::from(&[std::f64::consts::FRAC_PI_2, 0.0]);
+        let to3 = |x: &VecN| {
+            Vec3::new(
+                x[0].sin() * x[1].cos(),
+                x[0].sin() * x[1].sin(),
+                x[0].cos(),
+            )
+        };
+        let cut = s.cut_locus_estimate_2d(&p, 4, 3.5);
+        assert_eq!(cut.len(), 4);
+        let p3 = to3(&p);
+        for q in &cut {
+            let d = to3(q).dot(&p3);
+            // dot = cos(distance): the antipode has dot = -1
+            assert!(d < -0.999, "cut point at angular distance acos({d})");
+        }
+
+        // The Euclidean plane has no conjugate points, so every ray runs the
+        // full affine length and the estimate is the circle of that radius.
+        let e = Metric::euclidean(2);
+        let origin = VecN::zeros(2);
+        let tau_max = 2.0;
+        let ring = e.cut_locus_estimate_2d(&origin, 6, tau_max);
+        assert_eq!(ring.len(), 6);
+        for (k, q) in ring.iter().enumerate() {
+            assert!((q.norm() - tau_max).abs() < 1e-9, "radius {}", q.norm());
+            // straight rays: the direction is the k-th sampled angle
+            let th = 2.0 * std::f64::consts::PI * k as f64 / 6.0;
+            assert!((q[0] - tau_max * th.cos()).abs() < 1e-9);
+            assert!((q[1] - tau_max * th.sin()).abs() < 1e-9);
+        }
+        // consecutive points are separated by the chord of a regular hexagon
+        let chord = ring[1].sub(&ring[0]).norm();
+        assert!((chord - tau_max).abs() < 1e-9, "hexagon chord {chord}");
+    }
 }

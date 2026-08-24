@@ -344,6 +344,71 @@ mod tests {
     }
 
     #[test]
+    fn test_homography_compose_equals_sequential_application() {
+        let unit = [
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 0.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(0.0, 1.0),
+        ];
+        // Two genuinely projective maps (nonzero bottom row).
+        let g = Homography::from_four_points(
+            unit,
+            [
+                Vec2::new(0.1, -0.2),
+                Vec2::new(1.4, 0.3),
+                Vec2::new(1.1, 1.2),
+                Vec2::new(-0.3, 0.9),
+            ],
+        )
+        .unwrap();
+        let f = Homography::from_four_points(
+            unit,
+            [
+                Vec2::new(0.0, 0.0),
+                Vec2::new(2.0, 0.4),
+                Vec2::new(1.6, 1.9),
+                Vec2::new(-0.4, 1.3),
+            ],
+        )
+        .unwrap();
+        // compose applies `other` first: (f ∘ g)(p) = f(g(p)), including
+        // the perspective division at both stages.
+        let fg = f.compose(&g);
+        for p in [
+            Vec2::new(0.0, 0.0),
+            Vec2::new(0.25, 0.75),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(-0.6, 0.3),
+            Vec2::new(2.5, -1.4),
+        ] {
+            let seq = f.apply(g.apply(p).unwrap()).unwrap();
+            let comp = fg.apply(p).unwrap();
+            assert!(comp.distance_to(&seq) < 1e-9, "{comp:?} vs {seq:?}");
+        }
+        // Order matters for these two maps.
+        let gf = g.compose(&f);
+        let p = Vec2::new(0.3, 0.8);
+        assert!(fg.apply(p).unwrap().distance_to(&gf.apply(p).unwrap()) > 1e-6);
+        // Associativity of composition on points.
+        let h = Homography { h: [[1.0, 0.2, 0.5], [-0.1, 1.0, -0.3], [0.05, 0.02, 1.0]] };
+        let left = f.compose(&g).compose(&h);
+        let right = f.compose(&g.compose(&h));
+        for p in [Vec2::new(0.2, 0.1), Vec2::new(-0.7, 1.1)] {
+            assert!(left.apply(p).unwrap().distance_to(&right.apply(p).unwrap()) < 1e-9);
+        }
+        // Composing with the inverse is the identity map on points.
+        let id = f.compose(&f.inverse().unwrap());
+        for p in [Vec2::new(0.4, -0.2), Vec2::new(1.7, 2.3)] {
+            assert!(id.apply(p).unwrap().distance_to(&p) < 1e-9);
+        }
+        // The identity homography is a neutral element.
+        let eye = Homography { h: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]] };
+        assert_eq!(f.compose(&eye), f);
+        assert_eq!(eye.compose(&f), f);
+    }
+
+    #[test]
     fn test_rectify_quad() {
         let quad = [
             Vec2::new(0.2, 0.1),

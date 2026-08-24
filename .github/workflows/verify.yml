@@ -1,0 +1,75 @@
+name: Verify
+
+# Deeper checks than ci.yml (which builds, tests and reports coverage):
+# randomized property tests, Kani model checking, and a strict lint pass.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  properties:
+    name: Property tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run the property suite in release mode
+        run: cargo test --release --test properties
+
+  kani:
+    name: Kani model checking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: model-checking/kani-github-action@v1
+        with:
+          args: --output-format terse
+
+  miri:
+    name: Miri (UB check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo miri setup
+      # The crate contains no `unsafe`, so Miri is a backstop rather than the
+      # primary check, and interpreting all 2700+ tests would dominate CI
+      # time. Scope it to the modules doing the heaviest index and slice
+      # arithmetic, where an out-of-bounds or aliasing mistake would surface.
+      - name: Run core numerics tests under Miri
+        run: cargo miri test --lib -- core:: linalg:: spatial::
+        env:
+          MIRIFLAGS: "-Zmiri-strict-provenance"
+
+  clippy-strict:
+    name: Clippy (strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      # Default lints are enforced as errors. The float-accuracy lints are
+      # advisory: `suboptimal_flops` alone fires ~2800 times across the
+      # numerics, and rewriting those expressions as `mul_add` changes
+      # rounding, so each one needs a deliberate review rather than a blanket
+      # denial.
+      - name: Clippy
+        run: >
+          cargo clippy --all-targets --
+          -D warnings
+          -W clippy::float_cmp
+          -W clippy::lossy_float_literal
+          -W clippy::imprecise_flops
+          -W clippy::suboptimal_flops

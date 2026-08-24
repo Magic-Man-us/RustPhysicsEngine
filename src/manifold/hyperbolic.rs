@@ -1552,4 +1552,159 @@ mod tests {
             assert!(tangencies >= 3, "tangencies {tangencies}");
         }
     }
+
+    #[test]
+    fn test_origin_polar_and_display_coords() {
+        // the origin of each 2D model, and the fact that they are all the
+        // same point of hyperbolic space
+        let disk = HypPoint::origin(HypModel::PoincareDisk, 2);
+        let klein = HypPoint::origin(HypModel::Klein, 2);
+        let uhp = HypPoint::origin(HypModel::UpperHalfPlane, 2);
+        let hyp = HypPoint::origin(HypModel::Hyperboloid, 2);
+        assert_eq!(disk.coords.dim(), 2);
+        assert!(disk.coords.norm() < 1e-15, "disk origin at 0");
+        assert!(klein.coords.norm() < 1e-15, "klein origin at 0");
+        assert!(
+            uhp.coords[0].abs() < 1e-15 && (uhp.coords[1] - 1.0).abs() < 1e-15,
+            "upper half-plane origin is i"
+        );
+        assert_eq!(hyp.coords.dim(), 3);
+        assert!(
+            (hyp.coords[0] - 1.0).abs() < 1e-15
+                && hyp.coords[1].abs() < 1e-15
+                && hyp.coords[2].abs() < 1e-15,
+            "hyperboloid origin is the apex"
+        );
+        for a in [&disk, &klein, &uhp, &hyp] {
+            assert!(a.distance(a) < 1e-12, "distance to itself");
+            for b in [&disk, &klein, &uhp, &hyp] {
+                assert!(a.distance(b) < 1e-12, "origins coincide across models");
+            }
+        }
+        // 3D origins too: the ball origin is the center, the half-space
+        // origin sits one unit above the boundary plane
+        let ball3 = HypPoint::origin(HypModel::PoincareBall, 3);
+        let half3 = HypPoint::origin(HypModel::UpperHalfSpace, 3);
+        assert!(ball3.coords.norm() < 1e-15 && ball3.coords.dim() == 3);
+        assert!((half3.coords[2] - 1.0).abs() < 1e-15 && half3.coords[0].abs() < 1e-15);
+        assert!(ball3.distance(&half3) < 1e-12);
+        // to_euclidean_display: disk-like models pass through, and the
+        // hyperboloid is projected into the unit ball
+        assert!(disk.to_euclidean_display().norm() < 1e-15, "origin displays at 0");
+        assert!(hyp.to_euclidean_display().norm() < 1e-15);
+        assert_eq!(hyp.to_euclidean_display().dim(), 2);
+        let p = HypPoint {
+            coords: VecN::from(&[0.35, -0.2]),
+            model: HypModel::PoincareDisk,
+        };
+        let shown = p.to_euclidean_display();
+        assert!(
+            (shown[0] - 0.35).abs() < 1e-15 && (shown[1] + 0.2).abs() < 1e-15,
+            "disk coordinates pass through"
+        );
+        let shown_h = p.to(HypModel::Hyperboloid).to_euclidean_display();
+        assert!(
+            (shown_h[0] - 0.35).abs() < 1e-12 && (shown_h[1] + 0.2).abs() < 1e-12,
+            "hyperboloid displays as its disk image {shown_h:?}"
+        );
+        assert!(shown_h.norm() < 1.0, "display stays inside the unit disk");
+        // from_polar: hyperbolic radius r, Euclidean radius tanh(r/2)
+        for &r in &[0.0_f64, 0.25, 1.0, 3.0] {
+            for &th in &[0.0_f64, 0.7, 2.9, -1.4] {
+                let q = HypPoint::from_polar(r, th);
+                assert_eq!(q.model, HypModel::PoincareDisk);
+                assert!(
+                    (q.distance(&disk) - r).abs() < 1e-10,
+                    "polar radius {r} came back as {}",
+                    q.distance(&disk)
+                );
+                let z = c(q.coords[0], q.coords[1]);
+                assert!(
+                    (hyp_distance_disk(c(0.0, 0.0), z) - r).abs() < 1e-10,
+                    "disk-model distance"
+                );
+                assert!((z.norm() - (0.5 * r).tanh()).abs() < 1e-12, "euclidean radius");
+                if r > 1e-9 {
+                    let ang = z.im.atan2(z.re);
+                    let diff = (ang - th + PI).rem_euclid(2.0 * PI) - PI;
+                    assert!(diff.abs() < 1e-12, "polar angle {ang} vs {th}");
+                }
+            }
+        }
+        // hyperbolic law of cosines for two polar points sharing the origin:
+        // cosh d = cosh r1 cosh r2 - sinh r1 sinh r2 cos(dtheta)
+        let (r1, r2) = (0.8_f64, 1.7_f64);
+        for &dth in &[0.0_f64, 0.5, 2.0, PI] {
+            let a = HypPoint::from_polar(r1, 0.3);
+            let b = HypPoint::from_polar(r2, 0.3 + dth);
+            let d = a.distance(&b);
+            let want = (r1.cosh() * r2.cosh() - r1.sinh() * r2.sinh() * dth.cos()).acosh();
+            assert!(
+                (d - want).abs() < 1e-9,
+                "law of cosines at dtheta={dth}: {d} vs {want}"
+            );
+            // and the closed form matches the crate's own law of cosines
+            let via_trig = hyp_law_of_cosines(r1, r2, dth);
+            assert!((d - via_trig).abs() < 1e-9, "vs hyp_law_of_cosines");
+        }
+        assert!(HypPoint::from_polar(0.0, 1.2).distance(&disk) < 1e-12);
+    }
+
+    #[test]
+    fn test_parabolic_isometry() {
+        // z -> z + t on the upper half-plane
+        let t = 0.75;
+        let par = parabolic(t);
+        assert!((par.m[0][0] - 1.0).abs() < 1e-15 && (par.m[1][1] - 1.0).abs() < 1e-15);
+        assert!((par.m[1][0]).abs() < 1e-15 && (par.m[0][1] - t).abs() < 1e-15);
+        let det = par.m[0][0] * par.m[1][1] - par.m[0][1] * par.m[1][0];
+        assert!((det - 1.0).abs() < 1e-15, "unimodular");
+        let trace = par.m[0][0] + par.m[1][1];
+        assert!((trace.abs() - 2.0).abs() < 1e-15, "|trace| = 2 is parabolic");
+        let pts = [c(0.0, 1.0), c(0.4, 2.5), c(-1.3, 0.2)];
+        for &z in &pts {
+            let img = mobius_uhp(z, &par);
+            assert!((img - (z + c(t, 0.0))).norm() < 1e-12, "translation {img:?}");
+            assert!(img.im > 0.0, "half-plane preserved");
+        }
+        // it is an isometry of the hyperbolic metric
+        for &z in &pts {
+            for &w in &pts {
+                let d = hyp_distance_uhp(z, w);
+                let d2 = hyp_distance_uhp(mobius_uhp(z, &par), mobius_uhp(w, &par));
+                assert!((d - d2).abs() < 1e-10, "distance {d} vs {d2}");
+            }
+        }
+        // one-parameter group: p(a) p(b) = p(a + b), and p(0) is the identity
+        let comp = parabolic(0.3).compose(&parabolic(-1.1));
+        let want = parabolic(-0.8);
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!((comp.m[i][j] - want.m[i][j]).abs() < 1e-12, "group law");
+            }
+        }
+        let z = c(0.2, 1.4);
+        assert!((mobius_uhp(z, &parabolic(0.0)) - z).norm() < 1e-15, "identity");
+        assert!(
+            (mobius_uhp(mobius_uhp(z, &par), &parabolic(-t)) - z).norm() < 1e-12,
+            "inverse"
+        );
+        // no interior fixed point (z + t = z is unsolvable), and the single
+        // fixed boundary point is infinity: in the disk model, 1
+        for &z in &pts {
+            assert!((mobius_uhp(z, &par) - z).norm() > 0.5 * t, "no interior fixed point");
+        }
+        let far = c(0.0, 1e7);
+        let disk_far = uhp_to_disk(far);
+        let disk_img = uhp_to_disk(mobius_uhp(far, &par));
+        assert!((disk_far - c(1.0, 0.0)).norm() < 1e-6, "boundary point 1");
+        assert!(
+            (disk_img - disk_far).norm() < 1e-6,
+            "the ideal fixed point is unmoved: {disk_img:?}"
+        );
+        // parabolic elements have no interior fixed point, unlike elliptic
+        // rotations, which fix i
+        let rot = hyperbolic_rotation(0.6);
+        assert!((mobius_uhp(c(0.0, 1.0), &rot) - c(0.0, 1.0)).norm() < 1e-12);
+    }
 }

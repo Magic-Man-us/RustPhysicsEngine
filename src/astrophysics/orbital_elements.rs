@@ -433,7 +433,7 @@ mod tests {
         let vel = Vec3::new(0.0, v, 0.0);
         let ta = true_anomaly(pos, vel, mu);
         // For circular orbit eccentricity ~0, true_anomaly returns 0
-        assert!(ta < 0.01 || ta > 2.0 * PI - 0.01, "True anomaly at periapsis should be ~0, got {ta}");
+        assert!(!(0.01..=2.0 * PI - 0.01).contains(&ta), "True anomaly at periapsis should be ~0, got {ta}");
     }
 
     #[test]

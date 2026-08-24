@@ -602,6 +602,76 @@ mod tests {
     }
 
     #[test]
+    fn test_mode_shape_symmetry_and_analytic_chain() {
+        // Two identical coupled masses: the lower mode is symmetric (1,1)
+        // and the upper is antisymmetric (1,−1), both mass-normalized so
+        // each component is 1/√(2m).
+        let (m, k, kc) = (2.0_f64, 100.0_f64, 5.0_f64);
+        let sys = CoupledOscillators::chain(2, m, k, kc);
+        let (freqs, shapes) = sys.normal_modes();
+        let sym = sys.mode_shape(0);
+        let anti = sys.mode_shape(1);
+        assert_eq!(sym.len(), 2);
+        // mode_shape(i) is column i of the normal-mode matrix.
+        for r in 0..2 {
+            assert!(approx(sym[r], shapes.get(r, 0), 1e-15));
+            assert!(approx(anti[r], shapes.get(r, 1), 1e-15));
+        }
+        let unit = 1.0 / (2.0 * m).sqrt();
+        assert!(approx(sym[0], sym[1], 1e-9), "mode 0 is not symmetric: {sym:?}");
+        assert!(approx(sym[0].abs(), unit, 1e-9), "normalization {}", sym[0]);
+        assert!(approx(anti[0], -anti[1], 1e-9), "mode 1 is not antisymmetric: {anti:?}");
+        assert!(approx(anti[0].abs(), unit, 1e-9), "normalization {}", anti[0]);
+        // The symmetric mode ignores the coupling spring (ω = √(k/m));
+        // the antisymmetric one stretches it (ω = √((k+2k_c)/m)).
+        assert!(approx(freqs[0], (k / m).sqrt(), 1e-9), "in-phase {}", freqs[0]);
+        assert!(approx(freqs[1], ((k + 2.0 * kc) / m).sqrt(), 1e-9), "out-of-phase {}", freqs[1]);
+        // Mass-orthogonality between the two shapes.
+        let cross: f64 = (0..2).map(|r| sym[r] * m * anti[r]).sum();
+        assert!(cross.abs() < 1e-12, "modes not M-orthogonal: {cross}");
+        // Each shape's Rayleigh quotient returns its own ω².
+        assert!(approx(sys.rayleigh_quotient(&sym), freqs[0].powi(2), 1e-9));
+        assert!(approx(sys.rayleigh_quotient(&anti), freqs[1].powi(2), 1e-9));
+
+        // A fixed-fixed chain has the analytic eigenvectors
+        // φ_i[r] ∝ sin((i+1)(r+1)π/(n+1)).
+        let n = 5usize;
+        let chain = CoupledOscillators::chain_fixed_ends(n, 1.5, 40.0);
+        for i in 0..n {
+            let shape = chain.mode_shape(i);
+            assert_eq!(shape.len(), n);
+            let exact: Vec<f64> = (0..n)
+                .map(|r| ((i + 1) as f64 * (r + 1) as f64 * PI / (n as f64 + 1.0)).sin())
+                .collect();
+            // Compare directions (the eigen solve fixes neither sign nor
+            // scale): the normalized vectors must be parallel.
+            let norm = |v: &[f64]| v.iter().map(|x| x * x).sum::<f64>().sqrt();
+            let dot: f64 = shape.iter().zip(&exact).map(|(a, b)| a * b).sum();
+            let cos = dot / (norm(&shape) * norm(&exact));
+            assert!(
+                approx(cos.abs(), 1.0, 1e-9),
+                "mode {i} is not the analytic shape (cos = {cos})"
+            );
+            // Mode i has exactly i sign changes (i interior nodes).
+            let sign_changes = shape
+                .windows(2)
+                .filter(|w| (w[0] >= 0.0) != (w[1] >= 0.0))
+                .count();
+            assert_eq!(sign_changes, i, "mode {i} node count");
+            // Mass-normalized: Σ mᵢφᵢ² = 1.
+            let mass_norm: f64 = shape.iter().map(|x| 1.5 * x * x).sum();
+            assert!(approx(mass_norm, 1.0, 1e-9), "mode {i} normalization {mass_norm}");
+        }
+        // Out-of-range indices are the caller's problem, but index n−1 is
+        // the highest mode and must be the most oscillatory.
+        let top = chain.mode_shape(n - 1);
+        assert_eq!(
+            top.windows(2).filter(|w| (w[0] >= 0.0) != (w[1] >= 0.0)).count(),
+            n - 1
+        );
+    }
+
+    #[test]
     fn test_modal_participation_and_rayleigh() {
         let sys = CoupledOscillators::chain_fixed_ends(4, 1.0, 10.0);
         let (freqs, shapes) = sys.normal_modes();

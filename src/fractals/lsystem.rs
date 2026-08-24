@@ -782,6 +782,212 @@ mod tests {
     }
 
     #[test]
+    fn test_right_context_matching() {
+        // A 1R-system: A → X only when followed by B.
+        let mut ls = LSystem::new("ABAC", 0.0);
+        ls.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("B".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(ls.generate(1, None), "XBAC", "only the A before B rewrites");
+        // Multi-character right context.
+        let mut two = LSystem::new("ABCABD", 0.0);
+        two.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("BC".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(two.generate(1, None), "XBCABD");
+        // Nothing to the right: no match at the end of the string.
+        let mut edge = LSystem::new("A", 0.0);
+        edge.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("B".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(edge.generate(1, None), "A", "no right neighbour, no match");
+
+        // Ignored symbols are transparent to the right scan.
+        let mut skip = LSystem::new("A+-BA+-C", 0.0);
+        skip.ignore.extend(['+', '-']);
+        skip.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("B".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(skip.generate(1, None), "X+-BA+-C");
+        // Without the ignore list the same string does not match.
+        let mut strict = skip.clone();
+        strict.ignore.clear();
+        assert_eq!(strict.generate(1, None), "A+-BA+-C");
+
+        // Complete bracketed branches are skipped over, so the right
+        // context sees the continuation of the current branch...
+        let mut branch = LSystem::new("A[B]C", 0.0);
+        branch.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("C".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(branch.generate(1, None), "X[B]C", "branch skipped");
+        // ...and not the branch's own contents.
+        let mut into = LSystem::new("A[B]C", 0.0);
+        into.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("B".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(into.generate(1, None), "A[B]C", "branch contents are not context");
+        // Nested branches are skipped as a unit.
+        let mut nested = LSystem::new("A[B[C]D]E", 0.0);
+        nested.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("E".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(nested.generate(1, None), "X[B[C]D]E");
+        // An unclosed branch cannot be skipped: no match.
+        let mut open = LSystem::new("A[BE", 0.0);
+        open.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("E".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(open.generate(1, None), "A[BE");
+
+        // A closing bracket ends the branch: nothing beyond it counts.
+        let mut inside = LSystem::new("[A]B", 0.0);
+        inside.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("B".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(inside.generate(1, None), "[A]B", "context stops at ']'");
+
+        // Left and right context together (a 2L-system): the middle A
+        // of "BAC" rewrites, the isolated ones do not.
+        let mut both = LSystem::new("BACAAC", 0.0);
+        both.rules.push(Rule::Context {
+            left: Some("B".to_string()),
+            from: 'A',
+            right: Some("C".to_string()),
+            to: "X".to_string(),
+        });
+        assert_eq!(both.generate(1, None), "BXCAAC");
+
+        // A right-propagating signal: X moves leftward one cell per
+        // step, the mirror image of the left-context example.
+        let mut prop = LSystem::new("AAAX", 0.0);
+        prop.rules.push(Rule::Context {
+            left: None,
+            from: 'A',
+            right: Some("X".to_string()),
+            to: "X".to_string(),
+        });
+        prop.rules.push(Rule::Simple { from: 'X', to: "A".to_string() });
+        assert_eq!(prop.generate(1, None), "AAXA");
+        assert_eq!(prop.generate(2, None), "AXAA");
+        assert_eq!(prop.generate(3, None), "XAAA");
+    }
+
+    #[test]
+    fn test_bush_3d_preset_expansion_and_drawing() {
+        let bush = presets::bush_3d();
+        assert_eq!(bush.axiom, "A");
+        assert!((bush.angle - 22.5f64.to_radians()).abs() < 1e-15);
+        let alphabet: Vec<char> = "AFLS&!/[]".chars().collect();
+        let mut previous = bush.axiom.len();
+        for n in 1..=5usize {
+            let s = bush.generate(n, None);
+            // Only alphabet symbols appear.
+            for c in s.chars() {
+                assert!(alphabet.contains(&c), "iteration {n}: stray symbol {c:?}");
+            }
+            // The expansion grows strictly with the iteration count.
+            assert!(s.len() > previous, "iteration {n}: {} vs {previous}", s.len());
+            previous = s.len();
+            // A → three bracketed copies of itself: exactly 3^n apices.
+            assert_eq!(
+                s.chars().filter(|&c| c == 'A').count(),
+                3usize.pow(n as u32),
+                "iteration {n}: apex count"
+            );
+            // Brackets stay balanced and never go negative, and every
+            // apex sits inside a branch.
+            let mut depth = 0i32;
+            let mut max_depth = 0i32;
+            for c in s.chars() {
+                match c {
+                    '[' => {
+                        depth += 1;
+                        max_depth = max_depth.max(depth);
+                    }
+                    ']' => {
+                        depth -= 1;
+                        assert!(depth >= 0, "iteration {n}: unbalanced ']'");
+                    }
+                    _ => {}
+                }
+            }
+            assert_eq!(depth, 0, "iteration {n}: unbalanced brackets");
+            assert_eq!(max_depth, n as i32, "iteration {n}: nesting depth");
+            // The 3-D turtle draws one segment per F, all of the turtle
+            // step length, and returns to the origin at the end (every
+            // branch is closed).
+            let mut t = Turtle3::new(1.0, bush.angle.to_degrees());
+            let segs = t.interpret(&s);
+            assert_eq!(
+                segs.len(),
+                s.chars().filter(|&c| c == 'F').count(),
+                "iteration {n}: one segment per F"
+            );
+            assert!(!segs.is_empty(), "iteration {n} draws nothing");
+            for seg in &segs {
+                assert!(
+                    ((seg.b - seg.a).magnitude() - 1.0).abs() < 1e-12,
+                    "iteration {n}: non-unit step"
+                );
+                assert!(seg.a.x.is_finite() && seg.b.z.is_finite());
+            }
+            assert!(
+                t.frame.origin.magnitude() < 1e-12,
+                "iteration {n}: turtle should return to the origin"
+            );
+            // The bush is genuinely three-dimensional: '&' pitches out
+            // of the starting plane.
+            if n >= 2 {
+                let out_of_plane = segs.iter().any(|s| s.b.z.abs() > 0.1 || s.a.z.abs() > 0.1);
+                assert!(out_of_plane, "iteration {n}: bush stayed planar");
+            }
+        }
+        // Tapering: '!' shrinks the branch radius down the hierarchy.
+        let mut t = Turtle3::new(1.0, 22.5);
+        let mesh = t.to_mesh(&bush.generate(3, None), 0.05, 0.6, 6);
+        assert!(!mesh.vertices.is_empty());
+        assert!(mesh.surface_area() > 0.0);
+        let radii: Vec<f64> = {
+            let mut t2 = Turtle3::new(1.0, 22.5);
+            t2.radius = 0.05;
+            t2.taper = 0.6;
+            t2.interpret_tree(&bush.generate(3, None)).into_iter().map(|(_, r)| r).collect()
+        };
+        let rmax = radii.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let rmin = radii.iter().cloned().fold(f64::INFINITY, f64::min);
+        assert!(rmin < rmax, "branches taper ({rmin} .. {rmax})");
+        assert!((rmax - 0.05).abs() < 1e-12, "trunk keeps the base radius");
+    }
+
+    #[test]
     fn test_turtle3_and_mesh() {
         // A right angle in 3-D: F+F ends at (1, 1, 0) heading +y.
         let mut t = Turtle3::new(1.0, 90.0);

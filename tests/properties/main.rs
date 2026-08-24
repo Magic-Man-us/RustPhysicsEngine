@@ -1,6 +1,11 @@
 //! Property-based tests: randomized invariants checked with the crate's
 //! own deterministic `Rng`, one module per library area.
 
+// Same style allowances as the library: index loops mirror the maths, and
+// table-driven cases carry deliberately explicit types.
+#![allow(clippy::needless_range_loop)]
+#![allow(clippy::type_complexity)]
+
 mod core_props;
 mod fractals_props;
 mod geometry_props;

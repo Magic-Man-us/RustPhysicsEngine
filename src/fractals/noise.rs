@@ -1541,6 +1541,104 @@ mod tests {
     }
 
     #[test]
+    fn test_value_noise_3d_is_trilinear_interpolation_of_its_lattice() {
+        let v = ValueNoise::new(2024);
+        // At integer lattice points the fade weights are exactly 0, so
+        // the value *is* the lattice sample: one of the 256 levels
+        // h/127.5 − 1 with h an integer byte.
+        for i in -4i64..4 {
+            for j in -4i64..4 {
+                for k in -4i64..4 {
+                    let s = v.noise_3d(i as f64, j as f64, k as f64);
+                    assert!((-1.0..=1.0).contains(&s), "lattice value {s} out of range");
+                    let h = (s + 1.0) * 127.5;
+                    assert!(
+                        (h - h.round()).abs() < 1e-9 && (0.0..=255.0).contains(&h.round()),
+                        "lattice value {s} is not a byte level ({h})"
+                    );
+                }
+            }
+        }
+        // fade(1/2) = 1/2, so the cell centre is the exact mean of the
+        // eight corner lattice values, and each edge midpoint is the
+        // mean of its two endpoints.
+        let mut rng = Rng::new(31);
+        for _ in 0..200 {
+            let (i, j, k) = (
+                (rng.next_f64() * 40.0 - 20.0).floor(),
+                (rng.next_f64() * 40.0 - 20.0).floor(),
+                (rng.next_f64() * 40.0 - 20.0).floor(),
+            );
+            let corner = |di: f64, dj: f64, dk: f64| v.noise_3d(i + di, j + dj, k + dk);
+            let mean = (0..8)
+                .map(|c| {
+                    corner(
+                        f64::from(c & 1),
+                        f64::from((c >> 1) & 1),
+                        f64::from((c >> 2) & 1),
+                    )
+                })
+                .sum::<f64>()
+                / 8.0;
+            let centre = v.noise_3d(i + 0.5, j + 0.5, k + 0.5);
+            assert!((centre - mean).abs() < 1e-12, "cell centre {centre} vs {mean}");
+            let edge = v.noise_3d(i + 0.5, j, k);
+            let edge_mean = 0.5 * (corner(0.0, 0.0, 0.0) + corner(1.0, 0.0, 0.0));
+            assert!((edge - edge_mean).abs() < 1e-12, "edge {edge} vs {edge_mean}");
+        }
+    }
+
+    #[test]
+    fn test_value_noise_3d_bounded_deterministic_and_continuous() {
+        let v = ValueNoise::new(7);
+        let same = ValueNoise::new(7);
+        let other = ValueNoise::new(8);
+        let mut rng = Rng::new(41);
+        let (mut lo, mut hi) = (0.0f64, 0.0f64);
+        let mut differs = 0usize;
+        for _ in 0..50_000 {
+            let (x, y, z) = (
+                rng.next_f64() * 60.0 - 30.0,
+                rng.next_f64() * 60.0 - 30.0,
+                rng.next_f64() * 60.0 - 30.0,
+            );
+            let a = v.noise_3d(x, y, z);
+            // Trilinear blends of values in [-1, 1] stay in [-1, 1].
+            assert!((-1.0..=1.0).contains(&a), "3-D value noise {a} out of range");
+            // Deterministic: same seed, same input, bit-identical.
+            assert_eq!(a, same.noise_3d(x, y, z), "same seed must agree exactly");
+            assert_eq!(a, v.noise_3d(x, y, z), "repeatable");
+            if a != other.noise_3d(x, y, z) {
+                differs += 1;
+            }
+            // Lipschitz-ish continuity: the quintic fade has derivative
+            // at most 15/8 per axis and lattice values span 2, so a step
+            // of h moves the value by at most 3·(15/8)·h ≈ 5.63h.
+            let h = 1e-4;
+            for d in [
+                (v.noise_3d(x + h, y, z) - a).abs(),
+                (v.noise_3d(x, y + h, z) - a).abs(),
+                (v.noise_3d(x, y, z + h) - a).abs(),
+            ] {
+                assert!(d < 5.7 * h, "continuity violated: {d} over {h}");
+            }
+            lo = lo.min(a);
+            hi = hi.max(a);
+        }
+        // A different seed gives a different field almost everywhere.
+        assert!(differs > 49_000, "seeds must decorrelate ({differs}/50000)");
+        // The noise actually uses its range.
+        assert!(hi > 0.6 && lo < -0.6, "3-D value noise range {lo}..{hi}");
+        // Neighbouring lattice cells carry different values (the field
+        // is not constant along any axis).
+        let mut distinct = std::collections::HashSet::new();
+        for i in 0..16 {
+            distinct.insert(v.noise_3d(i as f64 + 0.5, 0.5, 0.5).to_bits());
+        }
+        assert!(distinct.len() > 12, "cells vary along x ({})", distinct.len());
+    }
+
+    #[test]
     fn test_fbm_family() {
         let p = Perlin::new(21);
         let n2 = |x: f64, y: f64| p.noise_2d(x, y);

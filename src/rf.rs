@@ -392,7 +392,7 @@ mod tests {
     #[test]
     fn test_noise_power() {
         let n = noise_power(1.0e6, 290.0);
-        let expected = 4.003882100000000e-15;
+        let expected = 4.0038821e-15;
         assert!(approx_rel(n, expected, 1e-10));
     }
 

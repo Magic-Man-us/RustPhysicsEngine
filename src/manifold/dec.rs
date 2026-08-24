@@ -1347,6 +1347,233 @@ mod tests {
     }
 
     #[test]
+    fn test_public_operators_stars_and_dual_areas() {
+        let dec = DecMesh::new(&octahedron());
+        let (nv, ne, nf) = (dec.nv(), dec.ne(), dec.nf());
+        assert_eq!([nv, ne, nf], [6, 12, 8]);
+        // dual areas partition the total mesh area: the octahedron has 8
+        // equilateral faces of side sqrt(2), area sqrt(3)/2 each
+        let total: f64 = dec.dual_areas().iter().sum();
+        let mesh_area: f64 = dec
+            .mesh
+            .triangles
+            .iter()
+            .map(|t| {
+                let (p0, p1, p2) = (
+                    dec.mesh.vertices[t[0]],
+                    dec.mesh.vertices[t[1]],
+                    dec.mesh.vertices[t[2]],
+                );
+                0.5 * (p1 - p0).cross(&(p2 - p0)).magnitude()
+            })
+            .sum();
+        assert!((mesh_area - 4.0 * 3.0_f64.sqrt()).abs() < 1e-12, "area {mesh_area}");
+        assert!((total - mesh_area).abs() < 1e-12, "dual areas sum {total}");
+        // by symmetry each vertex carries a sixth of the area, and the dual
+        // areas are exactly the star0 weights
+        for (i, &a) in dec.dual_areas().iter().enumerate() {
+            assert!((a - mesh_area / 6.0).abs() < 1e-12, "dual area {i}: {a}");
+            assert!((a - dec.hodge0()[i]).abs() < 1e-15);
+        }
+        // hodge2 is the reciprocal face area
+        for (fi, t) in dec.mesh.triangles.iter().enumerate() {
+            let (p0, p1, p2) = (
+                dec.mesh.vertices[t[0]],
+                dec.mesh.vertices[t[1]],
+                dec.mesh.vertices[t[2]],
+            );
+            let area = 0.5 * (p1 - p0).cross(&(p2 - p0)).magnitude();
+            assert!(
+                (dec.hodge2()[fi] - 1.0 / area).abs() < 1e-12,
+                "hodge2 at {fi}: {} vs {}",
+                dec.hodge2()[fi],
+                1.0 / area
+            );
+        }
+        // d0 and d1 as public matrices: shapes, incidence pattern, and the
+        // fundamental identity d1 d0 = 0
+        let d0 = dec.d0();
+        let d1 = dec.d1();
+        assert_eq!((d0.rows, d0.cols), (ne, nv));
+        assert_eq!((d1.rows, d1.cols), (nf, ne));
+        let mut rng = Rng::new(31);
+        for _ in 0..4 {
+            let f: Vec<f64> = (0..nv).map(|_| rng.next_gaussian()).collect();
+            let df = d0.mul_vec(&f);
+            // d0 agrees with the public gradient and gives edge differences
+            let grad = dec.gradient(&f);
+            for e in 0..ne {
+                let (a, b) = dec.edges[e];
+                assert!((df[e] - (f[b] - f[a])).abs() < 1e-15, "d0 = head - tail");
+                assert!((df[e] - grad[e]).abs() < 1e-15);
+            }
+            let ddf = d1.mul_vec(&df);
+            assert!(ddf.iter().all(|v| v.abs() < 1e-12), "d1 d0 = 0");
+            // constants are in the kernel of d0
+            let one = vec![1.0; nv];
+            assert!(d0.mul_vec(&one).iter().all(|v| v.abs() < 1e-15));
+            // d1 agrees with the public curl
+            let w: Vec<f64> = (0..ne).map(|_| rng.next_gaussian()).collect();
+            let c1 = d1.mul_vec(&w);
+            let c2 = dec.curl(&w);
+            for i in 0..nf {
+                assert!((c1[i] - c2[i]).abs() < 1e-15);
+            }
+        }
+        // laplace_beltrami (CSR): symmetric, rows sum to zero, positive
+        // semidefinite, and equal to -star0 * div grad (an independent path)
+        let l = dec.laplace_beltrami();
+        assert_eq!((l.rows, l.cols), (nv, nv));
+        let one = vec![1.0; nv];
+        assert!(
+            l.mul_vec(&one).iter().all(|v| v.abs() < 1e-12),
+            "constant in the kernel (rows sum to zero)"
+        );
+        for _ in 0..4 {
+            let f: Vec<f64> = (0..nv).map(|_| rng.next_gaussian()).collect();
+            let g: Vec<f64> = (0..nv).map(|_| rng.next_gaussian()).collect();
+            let lf = l.mul_vec(&f);
+            let lg = l.mul_vec(&g);
+            let sym: f64 = g.iter().zip(&lf).map(|(a, b)| a * b).sum::<f64>()
+                - f.iter().zip(&lg).map(|(a, b)| a * b).sum::<f64>();
+            assert!(sym.abs() < 1e-10, "L symmetric: {sym}");
+            let quad: f64 = f.iter().zip(&lf).map(|(a, b)| a * b).sum();
+            assert!(quad > -1e-12, "L positive semidefinite: {quad}");
+            // Dirichlet energy identity: f^T L f = sum star1 (df)^2
+            let df = dec.gradient(&f);
+            let energy: f64 = df
+                .iter()
+                .zip(dec.hodge1())
+                .map(|(d, s)| s * d * d)
+                .sum();
+            assert!((quad - energy).abs() < 1e-9 * energy.abs().max(1.0), "Dirichlet energy");
+            // L f = -star0 (div grad f)
+            let divgrad = dec.divergence(&df);
+            for i in 0..nv {
+                assert!(
+                    (lf[i] + dec.hodge0()[i] * divgrad[i]).abs() < 1e-9,
+                    "L f vs -M div grad f at {i}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_laplace_1form_and_viscous_fluid_step() {
+        let dec = DecMesh::new(&flat_grid(4));
+        let ne = dec.ne();
+        let nv = dec.nv();
+        let l1 = dec.laplace_1form();
+        assert_eq!((l1.rows, l1.cols), (ne, ne));
+        let l0 = dec.laplace_beltrami();
+        let mut rng = Rng::new(2027);
+        // On an exact 1-form w = d0 f the curl term drops out, leaving
+        // Delta1 (d0 f) = d0 (star0^-1 L f) exactly.
+        for _ in 0..3 {
+            let f: Vec<f64> = (0..nv).map(|_| rng.next_gaussian()).collect();
+            let w = dec.gradient(&f);
+            let lhs = l1.mul_vec(&w);
+            let lf = l0.mul_vec(&f);
+            let scaled: Vec<f64> = lf
+                .iter()
+                .zip(dec.hodge0())
+                .map(|(a, m)| a / m)
+                .collect();
+            let rhs = dec.gradient(&scaled);
+            let scale = rhs.iter().fold(0.0_f64, |a, b| a.max(b.abs())).max(1.0);
+            for i in 0..ne {
+                assert!(
+                    (lhs[i] - rhs[i]).abs() < 1e-8 * scale,
+                    "Delta1 d0 f = d0 (M^-1 L f) at edge {i}: {} vs {}",
+                    lhs[i],
+                    rhs[i]
+                );
+            }
+            // the star1 energy of the Hodge Laplacian is nonnegative
+            let form: f64 = w
+                .iter()
+                .zip(&lhs)
+                .zip(dec.hodge1())
+                .map(|((a, b), s)| a * b * s)
+                .sum();
+            assert!(form > -1e-8, "<w, Delta1 w>_star1 >= 0: {form}");
+        }
+        // Viscous fluid step (nu > 0): the diffusion branch must equal an
+        // explicit Delta1 step followed by removal of the exact part.
+        let rot: Vec<Vec3> = dec
+            .mesh
+            .triangles
+            .iter()
+            .map(|t| {
+                let c = (dec.mesh.vertices[t[0]] + dec.mesh.vertices[t[1]] + dec.mesh.vertices[t[2]])
+                    * (1.0 / 3.0);
+                Vec3::new(-(c.y - 0.5), c.x - 0.5, 0.0)
+            })
+            .collect();
+        let mut w = dec.vector_field_to_1form(&rot);
+        // project once so the field starts free of an exact part
+        dec.fluid_step_dec(&mut w, 0.0, 0.0);
+        let energy = |v: &[f64]| -> f64 {
+            v.iter().zip(dec.hodge1()).map(|(a, s)| s * a * a).sum()
+        };
+        let e0 = energy(&w);
+        assert!(e0 > 1e-6, "starting energy {e0}");
+        // explicit diffusion is only stable for dt nu lambda_max < 2; bound
+        // the spectrum of Delta1 by Gershgorin and stay at a quarter of it,
+        // so that doubling nu below still increases the damping
+        let gersh = (0..ne)
+            .map(|r| {
+                (l1.row_ptr[r]..l1.row_ptr[r + 1])
+                    .map(|k| l1.vals[k].abs())
+                    .sum::<f64>()
+            })
+            .fold(0.0_f64, f64::max);
+        assert!(gersh > 0.0);
+        let dt = 0.01;
+        let nu = 0.25 / (dt * gersh);
+        let mut got = w.clone();
+        dec.fluid_step_dec(&mut got, dt, nu);
+        // reference computed from the public operators
+        let lw = l1.mul_vec(&w);
+        let mut want: Vec<f64> = w.iter().zip(&lw).map(|(a, l)| a - dt * nu * l).collect();
+        let (exact, _, _) = dec.hodge_decomposition(&want);
+        for (v, e) in want.iter_mut().zip(&exact) {
+            *v -= e;
+        }
+        let scale = want.iter().fold(0.0_f64, |a, b| a.max(b.abs())).max(1.0);
+        for i in 0..ne {
+            assert!(
+                (got[i] - want[i]).abs() < 1e-9 * scale,
+                "viscous step at edge {i}: {} vs {}",
+                got[i],
+                want[i]
+            );
+        }
+        // diffusion dissipates energy, and the result stays exact-free
+        let e1 = energy(&got);
+        assert!(e1 < e0, "viscosity must dissipate: {e0} -> {e1}");
+        let (ex_after, _, _) = dec.hodge_decomposition(&got);
+        let ex_norm = ex_after.iter().fold(0.0_f64, |a, b| a.max(b.abs()));
+        let got_norm = got.iter().fold(0.0_f64, |a, b| a.max(b.abs()));
+        assert!(
+            ex_norm < 1e-6 * got_norm.max(1.0),
+            "exact part after the step {ex_norm}"
+        );
+        // with nu = 0 the same field only loses its (already absent) exact
+        // part, so the energy is unchanged
+        let mut inviscid = w.clone();
+        dec.fluid_step_dec(&mut inviscid, dt, 0.0);
+        assert!(
+            (energy(&inviscid) - e0).abs() < 1e-6 * e0,
+            "inviscid step conserves energy"
+        );
+        // more viscosity removes more energy
+        let mut strong = w.clone();
+        dec.fluid_step_dec(&mut strong, dt, 2.0 * nu);
+        assert!(energy(&strong) < e1, "monotone in nu");
+    }
+
+    #[test]
     fn test_persistent_homology() {
         let mut rng = Rng::new(5);
         // noisy circle: one long-lived 1-cycle

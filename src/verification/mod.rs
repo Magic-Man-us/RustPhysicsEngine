@@ -2,5 +2,6 @@
 //! at the inclusion site in `lib.rs`).
 
 pub mod core;
-pub mod spatial;
 pub mod linalg;
+pub mod physics;
+pub mod spatial;

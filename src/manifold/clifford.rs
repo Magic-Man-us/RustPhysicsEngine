@@ -1914,6 +1914,12 @@ mod tests {
         m
     }
 
+    /// Largest coefficient magnitude: a genuine norm on the coefficient
+    /// space (unlike [`Multivector::norm`], which is signature-dependent).
+    fn max_abs(m: &Multivector) -> f64 {
+        m.coeffs.iter().fold(0.0_f64, |a, c| a.max(c.abs()))
+    }
+
     #[test]
     fn test_geometric_product_associative() {
         let mut rng = Rng::new(7);
@@ -2473,5 +2479,352 @@ mod tests {
             ((xv - expect).magnitude() < 1e-9) || ((xv + expect).magnitude() < 1e-9),
             "pauli rotor {xv:?} vs {expect:?}"
         );
+    }
+
+    #[test]
+    fn test_commutator_conjugate_and_scalar_mul() {
+        let mut rng = Rng::new(101);
+        for &(p, q, r) in &[(3usize, 0usize, 0usize), (4, 1, 0), (3, 0, 1)] {
+            let a = random_mv(p, q, r, &mut rng);
+            let b = random_mv(p, q, r, &mut rng);
+            let c = random_mv(p, q, r, &mut rng);
+            let s = max_abs(&a).max(max_abs(&b)).max(max_abs(&c)).max(1.0);
+            let n = (1usize << (p + q + r)) as f64;
+            // definition: [a, b] = (ab - ba)/2
+            let comm = a.commutator(&b);
+            let def = a.geometric(&b).sub(&b.geometric(&a)).scale(0.5);
+            assert!(
+                max_abs(&comm.sub(&def)) < 1e-12 * n * s * s,
+                "commutator definition in Cl({p},{q},{r})"
+            );
+            // antisymmetry and vanishing self-bracket
+            assert!(max_abs(&comm.add(&b.commutator(&a))) < 1e-12 * n * s * s);
+            assert!(max_abs(&a.commutator(&a)) < 1e-12 * n * s * s);
+            // bilinearity, exercised through mul_scalar (alias of scale)
+            let k = 2.5;
+            assert!(max_abs(&b.mul_scalar(k).sub(&b.scale(k))) < 1e-15 * s);
+            let bilin = a.commutator(&b.mul_scalar(k)).sub(&comm.mul_scalar(k));
+            assert!(max_abs(&bilin) < 1e-11 * n * s * s, "bracket bilinearity");
+            // Jacobi identity of the bracket
+            let jac = a
+                .commutator(&b.commutator(&c))
+                .add(&b.commutator(&c.commutator(&a)))
+                .add(&c.commutator(&a.commutator(&b)));
+            assert!(
+                max_abs(&jac) < 1e-9 * n * n * s * s * s,
+                "Jacobi in Cl({p},{q},{r}): {}",
+                max_abs(&jac)
+            );
+            // Clifford conjugation is an anti-automorphism and an involution
+            let conj = |x: &Multivector| x.clifford_conjugate();
+            let ab = conj(&a.geometric(&b));
+            let ba = conj(&b).geometric(&conj(&a));
+            assert!(
+                max_abs(&ab.sub(&ba)) < 1e-12 * n * s * s,
+                "conj(ab) = conj(b) conj(a) in Cl({p},{q},{r})"
+            );
+            assert!(max_abs(&conj(&conj(&a)).sub(&a)) < 1e-15 * s, "conj involutive");
+            // it also equals reverse-then-involute (the two commute)
+            assert!(max_abs(&a.reverse().grade_involution().sub(&conj(&a))) < 1e-15 * s);
+            // per-grade sign (-1)^(k(k+1)/2)
+            for k in 0..=(p + q + r) {
+                let gk = a.grade(k);
+                let sign = if (k * (k + 1) / 2) % 2 == 0 { 1.0 } else { -1.0 };
+                assert!(
+                    max_abs(&conj(&gk).sub(&gk.scale(sign))) < 1e-15 * s,
+                    "conjugation sign on grade {k}"
+                );
+            }
+        }
+        // bivectors close under the bracket: so(3) inside Cl(3,0)
+        let e12 = Multivector::basis_blade(0b011, 3, 0, 0);
+        let e23 = Multivector::basis_blade(0b110, 3, 0, 0);
+        let e13 = Multivector::basis_blade(0b101, 3, 0, 0);
+        // e12 e23 = e1 e2 e2 e3 = e13, e23 e12 = -e13 => [e12, e23] = e13
+        assert!(max_abs(&e12.commutator(&e23).sub(&e13)) < 1e-15);
+        assert_eq!(e12.commutator(&e23).grades(), vec![2]);
+    }
+
+    #[test]
+    fn test_reflect_in_vector_and_plane_rotor() {
+        // n X n^-1 fixes n and negates the directions orthogonal to it
+        let e1 = cl3::vec(Vec3::new(1.0, 0.0, 0.0));
+        let e2 = cl3::vec(Vec3::new(0.0, 1.0, 0.0));
+        let e3 = cl3::vec(Vec3::new(0.0, 0.0, 1.0));
+        assert!(max_abs(&e1.reflect_in_vector(&e1).sub(&e1)) < 1e-15);
+        assert!(max_abs(&e2.reflect_in_vector(&e1).add(&e2)) < 1e-15);
+        assert!(max_abs(&e3.reflect_in_vector(&e1).add(&e3)) < 1e-15);
+        // an involution on arbitrary multivectors
+        let mut rng = Rng::new(77);
+        for _ in 0..5 {
+            let x = random_mv(3, 0, 0, &mut rng);
+            let n = random_mv(3, 0, 0, &mut rng).grade(1);
+            let twice = x.reflect_in_vector(&n).reflect_in_vector(&n);
+            assert!(
+                max_abs(&twice.sub(&x)) < 1e-9 * max_abs(&x).max(1.0),
+                "double reflection is the identity"
+            );
+        }
+        // two line reflections compose to a rotation by twice the angle
+        let phi = 0.37_f64;
+        let n2 = cl3::vec(Vec3::new(phi.cos(), phi.sin(), 0.0));
+        let v = Vec3::new(0.6, -0.3, 0.8);
+        let refl2 = cl3::vec(v).reflect_in_vector(&e1).reflect_in_vector(&n2);
+        let rotated = cl3::rotate(v, &cl3::rotor(Vec3::new(0.0, 0.0, 1.0), 2.0 * phi));
+        let got = cl3::to_vec3(&refl2).expect("vector image");
+        assert!(
+            (got - rotated).magnitude() < 1e-12,
+            "two reflections = rotation by 2 phi: {got:?} vs {rotated:?}"
+        );
+        // rotor_from_plane_angle(e12, theta) is exp(-e12 theta/2): the
+        // rotation by theta about +z, and it normalizes its plane argument
+        let theta = 0.9_f64;
+        let b = Multivector::basis_blade(0b011, 3, 0, 0);
+        let rot = Multivector::rotor_from_plane_angle(&b, theta);
+        let want = cl3::rotor(Vec3::new(0.0, 0.0, 1.0), theta);
+        assert!(max_abs(&rot.sub(&want)) < 1e-13, "plane rotor vs axis rotor");
+        let scaled = Multivector::rotor_from_plane_angle(&b.scale(4.0), theta);
+        assert!(max_abs(&scaled.sub(&rot)) < 1e-13, "plane rotor normalizes b");
+        let img = cl3::rotate(Vec3::new(1.0, 0.0, 0.0), &rot);
+        assert!(
+            (img - Vec3::new(theta.cos(), theta.sin(), 0.0)).magnitude() < 1e-13,
+            "plane rotor image {img:?}"
+        );
+        // and it agrees with the quaternion of the same rotation
+        let q = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), theta);
+        assert!((img - q.rotate_vec(Vec3::new(1.0, 0.0, 0.0))).magnitude() < 1e-13);
+    }
+
+    #[test]
+    fn test_cayley_table_matches_hand_computation() {
+        // Cl(2,0): 1, e1, e2, e12 (masks 0, 1, 2, 3)
+        let t = cayley_table(2, 0, 0);
+        assert_eq!(t.len(), 4);
+        let want: [[(f64, usize); 4]; 4] = [
+            [(1.0, 0), (1.0, 1), (1.0, 2), (1.0, 3)],
+            [(1.0, 1), (1.0, 0), (1.0, 3), (1.0, 2)],
+            [(1.0, 2), (-1.0, 3), (1.0, 0), (-1.0, 1)],
+            [(1.0, 3), (-1.0, 2), (1.0, 1), (-1.0, 0)],
+        ];
+        for a in 0..4 {
+            for b in 0..4 {
+                assert_eq!(t[a][b].1, want[a][b].1, "mask at ({a},{b})");
+                assert!((t[a][b].0 - want[a][b].0).abs() < 1e-15, "sign at ({a},{b})");
+            }
+        }
+        // the table reproduces the geometric product of the basis blades in
+        // every signature, degenerate ones included
+        for &(p, q, r) in &[(2usize, 0usize, 0usize), (1, 3, 0), (3, 0, 1), (4, 1, 0)] {
+            let tab = cayley_table(p, q, r);
+            let n = 1usize << (p + q + r);
+            assert_eq!(tab.len(), n);
+            for a in 0..n {
+                for b in 0..n {
+                    let (sign, mask) = tab[a][b];
+                    let prod = Multivector::basis_blade(a, p, q, r)
+                        .geometric(&Multivector::basis_blade(b, p, q, r));
+                    if sign == 0.0 {
+                        assert!(max_abs(&prod) < 1e-15, "degenerate product ({a},{b})");
+                    } else {
+                        let mut want = Multivector::zero(p, q, r);
+                        want.coeffs[mask] = sign;
+                        assert!(
+                            max_abs(&prod.sub(&want)) < 1e-15,
+                            "Cl({p},{q},{r}) table at ({a},{b})"
+                        );
+                    }
+                }
+            }
+            // the degenerate generator squares to zero in Cl(3,0,1)
+            if r == 1 {
+                let e0 = 1 << (p + q);
+                assert_eq!(tab[e0][e0].0, 0.0, "degenerate square");
+            }
+        }
+    }
+
+    #[test]
+    fn test_cl3_line_plane_and_rotor_quaternion() {
+        // plane_from_points: weight is twice the triangle area, and its dual
+        // is the plane normal
+        let a = Vec3::new(1.0, 2.0, -1.0);
+        let b = Vec3::new(2.0, 2.0, -1.0);
+        let c = Vec3::new(1.0, 4.0, -1.0);
+        let pl = cl3::plane_from_points(a, b, c);
+        assert_eq!(pl.grades(), vec![2]);
+        let cross = (b - a).cross(&(c - a));
+        assert!(
+            (pl.norm() - cross.magnitude()).abs() < 1e-12,
+            "plane weight {} vs 2*area {}",
+            pl.norm(),
+            cross.magnitude()
+        );
+        let normal = cl3::to_vec3(&pl.geometric(&cl3::pseudoscalar()).scale(-1.0)).unwrap();
+        assert!((normal - cross).magnitude() < 1e-12, "plane dual {normal:?}");
+        // collinear points span no plane
+        let deg = cl3::plane_from_points(a, b, a + (b - a) * 3.0);
+        assert!(max_abs(&deg) < 1e-12, "collinear points give a null plane");
+        // line_from_points is the grade-1 direction blade b - a
+        let l = cl3::line_from_points(a, b);
+        assert_eq!(l.grades(), vec![1]);
+        assert!((cl3::to_vec3(&l).unwrap() - (b - a)).magnitude() < 1e-15);
+        assert!((l.norm() - (b - a).magnitude()).abs() < 1e-15);
+        // the line of two of the points lies inside their plane
+        assert!(max_abs(&l.wedge(&pl)) < 1e-12, "line inside its plane");
+        assert!(max_abs(&cl3::line_from_points(a, c).wedge(&pl)) < 1e-12);
+        // a line off the plane does not: e_z wedge the xy-plane blade is the
+        // pseudoscalar
+        let off = cl3::line_from_points(a, a + Vec3::new(0.0, 0.0, 1.0));
+        assert!(max_abs(&off.wedge(&pl)) > 1e-3);
+        // rotor_to_quaternion matches the quaternion/So3 rotation
+        let mut rng = Rng::new(13);
+        for _ in 0..5 {
+            let axis = Vec3::new(
+                rng.next_gaussian(),
+                rng.next_gaussian(),
+                rng.next_gaussian(),
+            )
+            .normalized();
+            let angle = 2.5 * rng.next_f64();
+            let r = cl3::rotor(axis, angle);
+            let q = cl3::rotor_to_quaternion(&r).expect("Cl(3,0) rotor");
+            let qref = Quaternion::from_axis_angle(axis, angle);
+            assert!(
+                (q.w - qref.w).abs() < 1e-12
+                    && (q.x - qref.x).abs() < 1e-12
+                    && (q.y - qref.y).abs() < 1e-12
+                    && (q.z - qref.z).abs() < 1e-12,
+                "rotor quaternion {q:?} vs {qref:?}"
+            );
+            let v = Vec3::new(0.3, -1.2, 0.7);
+            let via_so3 = crate::manifold::lie::So3::from_axis_angle(axis, angle).0.mul_vec(v);
+            assert!((q.rotate_vec(v) - via_so3).magnitude() < 1e-12);
+            assert!((cl3::rotate(v, &r) - via_so3).magnitude() < 1e-12);
+        }
+        // only Cl(3,0) elements convert
+        assert!(cl3::rotor_to_quaternion(&Multivector::zero(4, 1, 0)).is_none());
+    }
+
+    #[test]
+    fn test_cga3_null_basis_and_duality() {
+        use super::cga3;
+        // e+ squares to +1, e- to -1, and they anticommute
+        let ep = cga3::e_plus();
+        let em = cga3::e_minus();
+        assert!((ep.geometric(&ep).coeffs[0] - 1.0).abs() < 1e-15, "e+^2 = 1");
+        assert!((em.geometric(&em).coeffs[0] + 1.0).abs() < 1e-15, "e-^2 = -1");
+        assert!(max_abs(&ep.geometric(&em).add(&em.geometric(&ep))) < 1e-15);
+        // the null basis built from them
+        let inf = cga3::e_inf();
+        let o = cga3::e_0();
+        assert!(max_abs(&inf.sub(&em.add(&ep))) < 1e-15, "e_inf = e- + e+");
+        assert!(max_abs(&o.sub(&em.sub(&ep).scale(0.5))) < 1e-15, "e_0");
+        assert!(inf.geometric(&inf).coeffs[0].abs() < 1e-15, "e_inf null");
+        assert!(o.geometric(&o).coeffs[0].abs() < 1e-15, "e_0 null");
+        assert!(
+            (inf.scalar_product(&o) + 1.0).abs() < 1e-15,
+            "e_inf . e_0 = -1"
+        );
+        // dual_cga is x I^-1 with I^2 = -1, so applying it twice negates
+        let mut rng = Rng::new(19);
+        let x = random_mv(4, 1, 0, &mut rng);
+        let dd = cga3::dual_cga(&cga3::dual_cga(&x));
+        assert!(
+            max_abs(&dd.add(&x)) < 1e-12 * max_abs(&x),
+            "dual_cga twice = -identity"
+        );
+        // the OPNS dual of an IPNS sphere contains exactly the sphere points
+        let s = cga3::sphere(Vec3::new(0.4, -0.2, 1.0), 1.3);
+        let sd = cga3::dual_cga(&s);
+        let on = Vec3::new(0.4, -0.2, 1.0) + Vec3::new(0.0, 0.0, 1.3);
+        assert!(
+            max_abs(&cga3::point(on).wedge(&sd)) < 1e-9,
+            "point on sphere satisfies P ^ S* = 0"
+        );
+        let off = Vec3::new(0.4, -0.2, 1.0) + Vec3::new(0.0, 0.0, 2.0);
+        assert!(max_abs(&cga3::point(off).wedge(&sd)) > 1e-2);
+    }
+
+    #[test]
+    fn test_cga3_point_pair_circle_and_inversion() {
+        use super::cga3;
+        let a = Vec3::new(1.0, 0.0, 0.0);
+        let b = Vec3::new(-0.5, 1.5, 0.25);
+        // point_pair is the dual of the OPNS pair A ^ B: grade 3, and
+        // dualizing back returns -(A ^ B) (the CGA pseudoscalar squares to -1)
+        let pp = cga3::point_pair(a, b);
+        assert_eq!(pp.grades(), vec![3]);
+        assert_eq!(cga3::classify(&pp), cga3::CgaObject::PointPair);
+        let opns = cga3::point(a).wedge(&cga3::point(b));
+        assert!(max_abs(&cga3::dual_cga(&pp).add(&opns)) < 1e-12 * max_abs(&opns));
+        // both generating points lie on it, a third point does not
+        assert!(max_abs(&cga3::point(a).wedge(&opns)) < 1e-12);
+        assert!(max_abs(&cga3::point(b).wedge(&opns)) < 1e-12);
+        assert!(max_abs(&cga3::point(Vec3::new(0.0, 0.0, 0.0)).wedge(&opns)) > 1e-3);
+        // circle_through_intersection is the meet of the two spheres, and
+        // matches the analytic radical-plane circle
+        let s1 = cga3::sphere(Vec3::new(0.0, 0.0, 0.0), 2.0);
+        let s2 = cga3::sphere(Vec3::new(0.0, 0.0, 3.0), 2.0);
+        let circ = cga3::circle_through_intersection(&s1, &s2);
+        assert!(max_abs(&circ.sub(&cga3::meet(&s1, &s2))) < 1e-15);
+        assert_eq!(cga3::classify(&circ), cga3::CgaObject::Circle);
+        let (cc, cr, cn) = cga3::circle_center_radius_normal(&circ);
+        assert!((cc - Vec3::new(0.0, 0.0, 1.5)).magnitude() < 1e-9, "center {cc:?}");
+        assert!((cr - (4.0_f64 - 2.25).sqrt()).abs() < 1e-9, "radius {cr}");
+        assert!(cn.z.abs() > 0.999, "normal {cn:?}");
+        // inversion_in_sphere: the sphere acts as its own versor
+        let sph = cga3::sphere(Vec3::new(1.0, 0.0, 0.0), 2.0);
+        let inv = cga3::inversion_in_sphere(&sph);
+        assert!(max_abs(&inv.sub(&sph)) < 1e-15);
+        // closed form: p -> c + R^2 (p - c)/|p - c|^2
+        let p = Vec3::new(3.0, 1.0, 0.0);
+        let img = cga3::down(&cga3::apply(&inv, &cga3::point(p))).expect("finite image");
+        let want = Vec3::new(1.0, 0.0, 0.0)
+            + (p - Vec3::new(1.0, 0.0, 0.0)) * (4.0 / (p - Vec3::new(1.0, 0.0, 0.0)).magnitude_squared());
+        assert!((img - want).magnitude() < 1e-10, "inversion {img:?} vs {want:?}");
+        // it is an involution and fixes the sphere pointwise
+        let back = cga3::down(&cga3::apply(&inv, &cga3::apply(&inv, &cga3::point(p)))).unwrap();
+        assert!((back - p).magnitude() < 1e-9, "inversion involutive {back:?}");
+        let on_sphere = Vec3::new(1.0, 0.0, 2.0);
+        let fixed = cga3::down(&cga3::apply(&inv, &cga3::point(on_sphere))).unwrap();
+        assert!((fixed - on_sphere).magnitude() < 1e-10, "sphere fixed {fixed:?}");
+    }
+
+    #[test]
+    fn test_pga3_project_line_on_plane() {
+        use super::pga3;
+        let pl = pga3::plane(Vec3::new(0.0, 0.0, 1.0), 0.0); // the z = 0 plane
+        let l = pga3::line_from_points(Vec3::new(0.0, 0.0, 1.0), Vec3::new(1.0, 1.0, 3.0));
+        let proj = pga3::project_line_on_plane(&l, &pl);
+        // the projected line lies in the plane: two of its points are at
+        // zero signed distance
+        let shadow = pga3::line_from_points(Vec3::new(0.0, 0.0, 0.0), Vec3::new(1.0, 1.0, 0.0));
+        for t in [-2.0_f64, 0.0, 1.0, 3.5] {
+            let q = pga3::point(Vec3::new(t, t, 0.0));
+            assert!(
+                pga3::distance_point_line(&q, &proj).abs() < 1e-9,
+                "in-plane point off the projected line at t={t}"
+            );
+        }
+        // acos near 1 only resolves angles to about sqrt(eps)
+        let ang = pga3::angle_lines(&proj, &shadow);
+        let sep = pga3::distance_lines(&proj, &shadow);
+        assert!(ang.abs() < 1e-6, "direction {ang}");
+        assert!(sep < 1e-9, "same line {sep}");
+        // every point of the original line drops onto the projected line
+        for t in [0.0_f64, 1.0, -2.0] {
+            let orig = Vec3::new(t, t, 1.0 + 2.0 * t);
+            let dropped = pga3::project_point_on_plane(&pga3::point(orig), &pl);
+            assert!(pga3::distance_point_line(&dropped, &proj).abs() < 1e-9);
+            assert!(
+                pga3::distance_point_plane(&dropped, &pl).abs() < 1e-9,
+                "dropped point is in the plane"
+            );
+        }
+        // projecting a line that already lies in the plane is the identity
+        let inplane = pga3::line_from_points(Vec3::new(0.0, 1.0, 0.0), Vec3::new(2.0, 1.0, 0.0));
+        let same = pga3::project_line_on_plane(&inplane, &pl);
+        assert!(pga3::distance_lines(&same, &inplane) < 1e-9);
+        assert!(pga3::angle_lines(&same, &inplane).abs() < 1e-6);
     }
 }

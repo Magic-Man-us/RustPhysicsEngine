@@ -1,3 +1,14 @@
+// Style allowances for a numerics codebase: index loops mirror the math
+// notation in matrix/stencil kernels, and public signatures follow the
+// roadmap's frozen APIs even where clippy would prefer fewer arguments or
+// simpler types.
+#![allow(clippy::needless_range_loop)]
+#![allow(clippy::too_many_arguments)]
+#![allow(clippy::type_complexity)]
+// Argument guards use the negated form `!(x > 0.0)` on purpose: unlike
+// `x <= 0.0`, it also rejects NaN inputs.
+#![allow(clippy::neg_cmp_op_on_partial_ord)]
+
 pub mod math;
 pub mod error;
 pub mod core;

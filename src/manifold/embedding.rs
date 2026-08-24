@@ -1455,4 +1455,170 @@ mod tests {
         let agree = same.max(labels.len() - same);
         assert!(agree > 36, "kmeans agreement {agree}/40");
     }
+
+    #[test]
+    fn test_surface_samples_satisfy_their_equations() {
+        let mut rng = Rng::new(97);
+        // torus: the implicit equation (sqrt(x^2+y^2) - R)^2 + z^2 = r^2,
+        // and the points reproduce the returned (u, v) parameters exactly
+        let (big_r, small_r) = (3.0, 0.8);
+        let (pts, uv) = torus_sample(200, big_r, small_r, &mut rng);
+        assert_eq!(pts.len(), 200);
+        assert_eq!(uv.len(), 200);
+        for (p, &(u, v)) in pts.iter().zip(&uv) {
+            assert_eq!(p.dim(), 3);
+            let rho = (p[0] * p[0] + p[1] * p[1]).sqrt();
+            let implicit = (rho - big_r).powi(2) + p[2] * p[2];
+            assert!(
+                (implicit - small_r * small_r).abs() < 1e-12,
+                "torus implicit {implicit} vs {}",
+                small_r * small_r
+            );
+            let want = [
+                (big_r + small_r * v.cos()) * u.cos(),
+                (big_r + small_r * v.cos()) * u.sin(),
+                small_r * v.sin(),
+            ];
+            for k in 0..3 {
+                assert!((p[k] - want[k]).abs() < 1e-12, "torus parametrization");
+            }
+            assert!((0.0..=2.0 * PI).contains(&u) && (0.0..=2.0 * PI).contains(&v));
+            // the tube stays inside the annulus R -+ r
+            assert!(rho >= big_r - small_r - 1e-12 && rho <= big_r + small_r + 1e-12);
+        }
+        // Mobius band: every point is at distance |v|/2 <= 1/4 from the unit
+        // center circle, and lies on the ray at half-angle u/2 in the
+        // (radial, z) plane -- z cos(u/2) = (rho - 1) sin(u/2)
+        let mob = mobius_sample(150, &mut rng);
+        assert_eq!(mob.len(), 150);
+        for p in &mob {
+            assert_eq!(p.dim(), 3);
+            let rho = (p[0] * p[0] + p[1] * p[1]).sqrt();
+            let u = p[1].atan2(p[0]);
+            let (s, c) = (0.5 * u).sin_cos();
+            let on_ray = p[2] * c - (rho - 1.0) * s;
+            assert!(on_ray.abs() < 1e-12, "mobius half-twist residual {on_ray}");
+            let dist = ((rho - 1.0).powi(2) + p[2] * p[2]).sqrt();
+            assert!(dist <= 0.25 + 1e-12, "mobius half-width {dist}");
+        }
+        // and the band is genuinely twisted: some samples sit off the plane
+        assert!(mob.iter().any(|p| p[2].abs() > 0.05), "mobius is not flat");
+        // Klein bottle (figure-8 immersion): recovering (sin v, sin 2v) from
+        // the point must satisfy sin^2(2v) = 4 sin^2 v (1 - sin^2 v)
+        let klein = klein_sample(150, &mut rng);
+        assert_eq!(klein.len(), 150);
+        for p in &klein {
+            assert_eq!(p.dim(), 3);
+            let rho = (p[0] * p[0] + p[1] * p[1]).sqrt();
+            assert!(rho > 0.3, "figure-8 radius stays positive: {rho}");
+            let u = p[1].atan2(p[0]);
+            let (b, a) = (0.5 * u).sin_cos();
+            // [rho - 1; z] = 0.5 * R(u/2) * [sin v; sin 2v]
+            let sv = 2.0 * ((rho - 1.0) * a + p[2] * b);
+            let s2v = 2.0 * (-(rho - 1.0) * b + p[2] * a);
+            assert!(sv.abs() <= 1.0 + 1e-9 && s2v.abs() <= 1.0 + 1e-9, "sines bounded");
+            let resid = s2v * s2v - 4.0 * sv * sv * (1.0 - sv * sv);
+            assert!(resid.abs() < 1e-9, "klein double-angle residual {resid}");
+        }
+        // two moons: labels alternate and are balanced, and with no noise the
+        // two arcs lie exactly on their unit circles
+        let (mp, ml) = two_moons(200, 0.0, &mut rng);
+        assert_eq!(mp.len(), 200);
+        let ones = ml.iter().filter(|&&l| l == 1).count();
+        assert_eq!(ones, 100, "balanced labels");
+        assert!(ml.iter().all(|&l| l < 2));
+        for (p, &l) in mp.iter().zip(&ml) {
+            assert_eq!(p.dim(), 2);
+            if l == 0 {
+                assert!((p[0] * p[0] + p[1] * p[1] - 1.0).abs() < 1e-12, "upper moon");
+                assert!(p[1] >= -1e-12, "upper moon is the top half");
+            } else {
+                let d = (p[0] - 1.0).powi(2) + (p[1] - 0.5).powi(2);
+                assert!((d - 1.0).abs() < 1e-12, "lower moon");
+                assert!(p[1] <= 0.5 + 1e-12, "lower moon is the bottom half");
+            }
+        }
+        // with noise the two moons stay well separated: nearest neighbors
+        // share their label, and the closest pair across labels is far
+        // beyond the within-moon spacing
+        let (np, nl) = two_moons(400, 0.05, &mut rng);
+        let nn = knn_graph(&np, 1);
+        let agree = nn
+            .iter()
+            .enumerate()
+            .filter(|&(i, nb)| nl[i] == nl[nb[0].0])
+            .count();
+        assert!(agree > 380, "nearest neighbours share a moon: {agree}/400");
+        let mut min_cross = f64::MAX;
+        let mut max_nn = 0.0_f64;
+        for i in 0..np.len() {
+            max_nn = max_nn.max(nn[i][0].1);
+            for j in (i + 1)..np.len() {
+                if nl[i] != nl[j] {
+                    min_cross = min_cross.min(np[i].sub(&np[j]).norm());
+                }
+            }
+        }
+        assert!(min_cross > 0.15, "moon gap {min_cross}");
+        assert!(max_nn < min_cross, "within-moon spacing {max_nn} vs gap {min_cross}");
+    }
+
+    #[test]
+    fn test_stiefel_gradient_descent_finds_dominant_subspace() {
+        // minimize f(X) = -tr(X^T A X) over 4x2 orthonormal-column matrices;
+        // the optimum is the span of the top two eigenvectors of A, with
+        // value -(lambda_1 + lambda_2)
+        let diag = [3.0, 2.0, 1.0, 0.5];
+        let a = Matrix::from_fn(4, 4, |i, j| if i == j { diag[i] } else { 0.0 });
+        let af = a.clone();
+        let ag = a.clone();
+        let f = move |x: &Matrix| -> f64 {
+            let ax = af.mul(x).unwrap();
+            -(0..x.cols)
+                .map(|c| (0..x.rows).map(|r| x.get(r, c) * ax.get(r, c)).sum::<f64>())
+                .sum::<f64>()
+        };
+        let grad = move |x: &Matrix| -> Matrix {
+            let ax = ag.mul(x).unwrap();
+            Matrix::from_fn(x.rows, x.cols, |i, j| -2.0 * ax.get(i, j))
+        };
+        let x0 = Matrix::from_fn(4, 2, |i, j| ((i + 1) as f64 * 0.31 + (j + 1) as f64 * 0.17).sin());
+        let start = stiefel_project(&x0);
+        let x = riemannian_gradient_descent_stiefel(&f, &grad, &start, 300, 0.05);
+        // the iterate stays on the Stiefel manifold: X^T X = I
+        let xtx = x.transpose().mul(&x).unwrap();
+        for i in 0..2 {
+            for j in 0..2 {
+                let want = if i == j { 1.0 } else { 0.0 };
+                assert!(
+                    (xtx.get(i, j) - want).abs() < 1e-9,
+                    "X^T X at {i},{j}: {}",
+                    xtx.get(i, j)
+                );
+            }
+        }
+        // and it decreases the objective to the closed-form optimum
+        assert!(f(&x) < f(&start) - 1e-6, "objective decreased");
+        assert!(
+            (f(&x) + 5.0).abs() < 1e-6,
+            "optimal value {} vs -(3 + 2)",
+            f(&x)
+        );
+        // the columns span e1, e2: the trailing coordinates vanish
+        for c in 0..2 {
+            assert!(
+                x.get(2, c).abs() < 1e-4 && x.get(3, c).abs() < 1e-4,
+                "column {c} leaks into the small eigen-directions"
+            );
+        }
+        // a constant objective leaves the projected start point untouched
+        let flat = |_: &Matrix| 1.0;
+        let zero = |m: &Matrix| Matrix::zeros(m.rows, m.cols);
+        let still = riemannian_gradient_descent_stiefel(&flat, &zero, &start, 20, 0.1);
+        for i in 0..4 {
+            for j in 0..2 {
+                assert!((still.get(i, j) - start.get(i, j)).abs() < 1e-9);
+            }
+        }
+    }
 }

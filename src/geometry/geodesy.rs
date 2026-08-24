@@ -144,7 +144,8 @@ pub fn vincenty_direct(
     let big_b = u_sq / 1024.0 * (256.0 + u_sq * (-128.0 + u_sq * (74.0 - 47.0 * u_sq)));
 
     let mut sigma = dist / (b * big_a);
-    let (mut sin_sigma, mut cos_sigma) = sigma.sin_cos();
+    let mut sin_sigma;
+    let mut cos_sigma;
     let mut cos_2sigma_m = (2.0 * sigma1 + sigma).cos();
     for _ in 0..VINCENTY_MAX_ITER {
         cos_2sigma_m = (2.0 * sigma1 + sigma).cos();

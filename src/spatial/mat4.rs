@@ -448,6 +448,53 @@ mod tests {
     }
 
     #[test]
+    fn test_from_mat3_embeds_linear_block() {
+        let r = crate::linalg::rotation_z(0.7);
+        let m = Mat4::from_mat3(&r);
+        // Upper-left block round-trips exactly.
+        assert_eq!(m.to_mat3(), r);
+        // Translation column is zero and the bottom row is (0,0,0,1).
+        for i in 0..3 {
+            assert_eq!(m.data[i][3], 0.0);
+            assert_eq!(m.data[3][i], 0.0);
+        }
+        assert_eq!(m.data[3][3], 1.0);
+        // Acts on points and directions exactly like the 3×3 map.
+        for v in [Vec3::new(1.0, 2.0, 3.0), Vec3::new(-0.5, 0.0, 4.0)] {
+            let expect = r.mul_vec(v);
+            assert!(m.transform_point(v).distance_to(&expect) < 1e-15);
+            assert!(m.transform_vector(v).distance_to(&expect) < 1e-15);
+        }
+        // The origin stays fixed (no translation part).
+        assert!(m.transform_point(Vec3::ZERO).magnitude() < 1e-15);
+    }
+
+    #[test]
+    fn test_transpose_involution_and_product_rule() {
+        let a = Mat4::from_rows(
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 1.0, 2.0, 3.0],
+            [4.0, 5.0, 6.0, 7.0],
+        );
+        // Entries swap indices: Aᵀ[i][j] = A[j][i].
+        let at = a.transpose();
+        for i in 0..4 {
+            for j in 0..4 {
+                assert_eq!(at.data[i][j], a.data[j][i]);
+            }
+        }
+        // Involution: (Aᵀ)ᵀ = A.
+        assert_eq!(at.transpose(), a);
+        // Product rule: (AB)ᵀ = Bᵀ Aᵀ.
+        let q = Quaternion::from_axis_angle(Vec3::new(0.2, 1.0, -0.7), 0.9);
+        let b = Mat4::from_trs(Vec3::new(1.0, -2.0, 0.5), &q, Vec3::new(2.0, 1.0, 0.5));
+        assert!(mats_close(&(a * b).transpose(), &(b.transpose() * a.transpose()), 1e-12));
+        // A symmetric matrix is its own transpose.
+        assert_eq!(Mat4::identity().transpose(), Mat4::identity());
+    }
+
+    #[test]
     fn test_rotation_matches_quaternion() {
         let q = Quaternion::from_axis_angle(Vec3::new(0.0, 0.0, 1.0), PI / 2.0);
         let m = Mat4::rotation(&q);

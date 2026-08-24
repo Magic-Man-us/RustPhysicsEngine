@@ -672,6 +672,160 @@ mod tests {
         }
     }
 
+    /// Every wavelet the public API accepts: Haar, all 20 Daubechies,
+    /// all 19 symlets, all 5 coiflets, and every biorthogonal spline
+    /// pair in the standard family. Exercises every coefficient table.
+    fn every_wavelet() -> Vec<Wavelet> {
+        let mut all = vec![Wavelet::Haar];
+        all.extend((1..=20u8).map(Wavelet::Db));
+        all.extend((2..=20u8).map(Wavelet::Sym));
+        all.extend((1..=5u8).map(Wavelet::Coif));
+        all.extend(
+            [
+                (1u8, 1u8),
+                (1, 3),
+                (1, 5),
+                (2, 2),
+                (2, 4),
+                (2, 6),
+                (2, 8),
+                (3, 1),
+                (3, 3),
+                (3, 5),
+                (3, 7),
+                (3, 9),
+                (4, 4),
+                (5, 5),
+                (6, 8),
+            ]
+            .into_iter()
+            .map(|(p, q)| Wavelet::Bior(p, q)),
+        );
+        all
+    }
+
+    #[test]
+    fn test_perfect_reconstruction_over_every_family_and_order() {
+        // Perfect reconstruction is the defining property of a
+        // quadrature-mirror / biorthogonal filter bank: analysis
+        // followed by synthesis returns the signal exactly, so the
+        // tolerance is pure floating-point accumulation over a filter
+        // of length ≤ 40 (a few hundred ulp of the signal scale).
+        let n = 256;
+        let x = sample_signal(n);
+        let wavelets = every_wavelet();
+        assert_eq!(wavelets.len(), 60, "Haar + 20 db + 19 sym + 5 coif + 15 bior");
+        for &w in &wavelets {
+            // Filter banks must have matching, even lengths, and the
+            // scaling filters must sum to √2 (unit DC gain).
+            let (dec_lo, dec_hi, rec_lo, rec_hi) = wavelet_filters(w);
+            let l = dec_lo.len();
+            assert!(l >= 2 && l.is_multiple_of(2), "{w:?} filter length {l}");
+            assert_eq!(dec_hi.len(), l, "{w:?}");
+            assert_eq!(rec_lo.len(), l, "{w:?}");
+            assert_eq!(rec_hi.len(), l, "{w:?}");
+            assert!(
+                approx(dec_lo.iter().sum::<f64>(), std::f64::consts::SQRT_2, 1e-9),
+                "{w:?} dec_lo sum"
+            );
+            assert!(
+                approx(rec_lo.iter().sum::<f64>(), std::f64::consts::SQRT_2, 1e-9),
+                "{w:?} rec_lo sum"
+            );
+            // Wavelet (high-pass) filters annihilate constants.
+            assert!(dec_hi.iter().sum::<f64>().abs() < 1e-9, "{w:?} dec_hi sum");
+            assert!(rec_hi.iter().sum::<f64>().abs() < 1e-9, "{w:?} rec_hi sum");
+
+            for &mode in &ALL_MODES {
+                let (a, d) = dwt(&x, w, mode);
+                assert_eq!(a.len(), (n + l - 1) / 2, "{w:?} {mode:?} coeff length");
+                assert_eq!(d.len(), a.len(), "{w:?} {mode:?}");
+                let mut rec = idwt(&a, &d, w, mode);
+                assert_eq!(rec.len(), n, "{w:?} {mode:?} reconstruction length");
+                rec.truncate(n);
+                for (i, (u, v)) in x.iter().zip(&rec).enumerate() {
+                    assert!(
+                        approx(*u, *v, 1e-8),
+                        "{w:?} {mode:?} sample {i}: {u} vs {v}"
+                    );
+                }
+            }
+
+            // A constant signal has zero detail for every wavelet (the
+            // high-pass filters have at least one vanishing moment),
+            // and reconstructs exactly under periodic extension.
+            let c = vec![2.75_f64; n];
+            let (ca, cd) = dwt(&c, w, PadMode::Periodic);
+            for v in &cd {
+                assert!(v.abs() < 1e-9, "{w:?} detail of a constant: {v}");
+            }
+            let mut crec = idwt(&ca, &cd, w, PadMode::Periodic);
+            crec.truncate(n);
+            for v in &crec {
+                assert!(approx(*v, 2.75, 1e-8), "{w:?} constant reconstruction {v}");
+            }
+        }
+    }
+
+    #[test]
+    fn test_multilevel_roundtrip_over_every_family_and_order() {
+        // The same property through three decomposition levels, which
+        // also drives idwt on the shortened intermediate arrays.
+        let n = 200;
+        let x = sample_signal(n);
+        for &w in &every_wavelet() {
+            let coeffs = wavedec(&x, w, 3, PadMode::Symmetric);
+            assert_eq!(coeffs.len(), 4, "{w:?}");
+            let mut rec = waverec(&coeffs, w, PadMode::Symmetric);
+            rec.truncate(n);
+            assert_eq!(rec.len(), n, "{w:?}");
+            for (i, (u, v)) in x.iter().zip(&rec).enumerate() {
+                assert!(approx(*u, *v, 1e-8), "{w:?} level-3 sample {i}: {u} vs {v}");
+            }
+        }
+    }
+
+    #[test]
+    fn test_orthogonal_families_are_orthonormal_and_have_vanishing_moments() {
+        // Orthonormality Σ h[k]h[k+2m] = δ_m holds for db/sym/coif but
+        // not for the biorthogonal splines, so only the orthogonal
+        // families are checked here.
+        let orthogonal: Vec<Wavelet> = every_wavelet()
+            .into_iter()
+            .filter(|w| !matches!(w, Wavelet::Bior(..)))
+            .collect();
+        assert_eq!(orthogonal.len(), 45);
+        for w in orthogonal {
+            let (dec_lo, dec_hi, _, _) = wavelet_filters(w);
+            let l = dec_lo.len();
+            for m in 0..l / 2 {
+                let acc: f64 =
+                    (0..l - 2 * m).map(|k| dec_lo[k] * dec_lo[k + 2 * m]).sum();
+                let expect = if m == 0 { 1.0 } else { 0.0 };
+                assert!(approx(acc, expect, 1e-8), "{w:?} shift {m}: {acc}");
+            }
+            // Number of vanishing moments of the wavelet filter:
+            // db_n and sym_n have n, coif_n has 2n, Haar has 1.
+            let moments = match w {
+                Wavelet::Haar => 1,
+                Wavelet::Db(n) | Wavelet::Sym(n) => n as usize,
+                Wavelet::Coif(n) => 2 * n as usize,
+                Wavelet::Bior(..) => unreachable!(),
+            };
+            for p in 0..moments {
+                let acc: f64 = dec_hi
+                    .iter()
+                    .enumerate()
+                    .map(|(k, &g)| (k as f64 - (l as f64 - 1.0) / 2.0).powi(p as i32) * g)
+                    .sum();
+                // Higher powers over a length-40 filter amplify the
+                // table's ~1e-12 rounding, so scale the bound with p.
+                let tol = 1e-7 * (l as f64 / 2.0).powi(p as i32).max(1.0);
+                assert!(acc.abs() < tol, "{w:?} moment {p}: {acc} (tol {tol})");
+            }
+        }
+    }
+
     #[test]
     fn test_wavedec_waverec_roundtrip() {
         for &n in &[61usize, 64] {

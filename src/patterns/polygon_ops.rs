@@ -1972,7 +1972,7 @@ mod tests {
         assert!((lo - 1.0).abs() < 1e-9 && (hi - 2.0).abs() < 1e-9);
         // Angle matches up to k*pi/2.
         let diff = (found - angle).rem_euclid(std::f64::consts::FRAC_PI_2);
-        assert!(diff < 1e-9 || diff > std::f64::consts::FRAC_PI_2 - 1e-9);
+        assert!(!(1e-9..=std::f64::consts::FRAC_PI_2 - 1e-9).contains(&diff));
 
         let poly = Polygon2::new(pts.clone());
         let (_, _, diam) = polygon_diameter(&poly);

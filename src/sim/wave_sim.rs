@@ -573,7 +573,7 @@ mod tests {
         let dy = 0.2;
         let c = 3.0;
         let sim = WaveEquation2D::new(10, 10, dx, dy, c);
-        let expected = 0.029814239699997197;
+        let expected = 0.0298142396999972;
         let dt = sim.stable_dt();
         assert!(
             approx(dt, expected, TOLERANCE),

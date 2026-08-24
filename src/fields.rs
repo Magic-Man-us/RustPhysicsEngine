@@ -144,6 +144,61 @@ mod tests {
     }
 
     #[test]
+    fn test_scalar_field2_new_is_zero_and_set_writes_one_node() {
+        let mut f = ScalarField2::new(5, 4, 0.25);
+        assert_eq!(f.nx, 5);
+        assert_eq!(f.ny, 4);
+        assert_eq!(f.dx, 0.25);
+        assert_eq!(f.data.len(), 20);
+        assert!(f.data.iter().all(|&v| v == 0.0), "new() is zero-filled");
+        assert_eq!(f.min_max(), (0.0, 0.0));
+        // set writes exactly one node and leaves the rest untouched.
+        f.set(3, 2, -4.5);
+        assert_eq!(f.get(3, 2), -4.5);
+        assert_eq!(f.data[2 * 5 + 3], -4.5, "row-major index j*nx + i");
+        assert_eq!(f.data.iter().filter(|&&v| v != 0.0).count(), 1);
+        assert_eq!(f.min_max(), (-4.5, 0.0));
+        // Sampling at that node returns the stored value; halfway to a
+        // zero neighbour is half of it (bilinear on a linear segment).
+        assert!((f.sample(3.0 * 0.25, 2.0 * 0.25) - (-4.5)).abs() < 1e-12);
+        assert!((f.sample(3.5 * 0.25, 2.0 * 0.25) - (-2.25)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_scalar_field2_set_linear_field_has_constant_gradient() {
+        // Build g(x, y) = 3x - 2y node by node with set(), then check
+        // the central-difference gradient is exactly (3, -2) at every
+        // interior node (central differences are exact for linear data).
+        let (nx, ny, dx) = (9usize, 7usize, 0.5_f64);
+        let mut f = ScalarField2::new(nx, ny, dx);
+        for j in 0..ny {
+            for i in 0..nx {
+                f.set(i, j, 3.0 * (i as f64 * dx) - 2.0 * (j as f64 * dx));
+            }
+        }
+        // set() must agree with the equivalent from_fn construction.
+        let reference = ScalarField2::from_fn(nx, ny, dx, |x, y| 3.0 * x - 2.0 * y);
+        assert_eq!(f, reference);
+        for j in 1..ny - 1 {
+            for i in 1..nx - 1 {
+                let gx = (f.get(i + 1, j) - f.get(i - 1, j)) / (2.0 * dx);
+                let gy = (f.get(i, j + 1) - f.get(i, j - 1)) / (2.0 * dx);
+                assert!((gx - 3.0).abs() < 1e-12, "d/dx at ({i}, {j}) = {gx}");
+                assert!((gy + 2.0).abs() < 1e-12, "d/dy at ({i}, {j}) = {gy}");
+                // The 5-point Laplacian of a linear field vanishes.
+                let lap = (f.get(i + 1, j) + f.get(i - 1, j) + f.get(i, j + 1)
+                    + f.get(i, j - 1)
+                    - 4.0 * f.get(i, j))
+                    / (dx * dx);
+                assert!(lap.abs() < 1e-11, "laplacian at ({i}, {j}) = {lap}");
+            }
+        }
+        let (lo, hi) = f.min_max();
+        assert!((lo - (-2.0 * (ny - 1) as f64 * dx)).abs() < 1e-12);
+        assert!((hi - 3.0 * (nx - 1) as f64 * dx).abs() < 1e-12);
+    }
+
+    #[test]
     fn test_scalar_field3_sampling() {
         let mut f = ScalarField3::new(4, 4, 4, 1.0);
         f.set(1, 2, 3, 7.0);

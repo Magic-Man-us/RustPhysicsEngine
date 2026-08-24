@@ -703,6 +703,147 @@ mod tests {
     }
 
     #[test]
+    fn shallow_water_step_hll_matches_stoker_dam_break() {
+        // Wet-bed dam break: the HLL update is checked against Stoker's
+        // exact similarity solution, and against the diffusive
+        // Lax-Friedrichs update on the identical initial data.
+        use crate::cfd::shallow_water::swe_1d_exact_dam_break;
+
+        let nx = 800;
+        let domain = 40.0;
+        let dx = domain / nx as f64;
+        let g = 9.81;
+        let (h_l, h_r) = (2.0_f64, 1.0_f64);
+        let t_end = 1.0_f64;
+
+        let fill = |sw: &mut ShallowWater1D| {
+            for i in 0..nx {
+                sw.h[i] = if (i as f64 + 0.5) * dx < 0.5 * domain { h_l } else { h_r };
+                sw.hu[i] = 0.0;
+            }
+        };
+
+        let mut hll = ShallowWater1D::new(nx, dx, g);
+        fill(&mut hll);
+        let v0 = hll.total_volume();
+        let e0 = hll.total_energy();
+        let mut t = 0.0;
+        while t < t_end {
+            let dt = hll.stable_dt().min(t_end - t);
+            hll.step_hll(dt);
+            t += dt;
+            // Depth stays non-negative throughout.
+            assert!(hll.h.iter().all(|&h| h >= 0.0), "negative depth at t = {t}");
+        }
+
+        // Reflective walls and a flux-form update: the volume is conserved
+        // to round-off (the waves have not reached the walls at t = 1 s,
+        // and would be reflected rather than lost if they had).
+        assert!(
+            approx_rel_eq(hll.total_volume(), v0, 1e-12),
+            "volume drift {} -> {}",
+            v0,
+            hll.total_volume()
+        );
+        // HLL is an entropy-satisfying, dissipative scheme: the total
+        // mechanical energy must not grow across the bore.
+        assert!(
+            hll.total_energy() <= e0 * (1.0 + 1e-12),
+            "energy grew: {e0} -> {}",
+            hll.total_energy()
+        );
+
+        // Compare with Stoker's exact solution (dam at the domain centre).
+        let l1 = |sw: &ShallowWater1D| -> f64 {
+            let mut acc = 0.0;
+            for i in 0..nx {
+                let x = (i as f64 + 0.5) * dx - 0.5 * domain;
+                let (he, _) = swe_1d_exact_dam_break(x, t_end, h_l, h_r, g);
+                acc += (sw.h[i] - he).abs();
+            }
+            acc / nx as f64
+        };
+        let l1_hll = l1(&hll);
+        assert!(l1_hll < 0.01, "HLL L1 depth error {l1_hll}");
+
+        // Star-region plateau: depth and velocity match the exact
+        // intermediate state. x = 4 m lies between the contact and the
+        // bore at t = 1 s.
+        let (h_star, u_star) = swe_1d_exact_dam_break(4.0, t_end, h_l, h_r, g);
+        let i_star = ((0.5 * domain + 4.0) / dx) as usize;
+        assert!(
+            approx_rel_eq(hll.h[i_star], h_star, 0.02),
+            "plateau depth {} vs exact {h_star}",
+            hll.h[i_star]
+        );
+        assert!(
+            approx_rel_eq(hll.velocity(i_star), u_star, 0.03),
+            "plateau speed {} vs exact {u_star}",
+            hll.velocity(i_star)
+        );
+
+        // The bore runs to the right at the Rankine-Hugoniot speed, so
+        // the water level well to the right of the dam is still the
+        // undisturbed h_r while the level just behind the front is raised.
+        let x_front = 0.5 * domain
+            + (0..nx)
+                .rev()
+                .find(|&i| hll.h[i] > h_r + 0.05)
+                .map_or(0.0, |i| (i as f64 + 0.5) * dx - 0.5 * domain);
+        let s_shock = (x_front - 0.5 * domain) / t_end;
+        // Exact bore speed from mass conservation across the shock:
+        // S = h* u* / (h* − h_r).
+        let s_exact = h_star * u_star / (h_star - h_r);
+        assert!(
+            (s_shock / s_exact - 1.0).abs() < 0.05,
+            "bore speed {s_shock} vs exact {s_exact}"
+        );
+        assert!(
+            approx_rel_eq(hll.h[nx - 5], h_r, 1e-9),
+            "far field disturbed: {}",
+            hll.h[nx - 5]
+        );
+
+        // The same run with Lax-Friedrichs on identical data: HLL, being
+        // an upwind Riemann solver, resolves the bore more sharply.
+        let mut lf = ShallowWater1D::new(nx, dx, g);
+        fill(&mut lf);
+        let mut t = 0.0;
+        while t < t_end {
+            let dt = lf.stable_dt().min(t_end - t);
+            lf.step_lax_friedrichs(dt);
+            t += dt;
+        }
+        assert!(
+            l1_hll < l1(&lf),
+            "HLL ({l1_hll}) not sharper than Lax-Friedrichs ({})",
+            l1(&lf)
+        );
+    }
+
+    #[test]
+    fn shallow_water_step_hll_keeps_a_lake_at_rest() {
+        // Still water over a flat bed is an exact steady state of the
+        // shallow-water equations; the HLL update with reflective walls
+        // must reproduce it exactly.
+        let nx = 64;
+        let dx = 0.1;
+        let g = constants::G_ACCEL;
+        let mut sw = ShallowWater1D::new(nx, dx, g);
+        sw.h.iter_mut().for_each(|h| *h = 1.5);
+        let v0 = sw.total_volume();
+        for _ in 0..200 {
+            let dt = sw.stable_dt();
+            sw.step_hll(dt);
+        }
+        let max_dev = sw.h.iter().map(|&h| (h - 1.5).abs()).fold(0.0_f64, f64::max);
+        let max_mom = sw.hu.iter().map(|m| m.abs()).fold(0.0_f64, f64::max);
+        assert!(max_dev < 1e-12, "lake at rest disturbed: {max_dev}");
+        assert!(max_mom < 1e-12, "spurious momentum {max_mom}");
+        assert!(approx_rel_eq(sw.total_volume(), v0, 1e-14), "volume drift");
+    }
+
+    #[test]
     fn shallow_water_flat_surface_stays_flat() {
         let nx = 100;
         let dx = 0.1;
@@ -785,7 +926,7 @@ mod tests {
         }
         // With zero velocity, max wave speed = √(g h)
         let s = sw.max_wave_speed();
-        let expected = 4.429446918070020;
+        let expected = 4.429_446_918_070_02;
         assert!(
             approx_rel_eq(s, expected, 1e-10),
             "max_wave_speed={s}, expected {expected}"

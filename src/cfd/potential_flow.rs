@@ -1038,6 +1038,220 @@ mod tests {
     }
 
     #[test]
+    fn test_sink_and_doublet_singularities() {
+        // A sink is a source of the opposite sign: every returned
+        // quantity must be the exact negation of the source's.
+        let m = 2.3;
+        let pos = Vec2::new(0.4, -0.2);
+        let src = source(m, pos);
+        let snk = sink(m, pos);
+        for &p in &[
+            Vec2::new(1.0, 0.0),
+            Vec2::new(-0.7, 1.3),
+            Vec2::new(0.4, 1.1),
+            Vec2::new(2.5, -2.0),
+        ] {
+            let (vs, phis, psis) = src(p);
+            let (vk, phik, psik) = snk(p);
+            assert!((vs.x + vk.x).abs() < 1e-14 && (vs.y + vk.y).abs() < 1e-14, "{vs:?} {vk:?}");
+            assert!((phis + phik).abs() < 1e-14, "phi {phis} {phik}");
+            assert!((psis + psik).abs() < 1e-14, "psi {psis} {psik}");
+        }
+        // The sink draws fluid in: the radial component points inward and
+        // the net flux through any enclosing circle is exactly −m
+        // (divergence theorem for a point sink of strength m).
+        let n = 2000;
+        let radius = 0.9;
+        let mut flux = 0.0;
+        let mut max_radial = f64::NEG_INFINITY;
+        for k in 0..n {
+            let th = TWO_PI * (k as f64 + 0.5) / n as f64;
+            let normal = Vec2::new(th.cos(), th.sin());
+            let p = pos + normal * radius;
+            let (v, _, _) = snk(p);
+            max_radial = max_radial.max(v.dot(&normal));
+            flux += v.dot(&normal) * radius * TWO_PI / n as f64;
+        }
+        assert!(max_radial < 0.0, "sink flow is not inward: {max_radial}");
+        assert!((flux + m).abs() < 1e-9, "sink flux {flux} vs {}", -m);
+        // Outside the singularity the sink field is irrotational: the
+        // circulation around the same circle vanishes.
+        let mut circulation = 0.0;
+        for k in 0..n {
+            let th = TWO_PI * (k as f64 + 0.5) / n as f64;
+            let tangent = Vec2::new(-th.sin(), th.cos());
+            let p = pos + Vec2::new(th.cos(), th.sin()) * radius;
+            let (v, _, _) = snk(p);
+            circulation += v.dot(&tangent) * radius * TWO_PI / n as f64;
+        }
+        assert!(circulation.abs() < 1e-9, "sink circulation {circulation}");
+
+        // The doublet velocity decays exactly as 1/r²: doubling the
+        // distance quarters the speed.
+        let kappa = 1.7;
+        let angle = 0.6;
+        let dbl = doublet(kappa, Vec2::ZERO, angle);
+        for &th in &[0.0_f64, 0.9, 2.4, -1.3] {
+            let dir = Vec2::new(th.cos(), th.sin());
+            let (v1, _, _) = dbl(dir * 1.0);
+            let (v2, _, _) = dbl(dir * 2.0);
+            let (v4, _, _) = dbl(dir * 4.0);
+            assert!(
+                (v1.magnitude() / v2.magnitude() - 4.0).abs() < 1e-9,
+                "doublet decay 1->2: {}",
+                v1.magnitude() / v2.magnitude()
+            );
+            assert!(
+                (v2.magnitude() / v4.magnitude() - 4.0).abs() < 1e-9,
+                "doublet decay 2->4: {}",
+                v2.magnitude() / v4.magnitude()
+            );
+        }
+        // On the doublet axis the potential is κ cos0/(2πr) = κ/(2πr).
+        let (_, phi_axis, _) = dbl(Vec2::new(angle.cos(), angle.sin()) * 3.0);
+        assert!(
+            (phi_axis - kappa / (TWO_PI * 3.0)).abs() < 1e-12,
+            "axis potential {phi_axis}"
+        );
+
+        // A doublet is the limit of a source/sink pair separated by d
+        // along the doublet axis with κ = m·d. Compare against the
+        // independent source and sink closures at finite, small d.
+        let d = 1e-4;
+        let axis = Vec2::new(angle.cos(), angle.sin());
+        let pair_src = source(kappa / d, axis * (-0.5 * d));
+        let pair_snk = sink(kappa / d, axis * (0.5 * d));
+        for &p in &[Vec2::new(1.0, 0.5), Vec2::new(-2.0, 1.0), Vec2::new(0.3, -1.4)] {
+            let (vd, phid, psid) = dbl(p);
+            let (v1, phi1, psi1) = pair_src(p);
+            let (v2, phi2, psi2) = pair_snk(p);
+            let v = v1 + v2;
+            // The remainder of the expansion is O(d²) relative.
+            assert!(
+                (v - vd).magnitude() < 1e-6 * vd.magnitude(),
+                "doublet vs pair at {p:?}: {v:?} vs {vd:?}"
+            );
+            assert!((phi1 + phi2 - phid).abs() < 1e-6 * phid.abs().max(1e-3));
+            assert!((psi1 + psi2 - psid).abs() < 1e-6 * psid.abs().max(1e-3));
+        }
+    }
+
+    #[test]
+    fn test_potential_stream_function_and_streamlines() {
+        // A superposition with all four element kinds: uniform stream,
+        // source, vortex and doublet.
+        let flow = PotentialFlow2 {
+            elements: vec![
+                Element::Uniform { u: 1.3, alpha: 0.2 },
+                Element::Source { m: 0.7, pos: Vec2::new(-0.6, 0.1) },
+                Element::Vortex { gamma: -0.9, pos: Vec2::new(0.3, -0.4) },
+                Element::Doublet { kappa: 0.5, pos: Vec2::new(0.1, 0.6), angle: 0.4 },
+            ],
+        };
+        let probes = [
+            Vec2::new(2.0, 1.0),
+            Vec2::new(-1.5, 2.2),
+            Vec2::new(1.1, -1.7),
+            Vec2::new(-2.4, -0.9),
+        ];
+        for &p in &probes {
+            // W(z) = φ + iψ by definition.
+            let w = flow.complex_potential(Complex::new(p.x, p.y));
+            assert!((w.re - flow.potential(p)).abs() < 1e-14, "Re W != phi");
+            assert!((w.im - flow.stream_function(p)).abs() < 1e-14, "Im W != psi");
+
+            // φ and ψ are harmonic conjugates: the Cauchy-Riemann
+            // relations ∂φ/∂x = ∂ψ/∂y and ∂φ/∂y = −∂ψ/∂x hold, and ∇φ is
+            // the velocity.
+            let h = 1e-5;
+            let dx = |f: &dyn Fn(Vec2) -> f64| {
+                (f(Vec2::new(p.x + h, p.y)) - f(Vec2::new(p.x - h, p.y))) / (2.0 * h)
+            };
+            let dy = |f: &dyn Fn(Vec2) -> f64| {
+                (f(Vec2::new(p.x, p.y + h)) - f(Vec2::new(p.x, p.y - h))) / (2.0 * h)
+            };
+            let phi_x = dx(&|q| flow.potential(q));
+            let phi_y = dy(&|q| flow.potential(q));
+            let psi_x = dx(&|q| flow.stream_function(q));
+            let psi_y = dy(&|q| flow.stream_function(q));
+            // Central differences at h = 1e-5 carry O(h²)|f'''| ≈ 1e-9.
+            assert!((phi_x - psi_y).abs() < 1e-7, "CR-1 at {p:?}: {phi_x} vs {psi_y}");
+            assert!((phi_y + psi_x).abs() < 1e-7, "CR-2 at {p:?}: {phi_y} vs {}", -psi_x);
+            let v = flow.velocity(p);
+            assert!((phi_x - v.x).abs() < 1e-7, "grad phi != u: {phi_x} vs {}", v.x);
+            assert!((phi_y - v.y).abs() < 1e-7, "grad phi != v: {phi_y} vs {}", v.y);
+            // ψ is the stream function: ∂ψ/∂y = u, −∂ψ/∂x = v.
+            assert!((psi_y - v.x).abs() < 1e-7);
+            assert!((psi_x + v.y).abs() < 1e-7);
+
+            // Both are harmonic away from the singularities.
+            let lap = |f: &dyn Fn(Vec2) -> f64| {
+                let hh = 1e-3;
+                (f(Vec2::new(p.x + hh, p.y)) + f(Vec2::new(p.x - hh, p.y))
+                    + f(Vec2::new(p.x, p.y + hh))
+                    + f(Vec2::new(p.x, p.y - hh))
+                    - 4.0 * f(p))
+                    / (hh * hh)
+            };
+            assert!(lap(&|q| flow.potential(q)).abs() < 1e-5, "phi not harmonic at {p:?}");
+            assert!(
+                lap(&|q| flow.stream_function(q)).abs() < 1e-5,
+                "psi not harmonic at {p:?}"
+            );
+        }
+
+        // The cylinder surface is the streamline ψ = 0 and the stagnation
+        // streamline through it.
+        let cyl = cylinder_flow(1.0, 0.5, 0.0);
+        for k in 0..16 {
+            let th = TWO_PI * k as f64 / 16.0;
+            let p = Vec2::new(0.5 * th.cos(), 0.5 * th.sin());
+            assert!(
+                cyl.stream_function(p).abs() < 1e-12,
+                "cylinder surface is not psi = 0: {}",
+                cyl.stream_function(p)
+            );
+        }
+        // Far upstream the potential reduces to the free stream Ux.
+        let far = Vec2::new(-500.0, 3.0);
+        assert!((cyl.potential(far) - far.x).abs() < 1e-3, "{}", cyl.potential(far));
+
+        // Streamlines of a uniform stream are exactly straight lines
+        // covering |U| dt per step.
+        let uni = PotentialFlow2 {
+            elements: vec![Element::Uniform { u: 2.0, alpha: 0.3 }],
+        };
+        let dt = 0.05;
+        let lines = uni.streamlines(&[Vec2::new(-1.0, 0.5), Vec2::new(0.0, -1.0)], 25, dt);
+        for line in &lines {
+            assert_eq!(line.len(), 26);
+            let dir = Vec2::new(0.3_f64.cos(), 0.3_f64.sin());
+            for (k, p) in line.iter().enumerate() {
+                let want = line[0] + dir * (2.0 * dt * k as f64);
+                assert!((*p - want).magnitude() < 1e-12, "step {k}: {p:?} vs {want:?}");
+            }
+        }
+
+        // A streamline of the cylinder flow is a level set of ψ: the
+        // stream function is constant along it. RK2 with dt = 0.01 keeps
+        // the drift to O(dt³) per step.
+        let seed = Vec2::new(-3.0, 0.35);
+        let psi0 = cyl.stream_function(seed);
+        let path = cyl.streamlines(&[seed], 600, 0.01);
+        for p in &path[0] {
+            assert!(
+                (cyl.stream_function(*p) - psi0).abs() < 1e-4,
+                "psi drifted to {} from {psi0} at {p:?}",
+                cyl.stream_function(*p)
+            );
+            // A streamline outside the body never enters it.
+            assert!(p.magnitude() > 0.5 - 1e-6, "streamline entered the cylinder at {p:?}");
+        }
+        // It flows downstream and passes over the cylinder.
+        assert!(path[0].last().unwrap().x > 1.0, "streamline did not advance");
+    }
+
+    #[test]
     fn test_joukowski() {
         let c = 0.25;
         let center = Complex::new(-0.025, 0.05);
@@ -1127,6 +1341,136 @@ mod tests {
         let xcp = pm.pressure_center();
         assert!((0.1..0.5).contains(&xcp), "x_cp {xcp}");
         assert!(pm.cm_quarter_chord().abs() < 0.1);
+    }
+
+    #[test]
+    fn test_panel_method_streamlines() {
+        let alpha = 6.0_f64.to_radians();
+        let foil = naca4("2412", 140, true);
+        let mut pm = PanelMethod::new(&foil);
+        pm.alpha = alpha;
+        pm.u_inf = 1.0;
+        pm.solve();
+
+        let seeds = [
+            Vec2::new(-2.0, -0.30),
+            Vec2::new(-2.0, -0.10),
+            Vec2::new(-2.0, 0.10),
+            Vec2::new(-2.0, 0.30),
+        ];
+        let dt = 0.01;
+        let steps = 500;
+        let lines = pm.streamlines(&seeds, steps, dt);
+        assert_eq!(lines.len(), seeds.len());
+
+        // Each traced point is an explicit Euler step along the velocity
+        // field: p_{k+1} − p_k = u(p_k) dt exactly.
+        for line in &lines {
+            assert_eq!(line.len(), steps + 1);
+            for w in line.windows(2) {
+                let want = pm.velocity_at(w[0]) * dt;
+                let got = w[1] - w[0];
+                assert!(
+                    (got - want).magnitude() < 1e-12,
+                    "streamline step {got:?} is not u dt = {want:?}"
+                );
+            }
+        }
+
+        // Streamlines are material lines of a solid body: none of them may
+        // cross into the airfoil. The section is thin, so a point is
+        // "inside" if it is within the chord and closer to the camber line
+        // than the local half thickness; testing against the polygon
+        // directly is cleaner.
+        let inside = |p: Vec2| -> bool {
+            let mut hits = 0;
+            for k in 0..foil.len() {
+                let (a, b) = (foil[k], foil[(k + 1) % foil.len()]);
+                if (a.y > p.y) != (b.y > p.y) {
+                    let x = a.x + (p.y - a.y) / (b.y - a.y) * (b.x - a.x);
+                    if x > p.x {
+                        hits += 1;
+                    }
+                }
+            }
+            hits % 2 == 1
+        };
+        assert!(inside(Vec2::new(0.4, 0.02)), "the inside test must work");
+        assert!(!inside(Vec2::new(0.4, 0.5)));
+        for (s, line) in lines.iter().enumerate() {
+            for p in line {
+                assert!(!inside(*p), "seed {s} entered the airfoil at {p:?}");
+            }
+        }
+
+        // Upwash ahead, downwash behind: the bound circulation of a
+        // lifting section turns the flow up in front of it and down
+        // behind it, so the local flow angle straddles the incidence.
+        // The speed is still close to the free stream two chords away.
+        let free_dir = Vec2::new(alpha.cos(), alpha.sin());
+        assert!(pm.cl() > 0.3, "expected a lifting section, cl = {}", pm.cl());
+        for (s, line) in lines.iter().enumerate() {
+            let head = (line[1] - line[0]) * (1.0 / dt);
+            assert!(
+                (head.magnitude() / pm.u_inf - 1.0).abs() < 0.05,
+                "seed {s} upstream speed {} is not the free stream",
+                head.magnitude()
+            );
+            let angle_in = head.y.atan2(head.x);
+            assert!(
+                angle_in > alpha,
+                "seed {s} upstream angle {angle_in} shows no upwash (alpha {alpha})"
+            );
+
+            let tail = *line.last().unwrap();
+            assert!(tail.x > 1.5, "seed {s} never reached the wake: {tail:?}");
+            let out = (tail - line[line.len() - 2]).normalized();
+            let angle_out = out.y.atan2(out.x);
+            assert!(
+                angle_out < alpha,
+                "seed {s} wake angle {angle_out} is not deflected below alpha {alpha}"
+            );
+            assert!(
+                angle_out < angle_in,
+                "seed {s} was not turned downwards: {angle_in} -> {angle_out}"
+            );
+        }
+        // The far-field disturbance is small: two chords upstream the flow
+        // direction is within a few degrees of the free stream.
+        let head0 = (lines[0][1] - lines[0][0]).normalized();
+        assert!(
+            (head0 - free_dir).magnitude() < 0.05,
+            "far upstream too disturbed: {head0:?} vs {free_dir:?}"
+        );
+
+        // Streamlines cannot cross: the vertical ordering of the seeds is
+        // preserved all the way downstream.
+        for k in 0..lines.len() - 1 {
+            let (lo, hi) = (lines[k].last().unwrap(), lines[k + 1].last().unwrap());
+            assert!(lo.y < hi.y, "streamlines {k} and {} crossed", k + 1);
+        }
+
+        // Far from the section the flow is a bound vortex of strength Γ,
+        // whose induced velocity falls off as 1/r. A streamline released
+        // a distance R below the airfoil therefore bows away from the
+        // straight free-stream line by an amount ∝ 1/R: doubling R halves
+        // the bow.
+        let bow = |depth: f64| -> f64 {
+            let seed = Vec2::new(-4.0, -depth);
+            let line = &pm.streamlines(&[seed], 400, 0.02)[0];
+            line.iter()
+                .map(|p| {
+                    let rel = *p - seed;
+                    (rel.x * free_dir.y - rel.y * free_dir.x).abs()
+                })
+                .fold(0.0_f64, f64::max)
+        };
+        let (b8, b16) = (bow(8.0), bow(16.0));
+        assert!(b8 > 0.0 && b8 < 0.05, "near-field bow out of range: {b8}");
+        assert!(
+            (1.5..3.0).contains(&(b8 / b16)),
+            "far-field decay is not 1/r: bow {b8} at R=8 vs {b16} at R=16"
+        );
     }
 
     #[test]

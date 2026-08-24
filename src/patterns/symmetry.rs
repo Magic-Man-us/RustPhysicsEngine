@@ -764,6 +764,99 @@ mod tests {
     }
 
     #[test]
+    fn test_rectangular_and_rhombic_lattice_defining_relations() {
+        // Rectangular: axis-aligned basis of the requested side
+        // lengths, meeting at exactly 90°, cell area w·h.
+        for &(w, h) in &[(1.0_f64, 1.0_f64), (3.0, 0.5), (0.25, 7.0)] {
+            let l = Lattice::rectangular(w, h);
+            assert_eq!(l.a, Vec2::new(w, 0.0));
+            assert_eq!(l.b, Vec2::new(0.0, h));
+            assert!((l.a.magnitude() - w).abs() < 1e-15);
+            assert!((l.b.magnitude() - h).abs() < 1e-15);
+            assert_eq!(l.a.dot(&l.b), 0.0, "rectangular basis is orthogonal");
+            assert!((l.a.cross(&l.b).abs() - w * h).abs() < 1e-12, "cell area");
+        }
+        // A square is the rectangular lattice with equal sides.
+        assert_eq!(Lattice::rectangular(2.0, 2.0), Lattice::square(2.0));
+
+        // Rhombic: equal-length basis vectors separated by the given
+        // angle, so cos θ = a·b/|a||b| and the area is s² sin θ.
+        for &s in &[1.0_f64, 2.5] {
+            for &deg in &[30.0_f64, 60.0, 72.0, 90.0, 120.0, 135.0] {
+                let theta = deg.to_radians();
+                let l = Lattice::rhombic(s, theta);
+                assert!((l.a.magnitude() - s).abs() < 1e-12, "|a| at {deg} deg");
+                assert!((l.b.magnitude() - s).abs() < 1e-12, "|b| at {deg} deg");
+                let cos = l.a.dot(&l.b) / (l.a.magnitude() * l.b.magnitude());
+                assert!((cos - theta.cos()).abs() < 1e-12, "angle at {deg} deg");
+                assert!(
+                    (l.a.cross(&l.b).abs() - s * s * theta.sin()).abs() < 1e-12,
+                    "area at {deg} deg"
+                );
+                // The diagonals of a rhombus are perpendicular.
+                let (p, q) = (l.a + l.b, l.a - l.b);
+                assert!(p.dot(&q).abs() < 1e-12, "diagonals at {deg} deg");
+            }
+        }
+        // Rhombic at 90° is the square lattice; at 120° it is the
+        // hexagonal one.
+        let sq = Lattice::rhombic(1.5, std::f64::consts::FRAC_PI_2);
+        assert!((sq.b - Vec2::new(0.0, 1.5)).magnitude() < 1e-15);
+        let hexl = Lattice::rhombic(2.0, 2.0 * std::f64::consts::FRAC_PI_3);
+        let reference = Lattice::hexagonal(2.0);
+        assert!((hexl.a - reference.a).magnitude() < 1e-12);
+        assert!((hexl.b - reference.b).magnitude() < 1e-12);
+    }
+
+    #[test]
+    fn test_wallpaper_lattice_matches_the_documented_cell_types() {
+        use WallpaperGroup::*;
+        let scale = 3.0_f64;
+        for g in ALL_WALLPAPER {
+            let l = wallpaper_lattice(g, scale);
+            // The cell always has the requested edge length along a.
+            assert!((l.a.magnitude() - scale).abs() < 1e-12, "{g:?} |a|");
+            assert!((l.b.magnitude() - scale).abs() < 1e-12, "{g:?} |b|");
+            let cos = l.a.dot(&l.b) / (scale * scale);
+            match g {
+                // Tetragonal groups get the square cell (90°).
+                P4 | P4m | P4g => {
+                    assert_eq!(l, Lattice::square(scale), "{g:?} is square");
+                    assert!(cos.abs() < 1e-15);
+                }
+                // Tri/hexagonal groups get the 120° hexagonal cell.
+                P3 | P3m1 | P31m | P6 | P6m => {
+                    assert_eq!(l, Lattice::hexagonal(scale), "{g:?} is hexagonal");
+                    assert!((cos + 0.5).abs() < 1e-12, "{g:?} 120 degrees");
+                }
+                // Everything else gets the rectangular cell.
+                _ => {
+                    assert_eq!(
+                        l,
+                        Lattice::rectangular(scale, scale),
+                        "{g:?} is rectangular"
+                    );
+                    assert!(cos.abs() < 1e-15);
+                }
+            }
+            // Every returned basis is non-degenerate and its cell area
+            // scales as the square of the requested size.
+            let area = l.a.cross(&l.b).abs();
+            assert!(area > 0.0, "{g:?} degenerate");
+            let doubled = wallpaper_lattice(g, 2.0 * scale);
+            assert!(
+                (doubled.a.cross(&doubled.b).abs() - 4.0 * area).abs() < 1e-9,
+                "{g:?} area scaling"
+            );
+        }
+        // The hexagonal cell has area (√3/2)·s², the square s².
+        let h = wallpaper_lattice(P6m, 1.0);
+        assert!((h.a.cross(&h.b).abs() - 3.0f64.sqrt() / 2.0).abs() < 1e-12);
+        let s = wallpaper_lattice(P4m, 1.0);
+        assert!((s.a.cross(&s.b).abs() - 1.0).abs() < 1e-15);
+    }
+
+    #[test]
     fn test_tile_points_density() {
         // p4m applied to a generic point produces 8 images per cell.
         let lattice = Lattice::square(1.0);

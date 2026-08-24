@@ -611,9 +611,9 @@ mod tests {
     #[test]
     fn test_fraunhofer_first_minimum() {
         // First minimum at sin(θ) = λ/a → θ = asin(λ/a)
-        let a = 1e-3;
-        let lambda = 500e-9;
-        let theta = (lambda as f64 / a as f64).asin();
+        let a = 1e-3_f64;
+        let lambda = 500e-9_f64;
+        let theta = (lambda / a).asin();
         let intensity = fraunhofer_single_slit_intensity(theta, a, lambda);
         assert!(approx(intensity, 0.0, 1e-6));
     }
@@ -669,14 +669,14 @@ mod tests {
     fn test_angular_frequency() {
         // f=1 Hz → ω = 2π ≈ 6.283185307 rad/s
         let omega = angular_frequency(1.0);
-        assert!(approx(omega, 6.283185307, 1e-6));
+        assert!(approx(omega, std::f64::consts::TAU, 1e-6));
     }
 
     #[test]
     fn test_wave_number() {
         // λ=1 m → k = 2π ≈ 6.283185307 rad/m
         let k = wave_number(1.0);
-        assert!(approx(k, 6.283185307, 1e-6));
+        assert!(approx(k, std::f64::consts::TAU, 1e-6));
     }
 
     #[test]
@@ -728,7 +728,7 @@ mod tests {
     fn test_mach_cone_angle() {
         // M=2 → sin(θ) = 0.5 → θ = π/6 ≈ 0.523599 rad
         let theta = mach_cone_angle(2.0);
-        assert!(approx(theta, 0.523599, 1e-4));
+        assert!(approx(theta, std::f64::consts::FRAC_PI_6, 1e-4));
     }
 
     // ── Standing Waves (untested) ──

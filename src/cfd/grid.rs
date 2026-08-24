@@ -632,4 +632,54 @@ mod tests {
             assert!((-1e-12..=1.0 + 1e-12).contains(&v), "overshoot {v}");
         }
     }
+
+    #[test]
+    fn test_cell_field_at_mut_is_the_at_accessor() {
+        // `at_mut` must address exactly the cell `at` reads: filling a
+        // field one cell at a time through `at_mut` has to reproduce
+        // `from_fn` bit for bit, and bilinear sampling of the result must
+        // then reproduce the underlying affine function exactly (bilinear
+        // interpolation is exact for functions linear in x and y).
+        let (nx, ny, dx) = (17_usize, 13_usize, 0.25_f64);
+        let f = |x: f64, y: f64| 2.0 * x - 3.0 * y + 1.5;
+        let reference = CellField2::from_fn(nx, ny, dx, f);
+        let mut built = CellField2::new(nx, ny, dx);
+        for j in 0..ny {
+            for i in 0..nx {
+                *built.at_mut(i, j) = f((i as f64 + 0.5) * dx, (j as f64 + 0.5) * dx);
+            }
+        }
+        for j in 0..ny {
+            for i in 0..nx {
+                // Round trip: write through at_mut, read back through at.
+                assert_eq!(
+                    built.at(i, j),
+                    reference.at(i, j),
+                    "at_mut/at disagree at ({i},{j})"
+                );
+            }
+        }
+        assert_eq!(built.data, reference.data);
+        // Interior sample points: the affine field is reproduced exactly.
+        for &(x, y) in &[(1.0_f64, 1.0_f64), (2.375, 1.125), (3.0, 2.5)] {
+            let s = built.sample(Vec2::new(x, y));
+            assert!((s - f(x, y)).abs() < 1e-12, "sample {s} vs {}", f(x, y));
+        }
+        // Aliasing: mutating through at_mut is visible through at, and a
+        // second-difference stencil of the affine field vanishes (the
+        // discrete Laplacian of a linear function is exactly zero).
+        for j in 1..ny - 1 {
+            for i in 1..nx - 1 {
+                let lap = built.at(i + 1, j) + built.at(i - 1, j) + built.at(i, j + 1)
+                    + built.at(i, j - 1)
+                    - 4.0 * built.at(i, j);
+                assert!(lap.abs() < 1e-12, "Laplacian {lap} at ({i},{j})");
+            }
+        }
+        *built.at_mut(5, 6) += 7.0;
+        assert!((built.at(5, 6) - (reference.at(5, 6) + 7.0)).abs() < 1e-15);
+        let lap = built.at(6, 6) + built.at(4, 6) + built.at(5, 7) + built.at(5, 5)
+            - 4.0 * built.at(5, 6);
+        assert!((lap + 28.0).abs() < 1e-12, "perturbed Laplacian {lap}");
+    }
 }

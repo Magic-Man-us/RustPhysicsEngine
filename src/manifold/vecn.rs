@@ -1014,4 +1014,133 @@ mod tests {
         let m = Matrix::from_rows(&[&[2.0, 1.0], &[1.0, 3.0]]).unwrap();
         assert!((determinant_n(&m) - 5.0).abs() < 1e-12);
     }
+
+    #[test]
+    fn test_vecn_add_sub_operators() {
+        let a = VecN::from(&[1.0, -2.0, 3.5, 0.0]);
+        let b = VecN::from(&[0.5, 4.0, -1.25, 7.0]);
+        // (a + b) - b = a exactly: these values are dyadic, so the roundtrip
+        // is bit-exact in binary floating point
+        let round = (a.clone() + b.clone()) - b.clone();
+        for (x, y) in round.data.iter().zip(&a.data) {
+            assert!((x - y).abs() == 0.0, "{x} vs {y}");
+        }
+        // and (a + b) - a = b
+        let round2 = (a.clone() + b.clone()) - a.clone();
+        for (x, y) in round2.data.iter().zip(&b.data) {
+            assert!((x - y).abs() == 0.0);
+        }
+        // the operators agree with the named methods
+        for (x, y) in (a.clone() + b.clone()).data.iter().zip(&a.add(&b).data) {
+            assert!((x - y).abs() == 0.0);
+        }
+        for (x, y) in (a.clone() - b.clone()).data.iter().zip(&a.sub(&b).data) {
+            assert!((x - y).abs() == 0.0);
+        }
+        // addition is commutative, subtraction anticommutes
+        let ab = a.clone() + b.clone();
+        let ba = b.clone() + a.clone();
+        assert!(ab.data.iter().zip(&ba.data).all(|(x, y)| (x - y).abs() == 0.0));
+        let diff = a.clone() - b.clone();
+        let rdiff = -(b.clone() - a.clone());
+        assert!(diff.data.iter().zip(&rdiff.data).all(|(x, y)| (x - y).abs() == 0.0));
+        // zero is the additive unit and x - x = 0
+        let z = VecN::zeros(4);
+        assert!((a.clone() + z.clone()).data.iter().zip(&a.data).all(|(x, y)| x == y));
+        assert!((a.clone() - a.clone()).norm() == 0.0);
+        // distributivity of the scalar product over the sum
+        let k = 2.5;
+        let lhs = (a.clone() + b.clone()) * k;
+        let rhs = a.clone() * k + b.clone() * k;
+        for (x, y) in lhs.data.iter().zip(&rhs.data) {
+            assert!((x - y).abs() < 1e-15);
+        }
+        // the triangle inequality holds for the induced norm
+        assert!(ab.norm() <= a.norm() + b.norm() + 1e-15);
+        // polarization identity: |a+b|^2 + |a-b|^2 = 2|a|^2 + 2|b|^2
+        let lhs = ab.norm().powi(2) + diff.norm().powi(2);
+        let rhs = 2.0 * a.norm().powi(2) + 2.0 * b.norm().powi(2);
+        assert!((lhs - rhs).abs() < 1e-12, "parallelogram law: {lhs} vs {rhs}");
+    }
+
+    #[test]
+    fn test_tensor_ones_size_kronecker_map() {
+        // --- ones / size ---------------------------------------------------
+        let ones = TensorN::ones(&[2, 3, 4]);
+        assert_eq!(ones.size(), 24);
+        assert_eq!(ones.size(), ones.data.len());
+        assert_eq!(ones.size(), ones.shape.iter().product::<usize>());
+        assert!((ones.data.iter().sum::<f64>() - 24.0).abs() < 1e-12);
+        // |ones|_F = sqrt(size)
+        assert!((ones.norm_frobenius() - 24.0_f64.sqrt()).abs() < 1e-12);
+        // contracting a rank-2 all-ones tensor over its two axes gives n
+        let flat = TensorN::ones(&[5, 5]).contract(0, 1);
+        assert_eq!(flat.rank(), 0);
+        assert!((flat.data[0] - 5.0).abs() < 1e-15);
+        // contracting with an all-ones vector sums over that axis
+        let m = Matrix::from_fn(3, 3, |i, j| (i as f64) - 2.0 * (j as f64) + 0.5);
+        let tm = TensorN::from_matrix(&m);
+        assert_eq!(tm.size(), 9);
+        let row_sums = TensorN::einsum("ij,j->i", &[&tm, &TensorN::ones(&[3])]).unwrap();
+        for i in 0..3 {
+            let exact: f64 = (0..3).map(|j| m.get(i, j)).sum();
+            assert!((row_sums.get(&[i]) - exact).abs() < 1e-14, "row {i}");
+        }
+
+        // --- kronecker delta ------------------------------------------------
+        let d = TensorN::kronecker(4);
+        assert_eq!(d.shape, vec![4, 4]);
+        assert_eq!(d.size(), 16);
+        for i in 0..4 {
+            for j in 0..4 {
+                let want = if i == j { 1.0 } else { 0.0 };
+                assert!((d.get(&[i, j]) - want).abs() == 0.0);
+            }
+        }
+        // delta^i_i = n
+        assert!((d.contract(0, 1).data[0] - 4.0).abs() < 1e-15);
+        // delta is the identity of index contraction: delta_ij T_jk = T_ik
+        let d3 = TensorN::kronecker(3);
+        let prod = TensorN::einsum("ij,jk->ik", &[&d3, &tm]).unwrap();
+        for i in 0..3 {
+            for j in 0..3 {
+                assert!((prod.get(&[i, j]) - tm.get(&[i, j])).abs() < 1e-14);
+            }
+        }
+        // it also contracts a tensor index down to the trace: delta_ij T_ij
+        let tr = TensorN::einsum("ij,ij->", &[&d3, &tm]).unwrap();
+        let exact_tr: f64 = (0..3).map(|i| m.get(i, i)).sum();
+        assert!((tr.data[0] - exact_tr).abs() < 1e-14);
+        // and matches the rank-2 identity constructor
+        assert_eq!(d3, TensorN::identity_2(3));
+
+        // --- map -------------------------------------------------------------
+        // map is applied componentwise and preserves the shape
+        let sq = tm.map(|v| v * v);
+        assert_eq!(sq.shape, tm.shape);
+        assert!((sq.data.iter().sum::<f64>() - tm.norm_frobenius().powi(2)).abs() < 1e-12);
+        // scaling through map agrees with scale
+        let scaled = tm.map(|v| 2.5 * v);
+        for (a, b) in scaled.data.iter().zip(&tm.scale(2.5).data) {
+            assert!((a - b).abs() < 1e-15);
+        }
+        // map composes: exp then ln is the identity
+        let round = tm.map(f64::exp).map(f64::ln);
+        for (a, b) in round.data.iter().zip(&tm.data) {
+            assert!((a - b).abs() < 1e-12, "{a} vs {b}");
+        }
+        // squaring the Levi-Civita symbol counts the permutations: the
+        // entries are +-1 on the n! permutations and 0 elsewhere
+        for n in 2..=4 {
+            let sq = TensorN::levi_civita(n).map(|v| v * v);
+            let nfact: f64 = (1..=n).map(|v| v as f64).product();
+            assert!((sq.data.iter().sum::<f64>() - nfact).abs() < 1e-12, "n = {n}");
+            assert!(sq.data.iter().all(|&v| v == 0.0 || (v - 1.0).abs() < 1e-15));
+        }
+        // map is enough to turn the all-ones tensor into any constant field:
+        // its contraction with the delta is then n times that constant
+        let threes = TensorN::ones(&[3, 3]).map(|v| 3.0 * v);
+        let c = TensorN::einsum("ij,ij->", &[&d3, &threes]).unwrap();
+        assert!((c.data[0] - 9.0).abs() < 1e-14);
+    }
 }

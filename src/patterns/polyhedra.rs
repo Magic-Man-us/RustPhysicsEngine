@@ -1617,6 +1617,170 @@ mod tests {
     }
 
     #[test]
+    fn test_conway_dual_swaps_vertices_and_faces() {
+        // The dual of a cube is an octahedron: V and F swap, E is
+        // preserved, and the face sizes become the vertex degrees.
+        let c = cube();
+        let d = conway_dual(&c);
+        assert_eq!(d.vertices.len(), c.faces.len(), "V(dual) = F(original)");
+        assert_eq!(d.faces.len(), c.vertices.len(), "F(dual) = V(original)");
+        assert_eq!(d.edges().len(), c.edges().len(), "E is preserved");
+        assert_eq!((d.vertices.len(), d.edges().len(), d.faces.len()), (6, 12, 8));
+        assert_eq!(d.euler(), 2);
+        // Every face of the cube's dual is a triangle (the cube's
+        // vertices are 3-valent) and the vertices are the face centres
+        // of the cube: the six unit axis points ±1 on one coordinate.
+        assert!(d.faces.iter().all(|f| f.len() == 3), "octahedral faces");
+        let mut coords: Vec<(i64, i64, i64)> = d
+            .vertices
+            .iter()
+            .map(|v| {
+                (
+                    (v.x * 1e9).round() as i64,
+                    (v.y * 1e9).round() as i64,
+                    (v.z * 1e9).round() as i64,
+                )
+            })
+            .collect();
+        coords.sort_unstable();
+        let mut expected = vec![
+            (-1_000_000_000i64, 0i64, 0i64),
+            (1_000_000_000, 0, 0),
+            (0, -1_000_000_000, 0),
+            (0, 1_000_000_000, 0),
+            (0, 0, -1_000_000_000),
+            (0, 0, 1_000_000_000),
+        ];
+        expected.sort_unstable();
+        assert_eq!(coords, expected, "dual vertices are the cube's face centres");
+        // It really is a regular octahedron: all edges equal, faces
+        // regular, and it matches the crate's octahedron up to scale.
+        let lens = edge_lengths(&d);
+        assert!(lens.iter().all(|l| (l - lens[0]).abs() < 1e-12), "equal edges");
+        assert!(faces_regular(&d, 1e-12));
+        assert!((d.volume() - octahedron().volume()).abs() < 1e-12);
+        assert!(d.is_convex());
+
+        // conway_dual is exactly Polyhedron::dual, and dualizing twice
+        // restores the combinatorics on every Platonic solid.
+        for p in [tetrahedron(), cube(), octahedron(), dodecahedron(), icosahedron()] {
+            assert_eq!(conway_dual(&p), p.dual());
+            let dd = conway_dual(&conway_dual(&p));
+            assert_eq!(dd.vertices.len(), p.vertices.len());
+            assert_eq!(dd.faces.len(), p.faces.len());
+            assert_eq!(dd.edges().len(), p.edges().len());
+            assert_eq!(dd.euler(), p.euler());
+            // The dual's face-size multiset is the original's vertex
+            // degree multiset.
+            let mut degrees = vec![0usize; p.vertices.len()];
+            for f in &p.faces {
+                for &v in f {
+                    degrees[v] += 1;
+                }
+            }
+            degrees.sort_unstable();
+            let mut dual_face_sizes: Vec<usize> =
+                conway_dual(&p).faces.iter().map(Vec::len).collect();
+            dual_face_sizes.sort_unstable();
+            assert_eq!(dual_face_sizes, degrees);
+        }
+        // The tetrahedron is self-dual: same counts as itself.
+        let t = tetrahedron();
+        let td = conway_dual(&t);
+        assert_eq!(td.vertices.len(), t.vertices.len());
+        assert_eq!(td.faces.len(), t.faces.len());
+    }
+
+    #[test]
+    fn test_surface_area_closed_forms() {
+        // Cube of edge a: 6a². The crate's cube has edge 2.
+        let c = cube();
+        let a = c.vertices[c.edges()[0].0].distance_to(&c.vertices[c.edges()[0].1]);
+        assert!((a - 2.0).abs() < 1e-15, "cube edge {a}");
+        assert!((c.surface_area() - 6.0 * a * a).abs() < 1e-12, "6a^2");
+        assert!((c.surface_area() - 24.0).abs() < 1e-12);
+        // Scaling every vertex by k scales the area by k².
+        for k in [0.5_f64, 3.0] {
+            let scaled = Polyhedron {
+                vertices: c.vertices.iter().map(|v| *v * k).collect(),
+                faces: c.faces.clone(),
+            };
+            assert!(
+                (scaled.surface_area() - k * k * c.surface_area()).abs() < 1e-9,
+                "area scales as k^2 (k = {k})"
+            );
+        }
+        // Regular tetrahedron of edge e: √3·e².
+        let t = tetrahedron();
+        let e = t.vertices[t.edges()[0].0].distance_to(&t.vertices[t.edges()[0].1]);
+        assert!((t.surface_area() - 3.0f64.sqrt() * e * e).abs() < 1e-12);
+        // Regular octahedron of edge e: 2√3·e².
+        let o = octahedron();
+        let e = o.vertices[o.edges()[0].0].distance_to(&o.vertices[o.edges()[0].1]);
+        assert!((o.surface_area() - 2.0 * 3.0f64.sqrt() * e * e).abs() < 1e-12);
+        // Regular icosahedron of edge e: 5√3·e².
+        let ico = icosahedron();
+        let e = ico.vertices[ico.edges()[0].0].distance_to(&ico.vertices[ico.edges()[0].1]);
+        assert!((ico.surface_area() - 5.0 * 3.0f64.sqrt() * e * e).abs() < 1e-9);
+        // Regular dodecahedron of edge e: 3√(25 + 10√5)·e².
+        let dod = dodecahedron();
+        let e = dod.vertices[dod.edges()[0].0].distance_to(&dod.vertices[dod.edges()[0].1]);
+        let expect = 3.0 * (25.0 + 10.0 * 5.0f64.sqrt()).sqrt() * e * e;
+        assert!(
+            (dod.surface_area() - expect).abs() < 1e-9,
+            "dodecahedron {} vs {expect}",
+            dod.surface_area()
+        );
+        // The area agrees with the triangulated mesh it delegates to.
+        assert!((c.surface_area() - c.to_mesh().surface_area()).abs() < 1e-15);
+    }
+
+    #[test]
+    fn test_normalize_places_vertices_on_a_sphere() {
+        for p in [cube(), icosahedron(), dodecahedron(), archimedean(ArchimedeanSolid::Cuboctahedron)]
+        {
+            for r in [1.0_f64, 0.25, 7.5] {
+                let n = p.normalize(r);
+                // Every vertex lands exactly on the sphere of radius r.
+                for v in &n.vertices {
+                    assert!(
+                        (v.magnitude() - r).abs() < 1e-12,
+                        "vertex at {} not on radius {r}",
+                        v.magnitude()
+                    );
+                }
+                // Combinatorics are untouched.
+                assert_eq!(n.faces, p.faces);
+                assert_eq!(n.vertices.len(), p.vertices.len());
+                assert_eq!(n.edges(), p.edges());
+                assert_eq!(n.euler(), p.euler());
+                // Directions are preserved (pure radial rescale).
+                for (a, b) in n.vertices.iter().zip(&p.vertices) {
+                    let cos = a.dot(b) / (a.magnitude() * b.magnitude());
+                    assert!((cos - 1.0).abs() < 1e-12, "direction preserved");
+                }
+                // Normalizing a vertex-transitive solid twice is a
+                // no-op after the first pass.
+                let again = n.normalize(r);
+                for (a, b) in again.vertices.iter().zip(&n.vertices) {
+                    assert!((*a - *b).magnitude() < 1e-12, "idempotent");
+                }
+            }
+        }
+        // For the cube (circumradius √3 at edge 2) normalizing to 1
+        // shrinks every vertex by exactly 1/√3.
+        let c = cube();
+        let n = c.normalize(1.0);
+        for (a, b) in n.vertices.iter().zip(&c.vertices) {
+            assert!(((*b * (1.0 / 3.0f64.sqrt())) - *a).magnitude() < 1e-15);
+        }
+        // Area and volume follow the (r/R)² and (r/R)³ scalings.
+        let ratio = 1.0 / 3.0f64.sqrt();
+        assert!((n.surface_area() - ratio * ratio * c.surface_area()).abs() < 1e-12);
+        assert!((n.volume() - ratio.powi(3) * c.volume()).abs() < 1e-12);
+    }
+
+    #[test]
     fn test_truncated_cube_counts() {
         let tc = truncate(&cube(), 1.0 / 3.0);
         assert_eq!(tc.faces.len(), 14);

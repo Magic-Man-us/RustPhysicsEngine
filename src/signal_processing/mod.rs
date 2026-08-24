@@ -140,7 +140,7 @@ pub fn median_filter(signal: &[f64], window_size: usize) -> Vec<f64> {
     let mut output = Vec::with_capacity(signal.len());
     let mut window_buf = Vec::with_capacity(window_size);
     for i in 0..signal.len() {
-        let start = if i >= half { i - half } else { 0 };
+        let start = i.saturating_sub(half);
         let end = (i + half + 1).min(signal.len());
         window_buf.clear();
         window_buf.extend_from_slice(&signal[start..end]);
@@ -356,7 +356,7 @@ mod tests {
         normalize_signal(&mut signal);
         assert!(approx(signal[1], -1.0));
         for &s in &signal {
-            assert!(s >= -1.0 - TOLERANCE && s <= 1.0 + TOLERANCE);
+            assert!((-1.0 - TOLERANCE..=1.0 + TOLERANCE).contains(&s));
         }
     }
 
@@ -615,7 +615,7 @@ mod tests {
         let amp = 1.0;
         let wave = sine_wave(100.0, 44100.0, 1.0, amp);
         let rms = rms_level(&wave);
-        assert!(approx_rel(rms, 0.707_106_781_186_547_6, 0.01));
+        assert!(approx_rel(rms, std::f64::consts::FRAC_1_SQRT_2, 0.01));
     }
 
     #[test]
@@ -646,7 +646,7 @@ mod tests {
         // Crest factor of a sine wave = sqrt(2) ≈ 1.414
         let wave = sine_wave(100.0, 44100.0, 1.0, 1.0);
         let cf = crest_factor(&wave);
-        assert!(approx_rel(cf, 1.414_213_562_373_095, 0.01));
+        assert!(approx_rel(cf, std::f64::consts::SQRT_2, 0.01));
     }
 
     #[test]

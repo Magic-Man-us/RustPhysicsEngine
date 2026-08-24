@@ -576,6 +576,72 @@ mod tests {
     }
 
     #[test]
+    fn test_hilbert_curve_3d_is_a_hamiltonian_path_on_the_unit_cube() {
+        for order in 1..=4u32 {
+            let n = 1u64 << order;
+            let scale = 1.0 / n as f64;
+            let pts = hilbert_curve_3d(order);
+            // 8^order cell centres, in curve order.
+            assert_eq!(pts.len(), (n * n * n) as usize, "order {order} length");
+            let cell = |p: Vec3| {
+                (
+                    (p.x * n as f64 - 0.5).round() as i64,
+                    (p.y * n as f64 - 0.5).round() as i64,
+                    (p.z * n as f64 - 0.5).round() as i64,
+                )
+            };
+            let mut seen = std::collections::HashSet::new();
+            let mut prev: Option<(i64, i64, i64)> = None;
+            for &p in &pts {
+                // Every point is the centre of its cell, inside the
+                // unit cube.
+                for c in [p.x, p.y, p.z] {
+                    assert!(c > 0.0 && c < 1.0, "order {order}: {c} outside the cube");
+                    let cells = c / scale - 0.5;
+                    assert!(
+                        (cells - cells.round()).abs() < 1e-12,
+                        "order {order}: {c} is not a cell centre"
+                    );
+                }
+                let c = cell(p);
+                assert!(
+                    (0..n as i64).contains(&c.0)
+                        && (0..n as i64).contains(&c.1)
+                        && (0..n as i64).contains(&c.2),
+                    "order {order}: cell {c:?} out of range"
+                );
+                assert!(seen.insert(c), "order {order}: cell {c:?} visited twice");
+                if let Some(q) = prev {
+                    // Consecutive cells are face neighbours: Manhattan
+                    // distance exactly one cell.
+                    let manhattan =
+                        (c.0 - q.0).abs() + (c.1 - q.1).abs() + (c.2 - q.2).abs();
+                    assert_eq!(manhattan, 1, "order {order}: {q:?} -> {c:?}");
+                }
+                prev = Some(c);
+            }
+            // Set equality with the full grid: every cell visited once.
+            assert_eq!(seen.len(), (n * n * n) as usize);
+            // Consecutive world-space points are one cell apart.
+            for w in pts.windows(2) {
+                let d = (w[0].x - w[1].x).abs()
+                    + (w[0].y - w[1].y).abs()
+                    + (w[0].z - w[1].z).abs();
+                assert!((d - scale).abs() < 1e-12, "order {order}: step {d}");
+            }
+            // Index roundtrip against the scalar curve functions.
+            for (d, &p) in pts.iter().enumerate() {
+                let (x, y, z) = cell(p);
+                assert_eq!(
+                    hilbert_3d_xyz2d(order, x as u64, y as u64, z as u64),
+                    d as u64,
+                    "order {order} index {d}"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn test_peano_visits_all_cells_connectedly() {
         for order in 1..=3u32 {
             let side = 3u64.pow(order);

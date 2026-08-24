@@ -1275,6 +1275,272 @@ mod tests {
     }
 
     #[test]
+    fn test_lorentz_identity_and_boost_x() {
+        // identity acts trivially and is a Lorentz transform
+        let id = LorentzTransform::identity();
+        assert!(id.is_lorentz(1e-15));
+        let mut rng = Rng::new(4242);
+        for _ in 0..5 {
+            let v = FourVector::new(
+                rng.next_gaussian(),
+                Vec3::new(rng.next_gaussian(), rng.next_gaussian(), rng.next_gaussian()),
+            );
+            let out = id.apply(v);
+            assert!((out.t - v.t).abs() < 1e-15 && (out.x - v.x).magnitude() < 1e-15);
+        }
+        // boost_x(beta) is the boost along +x, with the closed-form matrix
+        let beta = 0.6_f64;
+        let gamma = 1.0 / (1.0 - beta * beta).sqrt();
+        let bx = LorentzTransform::boost_x(beta);
+        let bv = LorentzTransform::boost(Vec3::new(beta, 0.0, 0.0));
+        for i in 0..4 {
+            for j in 0..4 {
+                assert!(
+                    (bx.0.data[i][j] - bv.0.data[i][j]).abs() < 1e-15,
+                    "boost_x vs boost at {i},{j}"
+                );
+            }
+        }
+        let want = [
+            [gamma, gamma * beta, 0.0, 0.0],
+            [gamma * beta, gamma, 0.0, 0.0],
+            [0.0, 0.0, 1.0, 0.0],
+            [0.0, 0.0, 0.0, 1.0],
+        ];
+        for i in 0..4 {
+            for j in 0..4 {
+                assert!(
+                    (bx.0.data[i][j] - want[i][j]).abs() < 1e-14,
+                    "boost_x matrix at {i},{j}: {}",
+                    bx.0.data[i][j]
+                );
+            }
+        }
+        assert!(bx.is_lorentz(1e-12));
+        // a particle at rest is taken to three-velocity beta
+        let moved = bx.apply(FourVector::new(1.0, Vec3::new(0.0, 0.0, 0.0)));
+        assert!((moved.t - gamma).abs() < 1e-14);
+        assert!((moved.x - Vec3::new(gamma * beta, 0.0, 0.0)).magnitude() < 1e-14);
+        // zero speed degenerates to the identity, and inverse boosts cancel
+        let zero = LorentzTransform::boost_x(0.0);
+        for i in 0..4 {
+            for j in 0..4 {
+                let e = if i == j { 1.0 } else { 0.0 };
+                assert!((zero.0.data[i][j] - e).abs() < 1e-15);
+            }
+        }
+        let round = LorentzTransform::boost_x(-beta).compose(&bx);
+        for i in 0..4 {
+            for j in 0..4 {
+                let e = if i == j { 1.0 } else { 0.0 };
+                assert!((round.0.data[i][j] - e).abs() < 1e-12, "B(-b) B(b) = I");
+            }
+        }
+        // collinear boosts add rapidities
+        let b1 = LorentzTransform::boost_x(0.3);
+        let b2 = LorentzTransform::boost_x(0.5);
+        let comp = b1.compose(&b2);
+        let want_beta = (0.3_f64.atanh() + 0.5_f64.atanh()).tanh();
+        let img = comp.apply(FourVector::new(1.0, Vec3::new(0.0, 0.0, 0.0)));
+        assert!(
+            (img.x.x / img.t - want_beta).abs() < 1e-12,
+            "rapidity addition {} vs {want_beta}",
+            img.x.x / img.t
+        );
+    }
+
+    #[test]
+    fn test_fourvector_causal_predicates_and_ops() {
+        let timelike = FourVector::new(2.0, Vec3::new(1.0, 0.0, 0.0));
+        let spacelike = FourVector::new(0.5, Vec3::new(1.0, 0.0, 0.0));
+        let null = FourVector::new(1.0, Vec3::new(0.6, 0.8, 0.0));
+        // the three predicates partition the sample consistently with the
+        // sign of the invariant norm
+        for v in [timelike, spacelike, null] {
+            let s2 = v.norm_squared();
+            assert_eq!(v.is_timelike(), s2 > 0.0);
+            assert_eq!(v.is_spacelike(), s2 < 0.0);
+            assert!(!(v.is_timelike() && v.is_spacelike()));
+        }
+        assert!(timelike.is_timelike() && !timelike.is_null(1e-12));
+        assert!(spacelike.is_spacelike() && !spacelike.is_null(1e-12));
+        assert!(null.is_null(1e-12) && !null.is_timelike() && !null.is_spacelike());
+        assert!((null.norm_squared()).abs() < 1e-15);
+        // the classification is boost-invariant
+        let v = Vec3::new(0.4, -0.2, 0.1);
+        assert!(timelike.boost(v).is_timelike());
+        assert!(spacelike.boost(v).is_spacelike());
+        assert!(null.boost(v).is_null(1e-12));
+        // four-velocities are timelike and unit; photon momenta are null
+        assert!(FourVector::from_velocity(Vec3::new(0.9, 0.0, 0.0)).is_timelike());
+        // spatial_momentum is the vector part, and E^2 - |p|^2 = m^2
+        let p = FourVector::from_momentum(3.0, Vec3::new(0.5, -0.25, 0.0));
+        assert!((p.spatial_momentum() - p.x).magnitude() < 1e-15);
+        assert!(
+            (p.energy().powi(2) - p.spatial_momentum().magnitude_squared() - 9.0).abs() < 1e-12,
+            "mass shell"
+        );
+        // Add is componentwise and interacts linearly with the Minkowski dot
+        let a = FourVector::new(1.5, Vec3::new(0.3, -0.7, 2.0));
+        let b = FourVector::new(-0.5, Vec3::new(1.0, 0.25, -0.5));
+        let sum = a + b;
+        assert!((sum.t - 1.0).abs() < 1e-15);
+        assert!((sum.x - Vec3::new(1.3, -0.45, 1.5)).magnitude() < 1e-15);
+        assert!(((sum - b).t - a.t).abs() < 1e-15 && ((sum - b).x - a.x).magnitude() < 1e-15);
+        let c = FourVector::new(0.2, Vec3::new(0.1, 0.2, 0.3));
+        assert!(
+            ((a + b).minkowski_dot(&c) - a.minkowski_dot(&c) - b.minkowski_dot(&c)).abs() < 1e-14,
+            "Minkowski dot is additive"
+        );
+        // boosting is linear over addition too
+        let boosted = (a + b).boost(v);
+        let sep = a.boost(v) + b.boost(v);
+        assert!((boosted.t - sep.t).abs() < 1e-12 && (boosted.x - sep.x).magnitude() < 1e-12);
+        // minkowski_dot_sig: MostlyPlus is the negative of MostlyMinus
+        let dm = a.minkowski_dot_sig(&b, Sig::MostlyMinus);
+        let dp = a.minkowski_dot_sig(&b, Sig::MostlyPlus);
+        assert!((dm - a.minkowski_dot(&b)).abs() < 1e-15);
+        assert!((dm + dp).abs() < 1e-15, "signature flip");
+        assert!(
+            (dp - (-a.t * b.t + a.x.dot(&b.x))).abs() < 1e-15,
+            "mostly-plus form"
+        );
+        // proper_time_to is the square root of the timelike interval and is
+        // boost-invariant; spacelike separations give zero
+        let o = FourVector::new(0.0, Vec3::new(0.0, 0.0, 0.0));
+        let ev = FourVector::new(2.0, Vec3::new(1.2, 0.0, 0.0));
+        let tau = o.proper_time_to(&ev);
+        assert!((tau - (4.0_f64 - 1.44).sqrt()).abs() < 1e-14, "proper time {tau}");
+        assert!((tau * tau - (ev - o).norm_squared()).abs() < 1e-13);
+        assert!(
+            (o.boost(v).proper_time_to(&ev.boost(v)) - tau).abs() < 1e-12,
+            "proper time invariant"
+        );
+        let spacelike_tau = o.proper_time_to(&FourVector::new(0.1, Vec3::new(1.0, 0.0, 0.0)));
+        assert!(spacelike_tau.abs() < 1e-300, "spacelike proper time clamped");
+        // a clock moving at speed 0.6 for coordinate time 1 ages 0.8
+        let worldline = FourVector::new(1.0, Vec3::new(0.6, 0.0, 0.0));
+        assert!((o.proper_time_to(&worldline) - 0.8).abs() < 1e-14);
+        // rotate preserves t and |x| and agrees with the So3 action
+        let r = So3::exp(Vec3::new(0.2, -0.5, 0.7));
+        let rot = a.rotate(&r);
+        assert!((rot.t - a.t).abs() < 1e-15, "time untouched");
+        assert!(
+            (rot.x.magnitude() - a.x.magnitude()).abs() < 1e-13,
+            "spatial length preserved"
+        );
+        assert!((rot.norm_squared() - a.norm_squared()).abs() < 1e-13);
+        let via_matrix = LorentzTransform::rotation(&r).apply(a);
+        assert!((rot.t - via_matrix.t).abs() < 1e-15);
+        assert!((rot.x - via_matrix.x).magnitude() < 1e-13, "rotate vs matrix");
+    }
+
+    #[test]
+    fn test_kaluza_klein_and_schwarzschild_metrics() {
+        // constant dilaton with no gauge field: g55 = (radius phi)^2 and the
+        // 4D block is untouched
+        let radius = 2.5;
+        let phi_const = 0.75;
+        let g5 = kaluza_klein_metric(
+            Metric::minkowski(4, Sig::MostlyPlus),
+            |_: &VecN| VecN::zeros(4),
+            move |_: &VecN| phi_const,
+            radius,
+        );
+        let p = VecN::from(&[0.3, 1.0, -0.5, 2.0, 0.1]);
+        let g = (g5.g)(&p);
+        assert!(
+            (g.get(4, 4) - (radius * phi_const).powi(2)).abs() < 1e-14,
+            "g55 = (R phi)^2: {}",
+            g.get(4, 4)
+        );
+        for mu in 0..4 {
+            assert!(g.get(4, mu).abs() < 1e-15 && g.get(mu, 4).abs() < 1e-15, "A = 0");
+            let want = if mu == 0 { -1.0 } else { 1.0 };
+            assert!((g.get(mu, mu) - want).abs() < 1e-15, "4D block preserved");
+        }
+        // a nontrivial dilaton and gauge potential: check every block
+        // against the closed form, and symmetry of the 5D metric
+        let e_field = 0.3;
+        let a_fn = move |q: &VecN| {
+            let mut a = VecN::zeros(4);
+            a.data[0] = -e_field * q[1];
+            a.data[2] = 0.2 * q[3];
+            a
+        };
+        let phi_fn = |q: &VecN| 1.0 + 0.1 * q[1] * q[1];
+        let g5b = kaluza_klein_metric(
+            Metric::minkowski(4, Sig::MostlyPlus),
+            a_fn,
+            phi_fn,
+            radius,
+        );
+        let gb = (g5b.g)(&p);
+        let p4 = VecN::from(&p.data[..4]);
+        let phi2 = phi_fn(&p4) * phi_fn(&p4);
+        let av = {
+            let mut a = VecN::zeros(4);
+            a.data[0] = -e_field * p4[1];
+            a.data[2] = 0.2 * p4[3];
+            a
+        };
+        assert!((gb.get(4, 4) - phi2 * radius * radius).abs() < 1e-14);
+        for mu in 0..4 {
+            assert!(
+                (gb.get(4, mu) - phi2 * av[mu] * radius).abs() < 1e-14,
+                "g_5mu at {mu}"
+            );
+            assert!((gb.get(4, mu) - gb.get(mu, 4)).abs() < 1e-15, "symmetry");
+            for nu in 0..4 {
+                let flat = if mu == nu {
+                    if mu == 0 { -1.0 } else { 1.0 }
+                } else {
+                    0.0
+                };
+                assert!(
+                    (gb.get(mu, nu) - (flat + phi2 * av[mu] * av[nu])).abs() < 1e-14,
+                    "g_munu at {mu},{nu}"
+                );
+                assert!((gb.get(mu, nu) - gb.get(nu, mu)).abs() < 1e-15);
+            }
+        }
+        // Schwarzschild as a Metric: exact components and the flat limit
+        let m = 1.0;
+        let met = schwarzschild_geodesic_metric(m);
+        assert_eq!(met.dim, 4);
+        for &r in &[3.0_f64, 10.0, 1e6] {
+            let theta = PI / 3.0;
+            let gm = (met.g)(&VecN::from(&[0.0, r, theta, 0.0]));
+            let f = 1.0 - 2.0 * m / r;
+            assert!((gm.get(0, 0) + f).abs() < 1e-12, "g_tt at r={r}");
+            assert!((gm.get(1, 1) - 1.0 / f).abs() < 1e-12, "g_rr at r={r}");
+            assert!((gm.get(2, 2) - r * r).abs() < 1e-9 * r * r, "g_thth");
+            assert!(
+                (gm.get(3, 3) - r * r * theta.sin().powi(2)).abs() < 1e-9 * r * r,
+                "g_phph"
+            );
+            assert!(
+                (gm.get(0, 0) * gm.get(1, 1) + 1.0).abs() < 1e-12,
+                "g_tt g_rr = -1"
+            );
+            for i in 0..4 {
+                for j in 0..4 {
+                    if i != j {
+                        assert!(gm.get(i, j).abs() < 1e-15, "diagonal metric");
+                    }
+                }
+            }
+        }
+        // far field is Minkowski (-,+) in the t, r block
+        let far = (met.g)(&VecN::from(&[0.0, 1e9, PI / 2.0, 0.0]));
+        assert!((far.get(0, 0) + 1.0).abs() < 1e-8, "g_tt -> -1");
+        assert!((far.get(1, 1) - 1.0).abs() < 1e-8, "g_rr -> 1");
+        // and the horizon is where g_tt vanishes
+        let hor = (met.g)(&VecN::from(&[0.0, 2.0 * m, PI / 2.0, 0.0]));
+        assert!(hor.get(0, 0).abs() < 1e-15, "g_tt(2M) = 0");
+    }
+
+    #[test]
     fn test_frw_geodesic() {
         // static universe (a = 1): radial geodesics are straight lines
         fn a_one(_t: f64) -> f64 {

@@ -438,7 +438,8 @@ pub fn pulsar_synthesis(f0: f64, formant: f64, duty: f64, n: usize, fs: f64) -> 
             if ph < duty {
                 let u = ph / duty;
                 let window = 0.5 * (1.0 - (TWO_PI * u).cos());
-                window * (TWO_PI * formant / f0 * u * duty * period / fs * fs / 1.0).sin()
+                // Elapsed time inside the pulsaret is u·duty/f0 seconds.
+                window * (TWO_PI * formant / f0 * u * duty).sin()
             } else {
                 0.0
             }
@@ -970,6 +971,265 @@ mod tests {
         let m = mix(&[vec![1.0; 10], vec![1.0; 20]], &[0.5, 0.25]);
         assert_eq!(m.len(), 20);
         assert!((m[0] - 0.75).abs() < 1e-12 && (m[15] - 0.25).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_waveshaper_identity_and_cubic_harmonics() {
+        // The identity shaping function is a no-op for every input.
+        for &x in &[-2.0_f64, -0.5, 0.0, 0.25, 1.0, 7.5] {
+            assert_eq!(waveshaper(x, &|v| v), x);
+        }
+        // A hard clipper bounds the output and passes its linear region
+        // through untouched.
+        let clip = |v: f64| v.clamp(-0.5, 0.5);
+        for i in 0..=200 {
+            let x = -2.0 + 4.0 * i as f64 / 200.0;
+            let y = waveshaper(x, &clip);
+            assert!(y.abs() <= 0.5 + 1e-12, "clip {x} -> {y}");
+            if x.abs() <= 0.5 {
+                assert!((y - x).abs() < 1e-12);
+            }
+        }
+        // Cubic shaping of a unit cosine has the closed form
+        // cos³θ = (3cosθ + cos3θ)/4: exactly 0.75 at the fundamental,
+        // 0.25 at the third harmonic, nothing anywhere else.
+        let fs = 8192.0;
+        let n = 8192;
+        let f0 = 256.0;
+        let y: Vec<f64> = (0..n)
+            .map(|i| waveshaper((TWO_PI * f0 * i as f64 / fs).cos(), &|v| v * v * v))
+            .collect();
+        let spec = rfft(&y);
+        let mag_at = |f: f64| 2.0 * spec[(f * n as f64 / fs).round() as usize].norm() / n as f64;
+        assert!((mag_at(f0) - 0.75).abs() < 1e-9, "fundamental {}", mag_at(f0));
+        assert!((mag_at(3.0 * f0) - 0.25).abs() < 1e-9, "3rd {}", mag_at(3.0 * f0));
+        assert!(mag_at(2.0 * f0) < 1e-9, "even harmonic leak");
+        assert!(mag_at(5.0 * f0) < 1e-9, "5th harmonic leak");
+    }
+
+    #[test]
+    fn test_subtractive_lowpass_removes_high_harmonics() {
+        use crate::dsp::iir::{butterworth, IirKind};
+        let fs = 48000.0; // subtractive() is hard-wired to 48 kHz
+        let freq = 200.0;
+        let n = 16384;
+        let mut filter = butterworth(4, IirKind::Lowpass(600.0), fs);
+        // sustain = 1 means the envelope is exactly 1 from the end of the
+        // attack until the gate-off at 0.8n.
+        let mut env = Adsr::new(0.001, 0.001, 1.0, 0.05, fs);
+        let out = subtractive(Waveform::Saw, freq, &mut filter, &mut env, 0.0, n);
+        assert_eq!(out.len(), n);
+        // Independent path: the same PolyBLEP saw through a freshly
+        // designed copy of the same filter must agree sample for sample.
+        let dt = freq / fs;
+        let mut phase = 0.0_f64;
+        let raw: Vec<f64> = (0..n)
+            .map(|_| {
+                let v = polyblep_saw(phase, dt);
+                phase = (phase + dt).rem_euclid(1.0);
+                v
+            })
+            .collect();
+        let mut check = butterworth(4, IirKind::Lowpass(600.0), fs);
+        let filtered = check.process_block(&raw);
+        for i in 100..12000 {
+            assert!(
+                (out[i] - filtered[i]).abs() < 1e-12,
+                "at {i}: {} vs {}",
+                out[i],
+                filtered[i]
+            );
+        }
+        // A 4th-order 600 Hz low-pass is ~42 dB down at 2 kHz and steeper
+        // above, so the filtered saw keeps < 0.1% of the raw saw's energy
+        // there.
+        let band_energy = |x: &[f64]| -> f64 {
+            let spec = rfft(x);
+            let lo = (2000.0 * x.len() as f64 / fs) as usize;
+            spec[lo..].iter().map(|c| c.norm_sq()).sum()
+        };
+        let e_raw = band_energy(&raw[2048..10240]);
+        let e_lp = band_energy(&out[2048..10240]);
+        assert!(e_lp < 1e-3 * e_raw, "high-band energy {e_lp} vs raw {e_raw}");
+        // The fundamental survives essentially untouched (|H(200 Hz)| ≈ 1).
+        let fund = |x: &[f64]| {
+            let spec = rfft(x);
+            2.0 * spec[(freq * x.len() as f64 / fs).round() as usize].norm() / x.len() as f64
+        };
+        let ratio = fund(&out[2048..10240]) / fund(&raw[2048..10240]);
+        let expect = filter.freq_response(freq, fs).norm();
+        assert!((ratio - expect).abs() < 0.02, "fundamental gain {ratio} vs {expect}");
+    }
+
+    #[test]
+    fn test_pulsar_synthesis_duty_cycle_and_formant() {
+        let fs = 48000.0;
+        let f0 = 100.0;
+        let period = 480usize; // fs/f0 exactly
+        let n = 8 * period;
+        let duty = 0.25;
+        let x = pulsar_synthesis(f0, 800.0, duty, n, fs);
+        assert_eq!(x.len(), n);
+        // Every sample whose phase is past the duty cycle is exactly silent.
+        for (i, &v) in x.iter().enumerate() {
+            let ph = (i % period) as f64 / period as f64;
+            if ph >= duty {
+                assert_eq!(v, 0.0, "sample {i} (phase {ph}) should be silent");
+            }
+        }
+        // 3/4 of every period is silent, plus the Hann window's own zero at
+        // the start of each pulsaret.
+        let zeros = x.iter().filter(|&&v| v == 0.0).count();
+        assert_eq!(zeros, 3 * n / 4 + n / period, "{zeros} silent samples");
+        // The pulsaret train is not silent.
+        let rms = (x.iter().map(|v| v * v).sum::<f64>() / n as f64).sqrt();
+        assert!(rms > 0.05, "rms {rms}");
+        // Exactly periodic at the fundamental.
+        for i in 0..(n - period) {
+            assert!((x[i] - x[i + period]).abs() < 1e-12, "period mismatch at {i}");
+        }
+        // The spectrum is a harmonic series of f0 whose envelope peaks at
+        // the formant frequency (here 8 harmonics up).
+        let spec = rfft(&x);
+        let bin_hz = fs / n as f64;
+        let (peak_bin, _) = spec
+            .iter()
+            .enumerate()
+            .skip(1)
+            .max_by(|a, b| a.1.norm().partial_cmp(&b.1.norm()).unwrap())
+            .unwrap();
+        let peak_hz = peak_bin as f64 * bin_hz;
+        assert!((peak_hz - 800.0).abs() < 150.0, "formant peak at {peak_hz} Hz");
+        // Energy lives on multiples of f0 only.
+        for k in 1..30 {
+            let mid = ((k as f64 + 0.5) * f0 / bin_hz).round() as usize;
+            let on = spec[(k as f64 * f0 / bin_hz).round() as usize].norm();
+            assert!(spec[mid].norm() < 1e-9 * on.max(1e-9) + 1e-9, "inter-harmonic {k}");
+        }
+    }
+
+    #[test]
+    fn test_karplus_strong_extended_pitch_and_decay() {
+        let fs = 44100.0;
+        let target = 220.0;
+        let x = karplus_strong_extended(target, 1.0, fs, 0.25, 0.5, 0.99, 0.5);
+        assert_eq!(x.len(), 44100);
+        // Pitch from the autocorrelation of the sustained portion.
+        let seg = &x[4000..24000];
+        let min_lag = (fs / 500.0) as usize;
+        let max_lag = (fs / 100.0) as usize;
+        let mut best = (0usize, f64::MIN);
+        for lag in min_lag..max_lag {
+            let mut acc = 0.0;
+            for i in 0..seg.len() - lag {
+                acc += seg[i] * seg[i + lag];
+            }
+            if acc > best.1 {
+                best = (lag, acc);
+            }
+        }
+        let f_est = fs / best.0 as f64;
+        let cents = 1200.0 * (f_est / target).log2().abs();
+        // The loop is quantized to the rounded period (200 samples) plus
+        // the half-sample delay of the averaging filter, so the achievable
+        // pitch is 219.95 Hz; integer-lag measurement adds ~5 cents.
+        assert!(cents < 25.0, "pitch off by {cents} cents ({f_est} Hz)");
+        // Loop gain 0.99 per round trip over 220 round trips leaves ~11%
+        // of the amplitude: the string decays without dying immediately.
+        let energy = |s: &[f64]| s.iter().map(|v| v * v).sum::<f64>() / s.len() as f64;
+        let early = energy(&x[..4000]);
+        let late = energy(&x[40000..]);
+        assert!(late < 0.2 * early, "no decay: {early} -> {late}");
+        assert!(late > 1e-6 * early, "died too fast: {early} -> {late}");
+        // A faster decay setting really does decay faster.
+        let quick = karplus_strong_extended(target, 1.0, fs, 0.25, 0.5, 0.95, 0.5);
+        assert!(energy(&quick[40000..]) < late, "decay parameter has no effect");
+    }
+
+    #[test]
+    fn test_pm_simple_matches_fm_and_zero_index_is_a_sine() {
+        let fs = 8192.0;
+        let n = 8192;
+        let (fc, fm) = (1024.0, 128.0);
+        // Documented equivalence: phase modulation by a sine is the same
+        // signal as frequency modulation by a sine.
+        assert_eq!(pm_simple(fc, fm, 2.0, n, fs), fm_simple(fc, fm, 2.0, n, fs));
+        // Zero modulation index collapses to the bare carrier sine.
+        let plain = pm_simple(fc, fm, 0.0, n, fs);
+        for (i, &v) in plain.iter().enumerate() {
+            let expect = (TWO_PI * fc * i as f64 / fs).sin();
+            assert!((v - expect).abs() < 1e-12, "at {i}");
+        }
+        let spec = rfft(&plain);
+        let mag_at = |f: f64| 2.0 * spec[(f * n as f64 / fs).round() as usize].norm() / n as f64;
+        assert!((mag_at(fc) - 1.0).abs() < 1e-9, "carrier {}", mag_at(fc));
+        for k in 1..=4 {
+            assert!(mag_at(fc + k as f64 * fm) < 1e-9, "upper sideband {k}");
+            assert!(mag_at(fc - k as f64 * fm) < 1e-9, "lower sideband {k}");
+        }
+        // Parseval: all of the energy is in the carrier bin.
+        let total: f64 = spec.iter().map(|c| c.norm_sq()).sum();
+        let carrier_bin = (fc * n as f64 / fs).round() as usize;
+        assert!(spec[carrier_bin].norm_sq() > 0.999_999 * total, "energy leaked");
+    }
+
+    #[test]
+    fn test_dx7_algorithm_routing_selects_carriers() {
+        // Algorithm 32 is six independent carriers; unknown numbers fall
+        // back to it.
+        let a32 = FmSynth::dx7_algorithm(32);
+        assert_eq!(a32.len(), 6);
+        assert!(a32.iter().all(Vec::is_empty));
+        assert_eq!(FmSynth::dx7_algorithm(200), a32);
+        // Algorithm 1 stacks 2→1 and chains 6→5→4→3.
+        assert_eq!(
+            FmSynth::dx7_algorithm(1),
+            vec![vec![1], vec![], vec![3], vec![4], vec![5], vec![]]
+        );
+        // Algorithm 16 feeds one carrier from a tree.
+        assert_eq!(FmSynth::dx7_algorithm(16)[0], vec![1, 2, 4]);
+
+        // Algorithm 5 is three 2-op stacks, so operators 0, 2 and 4 are the
+        // carriers. Silencing the modulators (index 0) must leave exactly
+        // the three carrier partials, each at 1/3 amplitude.
+        let fs = 8192.0;
+        let freq = 128.0;
+        let env = || {
+            // sustain = 1: the envelope is exactly 1 after ~9 samples.
+            Adsr::new(0.001, 0.001, 1.0, 0.1, fs)
+        };
+        let ops: Vec<FmOperator> = (1..=6)
+            .map(|r| {
+                let index = if r % 2 == 0 { 0.0 } else { 3.0 };
+                FmOperator::new(r as f64, index, env())
+            })
+            .collect();
+        let mut synth = FmSynth::new(ops, FmSynth::dx7_algorithm(5), fs);
+        synth.note_on(freq);
+        let n = 8192;
+        let all: Vec<f64> = (0..n + 512).map(|_| synth.next()).collect();
+        let spec = rfft(&all[512..]);
+        let mag_at = |h: f64| 2.0 * spec[(h * freq * n as f64 / fs).round() as usize].norm()
+            / n as f64;
+        for h in [1.0, 3.0, 5.0] {
+            assert!((mag_at(h) - 1.0 / 3.0).abs() < 1e-3, "carrier h{h}: {}", mag_at(h));
+        }
+        for h in [2.0, 4.0, 6.0] {
+            assert!(mag_at(h) < 1e-3, "modulator h{h} leaked: {}", mag_at(h));
+        }
+        // Algorithm 32 with the same operators sums all six as carriers.
+        let ops32: Vec<FmOperator> = (1..=6)
+            .map(|r| FmOperator::new(r as f64, 0.0, env()))
+            .collect();
+        let mut synth32 = FmSynth::new(ops32, FmSynth::dx7_algorithm(32), fs);
+        synth32.note_on(freq);
+        let all32: Vec<f64> = (0..n + 512).map(|_| synth32.next()).collect();
+        let spec32 = rfft(&all32[512..]);
+        for h in 1..=6 {
+            let m = 2.0 * spec32[(h as f64 * freq * n as f64 / fs).round() as usize].norm()
+                / n as f64;
+            assert!((m - 1.0 / 6.0).abs() < 1e-3, "algorithm 32 h{h}: {m}");
+        }
     }
 
     #[test]

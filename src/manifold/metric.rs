@@ -1128,4 +1128,255 @@ mod tests {
         let g2 = s2.christoffel(&p).lower_index(0, &s2.at(&p));
         assert!(g1.sub(&g2).norm_frobenius() < 1e-8);
     }
+
+    #[test]
+    fn test_einstein_tensor() {
+        // Schwarzschild is a vacuum solution: G_ij = 0
+        let s = Metric::schwarzschild(1.0);
+        let p = VecN::from(&[0.0, 6.0, std::f64::consts::FRAC_PI_2, 0.3]);
+        let g = s.einstein_tensor(&p);
+        for v in &g.data {
+            assert!(v.abs() < 1e-6, "Schwarzschild Einstein component {v}");
+        }
+        // in two dimensions G vanishes identically (R_ij = (R/2) g_ij)
+        let s2 = Metric::sphere(2, 1.5);
+        let g2 = s2.einstein_tensor(&VecN::from(&[1.0, 0.5]));
+        for v in &g2.data {
+            assert!(v.abs() < 1e-6, "2D Einstein component {v}");
+        }
+        // de Sitter solves G_ij + Lambda g_ij = 0 with Lambda = 3/l^2
+        let l = 3.0;
+        let ds = Metric::de_sitter(l);
+        let pd = VecN::from(&[0.0, 0.8, 1.2, 0.4]);
+        let gd = ds.einstein_tensor(&pd);
+        let metric = ds.at(&pd);
+        let lambda = 3.0 / (l * l);
+        for i in 0..4 {
+            for j in 0..4 {
+                let r = gd.get(i, j) + lambda * metric.get(i, j);
+                assert!(r.abs() < 1e-5, "de Sitter G + Lambda g at ({i},{j}) = {r}");
+            }
+        }
+        // trace identity in n dimensions: g^ij G_ij = (1 - n/2) R
+        for (m, pt) in [
+            (Metric::sphere(3, 1.3), VecN::from(&[1.1, 0.8, 0.4])),
+            (Metric::hyperbolic_ball(3), VecN::from(&[0.1, 0.2, -0.3])),
+        ] {
+            let ein = m.einstein_tensor(&pt);
+            let ginv = m.inverse_at(&pt);
+            let mut tr = 0.0;
+            for i in 0..m.dim {
+                for j in 0..m.dim {
+                    tr += ginv.get(i, j) * ein.get(i, j);
+                }
+            }
+            let want = (1.0 - m.dim as f64 / 2.0) * m.ricci_scalar(&pt);
+            assert!((tr - want).abs() < 1e-4, "Einstein trace {tr} vs {want}");
+        }
+        // the Einstein tensor is symmetric
+        let ein = Metric::kerr(1.0, 0.6).einstein_tensor(&VecN::from(&[0.0, 5.0, 1.1, 0.2]));
+        for i in 0..4 {
+            for j in 0..4 {
+                assert!((ein.get(i, j) - ein.get(j, i)).abs() < 1e-8);
+            }
+        }
+    }
+
+    #[test]
+    fn test_warped_product_closed_forms() {
+        // dr^2 + r^2 dOmega^2 is flat Euclidean 3-space in spherical
+        // coordinates
+        let flat = warped_product(Metric::euclidean(1), Metric::sphere(2, 1.0), |p: &VecN| p[0]);
+        let q = VecN::from(&[1.3, 0.9, 0.4]);
+        let g = flat.at(&q);
+        assert!((g.get(0, 0) - 1.0).abs() < 1e-14);
+        assert!((g.get(1, 1) - 1.3 * 1.3).abs() < 1e-14);
+        assert!((g.get(2, 2) - 1.3 * 1.3 * 0.9_f64.sin().powi(2)).abs() < 1e-14);
+        // off-diagonal blocks vanish for a warped product
+        assert!(g.get(0, 1).abs() + g.get(0, 2).abs() + g.get(1, 2).abs() == 0.0);
+        assert!(flat.is_flat(&q, 1e-6), "spherical coordinates must be flat");
+        // volume element r^2 sin(theta)
+        let vol = flat.volume_element(&q);
+        assert!((vol - 1.3 * 1.3 * 0.9_f64.sin()).abs() < 1e-12, "vol = {vol}");
+
+        // dr^2 + sin^2(r) dOmega^2 is the round unit 3-sphere:
+        // R = n(n-1) = 6 and the space is Einstein
+        let s3 = warped_product(
+            Metric::euclidean(1),
+            Metric::sphere(2, 1.0),
+            |p: &VecN| p[0].sin(),
+        );
+        let q3 = VecN::from(&[0.9, 1.1, 0.4]);
+        assert!((s3.at(&q3).get(1, 1) - 0.9_f64.sin().powi(2)).abs() < 1e-14);
+        let r = s3.ricci_scalar(&q3);
+        assert!((r - 6.0).abs() < 1e-4, "unit S^3 scalar curvature {r}");
+        assert!(s3.is_einstein(&q3, 1e-4));
+        // every 2-plane has sectional curvature 1
+        for (i, j) in [(0, 1), (0, 2), (1, 2)] {
+            let k = s3.sectional_curvature(&q3, &VecN::unit(3, i), &VecN::unit(3, j));
+            assert!((k - 1.0).abs() < 1e-3, "sectional curvature ({i},{j}) = {k}");
+        }
+        // a constant warp w just rescales the fiber: it is the round sphere
+        // of radius w, with fiber curvature 1/w^2
+        let cone = warped_product(Metric::euclidean(1), Metric::sphere(2, 1.0), |_| 2.5);
+        let qc = VecN::from(&[0.4, 1.0, 0.2]);
+        assert!((cone.at(&qc).get(1, 1) - 6.25).abs() < 1e-13);
+        assert!((cone.ricci_scalar(&qc) - 2.0 / 6.25).abs() < 1e-4);
+    }
+
+    #[test]
+    fn test_surface_and_embedded_metrics() {
+        // --- gaussian_curvature_surface -----------------------------------
+        // sphere of radius R: K = 1/R^2 everywhere
+        fn sphere_1_5(u: f64, v: f64) -> Vec3 {
+            let r = 1.5;
+            Vec3::new(r * u.sin() * v.cos(), r * u.sin() * v.sin(), r * u.cos())
+        }
+        let sm = Metric::gaussian_curvature_surface(sphere_1_5);
+        for &u in &[0.7_f64, 1.4, 2.2] {
+            let p = VecN::from(&[u, 0.3]);
+            let k = sm.gaussian_curvature(&p).unwrap();
+            assert!((k - 1.0 / 2.25).abs() < 1e-3, "sphere K at u={u}: {k}");
+            // the induced first fundamental form is R^2 diag(1, sin^2 u)
+            let g = sm.at(&p);
+            assert!((g.get(0, 0) - 2.25).abs() < 1e-8);
+            assert!((g.get(1, 1) - 2.25 * u.sin().powi(2)).abs() < 1e-8);
+            assert!(g.get(0, 1).abs() < 1e-8, "coordinate lines are orthogonal");
+        }
+        // a cylinder is developable: K = 0 despite being curved in space
+        fn cylinder(u: f64, v: f64) -> Vec3 {
+            Vec3::new(u.cos(), u.sin(), v)
+        }
+        let cm = Metric::gaussian_curvature_surface(cylinder);
+        let pc = VecN::from(&[0.7, 0.2]);
+        assert!(cm.gaussian_curvature(&pc).unwrap().abs() < 1e-6);
+        // and its induced metric is the flat one: du^2 + dv^2
+        let gc = cm.at(&pc);
+        assert!((gc.get(0, 0) - 1.0).abs() < 1e-8 && (gc.get(1, 1) - 1.0).abs() < 1e-8);
+        assert!(gc.get(0, 1).abs() < 1e-8);
+
+        // --- induced_from_embedding ----------------------------------------
+        // the unit-sphere embedding reproduces the round metric
+        let emb = Metric::induced_from_embedding(2, |p: &VecN| {
+            VecN::from(&[
+                p[0].sin() * p[1].cos(),
+                p[0].sin() * p[1].sin(),
+                p[0].cos(),
+            ])
+        });
+        let round = Metric::sphere(2, 1.0);
+        for &pt in &[[1.0_f64, 0.5], [2.0, -1.2], [0.6, 3.0]] {
+            let p = VecN::from(&pt);
+            let a = emb.at(&p);
+            let b = round.at(&p);
+            for (x, y) in a.data.iter().zip(&b.data) {
+                assert!((x - y).abs() < 1e-8, "induced vs round: {x} vs {y}");
+            }
+        }
+        // and therefore has Gaussian curvature 1
+        let k = emb.gaussian_curvature(&VecN::from(&[1.0, 0.5])).unwrap();
+        assert!((k - 1.0).abs() < 1e-3, "induced sphere K = {k}");
+        // a linear embedding gives the constant Gram matrix J^T J and is flat
+        let lin = Metric::induced_from_embedding(2, |p: &VecN| {
+            VecN::from(&[p[0], p[1], p[0] + 2.0 * p[1]])
+        });
+        let pl = VecN::from(&[0.3, -0.7]);
+        let gl = lin.at(&pl);
+        assert!((gl.get(0, 0) - 2.0).abs() < 1e-8);
+        assert!((gl.get(0, 1) - 2.0).abs() < 1e-8);
+        assert!((gl.get(1, 0) - 2.0).abs() < 1e-8);
+        assert!((gl.get(1, 1) - 5.0).abs() < 1e-8);
+        assert!((lin.det_at(&pl) - 6.0).abs() < 1e-7);
+        assert!(lin.is_flat(&pl, 1e-6));
+        // lengths measured with the induced metric equal lengths of the image
+        // curve in the ambient space: the u-curve of the sphere is a meridian
+        let curve = |t: f64| VecN::from(&[t, 0.4]);
+        let len = emb.length_of_curve(&curve, 0.5, 1.5, 400);
+        assert!((len - 1.0).abs() < 1e-6, "meridian arc length {len}");
+    }
+
+    #[test]
+    fn test_metric_angle() {
+        // Euclidean: the metric angle is the ordinary Euclidean angle
+        let e = Metric::euclidean(3);
+        let p = VecN::zeros(3);
+        let u = VecN::from(&[1.0, 2.0, -0.5]);
+        let v = VecN::from(&[-0.3, 1.0, 0.8]);
+        assert!((e.angle(&p, &u, &v) - u.angle_between(&v)).abs() < 1e-12);
+        // orthogonal coordinate directions of a diagonal metric are at pi/2
+        let diag = Metric::new(3, |_| {
+            Matrix::from_fn(3, 3, |i, j| if i == j { (i + 1) as f64 } else { 0.0 })
+        });
+        let half_pi = std::f64::consts::FRAC_PI_2;
+        for (i, j) in [(0, 1), (0, 2), (1, 2)] {
+            let a = diag.angle(&p, &VecN::unit(3, i), &VecN::unit(3, j));
+            assert!((a - half_pi).abs() < 1e-12, "angle({i},{j}) = {a}");
+        }
+        // a vector makes a zero angle with itself and pi with its negative
+        assert!(diag.angle(&p, &u, &u) < 1e-7);
+        assert!((diag.angle(&p, &u, &u.scale(-1.0)) - std::f64::consts::PI).abs() < 1e-7);
+        // the angle is scale invariant and symmetric
+        assert!(
+            (diag.angle(&p, &u.scale(2.0), &v.scale(3.0)) - diag.angle(&p, &u, &v)).abs() < 1e-12
+        );
+        assert!((diag.angle(&p, &u, &v) - diag.angle(&p, &v, &u)).abs() < 1e-15);
+        // on the unit sphere g = diag(1, sin^2 theta), so the angle between
+        // e_theta and e_theta + e_phi is atan(sin theta)
+        let s2 = Metric::sphere(2, 1.0);
+        for &th in &[0.4_f64, 1.0, 2.5] {
+            let q = VecN::from(&[th, 0.9]);
+            let a = s2.angle(&q, &VecN::from(&[1.0, 1.0]), &VecN::unit(2, 0));
+            assert!((a - th.sin().atan()).abs() < 1e-12, "theta = {th}: {a}");
+            // meridians and parallels always meet at a right angle
+            let ortho = s2.angle(&q, &VecN::unit(2, 0), &VecN::unit(2, 1));
+            assert!((ortho - half_pi).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn test_kaluza_klein_5d() {
+        let phi = 1.3_f64;
+        let a_const = [0.0, 0.4, -0.2, 0.0];
+        let kk = Metric::kaluza_klein_5d(
+            Metric::minkowski(4, Sig::MostlyPlus),
+            move |_| VecN::from(&a_const),
+            phi,
+        );
+        let p = VecN::from(&[0.1, 0.2, 0.3, 0.4, 0.5]);
+        let g = kk.at(&p);
+        // hand-computed components: g_55 = phi^2, g_{mu 5} = phi^2 A_mu,
+        // g_{mu nu} = eta_{mu nu} + phi^2 A_mu A_nu
+        assert!((g.get(4, 4) - phi * phi).abs() < 1e-14);
+        for mu in 0..4 {
+            let want = phi * phi * a_const[mu];
+            assert!((g.get(4, mu) - want).abs() < 1e-14, "g_{{5,{mu}}}");
+            assert!((g.get(mu, 4) - want).abs() < 1e-14, "symmetry of g_{{mu,5}}");
+        }
+        assert!((g.get(0, 0) + 1.0).abs() < 1e-14); // A_0 = 0, eta_00 = -1
+        assert!((g.get(1, 1) - (1.0 + phi * phi * 0.16)).abs() < 1e-14);
+        assert!((g.get(1, 2) - phi * phi * 0.4 * -0.2).abs() < 1e-14);
+        assert!((g.get(3, 3) - 1.0).abs() < 1e-14);
+        // a constant gauge potential is pure gauge (F = 0): the 5D metric is
+        // constant, hence flat
+        assert!(kk.is_flat(&p, 1e-8));
+
+        // a potential linear in x^1 carries a constant field strength
+        // F_12 = b, and the Kaluza-Klein reduction gives
+        // R_5 = R_4 - (1/4) phi^2 F_{mu nu} F^{mu nu} = -phi^2 b^2 / 2
+        for &b in &[0.4_f64, 0.8] {
+            let kk2 = Metric::kaluza_klein_5d(
+                Metric::minkowski(4, Sig::MostlyPlus),
+                move |q: &VecN| VecN::from(&[0.0, 0.0, b * q[1], 0.0]),
+                1.0,
+            );
+            let r5 = kk2.ricci_scalar(&p);
+            assert!(
+                (r5 - (-0.5 * b * b)).abs() < 1e-6,
+                "KK scalar curvature for b={b}: {r5} vs {}",
+                -0.5 * b * b
+            );
+            // a nonzero field strength genuinely curves the 5D space
+            assert!(!kk2.is_flat(&p, 1e-3));
+        }
+    }
 }

@@ -596,6 +596,103 @@ mod tests {
     }
 
     #[test]
+    fn test_weno5_periodic_advection() {
+        // One full revolution of sin(2πx) around the unit periodic domain
+        // at u = 1. The exact solution returns to the initial profile, so
+        // the final state is compared against the initial one directly.
+        //
+        // `advect_weno5_1d` pairs the fifth-order spatial reconstruction
+        // with a forward-Euler step, so the total error is dominated by
+        // the O(dt) time term: CFL 0.1 on 128 cells is used for the
+        // accuracy checks.
+        let period_error = |n: usize, cfl: f64| -> (f64, f64) {
+            let dx = 1.0 / n as f64;
+            let u = 1.0;
+            let dt = cfl * dx / u;
+            let steps = (1.0 / (u * dt)).round() as usize;
+            let q0: Vec<f64> = (0..n).map(|i| (TWO_PI * i as f64 * dx).sin()).collect();
+            let mut q = q0.clone();
+            for _ in 0..steps {
+                q = advect_weno5_1d(&q, u, dx, dt);
+            }
+            let l2 = (q.iter().zip(&q0).map(|(a, b)| (a - b).powi(2)).sum::<f64>()
+                / n as f64)
+                .sqrt();
+            let peak = q.iter().cloned().fold(0.0_f64, |a, b| a.max(b.abs()));
+            (l2, peak)
+        };
+        let (l2, peak) = period_error(128, 0.1);
+        // Measured 1.1e-2 for the O(dt) forward-Euler error; the exact
+        // profile has unit amplitude and forward Euler on an upwind-biased
+        // fifth-order stencil amplifies it very slightly (1.6% over the
+        // whole revolution), so the peak must stay within 2%.
+        assert!(l2 < 0.015, "WENO5 one-period L2 error {l2}");
+        assert!((0.97..1.02).contains(&peak), "amplitude drift {peak}");
+
+        // The error is first order in dt: halving the CFL at fixed dx
+        // halves it (measured ratio 2.03).
+        let (e_coarse_dt, _) = period_error(64, 0.2);
+        let (e_fine_dt, _) = period_error(64, 0.1);
+        let ratio = e_coarse_dt / e_fine_dt;
+        assert!((1.8..2.3).contains(&ratio), "time-order ratio {ratio}");
+
+        // At a fixed CFL the fifth-order reconstruction is far less
+        // dissipative than first-order upwind on the same grid.
+        let up_error = |n: usize| -> f64 {
+            let dx = 1.0 / n as f64;
+            let dt = 0.1 * dx;
+            let steps = (1.0 / dt).round() as usize;
+            let q0: Vec<f64> = (0..n).map(|i| (TWO_PI * i as f64 * dx).sin()).collect();
+            let mut q = q0.clone();
+            for _ in 0..steps {
+                q = advect_upwind_1d(&q, 1.0, dx, dt);
+            }
+            (q.iter().zip(&q0).map(|(a, b)| (a - b).powi(2)).sum::<f64>() / n as f64).sqrt()
+        };
+        assert!(
+            up_error(128) > 5.0 * period_error(128, 0.1).0,
+            "WENO5 no better than upwind: {} vs {}",
+            up_error(128),
+            period_error(128, 0.1).0
+        );
+
+        // Flux form on a periodic domain conserves Σq exactly (the face
+        // fluxes telescope), and the reconstruction is essentially
+        // non-oscillatory: a square wave carried one full period stays
+        // inside [0, 1] to within a fraction of a percent.
+        let n = 128;
+        let dx = 1.0 / n as f64;
+        let dt = 0.1 * dx;
+        let mut q: Vec<f64> =
+            (0..n).map(|i| if (32..64).contains(&i) { 1.0 } else { 0.0 }).collect();
+        let mass0: f64 = q.iter().sum();
+        for _ in 0..(1.0_f64 / dt).round() as usize {
+            q = advect_weno5_1d(&q, 1.0, dx, dt);
+            let drift = (q.iter().sum::<f64>() - mass0).abs();
+            assert!(drift < 1e-11, "mass drift {drift}");
+        }
+        let over = q.iter().cloned().fold(f64::MIN, f64::max);
+        let under = q.iter().cloned().fold(f64::MAX, f64::min);
+        assert!(over < 1.005, "overshoot {over}");
+        assert!(under > -0.005, "undershoot {under}");
+        // The step is still resolved after a full period (not smeared to
+        // the mean): the profile keeps most of its total variation.
+        assert!(total_variation(&q) > 1.8, "TV collapsed: {}", total_variation(&q));
+
+        // Negative advection speed uses the mirrored reconstruction: a
+        // profile carried one period leftwards also returns to itself.
+        let q0: Vec<f64> = (0..n).map(|i| (TWO_PI * i as f64 * dx).sin()).collect();
+        let mut qm = q0.clone();
+        for _ in 0..(1.0_f64 / dt).round() as usize {
+            qm = advect_weno5_1d(&qm, -1.0, dx, dt);
+        }
+        let l2m = (qm.iter().zip(&q0).map(|(a, b)| (a - b).powi(2)).sum::<f64>()
+            / n as f64)
+            .sqrt();
+        assert!(l2m < 0.015, "leftward one-period L2 error {l2m}");
+    }
+
+    #[test]
     fn test_muscl_minmod_tvd_on_step() {
         let n = 128;
         let mut q: Vec<f64> = (0..n).map(|i| if (32..64).contains(&i) { 1.0 } else { 0.0 }).collect();

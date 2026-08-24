@@ -340,6 +340,110 @@ mod tests {
     }
 
     #[test]
+    fn test_hilbert_fir_is_a_quadrature_filter() {
+        let n_taps = 127;
+        let h = hilbert_fir(n_taps);
+        assert_eq!(h.len(), n_taps);
+        let c = n_taps / 2;
+        // The ideal Hilbert kernel is antisymmetric with a zero center tap
+        // and zeros on every even offset.
+        assert_eq!(h[c], 0.0);
+        for k in 0..n_taps {
+            assert!((h[k] + h[n_taps - 1 - k]).abs() < 1e-15, "not antisymmetric at {k}");
+            if (k as isize - c as isize) % 2 == 0 {
+                assert_eq!(h[k], 0.0, "even-offset tap {k} should vanish");
+            }
+        }
+        // Odd taps follow 2/(πm) inside the window: one sign either side of
+        // the center, decaying like 1/m.
+        for j in [1usize, 3, 5, 7] {
+            assert!(h[c + j] > 0.0, "tap +{j} should be positive");
+            assert!(h[c - j] < 0.0, "tap −{j} should be negative");
+        }
+        assert!(h[c + 1] > h[c + 3] && h[c + 3] > h[c + 5], "taps do not decay");
+        // Near the center the Blackman window is essentially flat, so
+        // consecutive odd taps sit in the 1/m ratio.
+        assert!((h[c + 1] / h[c + 3] - 3.0).abs() < 0.1, "{}", h[c + 1] / h[c + 3]);
+        assert!((h[c + 1] - 2.0 / PI).abs() < 0.01, "center tap size {}", h[c + 1]);
+
+        // Filtering a cosine gives the sine, delayed by the kernel's
+        // (n_taps−1)/2 samples of group delay.
+        let fs = 8000.0;
+        let f0 = 1000.0; // mid-band, where the windowed design is accurate
+        let n = 4096;
+        let x: Vec<f64> = (0..n).map(|i| (TWO_PI * f0 * i as f64 / fs).cos()).collect();
+        let y = crate::signal_processing::convolve(&x, &h);
+        let mut worst = 0.0_f64;
+        let mut worst_env = 0.0_f64;
+        for i in 200..n - 200 {
+            let expect = (TWO_PI * f0 * i as f64 / fs).sin();
+            worst = worst.max((y[i + c] - expect).abs());
+            // The analytic pair (x, H(x)) has a constant unit envelope.
+            let env = (x[i] * x[i] + y[i + c] * y[i + c]).sqrt();
+            worst_env = worst_env.max((env - 1.0).abs());
+        }
+        assert!(worst < 0.02, "quadrature error {worst}");
+        assert!(worst_env < 0.02, "envelope ripple {worst_env}");
+        // The output is in quadrature with the input: their inner product
+        // over whole cycles vanishes.
+        let dot: f64 = (200..n - 200).map(|i| x[i] * y[i + c]).sum::<f64>() / (n - 400) as f64;
+        assert!(dot.abs() < 0.01, "not orthogonal to the input: {dot}");
+        // Cross-check against the exact FFT Hilbert transform.
+        let exact = hilbert(&x);
+        for i in 400..n - 400 {
+            assert!((y[i + c] - exact[i]).abs() < 0.03, "FIR vs FFT at {i}");
+        }
+        // A longer kernel is a better approximation.
+        let long = hilbert_fir(511);
+        let yl = crate::signal_processing::convolve(&x, &long);
+        let cl = 511 / 2;
+        let worst_long = (600..n - 600)
+            .map(|i| (yl[i + cl] - (TWO_PI * f0 * i as f64 / fs).sin()).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(worst_long < worst, "longer kernel is not better: {worst_long} vs {worst}");
+    }
+
+    #[test]
+    fn test_am_demodulate_recovers_the_message() {
+        let fs = 1000.0;
+        let n = 1000; // exactly 1 s, so both tones are FFT-periodic
+        let (fc, fm, depth) = (100.0, 5.0, 0.4);
+        // Build the AM signal with the synthesis module's own modulator.
+        let x = crate::audio::synthesis::am(fc, fm, depth, n, fs);
+        let env = am_demodulate(&x);
+        assert_eq!(env.len(), n);
+        // With depth < 1 the envelope is exactly 1 + depth·sin(2π·fm·t).
+        for (i, &e) in env.iter().enumerate().take(n - 100).skip(100) {
+            let t = i as f64 / fs;
+            let expect = 1.0 + depth * (TWO_PI * fm * t).sin();
+            assert!((e - expect).abs() < 0.01, "at {i}: {e} vs {expect}");
+        }
+        // Documented equivalence with the analytic-signal envelope.
+        assert_eq!(env, envelope(&x));
+        // The recovered message is a clean 5 Hz tone riding on unit DC: its
+        // AC part has all its energy in the modulation bin.
+        let mean = env.iter().sum::<f64>() / n as f64;
+        assert!((mean - 1.0).abs() < 0.01, "DC term {mean}");
+        let ac: Vec<f64> = env.iter().map(|v| v - mean).collect();
+        let spec = crate::transforms::fft::rfft(&ac);
+        let amp = |f: f64| 2.0 * spec[(f * n as f64 / fs).round() as usize].norm() / n as f64;
+        assert!((amp(fm) - depth).abs() < 0.01, "message amplitude {}", amp(fm));
+        for k in 2..=4 {
+            assert!(amp(k as f64 * fm) < 0.02, "harmonic distortion at {k}·fm");
+        }
+        assert!(amp(fc).abs() < 0.02, "carrier leaked into the envelope");
+
+        // A deeper modulation is recovered proportionally deeper.
+        let deep = am_demodulate(&crate::audio::synthesis::am(fc, fm, 0.8, n, fs));
+        let swing = |v: &[f64]| {
+            let hi = v[100..n - 100].iter().cloned().fold(f64::MIN, f64::max);
+            let lo = v[100..n - 100].iter().cloned().fold(f64::MAX, f64::min);
+            hi - lo
+        };
+        assert!((swing(&deep) / swing(&env) - 2.0).abs() < 0.05, "depth is not linear");
+    }
+
+    #[test]
     fn test_ssb_occupies_one_sideband() {
         let fs = 8000.0;
         let n = 4096;

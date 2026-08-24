@@ -2420,7 +2420,7 @@ static ELEMENTS: [Element; 118] = [
 /// Returns `None` if `z` is outside the valid range.
 /// This is an O(1) direct index lookup.
 pub fn by_atomic_number(z: u32) -> Option<&'static Element> {
-    if z >= 1 && z <= 118 {
+    if (1..=118).contains(&z) {
         Some(&ELEMENTS[(z - 1) as usize])
     } else {
         None

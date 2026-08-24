@@ -467,13 +467,13 @@ mod tests {
     #[test]
     fn test_normalize_angle_signed_very_negative() {
         let a = normalize_angle_signed(-4.0 * PI - 0.1);
-        assert!(a >= -PI && a < PI, "got {a}");
+        assert!((-PI..PI).contains(&a), "got {a}");
     }
 
     #[test]
     fn test_normalize_angle_signed_below_neg_pi() {
         let a = normalize_angle_signed(-PI - 0.5);
-        assert!(a >= -PI && a < PI, "got {a}");
+        assert!((-PI..PI).contains(&a), "got {a}");
         assert!((a - (PI - 0.5)).abs() < 1e-10);
     }
 }

@@ -193,7 +193,7 @@ mod tests {
         assert!(v_fast > cs, "Fast magnetosonic must exceed sound speed");
         assert!(v_slow <= va && v_slow <= cs, "Slow magnetosonic must not exceed either component");
 
-        assert!(rel_err(v_fast, 583.095_189_484_530_05) < 1e-10);
+        assert!(rel_err(v_fast, 583.095_189_484_53) < 1e-10);
     }
 
     #[test]
@@ -245,7 +245,7 @@ mod tests {
         let p_gas = 1e5;
         let b = 0.01;
         let beta = plasma_beta(p_gas, b);
-        assert!(rel_err(beta, 2513.274_124_24) < 1e-6);
+        assert!(rel_err(beta, 2_513.274_124_24) < 1e-6);
     }
 
     #[test]
@@ -267,7 +267,7 @@ mod tests {
     #[test]
     fn test_hartmann_number() {
         let ha = hartmann_number(1.0, 0.1, 1e6, 1e-3);
-        assert!(rel_err(ha, 3162.277_660_168_38) < 1e-6);
+        assert!(rel_err(ha, 3_162.277_660_168_38) < 1e-6);
     }
 
     #[test]

@@ -452,6 +452,86 @@ mod tests {
     }
 
     #[test]
+    fn test_adsr_exp_release_is_a_pure_rc_decay() {
+        let fs = 1000.0;
+        let (attack_tau, decay_tau, sustain, release_tau) = (0.005, 0.02, 0.5, 0.05);
+        let mut env = AdsrExp::new(attack_tau, decay_tau, sustain, release_tau, fs);
+        // Idle envelopes are not active and produce nothing.
+        assert!(!env.is_active());
+        assert_eq!(env.next(), 0.0);
+
+        env.gate_on();
+        assert!(env.is_active());
+        // Settle onto the sustain level.
+        let mut level = 0.0;
+        for _ in 0..500 {
+            level = env.next();
+        }
+        assert!((level - sustain).abs() < 1e-9, "sustain {level}");
+        assert!(env.is_active(), "sustaining envelope must be active");
+
+        // Release: level(k) = level0·exp(−k·dt/τ) exactly, until it is
+        // snapped to zero below 1e-6.
+        env.gate_off();
+        assert!(env.is_active(), "release must still be active");
+        let level0 = level;
+        let dt = 1.0 / fs;
+        let mut k = 0usize;
+        loop {
+            k += 1;
+            let v = env.next();
+            let expect = level0 * (-(k as f64) * dt / release_tau).exp();
+            if expect < 1e-6 {
+                break;
+            }
+            assert!((v - expect).abs() < 1e-12, "release step {k}: {v} vs {expect}");
+            assert!(env.is_active(), "went idle at step {k} while still audible");
+        }
+        // One time constant into the release the level is down by 1/e.
+        let tau_samples = (release_tau * fs) as usize;
+        assert!(tau_samples > 10);
+        // The tail terminates exactly at zero and reports itself finished.
+        for _ in 0..200 {
+            env.next();
+        }
+        assert!(!env.is_active(), "release never completed");
+        assert_eq!(env.next(), 0.0, "idle envelope must output silence");
+
+        // Re-gating restarts the attack from the current (zero) level.
+        env.gate_on();
+        assert!(env.is_active());
+        let mut peak = 0.0_f64;
+        for _ in 0..200 {
+            peak = peak.max(env.next());
+        }
+        assert!((peak - 1.0).abs() < 1e-12, "re-attack peak {peak}");
+
+        // Releasing from a higher level takes proportionally longer to
+        // reach the same floor: t = τ·ln(level0/floor).
+        let count_release = |from_sustain: f64| -> usize {
+            let mut e = AdsrExp::new(attack_tau, 0.001, from_sustain, release_tau, fs);
+            e.gate_on();
+            for _ in 0..2000 {
+                e.next();
+            }
+            e.gate_off();
+            let mut n = 0;
+            while e.is_active() {
+                e.next();
+                n += 1;
+            }
+            n
+        };
+        let n_loud = count_release(0.8) as f64;
+        let n_quiet = count_release(0.1) as f64;
+        let expect = release_tau * fs * (0.8_f64 / 0.1).ln();
+        assert!(
+            (n_loud - n_quiet - expect).abs() < 2.0,
+            "release lengths {n_loud} - {n_quiet} vs {expect}"
+        );
+    }
+
+    #[test]
     fn test_lfo_and_followers() {
         let fs = 1000.0;
         let osc = Oscillator::new(Waveform::Sine, 2.0, fs);

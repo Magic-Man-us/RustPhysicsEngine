@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn test_ei_known_values() {
         assert!((exponential_integral(1.0) - 1.895_117_816_355_936_8).abs() < 1e-12);
-        assert!((exponential_integral(2.0) - 4.954_234_356_001_890).abs() < 1e-11);
+        assert!((exponential_integral(2.0) - 4.954_234_356_001_89).abs() < 1e-11);
         assert!(
             (exponential_integral(10.0) - 2_492.228_976_241_877_4).abs() / 2492.0 < 1e-12
         );
