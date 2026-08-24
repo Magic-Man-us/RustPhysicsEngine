@@ -157,22 +157,23 @@ impl Expr {
     }
 
     /// Every variable name appearing in the expression, sorted and unique.
+    ///
+    /// Collected into a `BTreeSet` rather than deduplicated by scanning a
+    /// growing vector, which would cost `O(v^2)` string comparisons in the
+    /// number of distinct variables. The set also supplies the sort.
     #[must_use]
     pub fn variables(&self) -> Vec<String> {
-        let mut out = Vec::new();
-        fn walk(e: &Expr, out: &mut Vec<String>) {
+        let mut out = std::collections::BTreeSet::new();
+        fn walk(e: &Expr, out: &mut std::collections::BTreeSet<String>) {
             if let Expr::Var(n) = e {
-                if !out.contains(n) {
-                    out.push(n.clone());
-                }
+                out.insert(n.clone());
             }
             for c in e.children() {
                 walk(c, out);
             }
         }
         walk(self, &mut out);
-        out.sort();
-        out
+        out.into_iter().collect()
     }
 
     /// Replace every occurrence of `var` with `replacement`.
@@ -1851,4 +1852,31 @@ mod tests {
         assert!(!p("sin(x)").equivalent_numeric(&p("cos(x)"), 50, &mut rng));
         assert!(p("sin(x)^2").equivalent_numeric(&p("1-cos(x)^2"), 50, &mut rng));
     }
+
+    /// `variables()` must stay sorted and unique after the switch from a
+    /// linear-scan dedup to a set, and must scale rather than degrade
+    /// quadratically in the number of distinct variables.
+    #[test]
+    fn variables_are_sorted_unique_and_complete() {
+        // Order of first appearance must not leak into the result.
+        let e = Expr::parse("z + a*y + z*a + b").unwrap();
+        assert_eq!(e.variables(), vec!["a", "b", "y", "z"]);
+        // A repeated variable appears once however deeply nested.
+        let deep = Expr::parse("sin(x + cos(x * exp(x)))").unwrap();
+        assert_eq!(deep.variables(), vec!["x"]);
+        // No variables at all.
+        assert!(Expr::parse("1 + 2*3").unwrap().variables().is_empty());
+        // Many distinct variables: every one is found, exactly once, in order.
+        let names: Vec<String> = (0..300).map(|i| format!("v{i:03}")).collect();
+        let sum = names.join(" + ");
+        let big = Expr::parse(&sum).unwrap();
+        let found = big.variables();
+        let mut want = names.clone();
+        want.sort();
+        assert_eq!(found, want);
+        // And repeating the whole sum does not duplicate anything.
+        let doubled = Expr::parse(&format!("({sum}) + ({sum})")).unwrap();
+        assert_eq!(doubled.variables(), want);
+    }
+
 }

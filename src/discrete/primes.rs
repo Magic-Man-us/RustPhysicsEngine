@@ -42,12 +42,29 @@ pub fn sieve_segmented(lo: u64, hi: u64) -> Vec<u64> {
     let mut is_p = vec![true; len];
     for p in base {
         let p = p as u64;
-        if p * p >= hi {
+        // p is at most sqrt(hi) + 1, so the square fits for every prime the
+        // base sieve can produce; the checked form states that rather than
+        // relying on the reader to check it.
+        let Some(square) = p.checked_mul(p) else { break };
+        if square >= hi {
             break;
         }
         // First multiple of p at or above lo, never below p^2.
-        let start = (lo.div_ceil(p) * p).max(p * p);
-        let mut m = start;
+        //
+        // Not `lo.div_ceil(p) * p`: rounding lo up to a multiple of p can pass
+        // u64::MAX when lo is within p of the top, which wraps to a value
+        // below lo and then underflows the `m - lo` index. At lo = u64::MAX
+        // that happens for p = 7. Rounding up by the remainder instead keeps
+        // the intermediate below the rounded value, and a first multiple that
+        // still does not fit means there is nothing in the window to strike.
+        let rem = lo % p;
+        let first = if rem == 0 {
+            Some(lo)
+        } else {
+            lo.checked_add(p - rem)
+        };
+        let Some(first) = first else { continue };
+        let mut m = first.max(square);
         while m < hi {
             is_p[(m - lo) as usize] = false;
             m += p;
@@ -274,7 +291,7 @@ fn half_mod(x: &BigInt, n: &BigInt) -> BigInt {
 }
 
 /// The Jacobi symbol of a small integer over a `BigInt` modulus.
-fn jacobi_bigint(mut a: i64, n: &BigInt) -> i8 {
+fn jacobi_bigint(a: i64, n: &BigInt) -> i8 {
     // Reduce a modulo n first; n is odd and positive here.
     let mut a_big = BigInt::from_i64(a).rem_euclid(n);
     let mut n_big = n.clone();
@@ -295,8 +312,6 @@ fn jacobi_bigint(mut a: i64, n: &BigInt) -> i8 {
         }
         a_big = a_big.rem_euclid(&n_big);
     }
-    a = 0;
-    let _ = a;
     if n_big == BigInt::one() {
         result
     } else {
@@ -378,6 +393,28 @@ pub fn pollard_rho(n: u64) -> Option<u64> {
         if d != n {
             return Some(d);
         }
+    }
+    None
+}
+
+/// The smallest non-trivial factor of `n`, by trial division, or `None` when
+/// `n` is prime or below four.
+///
+/// The guaranteed-terminating fallback for [`pollard_rho`], which gives up
+/// after 63 polynomial constants. It costs `O(sqrt n)`, so it is only sensible
+/// as a last resort -- which is what it is: rho splits every composite below
+/// two million, so nothing observed reaches this. Its purpose is to make
+/// [`factorize`]'s contract provable rather than merely overwhelmingly likely.
+fn smallest_factor_by_trial(n: u64) -> Option<u64> {
+    if n < 4 {
+        return None;
+    }
+    let mut d = 2u64;
+    while d.checked_mul(d).is_some_and(|dd| dd <= n) {
+        if n.is_multiple_of(d) {
+            return Some(d);
+        }
+        d += 1;
     }
     None
 }
@@ -506,13 +543,14 @@ pub fn factorize(n: u64) -> Vec<(u64, u32)> {
                 found.push(m);
                 continue;
             }
-            match pollard_rho(m) {
-                Some(d) => {
-                    stack.push(d);
-                    stack.push(m / d);
-                }
-                None => found.push(m),
-            }
+            // m is known composite here, having failed is_prime_u64, so a
+            // non-trivial factor exists and must be found rather than
+            // reported as prime.
+            let d = pollard_rho(m)
+                .or_else(|| smallest_factor_by_trial(m))
+                .expect("a composite has a factor at or below its square root");
+            stack.push(d);
+            stack.push(m / d);
         }
         found.sort_unstable();
         for f in found {
@@ -526,7 +564,16 @@ pub fn factorize(n: u64) -> Vec<(u64, u32)> {
     out
 }
 
-/// The complete factorization of a `BigInt`.
+/// The factorization of a `BigInt` into primes.
+///
+/// Complete in every case that terminates, which is every case observed.
+/// Unlike [`factorize`] this cannot promise it: splitting a large composite
+/// has no guaranteed-terminating fallback the way trial division is one below
+/// `2^64`, so a cofactor that survives Pollard rho and Pollard p-1 is returned
+/// as a single entry even though it is known composite. A caller that needs
+/// certainty should test each returned base with [`is_prime_bigint`]. Rho is
+/// tried three times and each call draws sixteen fresh random polynomials, so
+/// reaching that state means forty-eight independent attempts all failed.
 ///
 /// # Panics
 /// Panics if `n` is not positive.
@@ -546,13 +593,26 @@ pub fn factorize_bigint(n: &BigInt, rng: &mut Rng) -> Vec<(BigInt, u32)> {
             }
             continue;
         }
-        match pollard_rho_bigint(&m, rng) {
+        // m failed is_prime_bigint, so a non-trivial factor exists. Try each
+        // method in turn rather than reporting a known composite as prime on
+        // the first miss.
+        // Each call draws sixteen fresh random polynomials, so three calls is
+        // forty-eight independent attempts rather than the same one repeated.
+        let split = pollard_rho_bigint(&m, rng)
+            .or_else(|| pollard_rho_bigint(&m, rng))
+            .or_else(|| pollard_rho_bigint(&m, rng));
+        match split {
             Some(d) => {
                 let other = m.div_rem(&d).0;
                 stack.push(d);
                 stack.push(other);
             }
-            None => out.push((m, 1)),
+            // Every method missed. Documented above: the cofactor comes back
+            // unsplit rather than silently dropped.
+            None => match out.iter_mut().find(|(p, _)| *p == m) {
+                Some((_, e)) => *e += 1,
+                None => out.push((m, 1)),
+            },
         }
     }
     out.sort_by(|a, b| a.0.cmp(&b.0));
@@ -1088,6 +1148,91 @@ mod lucas_tests {
         }
         for n in LUCAS_PSEUDOPRIMES {
             assert!(!SPSP_BASE_2.contains(&n), "{n} would defeat BPSW");
+        }
+    }
+}
+
+
+#[cfg(test)]
+mod review_regressions {
+    use super::*;
+
+    /// The window start must be computed without rounding past `u64::MAX`.
+    ///
+    /// `lo.div_ceil(p) * p` is the natural way to write "first multiple of p
+    /// at or above lo" and overflows for `lo = u64::MAX, p = 7`: in release it
+    /// wraps below `lo` and the `m - lo` index then underflows. The value is
+    /// not reachable through `sieve_segmented` itself, because a window that
+    /// high needs a base sieve to `sqrt(u64::MAX)`, which is four billion
+    /// booleans. This pins the arithmetic directly instead.
+    #[test]
+    fn first_multiple_never_rounds_past_the_top() {
+        let first_multiple = |lo: u64, p: u64| -> Option<u64> {
+            let rem = lo % p;
+            if rem == 0 { Some(lo) } else { lo.checked_add(p - rem) }
+        };
+        // Agreement with the naive form wherever the naive form is valid.
+        for lo in [0u64, 1, 2, 10, 1_000, 1_000_000, 1u64 << 40] {
+            for p in [2u64, 3, 5, 7, 11, 97, 65_537] {
+                assert_eq!(first_multiple(lo, p), Some(lo.div_ceil(p) * p));
+            }
+        }
+        // And no wrap at the top, where the naive form overflows.
+        for p in [7u64, 11, 13] {
+            assert!(
+                u64::MAX.checked_div(p).is_some() && first_multiple(u64::MAX, p).is_none(),
+                "p = {p} should have no multiple at or above u64::MAX"
+            );
+        }
+        // u64::MAX is divisible by 3 and by 5, so those do have one.
+        assert_eq!(first_multiple(u64::MAX, 3), Some(u64::MAX));
+        assert_eq!(first_multiple(u64::MAX, 5), Some(u64::MAX));
+        // The segmented sieve still agrees with the plain one at usable sizes.
+        for (lo, hi) in [(0u64, 200u64), (100, 300), (1_000, 1_100), (10_000, 10_500)] {
+            let seg = sieve_segmented(lo, hi);
+            let want: Vec<u64> = sieve_eratosthenes(hi as usize - 1)
+                .into_iter()
+                .map(|p| p as u64)
+                .filter(|&p| p >= lo)
+                .collect();
+            assert_eq!(seg, want, "window [{lo}, {hi})");
+        }
+    }
+
+    /// `factorize` promises primes, so it must never report a composite even
+    /// when Pollard rho gives up.
+    #[test]
+    fn factorize_reports_only_primes() {
+        // The fallback itself: it must find the smallest factor of a composite
+        // and refuse a prime.
+        assert_eq!(smallest_factor_by_trial(91), Some(7));
+        assert_eq!(smallest_factor_by_trial(4), Some(2));
+        assert_eq!(smallest_factor_by_trial(1_000_003 * 1_000_033), Some(1_000_003));
+        assert_eq!(smallest_factor_by_trial(97), None);
+        assert_eq!(smallest_factor_by_trial(2), None);
+        assert_eq!(smallest_factor_by_trial(1), None);
+
+        // And the contract, on shapes that stress each method: prime powers,
+        // near-equal semiprimes, and a prime beyond trial division.
+        for n in [
+            2u64,
+            4,
+            2u64.pow(20),
+            3u64.pow(13),
+            91,
+            1_000_003 * 1_000_033,
+            999_999_000_001,
+            67_280_421_310_721,
+            (1u64 << 61) - 1,
+        ] {
+            let f = factorize(n);
+            let product = f
+                .iter()
+                .fold(1u128, |a, &(p, e)| a * u128::from(p).pow(e));
+            assert_eq!(product, u128::from(n), "factorization of {n} does not multiply back");
+            for (p, _) in f {
+                assert!(is_prime_u64(p), "factorize({n}) reported composite {p}");
+            }
         }
     }
 }

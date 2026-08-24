@@ -1354,14 +1354,19 @@ pub fn farey_next(a: &Rational, n: u64) -> Rational {
     let q = a.den.to_i64().expect("denominator must fit i64");
     let order = i64::try_from(n).expect("Farey order must fit i64");
     assert!(q <= order, "denominator exceeds the Farey order");
+    // p * order and p * s are both products of two i64 values, which wrap
+    // silently in release builds. They are formed in i128 and converted back
+    // with a checked cast, so an out-of-range result panics with a message
+    // rather than returning a wrong fraction.
+    let fits = |x: i128| i64::try_from(x).expect("Farey successor does not fit i64");
     if q == 1 {
-        return Rational::from_i64(p * order + 1, order);
+        return Rational::from_i64(fits(i128::from(p) * i128::from(order) + 1), order);
     }
     let inv = mod_inverse_u64(p.rem_euclid(q) as u64, q as u64)
         .expect("a reduced fraction has coprime parts");
     let s0 = ((q as u64 - inv % q as u64) % q as u64) as i64;
     let s = s0 + q * ((order - s0) / q);
-    let r = (1 + p * s) / q;
+    let r = fits((1 + i128::from(p) * i128::from(s)) / i128::from(q));
     Rational::from_i64(r, s)
 }
 
@@ -2293,5 +2298,48 @@ mod tests {
         assert_eq!(farey_next(&Rational::from_i64(1, 3), 5), Rational::from_i64(2, 5));
         assert_eq!(farey_next(&Rational::from_i64(0, 1), 5), Rational::from_i64(1, 5));
         assert_eq!(farey_next(&Rational::from_i64(1, 1), 5), Rational::from_i64(6, 5));
+    }
+}
+
+#[cfg(test)]
+mod review_regressions {
+    use super::*;
+
+    /// `farey_next` forms `p * order` and `p * s`, both products of two i64
+    /// values. In release those wrap silently; the products are now formed in
+    /// i128 with a checked cast back, so an out-of-range successor panics
+    /// instead of returning a wrong fraction.
+    #[test]
+    #[should_panic(expected = "does not fit i64")]
+    fn farey_next_panics_rather_than_wrapping() {
+        // p / 1 with a large order: p * order passes i64 rather than wrapping
+        // to a negative numerator.
+        let a = Rational::from_i64(i64::MAX / 2, 1);
+        let _ = farey_next(&a, 1_000_000);
+    }
+
+    /// The successor must satisfy the Farey neighbour identity `r*q - p*s = 1`
+    /// with the largest admissible denominator, which is what makes it the
+    /// *next* term rather than merely a larger one.
+    #[test]
+    fn farey_next_is_the_true_successor() {
+        for n in 1..=40u64 {
+            let seq = crate::exact::rational::farey_sequence(n);
+            for w in seq.windows(2) {
+                let next = farey_next(&w[0], n);
+                assert_eq!(next, w[1], "successor of {:?} in F_{n}", w[0]);
+                // The neighbour identity, checked directly.
+                let p = w[0].num.to_i64().unwrap();
+                let q = w[0].den.to_i64().unwrap();
+                let r = next.num.to_i64().unwrap();
+                let s = next.den.to_i64().unwrap();
+                assert_eq!(r * q - p * s, 1, "neighbour identity fails");
+                assert!(s as u64 <= n, "denominator exceeds the order");
+            }
+        }
+        // Large but in-range values still work rather than being refused.
+        let a = Rational::from_i64(1_000_000, 1);
+        let next = farey_next(&a, 1_000);
+        assert_eq!(next, Rational::from_i64(1_000_000_001, 1_000));
     }
 }
