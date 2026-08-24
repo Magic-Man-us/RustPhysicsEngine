@@ -534,6 +534,95 @@ mod tests {
     }
 
     #[test]
+    fn test_resonance_curve_peak_and_sharpening() {
+        let osc = DampedOscillator { m: 2.0, c: 0.6, k: 50.0 };
+        let w0 = osc.natural_frequency();
+        let zeta = osc.damping_ratio();
+        let omega: Vec<f64> = (0..=4000).map(|i| 0.01 + 12.0 * i as f64 / 4000.0).collect();
+        let curve = resonance_curve(&osc, &omega);
+        assert_eq!(curve.len(), omega.len());
+        // Each point is the unit-force steady-state amplitude.
+        for (i, &w) in omega.iter().enumerate() {
+            assert!(approx(curve[i], osc.steady_state_amplitude(1.0, w), 1e-15));
+        }
+        // Static (ω → 0) deflection is 1/k.
+        assert!(approx(curve[0], 1.0 / osc.k, 1e-6), "static {}", curve[0]);
+        // The peak sits at ω₀√(1−2ζ²), not at ω₀.
+        let wr = osc.resonant_frequency().unwrap();
+        let (imax, &peak) = curve
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
+            .unwrap();
+        assert!(
+            (omega[imax] - wr).abs() < 2.0 * (omega[1] - omega[0]),
+            "peak at {} vs ω_r {wr}",
+            omega[imax]
+        );
+        // Peak height has the closed form 1/(k·2ζ√(1−ζ²)).
+        let expect = 1.0 / (osc.k * 2.0 * zeta * (1.0 - zeta * zeta).sqrt());
+        assert!(approx(peak, expect, 1e-4 * expect), "peak {peak} vs {expect}");
+        // Evaluated exactly at ω_r it matches to full precision.
+        let at_wr = resonance_curve(&osc, &[wr])[0];
+        assert!(approx(at_wr, expect, 1e-12 * expect));
+        assert!(at_wr >= peak, "grid peak should not beat the analytic one");
+        // Monotone rise then fall around the peak.
+        for i in 1..imax {
+            assert!(curve[i] > curve[i - 1], "not rising at {i}");
+        }
+        for i in imax + 1..curve.len() {
+            assert!(curve[i] < curve[i - 1], "not falling at {i}");
+        }
+
+        // Lighter damping means a taller, sharper peak: the height scales
+        // as 1/(2ζ√(1−ζ²)) and the −3 dB width narrows as ω₀/Q.
+        let mut last_peak = 0.0_f64;
+        let mut last_width = f64::MAX;
+        for &c in &[1.2_f64, 0.6, 0.3, 0.15] {
+            let o = DampedOscillator { m: 2.0, c, k: 50.0 };
+            let z = o.damping_ratio();
+            let curve = resonance_curve(&o, &omega);
+            let p = curve.iter().cloned().fold(f64::MIN, f64::max);
+            let want = 1.0 / (o.k * 2.0 * z * (1.0 - z * z).sqrt());
+            assert!(approx(p, want, 2e-3 * want), "c = {c}: peak {p} vs {want}");
+            assert!(p > last_peak, "peak did not grow as damping fell (c = {c})");
+            last_peak = p;
+            // Half-power width from the curve (as a power spectrum)
+            // recovers Q = 1/(2ζ) through the independent −3 dB estimator.
+            let psd: Vec<f64> = curve.iter().map(|v| v * v).collect();
+            let (f_peak, q_est) = q_from_spectrum(&omega, &psd);
+            assert!(
+                (q_est - o.q_factor()).abs() / o.q_factor() < 0.05,
+                "c = {c}: Q {q_est} vs {}",
+                o.q_factor()
+            );
+            assert!((f_peak - o.resonant_frequency().unwrap()).abs() < 0.05);
+            let width = f_peak / q_est;
+            assert!(width < last_width, "resonance did not sharpen at c = {c}");
+            last_width = width;
+        }
+
+        // Above the half-power damping ζ = 1/√2 there is no peak at all:
+        // the curve falls monotonically from its static value.
+        let heavy = DampedOscillator { m: 2.0, c: 30.0, k: 50.0 };
+        assert!(heavy.damping_ratio() > std::f64::consts::FRAC_1_SQRT_2);
+        assert!(heavy.resonant_frequency().is_none());
+        let flat = resonance_curve(&heavy, &omega);
+        for i in 1..flat.len() {
+            assert!(flat[i] < flat[i - 1], "overdamped curve rose at {i}");
+        }
+        assert!(approx(flat[0], 1.0 / heavy.k, 1e-6));
+        // An empty grid gives an empty curve.
+        assert!(resonance_curve(&osc, &[]).is_empty());
+        // Far above resonance the response rolls off as 1/(mω²).
+        let high = resonance_curve(&osc, &[100.0 * w0])[0];
+        assert!(
+            approx(high, 1.0 / (osc.m * (100.0 * w0).powi(2)), 1e-3 * high),
+            "mass-controlled asymptote {high}"
+        );
+    }
+
+    #[test]
     fn test_transmissibility_and_combined_q() {
         // At r = √2 every ζ gives T = 1.
         for &z in &[0.05, 0.2, 0.7] {

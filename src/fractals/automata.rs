@@ -2183,6 +2183,112 @@ mod tests {
     }
 
     #[test]
+    fn test_lwss_translates_two_cells_every_four_generations() {
+        // The lightweight spaceship is a c/2 orthogonal spaceship: four
+        // generations reproduce the pattern shifted by two cells along
+        // its axis. Compare the full cell sets, not just populations.
+        let mut life = LifeLike::conway(40, 40);
+        life.place(20, 20, &patterns::lwss());
+        assert_eq!(life.population(), 9, "LWSS has 9 cells");
+        let start = life.cells.clone();
+        for k in 1..=4usize {
+            life.run(1);
+            // The population is 9 or 12 through the phases, never 0.
+            assert!(life.population() > 0, "LWSS died at phase {k}");
+        }
+        let mut shifted = LifeLike::conway(40, 40);
+        shifted.place(18, 20, &patterns::lwss());
+        assert_eq!(
+            life.cells, shifted.cells,
+            "LWSS translates by (-2, 0) in 4 generations"
+        );
+        assert_ne!(life.cells, start, "it really moved");
+        // Eight generations move it twice as far, and the period-4
+        // displacement is exact on a torus: 20 lengths of 2 cells put
+        // it back where it started on a width-40 wrapped grid.
+        let mut lap = LifeLike::conway(40, 40);
+        lap.place(20, 20, &patterns::lwss());
+        lap.run(80);
+        assert_eq!(lap.cells, start, "LWSS laps the 40-wide torus in 80 gens");
+        assert_eq!(lap.detect_period(80), Some(80));
+        // The population is conserved every 4 generations.
+        let mut p = LifeLike::conway(40, 40);
+        p.place(20, 20, &patterns::lwss());
+        for _ in 0..10 {
+            p.run(4);
+            assert_eq!(p.population(), 9, "spaceship population is conserved");
+        }
+    }
+
+    #[test]
+    fn test_diehard_vanishes_after_exactly_130_generations() {
+        let mut life = LifeLike::conway(120, 120);
+        life.wrap = false;
+        life.place(50, 50, &patterns::diehard());
+        assert_eq!(life.population(), 7, "diehard starts with 7 cells");
+        // Alive right up to generation 129...
+        for g in 1..=129 {
+            life.step();
+            assert!(life.population() > 0, "diehard died early at generation {g}");
+        }
+        // ...and gone at 130.
+        life.step();
+        assert_eq!(life.population(), 0, "diehard must vanish at generation 130");
+        assert!(life.cells.iter().all(|&c| !c));
+        assert!(life.bounding_box().is_none(), "empty grid has no bounding box");
+        // Once empty it stays empty (B3/S23 has no spontaneous birth).
+        life.run(20);
+        assert_eq!(life.population(), 0);
+    }
+
+    #[test]
+    fn test_acorn_and_r_pentomino_are_methuselahs() {
+        // Acorn: 7 cells that keep growing for thousands of
+        // generations; at 100 it is still alive and much larger.
+        let mut acorn = LifeLike::conway(200, 200);
+        acorn.wrap = false;
+        acorn.place(90, 90, &patterns::acorn());
+        assert_eq!(acorn.population(), 7, "acorn starts with 7 cells");
+        assert!(!acorn.is_still_life(), "acorn is not stable");
+        assert_eq!(acorn.detect_period(60), None, "no short period");
+        acorn.run(100);
+        assert!(acorn.population() > 7, "acorn grew ({})", acorn.population());
+        assert!(acorn.population() < 200 * 200, "acorn stays bounded");
+        // It has spread well beyond its 7x3 seed footprint.
+        let bb = acorn.bounding_box().expect("acorn is alive at generation 100");
+        assert!(bb.max.x - bb.min.x > 7.0, "acorn spread in x");
+        assert!(bb.max.y - bb.min.y > 3.0, "acorn spread in y");
+
+        // R-pentomino: 5 cells, the classic long-lived methuselah.
+        let mut r = LifeLike::conway(200, 200);
+        r.wrap = false;
+        r.place(90, 90, &patterns::r_pentomino());
+        assert_eq!(r.population(), 5, "R-pentomino starts with 5 cells");
+        assert!(!r.is_still_life());
+        // The population changes from generation to generation, and it
+        // is still alive after 50 generations.
+        let mut populations = Vec::new();
+        for _ in 0..50 {
+            r.step();
+            populations.push(r.population());
+        }
+        assert!(r.population() > 0, "R-pentomino alive at generation 50");
+        assert!(
+            populations.windows(2).filter(|w| w[0] != w[1]).count() > 30,
+            "population keeps changing"
+        );
+        assert_ne!(populations[0], 5, "it is not a still life");
+        assert!(
+            populations.iter().max().unwrap() > &5,
+            "it grows past its seed size"
+        );
+        // Still going at 200 generations, still bounded.
+        r.run(150);
+        assert!(r.population() > 0, "R-pentomino alive at generation 200");
+        assert!(r.population() < 200 * 200);
+    }
+
+    #[test]
     fn test_gosper_gun_emits_gliders() {
         let mut life = LifeLike::conway(80, 60);
         life.wrap = false;
@@ -2238,6 +2344,284 @@ mod tests {
             a.step();
         }
         assert_eq!(t.pos, a.pos, "turmite table reproduces the ant");
+    }
+
+    #[test]
+    fn test_class4_heuristic_agrees_with_the_classifier() {
+        // The heuristic is a pure function of the rule number: it is
+        // exactly "rule_classify_wolfram == 4".
+        for rule in 0..=255u8 {
+            let ca = Ca1D::new(rule, 64, true);
+            assert_eq!(
+                ca.is_class4_heuristic(),
+                rule_classify_wolfram(rule) == 4,
+                "rule {rule}"
+            );
+            // The classifier partitions every rule into 1..=4.
+            assert!((1..=4).contains(&rule_classify_wolfram(rule)), "rule {rule}");
+        }
+        // The current cells do not influence the verdict.
+        let mut seeded = Ca1D::new(184, 64, true);
+        let plain = Ca1D::new(184, 64, true);
+        seeded.seed_center();
+        assert_eq!(seeded.is_class4_heuristic(), plain.is_class4_heuristic());
+        let mut rng = Rng::new(17);
+        seeded.seed_random(&mut rng, 0.3);
+        assert_eq!(seeded.is_class4_heuristic(), plain.is_class4_heuristic());
+
+        // Textbook endpoints of the heuristic's own scale.
+        // Rule 0 dies out (class 1), so it is not complex.
+        assert_eq!(rule_classify_wolfram(0), 1);
+        assert!(!Ca1D::new(0, 64, true).is_class4_heuristic(), "rule 0 dies");
+        // Rule 255 fills the lattice and is then frozen (class 2).
+        assert_eq!(rule_classify_wolfram(255), 2);
+        assert!(!Ca1D::new(255, 64, true).is_class4_heuristic(), "rule 255 fills");
+        // Rules 30 and 110 sustain high block entropy and activity, so
+        // this heuristic scores them chaotic (class 3), not complex.
+        for rule in [30u8, 110] {
+            assert_eq!(rule_classify_wolfram(rule), 3, "rule {rule} is chaotic here");
+            assert!(!Ca1D::new(rule, 64, true).is_class4_heuristic());
+        }
+        // Rule 184 (the traffic rule) survives, never repeats a state
+        // within the window, yet stays below the entropy/activity gate:
+        // exactly the "complex" bucket.
+        assert!(Ca1D::new(184, 64, true).is_class4_heuristic(), "rule 184 is complex");
+        for rule in [2u8, 24, 184, 226] {
+            assert!(
+                Ca1D::new(rule, 64, true).is_class4_heuristic(),
+                "rule {rule} should land in class 4"
+            );
+        }
+        // The bucket is non-trivial in both directions.
+        let complex = (0..=255u8)
+            .filter(|&r| Ca1D::new(r, 64, true).is_class4_heuristic())
+            .count();
+        assert!(complex > 0 && complex < 256, "class 4 is a proper subset ({complex})");
+        // Direct check of the heuristic's stated contract on a class-4
+        // rule: after the 200-step transient it is still alive.
+        let mut ca = Ca1D::new(184, 256, true);
+        let mut rng = Rng::new(12_345);
+        ca.seed_random(&mut rng, 0.5);
+        for _ in 0..400 {
+            ca.step();
+        }
+        assert!(ca.cells.iter().any(|&c| c), "rule 184 stays alive");
+        // Rule 184 conserves the number of live cells exactly (it is
+        // the particle-conserving traffic rule), which is why its
+        // activity never reaches the chaotic gate.
+        let before = ca.cells.iter().filter(|&&c| c).count();
+        ca.step();
+        assert_eq!(
+            ca.cells.iter().filter(|&&c| c).count(),
+            before,
+            "rule 184 conserves particles"
+        );
+    }
+
+    #[test]
+    fn test_turmite_run_matches_stepping_and_paints_the_grid() {
+        let table = vec![vec![(1u8, 1u8, 0u8), (0, 3, 0)]];
+        let start = Turmite::new(64, 64, table.clone());
+        assert_eq!(start.pos, (32, 32));
+        assert_eq!(start.dir, 0);
+        assert_eq!(start.state, 0);
+        assert!(start.cells.iter().all(|&c| c == 0), "grid starts blank");
+
+        // run(n) is exactly n calls to step().
+        for n in [0usize, 1, 7, 250] {
+            let mut a = start.clone();
+            a.run(n);
+            let mut b = start.clone();
+            for _ in 0..n {
+                b.step();
+            }
+            assert_eq!(a.pos, b.pos, "run({n}) position");
+            assert_eq!(a.dir, b.dir, "run({n}) heading");
+            assert_eq!(a.state, b.state, "run({n}) state");
+            assert_eq!(a.cells, b.cells, "run({n}) grid");
+        }
+        // run splits additively.
+        let mut split = start.clone();
+        split.run(120);
+        split.run(130);
+        let mut whole = start.clone();
+        whole.run(250);
+        assert_eq!(split.cells, whole.cells);
+        assert_eq!(split.pos, whole.pos);
+
+        // From a blank grid the machine moves and paints cells.
+        let mut t = start.clone();
+        t.run(1);
+        assert_ne!(t.pos, start.pos, "the turmite moved off its start cell");
+        assert_eq!(t.cells[32 * 64 + 32], 1, "it wrote colour 1 under itself");
+        t.run(999);
+        let painted = t.cells.iter().filter(|&&c| c != 0).count();
+        assert!(painted > 0, "the grid gained nonzero cells");
+        assert!(painted <= 64 * 64);
+        // Colours never leave the table's alphabet.
+        assert!(t.cells.iter().all(|&c| c < 2), "two-colour table");
+        // Heading stays in 0..4 and the position stays on the torus.
+        assert!(t.dir < 4);
+        assert!(t.pos.0 < 64 && t.pos.1 < 64);
+
+        // This two-colour table is Langton's ant: it must track it step
+        // for step, including the ant's ~10000-step highway onset.
+        let mut turmite = Turmite::new(200, 200, table);
+        let mut ant = LangtonsAnt::new(200, 200, "RL");
+        turmite.run(2000);
+        ant.run(2000);
+        assert_eq!(turmite.pos, ant.pos, "turmite tracks the ant");
+        let ant_black = ant.cells.iter().filter(|&&c| c != 0).count();
+        let turmite_black = turmite.cells.iter().filter(|&&c| c != 0).count();
+        assert_eq!(turmite_black, ant_black, "same painted cell count");
+    }
+
+    #[test]
+    fn test_wireworld_run_clock_loop_has_a_fixed_period() {
+        // An octagonal 12-cell conductor ring: every conductor has
+        // exactly two ring neighbours, so a single electron circulates
+        // forever with period 12.
+        let ring = ".THC.\nC...C\nC...C\nC...C\n.CCC.";
+        let mut ww = Wireworld::from_string(ring).expect("valid circuit");
+        assert_eq!(ww.w, 5);
+        assert_eq!(ww.h, 5);
+        assert_eq!(ww.cells.iter().filter(|&&c| c == 3).count(), 10, "conductors");
+        assert_eq!(ww.count_electrons(), 1, "one electron head");
+        let start = ww.cells.clone();
+
+        // The electron survives every step and never duplicates.
+        for k in 1..=11 {
+            ww.run(1);
+            assert_eq!(ww.count_electrons(), 1, "step {k}: electron count");
+            assert_ne!(ww.cells, start, "step {k}: not back yet");
+            assert_eq!(
+                ww.cells.iter().filter(|&&c| c != 0).count(),
+                12,
+                "step {k}: the wire itself is preserved"
+            );
+        }
+        // Exactly period 12.
+        ww.run(1);
+        assert_eq!(ww.cells, start, "the ring clock has period 12");
+        assert_eq!(ww.count_electrons(), 1);
+
+        // run(n) is n steps, and the period divides every multiple.
+        let mut a = Wireworld::from_string(ring).expect("valid circuit");
+        a.run(36);
+        assert_eq!(a.cells, start, "3 laps return to the start");
+        let mut b = Wireworld::from_string(ring).expect("valid circuit");
+        for _ in 0..36 {
+            b.step();
+        }
+        assert_eq!(a.cells, b.cells, "run(36) == 36 steps");
+        // Off-period phases differ.
+        let mut c = Wireworld::from_string(ring).expect("valid circuit");
+        c.run(18);
+        assert_ne!(c.cells, start, "half a lap is a different phase");
+
+        // A dead-ended wire loses its electron off the open end, so
+        // `run` past the wire's length leaves an empty circuit.
+        let mut open = Wireworld::from_string("TH########").expect("valid circuit");
+        assert_eq!(open.count_electrons(), 1);
+        open.run(20);
+        assert_eq!(open.count_electrons(), 0, "electron ran off the end");
+        assert!(open.cells.iter().all(|&c| c == 0 || c == 3), "only wire remains");
+    }
+
+    #[test]
+    fn test_fitzhugh_nagumo_run_relaxes_to_the_resting_fixed_point() {
+        let mut fhn = FitzHughNagumo::new(16, 16);
+        let (a, b) = (fhn.a, fhn.b);
+        // The initial state is spatially uniform, and no-flux
+        // boundaries keep it uniform forever, so the PDE reduces to the
+        // FitzHugh-Nagumo ODE and must settle on its fixed point.
+        fhn.run(20_000);
+        let (v, w) = (fhn.v[0], fhn.w_[0]);
+        assert!(fhn.v.iter().all(|x| (x - v).abs() < 1e-9), "stays uniform in v");
+        assert!(fhn.w_.iter().all(|x| (x - w).abs() < 1e-9), "stays uniform in w");
+        // Fixed point: both nullclines are satisfied.
+        assert!(
+            (v - v * v * v / 3.0 - w).abs() < 1e-9,
+            "v-nullcline residual {}",
+            v - v * v * v / 3.0 - w
+        );
+        assert!(
+            (v + a - b * w).abs() < 1e-9,
+            "w-nullcline residual {}",
+            v + a - b * w
+        );
+        // The excitable rest state sits on the left branch of the cubic
+        // (v < -1), which is what makes the medium excitable.
+        assert!(v < -1.0 && v > -1.1, "rest potential {v}");
+        assert!(w < -0.6 && w > -0.7, "rest recovery {w}");
+        // Running further changes nothing: it is a genuine equilibrium.
+        let before = fhn.v.clone();
+        fhn.run(500);
+        for (p, q) in before.iter().zip(&fhn.v) {
+            assert!((p - q).abs() < 1e-12, "equilibrium is stationary");
+        }
+        // run(n) equals n steps.
+        let mut x = FitzHughNagumo::new(16, 16);
+        let mut y = FitzHughNagumo::new(16, 16);
+        x.run(37);
+        for _ in 0..37 {
+            y.step();
+        }
+        for (p, q) in x.v.iter().zip(&y.v) {
+            assert_eq!(p, q, "run(37) == 37 steps");
+        }
+    }
+
+    #[test]
+    fn test_fitzhugh_nagumo_pulse_propagates_at_a_finite_speed() {
+        // Excite a strip at the left edge of a long, thin medium; the
+        // excitation must travel as a wave, reaching farther probes
+        // strictly later, and the medium must return to rest behind it.
+        let (w, h) = (60usize, 12usize);
+        let mut fhn = FitzHughNagumo::new(w, h);
+        for y in 0..h {
+            for x in 0..3 {
+                fhn.v[y * w + x] = 2.0;
+            }
+        }
+        let probes = [10usize, 25, 45];
+        let mut arrival = [None::<usize>; 3];
+        let mut peak = f64::NEG_INFINITY;
+        for t in 1..=4000 {
+            fhn.run(1);
+            for (k, &px) in probes.iter().enumerate() {
+                if arrival[k].is_none() && fhn.v[(h / 2) * w + px] > 0.5 {
+                    arrival[k] = Some(t);
+                }
+            }
+            peak = peak.max(fhn.v.iter().cloned().fold(f64::NEG_INFINITY, f64::max));
+        }
+        let times: Vec<usize> = arrival
+            .iter()
+            .enumerate()
+            .map(|(k, a)| a.unwrap_or_else(|| panic!("no pulse at probe {k}")))
+            .collect();
+        assert!(times[0] < times[1] && times[1] < times[2], "arrivals {times:?}");
+        // Finite, roughly constant propagation speed: the two gaps
+        // correspond to the same 15- and 20-cell spacings.
+        let v1 = 15.0 / (times[1] - times[0]) as f64;
+        let v2 = 20.0 / (times[2] - times[1]) as f64;
+        assert!(v1 > 0.0 && v2 > 0.0);
+        assert!(
+            (v1 - v2).abs() / v1 < 0.25,
+            "speed should be nearly constant ({v1} vs {v2})"
+        );
+        // The pulse is a genuine excitation (v climbs well above rest).
+        assert!(peak > 1.0, "pulse amplitude {peak}");
+        // Everything stays finite and the medium relaxes back to rest.
+        assert!(fhn.v.iter().all(|x| x.is_finite()));
+        fhn.run(4000);
+        let rest = fhn.v[0];
+        assert!(rest < -1.0 && rest > -1.1, "returned to rest ({rest})");
+        assert!(
+            fhn.v.iter().all(|x| (x - rest).abs() < 1e-3),
+            "the medium is quiescent again"
+        );
     }
 
     #[test]

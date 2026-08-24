@@ -633,6 +633,144 @@ mod tests {
     }
 
     #[test]
+    fn test_rlc_damping_bandwidth_and_transfers() {
+        let rlc = Rlc { r: 10.0, l: 1e-3, c: 1e-6 };
+        let f0 = rlc.resonant_frequency();
+        let w0 = TWO_PI * f0;
+
+        // ζ = (R/2)√(C/L), and ζ = 1/(2Q) for the series loop.
+        let zeta = rlc.damping_ratio();
+        assert!(approx(zeta, 10.0 / 2.0 * (1e-6_f64 / 1e-3).sqrt(), 1e-15));
+        assert!(approx(zeta, 1.0 / (2.0 * rlc.q_series()), 1e-15), "ζ vs 1/2Q");
+        // It agrees with the mechanical analogue (m = L, c = R, k = 1/C)
+        // that step_response already relies on.
+        let mech = super::super::oscillator::DampedOscillator { m: rlc.l, c: rlc.r, k: 1.0 / rlc.c };
+        assert!(approx(zeta, mech.damping_ratio(), 1e-15));
+        assert!(approx(w0, mech.natural_frequency(), 1e-9));
+        assert!(rlc.damping_ratio() < 1.0, "expected an underdamped loop");
+        // Raising R raises the damping proportionally.
+        let heavy = Rlc { r: 40.0, l: 1e-3, c: 1e-6 };
+        assert!(approx(heavy.damping_ratio(), 4.0 * zeta, 1e-15));
+
+        // Δf = f0/Q = R/(2πL), and it really is the half-power width of
+        // the band-pass transfer.
+        let bw = rlc.bandwidth();
+        assert!(approx(bw, f0 / rlc.q_series(), 1e-12));
+        assert!(approx(bw, rlc.r / (TWO_PI * rlc.l), 1e-9), "Δf vs R/2πL");
+        // The two −3 dB crossings of |H_bp| are ω0·(∓ζ + √(1+ζ²)).
+        let half_power = |lo: f64, hi: f64| -> f64 {
+            let (mut a, mut b) = (lo, hi);
+            for _ in 0..200 {
+                let mid = 0.5 * (a + b);
+                let m = rlc.transfer_bandpass(mid).norm();
+                if (m - std::f64::consts::FRAC_1_SQRT_2) > 0.0 {
+                    a = mid;
+                } else {
+                    b = mid;
+                }
+            }
+            0.5 * (a + b)
+        };
+        let w_hi = half_power(w0, 10.0 * w0);
+        let w_lo = half_power(w0, 0.01 * w0);
+        assert!(approx((w_hi - w_lo) / TWO_PI, bw, 1e-6 * bw), "measured Δf");
+        assert!(approx((w_lo * w_hi).sqrt(), w0, 1e-6 * w0), "edges straddle ω0");
+
+        // The three series transfers are a voltage divider: they sum to 1
+        // at every frequency.
+        for &w in &[0.01 * w0, 0.5 * w0, w0, 2.0 * w0, 100.0 * w0] {
+            let sum = rlc.transfer_lowpass(w) + rlc.transfer_bandpass(w) + rlc.transfer_highpass(w);
+            assert!(approx(sum.re, 1.0, 1e-12) && approx(sum.im, 0.0, 1e-12), "divider at {w}");
+        }
+        // High-pass: → 0 at DC, → 1 well above resonance, and exactly Q at
+        // resonance (ω0·L/R = √(L/C)/R).
+        assert!(rlc.transfer_highpass(1e-3 * w0).norm() < 1e-5, "HP leaks at DC");
+        assert!(approx(rlc.transfer_highpass(1e4 * w0).norm(), 1.0, 1e-6), "HP not unity");
+        assert!(approx(rlc.transfer_highpass(w0).norm(), rlc.q_series(), 1e-9), "HP peak ≠ Q");
+        assert!(rlc.transfer_highpass(1e4 * w0).norm() > rlc.transfer_highpass(0.1 * w0).norm());
+
+        // Parallel impedance peaks at resonance, where it is purely R.
+        let z0 = rlc.parallel_impedance(w0);
+        assert!(approx(z0.re, rlc.r, 1e-9) && z0.im.abs() < 1e-9, "Z_par(ω0) = {z0:?}");
+        let below = rlc.parallel_impedance(0.5 * w0).norm();
+        let above = rlc.parallel_impedance(2.0 * w0).norm();
+        assert!(below < z0.norm() && above < z0.norm(), "not a maximum: {below}, {above}");
+        // Closed form |Z| = R/√(1 + Q_p²(ω/ω0 − ω0/ω)²).
+        for &ratio in &[0.5_f64, 0.8, 1.25, 2.0] {
+            let w = ratio * w0;
+            let qp = rlc.q_parallel();
+            let want = rlc.r / (1.0 + (qp * (ratio - 1.0 / ratio)).powi(2)).sqrt();
+            assert!(
+                approx(rlc.parallel_impedance(w).norm(), want, 1e-9 * rlc.r),
+                "at ω/ω0 = {ratio}"
+            );
+        }
+        // Series and parallel impedances are reciprocal in character: the
+        // series loop is minimum where the parallel tank is maximum.
+        assert!(rlc.series_impedance(w0).norm() < rlc.series_impedance(2.0 * w0).norm());
+    }
+
+    #[test]
+    fn test_rlc_energy_is_conserved_in_the_lossless_tank() {
+        // ½Li² + ½Cv² by definition.
+        let rlc = Rlc { r: 0.0, l: 2e-3, c: 5e-6 };
+        assert!(approx(rlc.energy(3.0, 0.0), 0.5 * 2e-3 * 9.0, 1e-18));
+        assert!(approx(rlc.energy(0.0, 4.0), 0.5 * 5e-6 * 16.0, 1e-18));
+        assert_eq!(rlc.energy(0.0, 0.0), 0.0, "an idle tank stores nothing");
+        // Quadratic in each argument.
+        assert!(approx(rlc.energy(2.0, 0.0), 4.0 * rlc.energy(1.0, 0.0), 1e-18));
+
+        // With R = 0 the loop is a lossless LC oscillator: charge obeys
+        // q̈ + q/(LC) = 0, so total energy ½Li² + q²/(2C) is constant and
+        // sloshes between the inductor and the capacitor at ω0.
+        let w0 = TWO_PI * rlc.resonant_frequency();
+        assert!(approx(w0, 1.0 / (rlc.l * rlc.c).sqrt(), 1e-9));
+        let q0 = 1e-5; // initial charge, capacitor fully charged
+        let e0 = rlc.energy(0.0, q0 / rlc.c);
+        let mut min_frac = f64::MAX;
+        let mut max_frac = f64::MIN;
+        for step in 0..=400 {
+            let t = step as f64 / 400.0 * 4.0 * TWO_PI / w0; // four periods
+            let q = q0 * (w0 * t).cos();
+            let i = -q0 * w0 * (w0 * t).sin();
+            let e = rlc.energy(i, q / rlc.c);
+            assert!(
+                (e - e0).abs() < 1e-12 * e0,
+                "energy drifted at t = {t}: {e} vs {e0}"
+            );
+            // Track how the split moves between the two stores.
+            let magnetic = 0.5 * rlc.l * i * i / e0;
+            min_frac = min_frac.min(magnetic);
+            max_frac = max_frac.max(magnetic);
+        }
+        assert!(min_frac < 1e-4, "energy never fully returns to the capacitor");
+        assert!(max_frac > 1.0 - 1e-4, "energy never fully reaches the inductor");
+        // Equipartition: at ω0·t = π/4 the split is exactly half and half.
+        let t = 0.25 * PI / w0;
+        let q = q0 * (w0 * t).cos();
+        let i = -q0 * w0 * (w0 * t).sin();
+        assert!(approx(0.5 * rlc.l * i * i, 0.5 * e0, 1e-12 * e0), "magnetic half");
+        assert!(approx(q * q / (2.0 * rlc.c), 0.5 * e0, 1e-12 * e0), "electric half");
+        assert!(approx(rlc.energy(i, q / rlc.c), e0, 1e-12 * e0), "equipartition total");
+
+        // With loss the stored energy decays at the rate R/L (the analogue
+        // of the mechanical c/m).
+        let lossy = Rlc { r: 0.5, l: 2e-3, c: 5e-6 };
+        let osc = super::super::oscillator::DampedOscillator {
+            m: lossy.l,
+            c: lossy.r,
+            k: 1.0 / lossy.c,
+        };
+        let traj = osc.forced_response_numeric(&|_| 0.0, q0, 0.0, 0.02, 1e-7);
+        let start = lossy.energy(0.0, q0 / lossy.c);
+        for &(t, q, i) in traj.iter().skip(20000).step_by(40000) {
+            let e = lossy.energy(i, q / lossy.c);
+            let expect = start * (-lossy.r * t / lossy.l).exp();
+            assert!((e - expect).abs() / expect < 0.03, "t = {t}: {e} vs {expect}");
+        }
+    }
+
+    #[test]
     fn test_string_and_stiff_string() {
         let modes = string_modes(0.65, 60.0, 0.001, 5);
         for (i, &f) in modes.iter().enumerate() {

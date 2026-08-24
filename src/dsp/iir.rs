@@ -1412,6 +1412,211 @@ mod tests {
     }
 
     #[test]
+    fn test_quad_roots_recovers_known_factors() {
+        // (z − a)(z − b) = z² − (a+b)z + ab.
+        for &(a, b) in &[(0.5_f64, -0.25_f64), (2.0, 1.0), (-0.9, -0.1), (3.0, 3.0)] {
+            let roots = quad_roots(1.0, -(a + b), a * b);
+            assert_eq!(roots.len(), 2);
+            assert!(roots.iter().all(|r| r.im == 0.0), "spurious imaginary part");
+            let mut got = [roots[0].re, roots[1].re];
+            got.sort_by(|x, y| x.partial_cmp(y).unwrap());
+            let mut want = [a, b];
+            want.sort_by(|x, y| x.partial_cmp(y).unwrap());
+            assert!((got[0] - want[0]).abs() < 1e-12, "{got:?} vs {want:?}");
+            assert!((got[1] - want[1]).abs() < 1e-12, "{got:?} vs {want:?}");
+        }
+        // A non-monic leading coefficient: 2z² − 6z + 4 = 2(z−2)(z−1).
+        let r = quad_roots(2.0, -6.0, 4.0);
+        assert!((r[0].re - 2.0).abs() < 1e-12 && (r[1].re - 1.0).abs() < 1e-12);
+        // Negative discriminant gives a conjugate pair: z² + 1 → ±i.
+        let c = quad_roots(1.0, 0.0, 1.0);
+        assert_eq!(c.len(), 2);
+        assert!(c[0].re.abs() < 1e-15 && (c[0].im - 1.0).abs() < 1e-12);
+        assert!((c[1].im + 1.0).abs() < 1e-12, "not a conjugate pair");
+        // z² − 2z cos θ + 1 has both roots on the unit circle at ±θ.
+        let theta = 0.7_f64;
+        let u = quad_roots(1.0, -2.0 * theta.cos(), 1.0);
+        for root in &u {
+            assert!((root.norm() - 1.0).abs() < 1e-12, "|z| = {}", root.norm());
+            assert!((root.arg().abs() - theta).abs() < 1e-12);
+        }
+        // Vieta on the complex pair: sum = −c1/c0, product = c2/c0.
+        let v = quad_roots(1.0, 0.4, 0.9);
+        let sum = v[0] + v[1];
+        let prod = v[0] * v[1];
+        assert!((sum.re + 0.4).abs() < 1e-12 && sum.im.abs() < 1e-15);
+        assert!((prod.re - 0.9).abs() < 1e-12 && prod.im.abs() < 1e-15);
+        // Degenerate trailing coefficient leaves a first-order factor.
+        let first = quad_roots(2.0, -4.0, 0.0);
+        assert_eq!(first.len(), 1);
+        assert!((first[0].re - 2.0).abs() < 1e-12);
+        assert!(quad_roots(1.0, 0.0, 0.0).is_empty(), "no roots to report");
+    }
+
+    #[test]
+    fn test_biquad_coeffs_describe_the_filter() {
+        let fs = 48000.0;
+        let q = std::f64::consts::FRAC_1_SQRT_2;
+        let lp = Biquad::lowpass(1000.0, fs, q);
+        let (b, a) = lp.coeffs();
+        // The denominator is reported normalized.
+        assert_eq!(a[0], 1.0);
+        assert_eq!((a[1], a[2]), (lp.a1, lp.a2));
+        assert_eq!(b, [lp.b0, lp.b1, lp.b2]);
+        // H(z) at z = 1 (DC) and z = −1 (Nyquist) read straight off the
+        // coefficients: a low-pass is unity at DC with a double zero at
+        // Nyquist.
+        let dc = (b[0] + b[1] + b[2]) / (a[0] + a[1] + a[2]);
+        let nyq_num = b[0] - b[1] + b[2];
+        assert!((dc - 1.0).abs() < 1e-12, "DC gain {dc}");
+        assert!(nyq_num.abs() < 1e-18, "Nyquist numerator {nyq_num}");
+        assert!((dc - lp.freq_response(0.0, fs).norm()).abs() < 1e-12);
+
+        // A high-pass mirrors it: zero at DC, unity at Nyquist.
+        let hp = Biquad::highpass(1000.0, fs, q);
+        let (hb, ha) = hp.coeffs();
+        assert!((hb[0] + hb[1] + hb[2]).abs() < 1e-18, "high-pass leaks DC");
+        let hnyq = (hb[0] - hb[1] + hb[2]) / (ha[0] - ha[1] + ha[2]);
+        assert!((hnyq - 1.0).abs() < 1e-12, "high-pass Nyquist gain {hnyq}");
+
+        // The reported coefficients drive an independent filter
+        // implementation to the same output.
+        let x: Vec<f64> = (0..500).map(|i| ((i * 7919) % 100) as f64 / 50.0 - 1.0).collect();
+        let mut run = lp;
+        let direct = run.process_block(&x);
+        let via_coeffs = iir_apply(&b, &a, &x);
+        for (u, v) in direct.iter().zip(&via_coeffs) {
+            assert!((u - v).abs() < 1e-12, "{u} vs {v}");
+        }
+        // Round-tripping through from_coeffs rebuilds the same section.
+        let rebuilt = Biquad::from_coeffs(b[0], b[1], b[2], a[1], a[2]);
+        assert_eq!(rebuilt.coeffs(), (b, a));
+        for &f in &[10.0, 1000.0, 20000.0] {
+            let (d, r) = (lp.freq_response(f, fs), rebuilt.freq_response(f, fs));
+            assert!((d.re - r.re).abs() < 1e-15 && (d.im - r.im).abs() < 1e-15);
+        }
+    }
+
+    #[test]
+    fn test_sos_poles_and_zeros_rebuild_the_response() {
+        let fs = 48000.0;
+        let sos = butterworth(4, IirKind::Lowpass(1000.0), fs);
+        let poles = sos.poles();
+        let zeros = sos.zeros();
+        assert_eq!(poles.len(), 4, "one pole pair per section");
+        assert_eq!(zeros.len(), 4);
+        // Stability: every pole strictly inside the unit circle.
+        for p in &poles {
+            assert!(p.norm() < 1.0, "pole outside the unit circle: {p:?}");
+        }
+        // A bilinear low-pass puts all of its zeros at z = −1 (Nyquist).
+        for z in &zeros {
+            assert!((z.re + 1.0).abs() < 1e-9 && z.im.abs() < 1e-9, "zero {z:?}");
+        }
+        // Poles come in conjugate pairs.
+        for p in &poles {
+            assert!(
+                poles.iter().any(|o| (o.re - p.re).abs() < 1e-12 && (o.im + p.im).abs() < 1e-12),
+                "unpaired pole {p:?}"
+            );
+        }
+        // Factored form H(z) = k·Π(1 − zᵢz⁻¹)/Π(1 − pᵢz⁻¹) must reproduce
+        // the cascade's own frequency response.
+        assert!(sos.sections.iter().all(|s| (s.b0 - 1.0).abs() < 1e-12));
+        for &f in &[1.0, 250.0, 1000.0, 5000.0, 23000.0] {
+            let zinv = cis(-TWO_PI * f / fs);
+            let num = zeros.iter().fold(C_ONE, |acc, z| acc * (C_ONE - *z * zinv));
+            let den = poles.iter().fold(C_ONE, |acc, p| acc * (C_ONE - *p * zinv));
+            let h = Complex::new(sos.gain, 0.0) * num / den;
+            let want = sos.freq_response(f, fs);
+            assert!(
+                (h.re - want.re).abs() < 1e-9 && (h.im - want.im).abs() < 1e-9,
+                "at {f} Hz: {h:?} vs {want:?}"
+            );
+        }
+        // Vieta ties the reported roots back to the stored coefficients:
+        // per section, Σp = −a1 and Πp = a2 (and likewise b1/b2 for zeros
+        // once b0 = 1).
+        for s in &sos.sections {
+            let sp = quad_roots(1.0, s.a1, s.a2);
+            let (sum, prod) = (sp[0] + sp[1], sp[0] * sp[1]);
+            assert!((sum.re + s.a1).abs() < 1e-12 && sum.im.abs() < 1e-15);
+            assert!((prod.re - s.a2).abs() < 1e-12 && prod.im.abs() < 1e-15);
+            let sz = quad_roots(s.b0, s.b1, s.b2);
+            let zsum = sz[0] + sz[1];
+            assert!((zsum.re + s.b1 / s.b0).abs() < 1e-9);
+        }
+
+        // A high-pass (via lp_to_hp) instead puts all of its zeros at z = +1.
+        let hp = butterworth(4, IirKind::Highpass(1000.0), fs);
+        for z in hp.zeros() {
+            assert!((z.re - 1.0).abs() < 1e-9 && z.im.abs() < 1e-9, "high-pass zero {z:?}");
+        }
+        assert!(hp.poles().iter().all(|p| p.norm() < 1.0));
+
+        // A band-stop (via lp_to_bs) puts its zeros exactly on the unit
+        // circle at the (bilinear-warped) geometric-mean center frequency.
+        let (lo, hi) = (800.0, 1200.0);
+        let bs = butterworth(2, IirKind::Bandstop(lo, hi), fs);
+        let w0 = (prewarp(lo, fs) * prewarp(hi, fs)).sqrt();
+        let f0 = fs / PI * (w0 / (2.0 * fs)).atan();
+        let bz = bs.zeros();
+        assert_eq!(bz.len(), 4);
+        for z in &bz {
+            assert!((z.norm() - 1.0).abs() < 1e-9, "notch zero off the circle: {}", z.norm());
+            assert!(
+                (z.arg().abs() - TWO_PI * f0 / fs).abs() < 1e-9,
+                "notch at {} rad vs {}",
+                z.arg().abs(),
+                TWO_PI * f0 / fs
+            );
+        }
+        // ...and the response really does vanish there.
+        assert!(bs.freq_response(f0, fs).norm() < 1e-12, "band-stop does not notch");
+    }
+
+    #[test]
+    fn test_bilinear_transform_prewarp_pins_the_cutoff() {
+        let fs = 48000.0;
+        let fc = 8000.0; // high enough that the bilinear warping matters
+        let wa = TWO_PI * fc;
+        // One-pole analog low-pass H(s) = ωa/(s + ωa): −3 dB at ωa.
+        let poles = [Complex::new(-wa, 0.0)];
+
+        // With prewarping the digital −3 dB point lands exactly on fc.
+        let warped = bilinear_transform(&[], &poles, wa, fs, Some(fc));
+        assert!((warped.freq_response(0.0, fs).norm() - 1.0).abs() < 1e-12, "DC gain");
+        let g = warped.freq_response(fc, fs).norm();
+        assert!(
+            (g - std::f64::consts::FRAC_1_SQRT_2).abs() < 1e-12,
+            "prewarped cutoff gain {g}"
+        );
+        // Single real pole, single zero at Nyquist.
+        assert_eq!(warped.poles().len(), 1);
+        assert!(warped.poles()[0].norm() < 1.0);
+        assert!((warped.zeros()[0].re + 1.0).abs() < 1e-12);
+
+        // Without prewarping the cutoff is pulled down to the frequency
+        // that maps to ωa: f' = (fs/π)·atan(π·fc/fs).
+        let plain = bilinear_transform(&[], &poles, wa, fs, None);
+        let f_warped = fs / PI * (PI * fc / fs).atan();
+        assert!(f_warped < fc - 500.0, "expected a visible warp, got {f_warped}");
+        let gp = plain.freq_response(f_warped, fs).norm();
+        assert!(
+            (gp - std::f64::consts::FRAC_1_SQRT_2).abs() < 1e-12,
+            "unwarped cutoff gain {gp} at {f_warped} Hz"
+        );
+        assert!((plain.freq_response(0.0, fs).norm() - 1.0).abs() < 1e-12);
+        // The un-prewarped filter is already past −3 dB at fc.
+        assert!(plain.freq_response(fc, fs).norm() < std::f64::consts::FRAC_1_SQRT_2);
+
+        // Prewarping at the cutoff is what the RBJ cookbook does, so the
+        // pinned one-pole agrees with a matched-cutoff design at fc.
+        let rbj = Biquad::lowpass(fc, fs, 0.5);
+        assert!(rbj.freq_response(fc, fs).norm() < 1.0);
+    }
+
+    #[test]
     fn test_a_weighting_reference_points() {
         let fs = 48000.0;
         let a = a_weighting_filter(fs);

@@ -3177,6 +3177,21 @@ mod tests {
                 assert!(close(g2.m[i][j], g.m[i][j], 1e-10));
             }
         }
+        // g g^-1 = g^-1 g = I, and exp(-X) inverts exp(X)
+        for k in [g.compose(&g.inverse()), g.inverse().compose(&g)] {
+            for i in 0..2 {
+                for j in 0..2 {
+                    let want = if i == j { 1.0 } else { 0.0 };
+                    assert!(close(k.m[i][j], want, 1e-14), "SL(2,R) inverse ({i},{j})");
+                }
+            }
+        }
+        let neg = Sl2R::exp([[-gen[0][0], -gen[0][1]], [-gen[1][0], -gen[1][1]]]);
+        for i in 0..2 {
+            for j in 0..2 {
+                assert!(close(g.inverse().m[i][j], neg.m[i][j], 1e-12));
+            }
+        }
         // log of a pure boost diag(e^t, e^-t) is diag(t, -t)
         let t = 0.9_f64;
         let boost = Sl2R {

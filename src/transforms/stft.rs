@@ -490,6 +490,89 @@ mod tests {
     }
 
     #[test]
+    fn test_magnitude_and_power_db_of_a_unit_sine() {
+        let fs = 1000.0;
+        let n_fft = 128;
+        let f0 = 125.0; // exactly bin 16 at this rate and size
+        let bin = 16;
+        // Rectangular window and hop = n_fft: each frame is a whole number
+        // of cycles, so the DFT of a unit sine is exactly N/2 at its bin.
+        let stft = Stft::new(vec![1.0; n_fft], n_fft, n_fft);
+        let x: Vec<f64> = (0..1024).map(|i| (TWO_PI * f0 * i as f64 / fs).sin()).collect();
+        let frames = stft.forward(&x);
+        assert_eq!(frames.len(), 8);
+
+        let mags = Stft::magnitude(&frames);
+        let db = Stft::power_db(&frames);
+        assert_eq!(mags.len(), frames.len());
+        assert_eq!(mags[0].len(), n_fft / 2 + 1);
+        assert_eq!(db.len(), frames.len());
+        assert_eq!(db[0].len(), n_fft / 2 + 1);
+
+        for (t, frame) in frames.iter().enumerate() {
+            // The tone bin carries N/2; every other bin is empty.
+            assert!(
+                (mags[t][bin] - n_fft as f64 / 2.0).abs() < 1e-9,
+                "frame {t} bin {bin}: {}",
+                mags[t][bin]
+            );
+            for k in 0..=n_fft / 2 {
+                if k != bin {
+                    assert!(mags[t][k] < 1e-9, "frame {t} leaked into bin {k}");
+                }
+                // magnitude and power_db describe the same number.
+                assert!((mags[t][k] - frame[k].norm()).abs() < 1e-15);
+                if mags[t][k] > 0.0 {
+                    let want = 20.0 * mags[t][k].log10();
+                    assert!(
+                        (db[t][k] - want.max(-300.0)).abs() < 1e-9,
+                        "frame {t} bin {k}: {} vs {want}",
+                        db[t][k]
+                    );
+                } else {
+                    assert_eq!(db[t][k], -300.0, "empty bin {k} must sit on the floor");
+                }
+            }
+            // 10·log10(|X|²) = 20·log10(N/2) = 36.12 dB for N = 128.
+            let peak_db = 20.0 * (n_fft as f64 / 2.0).log10();
+            assert!((db[t][bin] - peak_db).abs() < 1e-9, "peak {} vs {peak_db}", db[t][bin]);
+            // Everything else is 300+ dB down.
+            let next = (0..=n_fft / 2)
+                .filter(|&k| k != bin)
+                .map(|k| db[t][k])
+                .fold(f64::MIN, f64::max);
+            assert!(db[t][bin] - next > 100.0, "dynamic range only {}", db[t][bin] - next);
+        }
+
+        // Parseval on one rectangular frame: Σ|x|²·N = Σ over the full
+        // spectrum, i.e. |X₀|² + 2·Σ_{1..N/2−1}|Xₖ|² + |X_{N/2}|².
+        let frame_energy: f64 = x[..n_fft].iter().map(|v| v * v).sum();
+        let m = &mags[0];
+        let spec_energy = m[0] * m[0]
+            + 2.0 * m[1..n_fft / 2].iter().map(|v| v * v).sum::<f64>()
+            + m[n_fft / 2] * m[n_fft / 2];
+        assert!(
+            (spec_energy - n_fft as f64 * frame_energy).abs() < 1e-6,
+            "Parseval: {spec_energy} vs {}",
+            n_fft as f64 * frame_energy
+        );
+
+        // Halving the amplitude drops power_db by exactly 6.0206 dB.
+        let half: Vec<f64> = x.iter().map(|v| 0.5 * v).collect();
+        let hdb = Stft::power_db(&stft.forward(&half));
+        assert!(
+            (db[0][bin] - hdb[0][bin] - 20.0 * 2.0_f64.log10()).abs() < 1e-9,
+            "half-amplitude drop {}",
+            db[0][bin] - hdb[0][bin]
+        );
+        // An all-zero signal floors every bin.
+        let silent = Stft::power_db(&stft.forward(&vec![0.0; 1024]));
+        assert!(silent.iter().all(|f| f.iter().all(|&v| v == -300.0)), "floor not applied");
+        assert!(Stft::magnitude(&[]).is_empty());
+        assert!(Stft::power_db(&[]).is_empty());
+    }
+
+    #[test]
     fn test_goertzel_matches_fft_bin() {
         let fs = 1024.0;
         let n = 256;

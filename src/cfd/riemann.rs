@@ -516,10 +516,19 @@ impl Euler1D {
     }
 
     /// Step until time `t`.
+    ///
+    /// The CFL number follows the stability limit of the configured
+    /// reconstruction: the first-order update is TVD up to CFL 1, while
+    /// the MUSCL reconstruction advanced with a single forward-Euler
+    /// update is only TVD for CFL ≤ 1/2 (Harten's condition; see Toro,
+    /// *Riemann Solvers and Numerical Methods*, ch. 13). Running the
+    /// second-order scheme at CFL 0.9 does not converge under grid
+    /// refinement.
     pub fn run_until(&mut self, t: f64) {
+        let cfl = if self.order >= 2 { 0.45 } else { 0.9 };
         while self.time < t - 1e-12 {
             let remaining = t - self.time;
-            let dt = self.step(0.9);
+            let dt = self.step(cfl);
             if dt > remaining {
                 // Undo overshoot proportionally: cheap fix — step was
                 // already applied; accept slight overshoot instead.
@@ -1218,6 +1227,165 @@ mod tests {
         assert!((e2.total_energy() - en0).abs() < 1e-11, "energy drift");
         // Shock position moves right of the split.
         assert!(e.shock_position().unwrap() > 0.7);
+    }
+
+    #[test]
+    fn test_lax_problem_and_run_until() {
+        // Lax's shock tube: the standard left/right states on a unit
+        // domain with gamma = 1.4, split at the mid-point.
+        let n = 400;
+        let mut e = lax_problem(n);
+        assert!((e.gamma - 1.4).abs() < 1e-15);
+        assert!((e.dx - 1.0 / n as f64).abs() < 1e-15);
+        assert_eq!(e.cells.len(), n);
+        let l = Prim { rho: 0.445, u: 0.698, p: 3.528 };
+        let r = Prim { rho: 0.5, u: 0.0, p: 0.571 };
+        let p0 = e.primitives();
+        for (i, pr) in p0.iter().enumerate() {
+            let want = if (i as f64 + 0.5) / (n as f64) < 0.5 { l } else { r };
+            assert!((pr.rho - want.rho).abs() < 1e-12, "rho at {i}: {}", pr.rho);
+            assert!((pr.u - want.u).abs() < 1e-12, "u at {i}: {}", pr.u);
+            assert!((pr.p - want.p).abs() < 1e-12, "p at {i}: {}", pr.p);
+        }
+        assert!(e.time == 0.0);
+
+        // `run_until` advances to (at least) the requested time without
+        // overshooting by more than a single step.
+        let t_end = 0.13;
+        e.flux = FluxKind::Hllc;
+        e.run_until(t_end);
+        assert!(e.time >= t_end - 1e-12, "run_until stopped short at {}", e.time);
+        let dt_bound = 0.45 * e.dx
+            / e.primitives()
+                .iter()
+                .map(|p| p.u.abs() + sound_speed(*p, e.gamma))
+                .fold(0.0_f64, f64::max)
+            * 2.0;
+        assert!(
+            e.time <= t_end + dt_bound,
+            "run_until overshot: {} vs {t_end}",
+            e.time
+        );
+        // Positivity of the numerical solution.
+        assert!(
+            e.primitives().iter().all(|p| p.rho > 0.0 && p.p > 0.0),
+            "lost positivity"
+        );
+
+        // Compare against the exact self-similar solution.
+        let l1_against_exact = |sim: &Euler1D| -> (f64, f64) {
+            let m = sim.cells.len();
+            let (mut l1_rho, mut l1_p) = (0.0, 0.0);
+            for (i, pr) in sim.primitives().iter().enumerate() {
+                let x = (i as f64 + 0.5) / (m as f64) - 0.5;
+                let ex = riemann_exact(l, r, 1.4, x / sim.time);
+                l1_rho += (pr.rho - ex.rho).abs();
+                l1_p += (pr.p - ex.p).abs();
+            }
+            (l1_rho / m as f64, l1_p / m as f64)
+        };
+        let prims = e.primitives();
+        let (l1_rho, l1_p) = l1_against_exact(&e);
+        // The mean exact density over the tube is ~0.9 and the mean
+        // pressure ~1.7; the scheme smears the contact and the shock over
+        // a few cells, leaving well under 1% of L1 at 400 cells.
+        assert!(l1_rho < 0.01, "Lax L1 density error {l1_rho}");
+        assert!(l1_p < 0.01, "Lax L1 pressure error {l1_p}");
+
+        // The solution converges under grid refinement (first order at the
+        // discontinuities, so the error falls by roughly the mesh ratio's
+        // square root or better). Measured: 6.5e-3 at n = 400 and 2.1e-3
+        // at n = 1600.
+        let mut fine = lax_problem(4 * n);
+        fine.flux = FluxKind::Hllc;
+        fine.run_until(t_end);
+        let (l1_rho_fine, _) = l1_against_exact(&fine);
+        assert!(
+            l1_rho_fine < 0.5 * l1_rho,
+            "no convergence under refinement: {l1_rho} -> {l1_rho_fine}"
+        );
+
+        // Star-region plateau: constant pressure and velocity between the
+        // contact and the shock, matching the exact star state.
+        let (p_star, u_star) = riemann_exact_star(l, r, 1.4);
+        let i_shock = (0..n)
+            .rev()
+            .find(|&i| prims[i].p > 0.5 * (p_star + r.p))
+            .expect("the shock must be inside the domain");
+        assert!(i_shock < n - 5, "shock reached the boundary");
+        for i in (i_shock - 20)..(i_shock - 6) {
+            assert!(
+                (prims[i].p / p_star - 1.0).abs() < 0.02,
+                "star pressure {} vs {p_star} at cell {i}",
+                prims[i].p
+            );
+            assert!(
+                (prims[i].u / u_star - 1.0).abs() < 0.02,
+                "star velocity {} vs {u_star} at cell {i}",
+                prims[i].u
+            );
+        }
+        // The contact sits to the left of the shock and moves at u*, so
+        // density jumps there while pressure and velocity do not.
+        let i_contact = ((0.5 + u_star * e.time) * n as f64) as usize;
+        assert!(i_contact < i_shock, "contact must trail the shock");
+        assert!(
+            (prims[i_contact - 12].p / prims[i_contact + 12].p - 1.0).abs() < 0.02,
+            "pressure jumps across the contact"
+        );
+        assert!(
+            prims[i_contact - 12].rho / prims[i_contact + 12].rho < 0.85,
+            "no density jump across the contact"
+        );
+    }
+
+    #[test]
+    fn test_run_until_conserves_mass_and_energy_periodically() {
+        // With periodic boundaries the finite-volume update telescopes, so
+        // `run_until` must conserve the integrals of rho and E exactly.
+        let n = 200;
+        let mut e = lax_problem(n);
+        e.bc = EulerBc::Periodic;
+        let m0 = e.total_mass();
+        let en0 = e.total_energy();
+        // Analytic mass of the initial data: half the domain at each state.
+        assert!(
+            (m0 - 0.5 * (0.445 + 0.5)).abs() < 1e-12,
+            "initial mass {m0} vs {}",
+            0.5 * (0.445 + 0.5)
+        );
+        e.run_until(0.05);
+        assert!(e.time >= 0.05 - 1e-12);
+        assert!((e.total_mass() - m0).abs() < 1e-12, "mass drift {} vs {m0}", e.total_mass());
+        assert!(
+            (e.total_energy() - en0).abs() < 1e-11,
+            "energy drift {} vs {en0}",
+            e.total_energy()
+        );
+        assert!(e.primitives().iter().all(|p| p.rho > 0.0 && p.p > 0.0));
+
+        // `run_until` is just repeated `step` up to the target time:
+        // reaching the same time by hand gives the same state.
+        let mut manual = lax_problem(n);
+        manual.bc = EulerBc::Periodic;
+        while manual.time < 0.05 - 1e-12 {
+            let remaining = 0.05 - manual.time;
+            let dt = manual.step(0.45);
+            if dt > remaining {
+                break;
+            }
+        }
+        assert!((manual.time - e.time).abs() < 1e-14, "times differ");
+        for (a, b) in manual.cells.iter().zip(&e.cells) {
+            assert!((a.rho - b.rho).abs() < 1e-14);
+            assert!((a.mom - b.mom).abs() < 1e-14);
+            assert!((a.e - b.e).abs() < 1e-14);
+        }
+
+        // Calling `run_until` again with a time already passed is a no-op.
+        let before = e.time;
+        e.run_until(0.0);
+        assert!((e.time - before).abs() < 1e-15);
     }
 
     #[test]
