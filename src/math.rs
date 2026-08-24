@@ -58,6 +58,35 @@ impl Vec2 {
     pub fn lerp(&self, other: &Vec2, t: f64) -> Vec2 {
         Vec2::new(self.x + (other.x - self.x) * t, self.y + (other.y - self.y) * t)
     }
+
+    /// Distance to another point.
+    #[must_use]
+    pub fn distance_to(&self, other: &Vec2) -> f64 {
+        (*self - *other).magnitude()
+    }
+
+    /// Unsigned angle to another vector in [0, pi].
+    #[must_use]
+    pub fn angle_between(&self, other: &Vec2) -> f64 {
+        let denom = self.magnitude() * other.magnitude();
+        if denom == 0.0 {
+            return 0.0;
+        }
+        (self.dot(other) / denom).clamp(-1.0, 1.0).acos()
+    }
+
+    /// Rotation by `angle` radians counter-clockwise about the origin.
+    #[must_use]
+    pub fn rotate(&self, angle: f64) -> Vec2 {
+        let (s, c) = angle.sin_cos();
+        Vec2::new(c * self.x - s * self.y, s * self.x + c * self.y)
+    }
+
+    /// Embedding into 3-D with z = 0.
+    #[must_use]
+    pub fn to_vec3(&self) -> Vec3 {
+        Vec3::new(self.x, self.y, 0.0)
+    }
 }
 
 impl Add for Vec2 {
@@ -197,130 +226,6 @@ impl Neg for Vec3 {
     type Output = Vec3;
     fn neg(self) -> Vec3 {
         Vec3::new(-self.x, -self.y, -self.z)
-    }
-}
-
-/// 2-D vector of f64.
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub struct Vec2 {
-    pub x: f64,
-    pub y: f64,
-}
-
-impl Vec2 {
-    pub const ZERO: Vec2 = Vec2 { x: 0.0, y: 0.0 };
-
-    /// Creates a vector from components.
-    #[must_use]
-    pub fn new(x: f64, y: f64) -> Self {
-        Self { x, y }
-    }
-
-    /// Euclidean length: √(x² + y²).
-    #[must_use]
-    pub fn magnitude(&self) -> f64 {
-        (self.x * self.x + self.y * self.y).sqrt()
-    }
-
-    /// Squared length: x² + y².
-    #[must_use]
-    pub fn magnitude_squared(&self) -> f64 {
-        self.x * self.x + self.y * self.y
-    }
-
-    /// Unit vector in the same direction (ZERO stays ZERO).
-    #[must_use]
-    pub fn normalized(&self) -> Self {
-        let m = self.magnitude();
-        if m == 0.0 {
-            Self::ZERO
-        } else {
-            Self::new(self.x / m, self.y / m)
-        }
-    }
-
-    /// Dot product: x₁x₂ + y₁y₂.
-    #[must_use]
-    pub fn dot(&self, other: &Vec2) -> f64 {
-        self.x * other.x + self.y * other.y
-    }
-
-    /// 2-D cross product (z of the 3-D cross): x₁y₂ − y₁x₂.
-    #[must_use]
-    pub fn cross(&self, other: &Vec2) -> f64 {
-        self.x * other.y - self.y * other.x
-    }
-
-    /// Counter-clockwise perpendicular: (−y, x).
-    #[must_use]
-    pub fn perp(&self) -> Vec2 {
-        Vec2::new(-self.y, self.x)
-    }
-
-    /// Distance to another point.
-    #[must_use]
-    pub fn distance_to(&self, other: &Vec2) -> f64 {
-        (*self - *other).magnitude()
-    }
-
-    /// Unsigned angle to another vector in [0, π].
-    #[must_use]
-    pub fn angle_between(&self, other: &Vec2) -> f64 {
-        let denom = self.magnitude() * other.magnitude();
-        if denom == 0.0 {
-            return 0.0;
-        }
-        (self.dot(other) / denom).clamp(-1.0, 1.0).acos()
-    }
-
-    /// Linear interpolation: self + t·(other − self).
-    #[must_use]
-    pub fn lerp(&self, other: &Vec2, t: f64) -> Vec2 {
-        Vec2::new(
-            self.x + t * (other.x - self.x),
-            self.y + t * (other.y - self.y),
-        )
-    }
-
-    /// Rotation by `angle` radians counter-clockwise about the origin.
-    #[must_use]
-    pub fn rotate(&self, angle: f64) -> Vec2 {
-        let (s, c) = angle.sin_cos();
-        Vec2::new(c * self.x - s * self.y, s * self.x + c * self.y)
-    }
-
-    /// Embedding into 3-D with z = 0.
-    #[must_use]
-    pub fn to_vec3(&self) -> Vec3 {
-        Vec3::new(self.x, self.y, 0.0)
-    }
-}
-
-impl Add for Vec2 {
-    type Output = Vec2;
-    fn add(self, rhs: Vec2) -> Vec2 {
-        Vec2::new(self.x + rhs.x, self.y + rhs.y)
-    }
-}
-
-impl Sub for Vec2 {
-    type Output = Vec2;
-    fn sub(self, rhs: Vec2) -> Vec2 {
-        Vec2::new(self.x - rhs.x, self.y - rhs.y)
-    }
-}
-
-impl Mul<f64> for Vec2 {
-    type Output = Vec2;
-    fn mul(self, rhs: f64) -> Vec2 {
-        Vec2::new(self.x * rhs, self.y * rhs)
-    }
-}
-
-impl Neg for Vec2 {
-    type Output = Vec2;
-    fn neg(self) -> Vec2 {
-        Vec2::new(-self.x, -self.y)
     }
 }
 
