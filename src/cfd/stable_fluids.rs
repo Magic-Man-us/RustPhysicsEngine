@@ -1509,6 +1509,203 @@ mod tests {
     }
 
     #[test]
+    fn test_add_velocity_injects_the_requested_momentum() {
+        let n = 64;
+        let dx = 1.0 / n as f64;
+        let sigma = 2.0 * dx;
+        let (x0, y0) = (0.5, 0.5);
+        let v = Vec2::new(0.7, -0.4);
+
+        let mut f = StableFluid2::new(n, n, dx);
+        f.add_velocity(x0, y0, v);
+
+        // Every face gets exactly v times the Gaussian weight at that
+        // face's own position.
+        for j in 0..n {
+            for i in 0..=n {
+                let (px, py) = (i as f64 * dx, (j as f64 + 0.5) * dx);
+                let w = (-((px - x0).powi(2) + (py - y0).powi(2)) / (2.0 * sigma * sigma)).exp();
+                assert!(
+                    (f.grid.u[f.grid.u_idx(i, j)] - v.x * w).abs() < 1e-15,
+                    "u face ({i},{j})"
+                );
+            }
+        }
+        for j in 0..=n {
+            for i in 0..n {
+                let (px, py) = ((i as f64 + 0.5) * dx, j as f64 * dx);
+                let w = (-((px - x0).powi(2) + (py - y0).powi(2)) / (2.0 * sigma * sigma)).exp();
+                assert!(
+                    (f.grid.v[f.grid.v_idx(i, j)] - v.y * w).abs() < 1e-15,
+                    "v face ({i},{j})"
+                );
+            }
+        }
+
+        // Integrated momentum: Σ u dx² approximates v_x ∫∫ exp(−r²/2σ²)
+        // = v_x · 2πσ². The blob is 8 cells wide and sits well inside the
+        // domain, so the midpoint sum is accurate to well under a percent.
+        let px: f64 = f.grid.u.iter().sum::<f64>() * dx * dx;
+        let py: f64 = f.grid.v.iter().sum::<f64>() * dx * dx;
+        let gauss = 2.0 * PI * sigma * sigma;
+        assert!(
+            (px / (v.x * gauss) - 1.0).abs() < 5e-3,
+            "x momentum {px} vs {}",
+            v.x * gauss
+        );
+        assert!(
+            (py / (v.y * gauss) - 1.0).abs() < 5e-3,
+            "y momentum {py} vs {}",
+            v.y * gauss
+        );
+
+        // The injection is linear: two calls add, and the peak face value
+        // is the requested velocity (weight 1 at the blob centre, which
+        // lies on a u face when x0 is a multiple of dx).
+        let mut g = StableFluid2::new(n, n, dx);
+        g.add_velocity(x0, y0, Vec2::new(0.3, -0.1));
+        g.add_velocity(x0, y0, Vec2::new(0.4, -0.3));
+        for (a, b) in g.grid.u.iter().zip(&f.grid.u) {
+            assert!((a - b).abs() < 1e-15, "add_velocity is not additive: {a} vs {b}");
+        }
+        for (a, b) in g.grid.v.iter().zip(&f.grid.v) {
+            assert!((a - b).abs() < 1e-15);
+        }
+        let centre_u = f.grid.u[f.grid.u_idx((x0 / dx).round() as usize, n / 2)];
+        // The u faces sit at y = (j+0.5)dx, half a cell off the blob
+        // centre, so the peak weight is exp(−(dx/2)²/(2σ²)).
+        let peak_w = (-(0.5 * dx).powi(2) / (2.0 * sigma * sigma)).exp();
+        assert!(
+            (centre_u - v.x * peak_w).abs() < 1e-14,
+            "peak u {centre_u} vs {}",
+            v.x * peak_w
+        );
+
+        // Opposite injections cancel exactly.
+        let mut z = StableFluid2::new(n, n, dx);
+        z.add_velocity(x0, y0, v);
+        z.add_velocity(x0, y0, Vec2::new(-v.x, -v.y));
+        assert!(z.grid.u.iter().all(|u| u.abs() < 1e-16));
+        assert!(z.grid.v.iter().all(|v| v.abs() < 1e-16));
+
+        // A blob of momentum injected into a quiescent, incompressible
+        // box is mostly removed by the projection (a pure translation is
+        // not a possible motion of an enclosed incompressible fluid), and
+        // what survives is divergence free.
+        let mut proj = StableFluid2::new(n, n, dx);
+        proj.set_pressure_solver(PressureSolver::Cg { tol: 1e-12, max_iter: 4000 });
+        proj.add_velocity(x0, y0, v);
+        let ke_before = proj.grid.kinetic_energy();
+        proj.grid.apply_bc(FluidBc::NoSlip);
+        proj.project();
+        assert!(proj.divergence_max() < 1e-8, "divergence {}", proj.divergence_max());
+        assert!(
+            proj.grid.kinetic_energy() < ke_before,
+            "projection must remove the compressive part"
+        );
+    }
+
+    #[test]
+    fn test_lift_on_solid_symmetry() {
+        // Uniform flow at incidence over a circular obstacle placed on the
+        // horizontal mid-line of the box. Reflecting the box about that
+        // line maps the +alpha problem onto the −alpha one, so the lift is
+        // an odd function of the incidence and the drag an even one.
+        let (nx, ny) = (64_usize, 48_usize);
+        let dx = 1.0 / ny as f64;
+        let force_at = |alpha: f64| -> (f64, f64) {
+            let mut f = StableFluid2::new(nx, ny, dx);
+            f.set_pressure_solver(PressureSolver::Cg { tol: 1e-13, max_iter: 8000 });
+            // Centre the circle on the horizontal mid-line so the geometry
+            // is exactly mirror symmetric across it.
+            f.grid.set_solid_circle(0.4 * nx as f64 * dx, 0.5 * ny as f64 * dx, 0.18);
+            for j in 0..ny {
+                for i in 0..=nx {
+                    let idx = f.grid.u_idx(i, j);
+                    f.grid.u[idx] = alpha.cos();
+                }
+            }
+            for j in 0..=ny {
+                for i in 0..nx {
+                    let idx = f.grid.v_idx(i, j);
+                    f.grid.v[idx] = alpha.sin();
+                }
+            }
+            f.grid.apply_bc(FluidBc::FreeSlip);
+            f.project();
+            (f.drag_on_solid().x, f.lift_on_solid())
+        };
+
+        // Symmetric case: the lift of a symmetric body in an aligned
+        // stream vanishes.
+        let (drag0, lift0) = force_at(0.0);
+        assert!(
+            lift0.abs() < 1e-9 * drag0.abs().max(1e-12),
+            "symmetric configuration has lift {lift0} (drag {drag0})"
+        );
+
+        // Antisymmetry in the incidence.
+        let alpha = 0.35;
+        let (drag_p, lift_p) = force_at(alpha);
+        let (drag_m, lift_m) = force_at(-alpha);
+        assert!(lift_p.is_finite() && lift_m.is_finite());
+        assert!(
+            lift_p.abs() > 1e-6,
+            "an inclined stream should load the body: {lift_p}"
+        );
+        assert!(
+            (lift_p + lift_m).abs() < 1e-6 * lift_p.abs(),
+            "lift is not odd in the incidence: {lift_p} vs {lift_m}"
+        );
+        assert!(
+            (drag_p - drag_m).abs() < 1e-6 * drag_p.abs().max(1e-12),
+            "drag is not even in the incidence: {drag_p} vs {drag_m}"
+        );
+        // `lift_on_solid` is exactly the transverse component of the
+        // pressure force.
+        let mut check = StableFluid2::new(nx, ny, dx);
+        check.set_pressure_solver(PressureSolver::Cg { tol: 1e-13, max_iter: 8000 });
+        check.grid.set_solid_circle(0.4 * nx as f64 * dx, 0.5 * ny as f64 * dx, 0.18);
+        for j in 0..ny {
+            for i in 0..=nx {
+                let idx = check.grid.u_idx(i, j);
+                check.grid.u[idx] = alpha.cos();
+            }
+        }
+        for j in 0..=ny {
+            for i in 0..nx {
+                let idx = check.grid.v_idx(i, j);
+                check.grid.v[idx] = alpha.sin();
+            }
+        }
+        check.grid.apply_bc(FluidBc::FreeSlip);
+        check.project();
+        assert!((check.lift_on_solid() - check.drag_on_solid().y).abs() < 1e-15);
+
+        // With no solid at all there is nothing to load.
+        let empty = StableFluid2::new(16, 16, 1.0 / 16.0);
+        assert!(empty.lift_on_solid().abs() < 1e-15);
+        assert!(empty.drag_on_solid().magnitude() < 1e-15);
+
+        // A real wake case stays finite and produces downstream drag.
+        let mut cyl = flow_past_cylinder(48, 24, 100.0);
+        let dt = 0.4 * cyl.grid.dx;
+        for _ in 0..40 {
+            cyl.grid.apply_bc(cyl.bc);
+            cyl.step(dt);
+        }
+        assert!(cyl.lift_on_solid().is_finite(), "lift is not finite");
+        assert!(cyl.drag_on_solid().x > 0.0, "no downstream drag");
+        // `flow_past_cylinder` seeds an up-down asymmetric perturbation to
+        // trip vortex shedding, so the transverse load is genuinely
+        // non-zero rather than cancelling by symmetry.
+        assert!(
+            cyl.lift_on_solid().abs() > 0.0,
+            "an asymmetric wake must load the cylinder transversely"
+        );
+    }
+
+    #[test]
     fn test_cylinder_smoke_and_drag() {
         let mut f = flow_past_cylinder(48, 24, 100.0);
         let dt = 0.4 * f.grid.dx;
