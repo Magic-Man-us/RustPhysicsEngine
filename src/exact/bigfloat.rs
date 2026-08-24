@@ -284,15 +284,14 @@ impl BigFloat {
             None => (false, text.strip_prefix('+').unwrap_or(text)),
         };
         let (mant_str, exp_str) = match rest.find(['e', 'E']) {
-            Some(i) => (&rest[..i], &rest[i + 1..]),
-            None => (rest, ""),
+            Some(i) => (&rest[..i], Some(&rest[i + 1..])),
+            None => (rest, None),
         };
-        let exp10: i64 = if exp_str.is_empty() {
-            0
-        } else {
-            exp_str
+        let exp10: i64 = match exp_str {
+            None => 0,
+            Some(text) => text
                 .parse::<i64>()
-                .map_err(|_| GeomError::InvalidArgument("invalid decimal exponent"))?
+                .map_err(|_| GeomError::InvalidArgument("invalid decimal exponent"))?,
         };
         let (int_part, frac_part) = match mant_str.find('.') {
             Some(i) => (&mant_str[..i], &mant_str[i + 1..]),
@@ -693,6 +692,9 @@ impl BigFloat {
 
     /// Fixed-point decimal string with exactly `digits` digits after the
     /// decimal point, correctly rounded (ties to even).
+    ///
+    /// A negative value keeps its sign even when it rounds to zero, so
+    /// `-0.001` printed with two digits is `"-0.00"`.
     ///
     /// # Panics
     /// Panics if the binary exponent exceeds ±2^32, which would make the
@@ -1497,8 +1499,10 @@ mod tests {
         assert_eq!(BigFloat::from_i64(7, 8).round_to(2).to_f64(), 8.0_f64);
         // 3 = 0b11 is exact at 2 bits.
         assert_eq!(BigFloat::from_i64(3, 8).round_to(2).to_f64(), 3.0_f64);
-        // 13 = 0b1101 -> 2 bits: above the tie, rounds up to 0b100 -> 16.
-        assert_eq!(BigFloat::from_i64(13, 8).round_to(2).to_f64(), 16.0_f64);
+        // 13 = 0b1101 -> 2 bits: below the tie, rounds down to 0b11 -> 12.
+        assert_eq!(BigFloat::from_i64(13, 8).round_to(2).to_f64(), 12.0_f64);
+        // 14 = 0b1110 -> 2 bits: above the tie, rounds up to 0b100 -> 16.
+        assert_eq!(BigFloat::from_i64(14, 8).round_to(2).to_f64(), 16.0_f64);
         assert_eq!(BigFloat::from_i64(-5, 8).round_to(2).to_f64(), -4.0_f64);
     }
 
@@ -1570,6 +1574,11 @@ mod tests {
             assert_close(&a, &b, prec as i64 - 4, "machin vs agm pi");
         }
         assert_eq!(machin_pi(700).round_to(650), BigFloat::pi(700).round_to(650));
+        // Both algorithms must reproduce the published expansion.
+        assert_eq!(
+            machin_pi(digits_to_bits(100)).digit_string(100, false),
+            PI_100
+        );
     }
 
     #[test]
@@ -1589,7 +1598,11 @@ mod tests {
         for s in ["0.5", "1", "2", "7.25", "1234.5", "0.001", "1e-8", "1e12"] {
             let x = bf(s, prec);
             assert_close(&x.ln().exp(), &x, prec as i64 - 24, "exp(ln x)");
-            assert_close(&x.exp().ln(), &x, prec as i64 - 24, "ln(exp x)");
+            // Round-tripping the other way cannot beat the absolute
+            // resolution of exp(x) near 1: for |x| < 1 the recoverable
+            // relative accuracy drops by -scale(x) bits.
+            let loss = (-x.scale()).max(0);
+            assert_close(&x.exp().ln(), &x, prec as i64 - 24 - loss, "ln(exp x)");
         }
         assert!(BigFloat::one(120).ln().is_zero());
         assert_eq!(BigFloat::zero(120).exp(), BigFloat::one(120));
@@ -1830,12 +1843,34 @@ mod tests {
         assert!(b.neg() < a.neg());
         // Different scales.
         assert!(BigFloat::one(8).mul_pow2(-100) < BigFloat::one(8).mul_pow2(100));
-        let mut v = vec![bf("3", 60), bf("-1", 60), bf("0", 60), bf("2.5", 60)];
+        let mut v = [bf("3", 60), bf("-1", 60), bf("0", 60), bf("2.5", 60)];
         v.sort();
         assert_eq!(
             v.iter().map(BigFloat::to_f64).collect::<Vec<_>>(),
             vec![-1.0_f64, 0.0_f64, 2.5_f64, 3.0_f64]
         );
+    }
+
+    #[test]
+    fn test_sign_and_scaling_helpers() {
+        let x = bf("-6.25", 60);
+        assert!(x.is_negative() && !x.is_positive() && !x.is_zero());
+        assert_eq!(x.signum(), -1);
+        assert_eq!(x.abs().signum(), 1);
+        assert_eq!(x.neg(), x.abs());
+        assert_eq!(x.abs().neg(), x);
+        assert_eq!(BigFloat::zero(60).signum(), 0);
+        // Scaling by a power of two is exact and never changes the mantissa.
+        let y = x.mul_pow2(37);
+        assert_eq!(y.mantissa, x.mantissa);
+        assert_eq!(y.exponent, x.exponent + 37);
+        assert_eq!(y.mul_pow2(-37), x);
+        assert!(BigFloat::zero(60).mul_pow2(9).is_zero());
+        // Widening precision keeps the value; narrowing rounds it.
+        assert_eq!(x.round_to(200), x);
+        assert_eq!(x.round_to(200).precision, 200);
+        assert_eq!(BigFloat::from_bigint(&BigInt::from_i64(-27), 40).to_f64(), -27.0_f64);
+        assert_eq!(BigFloat::from_i64(-27, 40), BigFloat::from_bigint(&BigInt::from_i64(-27), 90));
     }
 
     // -- strings ------------------------------------------------------------
@@ -1890,6 +1925,7 @@ mod tests {
         let two_thirds = third.mul_pow2(1);
         assert_eq!(two_thirds.to_string_decimal(10), "0.6666666667");
         assert_eq!(BigFloat::pi(200).to_string_decimal(20), "3.14159265358979323846");
+        assert_eq!(bf("-0.001", 60).to_string_decimal(2), "-0.00");
     }
 
     // -- compensated summation cross-check -----------------------------------
