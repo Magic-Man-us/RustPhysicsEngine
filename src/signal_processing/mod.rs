@@ -1,23 +1,24 @@
-pub mod fft;
+// The FFT moved to `transforms::fft` and the window generators and
+// first-order RC filters to `dsp` (Step 0 of roadmap Part 3); everything
+// stays importable from its old path here.
+pub mod fft {
+    //! Re-export of `transforms::fft` at its pre-Part-3 path.
+    pub use crate::transforms::fft::*;
+}
 
-pub use fft::{fft, fft_convolve, ifft, next_power_of_two, rfft};
+pub use crate::dsp::iir::{first_order_highpass, first_order_lowpass};
+pub use crate::dsp::windows::{
+    blackman_window, hamming_window, hann_window, rectangular_window,
+};
+pub use crate::transforms::fft::{fft, fft_convolve, ifft, next_power_of_two, rfft};
 
 use crate::math::constants::PI;
 
 const TWO_PI: f64 = 2.0 * PI;
-const FOUR_PI: f64 = 4.0 * PI;
 
 // LCG parameters (Numerical Recipes)
 const LCG_MULTIPLIER: u64 = 6364136223846793005;
 const LCG_INCREMENT: u64 = 1442695040888963407;
-
-// Window function coefficients
-const HANN_COEFF: f64 = 0.5;
-const HAMMING_A0: f64 = 0.54;
-const HAMMING_A1: f64 = 0.46;
-const BLACKMAN_A0: f64 = 0.42;
-const BLACKMAN_A1: f64 = 0.5;
-const BLACKMAN_A2: f64 = 0.08;
 
 // --- Convolution & Correlation ---
 
@@ -72,52 +73,7 @@ pub fn normalize_signal(signal: &mut [f64]) {
 }
 
 // --- Window Functions ---
-
-/// Generate a Hann window of length n: w[k] = 0.5·(1 - cos(2πk/(n-1)))
-#[must_use]
-pub fn hann_window(n: usize) -> Vec<f64> {
-    if n <= 1 {
-        return vec![1.0; n];
-    }
-    let denom = (n - 1) as f64;
-    (0..n)
-        .map(|k| HANN_COEFF * (1.0 - (TWO_PI * k as f64 / denom).cos()))
-        .collect()
-}
-
-/// Generate a Hamming window of length n: w[k] = 0.54 - 0.46·cos(2πk/(n-1))
-#[must_use]
-pub fn hamming_window(n: usize) -> Vec<f64> {
-    if n <= 1 {
-        return vec![1.0; n];
-    }
-    let denom = (n - 1) as f64;
-    (0..n)
-        .map(|k| HAMMING_A0 - HAMMING_A1 * (TWO_PI * k as f64 / denom).cos())
-        .collect()
-}
-
-/// Generate a Blackman window of length n: w[k] = 0.42 - 0.5·cos(2πk/(n-1)) + 0.08·cos(4πk/(n-1))
-#[must_use]
-pub fn blackman_window(n: usize) -> Vec<f64> {
-    if n <= 1 {
-        return vec![1.0; n];
-    }
-    let denom = (n - 1) as f64;
-    (0..n)
-        .map(|k| {
-            let kf = k as f64;
-            BLACKMAN_A0 - BLACKMAN_A1 * (TWO_PI * kf / denom).cos()
-                + BLACKMAN_A2 * (FOUR_PI * kf / denom).cos()
-        })
-        .collect()
-}
-
-/// Generate a rectangular (uniform) window of length n: w[k] = 1 for all k
-#[must_use]
-pub fn rectangular_window(n: usize) -> Vec<f64> {
-    vec![1.0; n]
-}
+// (generators now live in `dsp::windows`, re-exported above)
 
 /// Element-wise multiplication of signal by window coefficients
 #[must_use]
@@ -171,32 +127,8 @@ pub fn exponential_moving_average(signal: &[f64], alpha: f64) -> Vec<f64> {
     output
 }
 
-/// First-order RC low-pass filter: α = dt / (RC + dt)
-#[must_use]
-pub fn first_order_lowpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64> {
-    assert!(dt > 0.0, "time step dt must be positive");
-    assert!(rc >= 0.0, "RC time constant must be non-negative");
-    let alpha = dt / (rc + dt);
-    exponential_moving_average(signal, alpha)
-}
-
-/// First-order RC high-pass filter: α = RC / (RC + dt)
-#[must_use]
-pub fn first_order_highpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64> {
-    assert!(dt > 0.0, "time step dt must be positive");
-    assert!(rc >= 0.0, "RC time constant must be non-negative");
-    if signal.is_empty() {
-        return Vec::new();
-    }
-    let alpha = rc / (rc + dt);
-    let mut output = Vec::with_capacity(signal.len());
-    output.push(signal[0]);
-    for i in 1..signal.len() {
-        let prev = output[i - 1];
-        output.push(alpha * (prev + signal[i] - signal[i - 1]));
-    }
-    output
-}
+// (first_order_lowpass / first_order_highpass now live in `dsp::iir`,
+// re-exported above)
 
 /// Median filter for impulse noise removal with specified window size
 #[must_use]

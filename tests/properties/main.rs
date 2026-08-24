@@ -13,3 +13,4 @@ mod special_props;
 mod monte_carlo_props;
 mod patterns_props;
 mod statistics_props;
+mod transforms_props;

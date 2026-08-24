@@ -198,8 +198,72 @@ pub fn ellipse_perimeter_exact(a: f64, b: f64) -> f64 {
     4.0 * major * elliptic_e(m)
 }
 
+
+/// Jacobi elliptic functions (sn, cn, dn) of real argument u with
+/// parameter m = k², by the descending Gauss/AGM transformation
+/// (Abramowitz & Stegun §16.4).
+///
+/// # Panics
+/// Panics unless 0 ≤ m ≤ 1.
+#[must_use]
+pub fn jacobi_elliptic(u: f64, m: f64) -> (f64, f64, f64) {
+    assert!((0.0..=1.0).contains(&m), "jacobi_elliptic requires 0 <= m <= 1");
+    if m == 0.0 {
+        return (u.sin(), u.cos(), 1.0);
+    }
+    if m == 1.0 {
+        let sech = 1.0 / u.cosh();
+        return (u.tanh(), sech, sech);
+    }
+    // AGM chain a_{n+1} = (a_n+b_n)/2, b_{n+1} = sqrt(a_n b_n).
+    let mut a = vec![1.0_f64];
+    let mut b = (1.0 - m).sqrt();
+    let mut c = vec![m.sqrt()];
+    let mut n = 0;
+    while c[n].abs() > AGM_TOL * a[n] && n < AGM_MAX_ITER {
+        let an = 0.5 * (a[n] + b);
+        c.push(0.5 * (a[n] - b));
+        b = (a[n] * b).sqrt();
+        a.push(an);
+        n += 1;
+    }
+    // Descending phase recursion.
+    let mut phi = (2.0_f64).powi(n as i32) * a[n] * u;
+    for i in (1..=n).rev() {
+        let s = (c[i] / a[i]) * phi.sin();
+        phi = 0.5 * (phi + s.asin());
+    }
+    let sn = phi.sin();
+    let cn = phi.cos();
+    let dn = (1.0 - m * sn * sn).sqrt();
+    (sn, cn, dn)
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_jacobi_elliptic_identities() {
+        use super::*;
+        // sn²+cn²=1, dn²+m·sn²=1; m=0 and m=1 limits; K(m) quarter period.
+        for &m in &[0.0, 0.1, 0.5, 0.9, 1.0] {
+            for &u in &[-2.0, -0.3, 0.0, 0.7, 1.9] {
+                let (sn, cn, dn) = jacobi_elliptic(u, m);
+                assert!((sn * sn + cn * cn - 1.0).abs() < 1e-12);
+                assert!((dn * dn + m * sn * sn - 1.0).abs() < 1e-12);
+            }
+        }
+        // sn(K(m), m) = 1.
+        for &m in &[0.2, 0.6, 0.95] {
+            let k = elliptic_k(m);
+            let (sn, cn, _) = jacobi_elliptic(k, m);
+            assert!((sn - 1.0).abs() < 1e-10, "sn(K) = {sn}");
+            assert!(cn.abs() < 1e-7, "cn(K) = {cn}");
+        }
+        // sn(u, 0) = sin u.
+        let (sn, _, _) = jacobi_elliptic(0.83, 0.0);
+        assert!((sn - 0.83_f64.sin()).abs() < 1e-15);
+    }
+
     use super::*;
 
     fn approx(a: f64, b: f64, tol: f64) -> bool {

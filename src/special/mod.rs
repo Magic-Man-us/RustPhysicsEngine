@@ -5,6 +5,7 @@ pub mod bessel;
 pub mod beta;
 pub mod elliptic;
 pub mod erf;
+pub mod expint;
 pub mod gamma;
 pub mod legendre;
 
@@ -14,10 +15,11 @@ pub use bessel::{
 };
 pub use beta::{beta, beta_inc};
 pub use elliptic::{
-    ellipse_perimeter_exact, elliptic_e, elliptic_e_inc, elliptic_f, elliptic_k,
+    ellipse_perimeter_exact, elliptic_e, elliptic_e_inc, elliptic_f, elliptic_k, jacobi_elliptic,
     pendulum_period_exact,
 };
 pub use erf::{erf, erfc, erfinv};
+pub use expint::{e1, exponential_integral};
 pub use gamma::{gamma, gamma_p, gamma_q, lgamma};
 pub use legendre::{
     gauss_legendre_nodes, legendre_p, legendre_p_assoc, spherical_harmonic_real,

@@ -353,7 +353,7 @@ mod tests {
         let a = CsrMatrix::laplacian_2d(5, 5, 0.1);
         let b = vec![1.0; 25];
         assert!(matches!(
-            conjugate_gradient(&a, &b, &vec![0.0; 25], 1e-14, 1),
+            conjugate_gradient(&a, &b, &[0.0; 25], 1e-14, 1),
             Err(SolveError::NoConvergence { .. })
         ));
     }

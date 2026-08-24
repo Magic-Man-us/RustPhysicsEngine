@@ -1,65 +1,49 @@
 //! Discrete Fourier transform utilities.
+//!
+//! These are thin wrappers over `transforms::fft` (Step 0 of roadmap
+//! Part 3): every length now runs in O(n log n) via the mixed-radix /
+//! Bluestein FFT while keeping the original `(re, im)` tuple API.
 
-use crate::math::constants::PI;
+use crate::fractals::Complex;
+use crate::transforms::fft::{fft_any, ifft_any, rfft};
 
 /// Discrete Fourier Transform: X[k] = Σ x[n]·e^(-j2πkn/N), returns (real, imag) pairs
+#[must_use]
 pub fn dft(signal: &[f64]) -> Vec<(f64, f64)> {
-    let n = signal.len();
-    (0..n)
-        .map(|k| {
-            let mut real = 0.0;
-            let mut imag = 0.0;
-            for (idx, &sample) in signal.iter().enumerate() {
-                let angle = -2.0 * PI * k as f64 * idx as f64 / n as f64;
-                real += sample * angle.cos();
-                imag += sample * angle.sin();
-            }
-            (real, imag)
-        })
-        .collect()
+    let buf: Vec<Complex> = signal.iter().map(|&x| Complex::new(x, 0.0)).collect();
+    fft_any(&buf).iter().map(|c| (c.re, c.im)).collect()
 }
 
 /// Inverse DFT: x[n] = (1/N)·Σ X[k]·e^(j2πkn/N)
+#[must_use]
 pub fn inverse_dft(spectrum: &[(f64, f64)]) -> Vec<f64> {
-    let n = spectrum.len();
-    let inv_n = 1.0 / n as f64;
-    (0..n)
-        .map(|idx| {
-            let mut sum = 0.0;
-            for (k, &(re, im)) in spectrum.iter().enumerate() {
-                let angle = 2.0 * PI * k as f64 * idx as f64 / n as f64;
-                sum += re * angle.cos() - im * angle.sin();
-            }
-            sum * inv_n
-        })
-        .collect()
+    let buf: Vec<Complex> = spectrum.iter().map(|&(re, im)| Complex::new(re, im)).collect();
+    ifft_any(&buf).iter().map(|c| c.re).collect()
 }
 
 /// Power spectrum: |X[k]|² = Re² + Im² for each frequency bin.
 ///
-/// Power-of-two lengths use the O(n log n) real FFT and reconstruct the
-/// upper half from conjugate symmetry; other lengths fall back to the
-/// direct DFT. Output length always equals `signal.len()`.
+/// Uses the real FFT and reconstructs the upper half from conjugate
+/// symmetry. Output length always equals `signal.len()`.
+#[must_use]
 pub fn power_spectrum(signal: &[f64]) -> Vec<f64> {
     let n = signal.len();
-    if n > 0 && n.is_power_of_two() {
-        let half = crate::signal_processing::fft::rfft(signal);
-        let mut ps = vec![0.0; n];
-        for (k, c) in half.iter().enumerate() {
-            ps[k] = c.norm_sq();
-            if k > 0 && k < n - k {
-                ps[n - k] = ps[k]; // |X[n-k]| = |X[k]| for real input
-            }
-        }
-        return ps;
+    if n == 0 {
+        return Vec::new();
     }
-    dft(signal)
-        .iter()
-        .map(|&(re, im)| re * re + im * im)
-        .collect()
+    let half = rfft(signal);
+    let mut ps = vec![0.0; n];
+    for (k, c) in half.iter().enumerate() {
+        ps[k] = c.norm_sq();
+        if k > 0 && k < n - k {
+            ps[n - k] = ps[k]; // |X[n-k]| = |X[k]| for real input
+        }
+    }
+    ps
 }
 
 /// Find the dominant frequency in a signal: f_peak = k_max · f_s / N
+#[must_use]
 pub fn dominant_frequency(signal: &[f64], sample_rate: f64) -> f64 {
     let ps = power_spectrum(signal);
     let n = ps.len();

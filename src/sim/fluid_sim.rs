@@ -18,12 +18,6 @@ const DISCHARGE_COEFFICIENT: f64 = 0.6;
 /// dry. Prevents division by zero in velocity recovery u = hu / h.
 const DRY_TOLERANCE: f64 = 1e-10;
 
-/// Maximum Jacobi iterations for the pressure Poisson solve in EulerFluid2D.
-const POISSON_MAX_ITER: usize = 500;
-
-/// Convergence tolerance for the Jacobi pressure Poisson solve (Pa).
-const POISSON_TOL: f64 = 1e-6;
-
 /// CFL safety factor applied when computing stable time steps.
 const CFL_SAFETY: f64 = 0.9;
 
@@ -208,6 +202,23 @@ impl ShallowWater1D {
         } else {
             self.hu[i] * self.hu[i] / self.h[i] + 0.5 * self.g * self.h[i] * self.h[i]
         }
+    }
+
+    /// HLL (Harten-Lax-van Leer) time step with reflective boundary
+    /// conditions — the Part 3 rewire onto the CFD module's Riemann
+    /// machinery. Sharper than [`Self::step_lax_friedrichs`] on bores.
+    pub fn step_hll(&mut self, dt: f64) {
+        let b = vec![0.0; self.nx];
+        crate::cfd::shallow_water::swe_1d_step_hll(
+            &mut self.h,
+            &mut self.hu,
+            &b,
+            self.dx,
+            self.g,
+            dt,
+            DRY_TOLERANCE,
+            true,
+        );
     }
 
     /// Lax-Friedrichs time step with reflective boundary conditions.
@@ -522,50 +533,13 @@ impl EulerFluid2D {
     ///   ────────────────────────────────────────────────────────────────────
     ///                         2(1/dx² + 1/dy²)
     fn solve_pressure_poisson(&self, rhs: &[f64]) -> Vec<f64> {
-        let n = self.nx * self.ny;
-        let dx2 = self.dx * self.dx;
-        let dy2 = self.dy * self.dy;
-        let denom = 2.0 * (1.0 / dx2 + 1.0 / dy2);
-
-        let mut p = self.pressure.clone();
-        let mut p_new = vec![0.0; n];
-
-        for _iter in 0..POISSON_MAX_ITER {
-            let mut max_diff: f64 = 0.0;
-
-            for i in 1..self.nx - 1 {
-                for j in 1..self.ny - 1 {
-                    let k = idx(i, j, self.ny);
-                    let val = ((p[idx(i + 1, j, self.ny)] + p[idx(i - 1, j, self.ny)]) / dx2
-                        + (p[idx(i, j + 1, self.ny)] + p[idx(i, j - 1, self.ny)]) / dy2
-                        - rhs[k])
-                        / denom;
-
-                    p_new[k] = val;
-                    max_diff = max_diff.max((val - p[k]).abs());
-                }
-            }
-
-            // Neumann BCs: copy from interior neighbor so ∂p/∂n = 0.
-            for j in 0..self.ny {
-                p_new[idx(0, j, self.ny)] = p_new[idx(1, j, self.ny)];
-                p_new[idx(self.nx - 1, j, self.ny)] =
-                    p_new[idx(self.nx - 2, j, self.ny)];
-            }
-            for i in 0..self.nx {
-                p_new[idx(i, 0, self.ny)] = p_new[idx(i, 1, self.ny)];
-                p_new[idx(i, self.ny - 1, self.ny)] =
-                    p_new[idx(i, self.ny - 2, self.ny)];
-            }
-
-            std::mem::swap(&mut p, &mut p_new);
-
-            if max_diff < POISSON_TOL {
-                break;
-            }
-        }
-
-        p
+        // Part 3 rewire: delegate the Poisson solve to the CFD module's
+        // conjugate-gradient Neumann solver (the same node-centered
+        // system, solved to a much tighter tolerance than the old
+        // fixed-count Jacobi sweep).
+        crate::cfd::stable_fluids::poisson_neumann_cg_rect(
+            rhs, self.nx, self.ny, self.dx, self.dy, 1e-10, 2000,
+        )
     }
 
     /// Maximum absolute divergence: max |∇·u|.
