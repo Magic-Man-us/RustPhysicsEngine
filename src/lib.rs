@@ -12,6 +12,7 @@
 pub mod math;
 pub mod error;
 pub mod core;
+pub mod discrete;
 pub mod exact;
 pub mod special;
 pub mod classical;
