@@ -926,7 +926,7 @@ mod tests {
         }
         // With zero velocity, max wave speed = √(g h)
         let s = sw.max_wave_speed();
-        let expected = 4.429446918070020;
+        let expected = 4.429_446_918_070_02;
         assert!(
             approx_rel_eq(s, expected, 1e-10),
             "max_wave_speed={s}, expected {expected}"

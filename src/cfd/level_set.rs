@@ -1344,6 +1344,519 @@ mod tests {
     }
 
     #[test]
+    fn test_box_sdf_exact_values() {
+        // Grid chosen so that the box faces fall exactly on cell centres:
+        // centres sit at (i + 0.5) dx, so faces at (16.5) dx and (47.5) dx
+        // are hit exactly.
+        let n = 64;
+        let dx = 1.0 / n as f64;
+        let (x0, y0) = (16.5 * dx, 20.5 * dx);
+        let (x1, y1) = (47.5 * dx, 43.5 * dx);
+        let ls = LevelSet2::box_(n, n, dx, x0, y0, x1, y1);
+        let centre = |i: usize| (i as f64 + 0.5) * dx;
+
+        // phi = 0 exactly on the boundary, away from the corners.
+        for j in 21..43 {
+            assert!(ls.phi.at(16, j).abs() < 1e-15, "left face at j = {j}");
+            assert!(ls.phi.at(47, j).abs() < 1e-15, "right face at j = {j}");
+        }
+        for i in 17..47 {
+            assert!(ls.phi.at(i, 20).abs() < 1e-15, "bottom face at i = {i}");
+            assert!(ls.phi.at(i, 43).abs() < 1e-15, "top face at i = {i}");
+        }
+        // Corners are on the boundary too.
+        for &(i, j) in &[(16_usize, 20_usize), (47, 20), (16, 43), (47, 43)] {
+            assert!(ls.phi.at(i, j).abs() < 1e-15, "corner ({i},{j})");
+        }
+
+        // Inside: phi is minus the distance to the nearest face.
+        for j in 21..43 {
+            for i in 17..47 {
+                let (x, y) = (centre(i), centre(j));
+                let want = -((x - x0).min(x1 - x).min(y - y0).min(y1 - y));
+                assert!(want < 0.0);
+                assert!(
+                    (ls.phi.at(i, j) - want).abs() < 1e-15,
+                    "interior ({i},{j}): {} vs {want}",
+                    ls.phi.at(i, j)
+                );
+            }
+        }
+        // The deepest sampled value is the largest inscribed distance
+        // reachable from a cell centre. The box spans 31 dx x 23 dx and
+        // its centre line in y falls between two rows, so the nearest
+        // centre is 11 dx from the closest face.
+        let deepest = ls.phi.data.iter().cloned().fold(f64::INFINITY, f64::min);
+        assert!((deepest + 11.0 * dx).abs() < 1e-15, "deepest {deepest} vs {}", -11.0 * dx);
+        // Which is within half a cell of the analytic half-width.
+        let half = 0.5 * (x1 - x0).min(y1 - y0);
+        assert!(
+            (deepest.abs() - half).abs() <= 0.5 * dx + 1e-15,
+            "deepest {deepest} is not within half a cell of {}",
+            -half
+        );
+
+        // Directly outside a face: phi is the perpendicular distance.
+        for j in 21..43 {
+            for i in 0..16 {
+                let want = x0 - centre(i);
+                assert!(
+                    (ls.phi.at(i, j) - want).abs() < 1e-15,
+                    "left exterior ({i},{j})"
+                );
+            }
+        }
+        for i in 17..47 {
+            for j in 44..n {
+                let want = centre(j) - y1;
+                assert!(
+                    (ls.phi.at(i, j) - want).abs() < 1e-15,
+                    "top exterior ({i},{j})"
+                );
+            }
+        }
+        // Diagonally outside a corner: phi is the Euclidean distance to it.
+        for j in 0..20 {
+            for i in 0..16 {
+                let want =
+                    ((x0 - centre(i)).powi(2) + (y0 - centre(j)).powi(2)).sqrt();
+                assert!(
+                    (ls.phi.at(i, j) - want).abs() < 1e-15,
+                    "corner exterior ({i},{j})"
+                );
+            }
+        }
+
+        // It is a true signed distance function: |grad phi| = 1 away from
+        // the medial axis and the corners.
+        for j in 22..42 {
+            for i in 18..46 {
+                let gx = (ls.phi.at(i + 1, j) - ls.phi.at(i - 1, j)) / (2.0 * dx);
+                let gy = (ls.phi.at(i, j + 1) - ls.phi.at(i, j - 1)) / (2.0 * dx);
+                let g = (gx * gx + gy * gy).sqrt();
+                // The medial axis (where the nearest face switches) has a
+                // kink, so only require |grad| <= 1 there.
+                assert!(g <= 1.0 + 1e-9, "|grad phi| = {g} at ({i},{j})");
+            }
+        }
+
+        // The enclosed area matches the box (smoothed Heaviside over a
+        // 1.5 dx band, so a couple of percent).
+        let exact = (x1 - x0) * (y1 - y0);
+        assert!(
+            (ls.area() / exact - 1.0).abs() < 0.03,
+            "box area {} vs {exact}",
+            ls.area()
+        );
+        // Perimeter of the rectangle.
+        let per_exact = 2.0 * ((x1 - x0) + (y1 - y0));
+        assert!(
+            (ls.perimeter() / per_exact - 1.0).abs() < 0.1,
+            "box perimeter {} vs {per_exact}",
+            ls.perimeter()
+        );
+    }
+
+    #[test]
+    fn test_csg_union_and_subtract() {
+        let n = 64;
+        let dx = 1.0 / n as f64;
+        let make_a = || LevelSet2::circle(n, n, dx, 0.35, 0.5, 0.15);
+        let make_b = || LevelSet2::circle(n, n, dx, 0.65, 0.5, 0.15);
+        let a = make_a();
+        let b = make_b();
+
+        // Union is the pointwise minimum.
+        let mut u = make_a();
+        u.union(&b);
+        for (k, v) in u.phi.data.iter().enumerate() {
+            assert!(
+                (*v - a.phi.data[k].min(b.phi.data[k])).abs() < 1e-15,
+                "union is not min at {k}"
+            );
+        }
+        // phi_union <= each constituent, so anything inside either piece is
+        // inside the union.
+        for k in 0..n * n {
+            assert!(u.phi.data[k] <= a.phi.data[k] + 1e-15);
+            assert!(u.phi.data[k] <= b.phi.data[k] + 1e-15);
+            if a.phi.data[k] < 0.0 || b.phi.data[k] < 0.0 {
+                assert!(u.phi.data[k] < 0.0, "union lost interior at {k}");
+            }
+        }
+        // Disjoint circles: the areas add.
+        let target = PI * 0.15 * 0.15;
+        assert!((a.area() / target - 1.0).abs() < 0.03, "circle area {}", a.area());
+        assert!(
+            (u.area() / (2.0 * target) - 1.0).abs() < 0.03,
+            "disjoint union area {} vs {}",
+            u.area(),
+            2.0 * target
+        );
+        // Union is idempotent and commutative.
+        let mut idem = make_a();
+        idem.union(&a);
+        assert_eq!(idem.phi.data, a.phi.data);
+        let mut ba = make_b();
+        ba.union(&a);
+        assert_eq!(ba.phi.data, u.phi.data);
+        // Overlapping circles: the union area is under the sum and above
+        // either piece.
+        let c = LevelSet2::circle(n, n, dx, 0.45, 0.5, 0.15);
+        let mut over = make_a();
+        over.union(&c);
+        assert!(over.area() < 2.0 * target, "overlapping union {}", over.area());
+        assert!(over.area() > target * 1.05, "union smaller than one disk");
+
+        // Subtraction is the pointwise max(phi_a, -phi_b).
+        let mut s = make_a();
+        s.subtract(&c);
+        for (k, v) in s.phi.data.iter().enumerate() {
+            assert!(
+                (*v - a.phi.data[k].max(-c.phi.data[k])).abs() < 1e-15,
+                "subtract is not max(a, -b) at {k}"
+            );
+        }
+        // Equivalent to intersecting with the complement of b: an
+        // independent path through `intersect`.
+        let mut via_intersect = make_a();
+        let mut complement = c.phi.clone();
+        complement.data.iter_mut().for_each(|v| *v = -*v);
+        via_intersect.intersect(&LevelSet2 { phi: complement, band: None });
+        assert_eq!(via_intersect.phi.data, s.phi.data);
+        // The removed region is exactly the overlap: A − B and A ∩ B
+        // partition A.
+        let mut inter = make_a();
+        inter.intersect(&c);
+        assert!(
+            (s.area() + inter.area() - a.area()).abs() < 0.03 * a.area(),
+            "A-B ({}) + A∩B ({}) != A ({})",
+            s.area(),
+            inter.area(),
+            a.area()
+        );
+        // Subtracting a disjoint shape changes nothing.
+        let mut untouched = make_a();
+        untouched.subtract(&b);
+        assert!(
+            (untouched.area() / a.area() - 1.0).abs() < 1e-9,
+            "disjoint subtraction changed the area"
+        );
+        // Subtracting a shape from itself empties it.
+        let mut empty = make_a();
+        empty.subtract(&a);
+        // phi = max(phi_a, -phi_a) = |phi_a| >= 0: no interior is left and
+        // marching squares finds no zero contour at all.
+        assert!(empty.phi.data.iter().all(|&v| v >= 0.0), "self-subtraction left interior");
+        for (k, v) in empty.phi.data.iter().enumerate() {
+            assert!((*v - a.phi.data[k].abs()).abs() < 1e-15, "not |phi_a| at {k}");
+        }
+        assert_eq!(empty.phi.data.iter().filter(|&&v| v < 0.0).count(), 0);
+        assert!(
+            empty.interface_segments().is_empty(),
+            "self-subtraction left an interface"
+        );
+        // Half-plane cut: subtracting x > 0.35 halves the disk.
+        let mut half = make_a();
+        let plane = LevelSet2::from_sdf(|x, _| 0.35 - x, n, n, dx);
+        half.subtract(&plane);
+        assert!(
+            (half.area() / (0.5 * target) - 1.0).abs() < 0.06,
+            "half disk area {} vs {}",
+            half.area(),
+            0.5 * target
+        );
+    }
+
+    #[test]
+    fn test_extend_velocity_along_normals() {
+        // A field that is already constant along normals is a fixed point
+        // of the extension PDE q_t + sign(phi) n . grad q = 0.
+        let n = 64;
+        let dx = 1.0 / n as f64;
+        let ls = LevelSet2::circle(n, n, dx, 0.5, 0.5, 0.2);
+        let mut flat = CellField2::from_fn(n, n, dx, |_, _| 2.5);
+        let before = flat.clone();
+        ls.extend_velocity(&mut flat, 4.0 * dx);
+        for (a, b) in flat.data.iter().zip(&before.data) {
+            assert!((a - b).abs() < 1e-14, "constant field moved: {a} vs {b}");
+        }
+
+        // A field depending only on the polar angle is also constant along
+        // the radial normals of a circle, so it too must survive.
+        let angular = |x: f64, y: f64| (y - 0.5).atan2(x - 0.5).cos();
+        let mut theta_field = CellField2::from_fn(n, n, dx, angular);
+        let theta0 = theta_field.clone();
+        ls.extend_velocity(&mut theta_field, 4.0 * dx);
+        let mut worst = 0.0_f64;
+        for j in 6..n - 6 {
+            for i in 6..n - 6 {
+                worst = worst.max((theta_field.at(i, j) - theta0.at(i, j)).abs());
+            }
+        }
+        // First-order upwinding of an exactly-normal-constant field leaves
+        // only the transverse truncation error.
+        assert!(worst < 0.05, "angular field disturbed by {worst}");
+
+        // Now the real job: data known only in a thin band about the
+        // interface, extended outwards along the normals.
+        let band = 3.0 * dx;
+        let mut q = CellField2::new(n, n, dx);
+        for j in 0..n {
+            for i in 0..n {
+                if ls.phi.at(i, j).abs() < 0.5 * dx {
+                    let (x, y) = ((i as f64 + 0.5) * dx, (j as f64 + 0.5) * dx);
+                    *q.at_mut(i, j) = angular(x, y);
+                }
+            }
+        }
+        // Before extension the field is zero away from the interface.
+        let sample = |f: &CellField2, r: f64, th: f64| -> f64 {
+            f.sample(Vec2::new(0.5 + r * th.cos(), 0.5 + r * th.sin()))
+        };
+        for &th in &[0.0_f64, 1.1, 2.7, 4.5] {
+            assert!(sample(&q, 0.2 + 2.0 * dx, th).abs() < 1e-12);
+        }
+        ls.extend_velocity(&mut q, band);
+        // After extension the value at a point outside equals the value at
+        // the nearest interface point (same polar angle).
+        for &th in &[0.0_f64, 0.8, 1.9, 3.4, 5.1] {
+            let want = th.cos();
+            for &off in &[1.5 * dx, 2.0 * dx] {
+                let got = sample(&q, 0.2 + off, th);
+                assert!(
+                    (got - want).abs() < 0.15,
+                    "outward extension at theta = {th}, offset {off}: {got} vs {want}"
+                );
+            }
+            // And inwards.
+            let got_in = sample(&q, 0.2 - 1.5 * dx, th);
+            assert!(
+                (got_in - want).abs() < 0.15,
+                "inward extension at theta = {th}: {got_in} vs {want}"
+            );
+        }
+        // The extension is constant along the normal: the radial variation
+        // across the band is far smaller than the value itself.
+        for &th in &[0.0_f64, 2.2, 4.0] {
+            let a = sample(&q, 0.2 + 1.0 * dx, th);
+            let b = sample(&q, 0.2 + 2.5 * dx, th);
+            assert!(
+                (a - b).abs() < 0.1 * th.cos().abs().max(0.2),
+                "radial drift at theta = {th}: {a} vs {b}"
+            );
+        }
+        // Outside the band the field is untouched.
+        assert!(
+            q.sample(Vec2::new(0.5 + 0.2 + 8.0 * dx, 0.5)).abs() < 1e-12,
+            "extension leaked past the band"
+        );
+        // Extension never creates new extrema: |q| stays within the range
+        // of the seeded interface data.
+        let peak = q.data.iter().cloned().fold(0.0_f64, |a, b| a.max(b.abs()));
+        assert!(peak <= 1.0 + 1e-9, "extension overshot: {peak}");
+    }
+
+    #[test]
+    fn test_vof_init_from_sdf_exact_fractions() {
+        // The initializer takes 4x4 subsamples per cell at the offsets
+        // (s + 0.5)/4, i.e. 0.125, 0.375, 0.625, 0.875 of a cell.
+        let (n, dx) = (16_usize, 0.25_f64);
+
+        // Interface on a cell boundary: every cell is completely full or
+        // completely empty, so the total volume is exact.
+        let y_cut = 6.0 * dx;
+        let vof = Vof2::init_from_sdf(move |_, y| y - y_cut, n, n, dx);
+        for j in 0..n {
+            let want = if j < 6 { 1.0 } else { 0.0 };
+            for i in 0..n {
+                assert!(
+                    (vof.fraction.at(i, j) - want).abs() < 1e-15,
+                    "row {j} fraction {}",
+                    vof.fraction.at(i, j)
+                );
+            }
+        }
+        let exact = y_cut * (n as f64 * dx);
+        assert!(
+            (vof.total_volume() - exact).abs() < 1e-14,
+            "volume {} vs {exact}",
+            vof.total_volume()
+        );
+
+        // Interface through a cell at 3/8 of its height: exactly one of
+        // the four subsample rows (at 0.125) lies below it.
+        let cut = 6.0 * dx + 0.375 * dx;
+        let partial = Vof2::init_from_sdf(move |_, y| y - cut, n, n, dx);
+        for i in 0..n {
+            assert!((partial.fraction.at(i, 5) - 1.0).abs() < 1e-15);
+            assert!(
+                (partial.fraction.at(i, 6) - 0.25).abs() < 1e-15,
+                "straddling fraction {}",
+                partial.fraction.at(i, 6)
+            );
+            assert!(partial.fraction.at(i, 7).abs() < 1e-15);
+        }
+
+        // Fractions are always in [0, 1] and the complement of an SDF
+        // gives the complementary fractions.
+        let disk =
+            |x: f64, y: f64| ((x - 1.7_f64).powi(2) + (y - 2.1).powi(2)).sqrt() - 1.1;
+        let inside = Vof2::init_from_sdf(disk, n, n, dx);
+        let outside = Vof2::init_from_sdf(move |x, y| -disk(x, y), n, n, dx);
+        for k in 0..n * n {
+            let f = inside.fraction.data[k];
+            assert!((0.0..=1.0).contains(&f), "fraction {f} out of range");
+            assert!(
+                (f + outside.fraction.data[k] - 1.0).abs() < 1e-15,
+                "complement does not sum to 1 at {k}"
+            );
+        }
+        // The 4x4 quadrature reproduces the disk area to the subcell scale.
+        let area = PI * 1.1 * 1.1;
+        assert!(
+            (inside.total_volume() / area - 1.0).abs() < 0.02,
+            "disk volume {} vs {area}",
+            inside.total_volume()
+        );
+        assert!(
+            (inside.total_volume() + outside.total_volume()
+                - (n as f64 * dx).powi(2))
+                .abs()
+                < 1e-12,
+            "the two phases do not fill the box"
+        );
+        // Refining the subsampling grid is not possible here, but refining
+        // the mesh must converge to the exact area.
+        let fine = Vof2::init_from_sdf(disk, 4 * n, 4 * n, 0.25 * dx);
+        assert!(
+            (fine.total_volume() / area - 1.0).abs() < 0.005,
+            "refined volume {} vs {area}",
+            fine.total_volume()
+        );
+        assert!(
+            (fine.total_volume() - area).abs() < (inside.total_volume() - area).abs(),
+            "no convergence under refinement"
+        );
+    }
+
+    #[test]
+    fn test_free_surface_droplet_and_sloshing_setups() {
+        let n = 40;
+        let dx = 1.0 / n as f64;
+        let (lx, ly) = (n as f64 * dx, n as f64 * dx);
+
+        // --- droplet_fall -------------------------------------------------
+        let mut drop = FreeSurfaceFluid2::droplet_fall(n, n, dx);
+        // Liquid is the pool below y = 0.25 Ly plus a disk of radius
+        // 0.08 Lx centred at (0.5 Lx, 0.7 Ly).
+        let pool = 0.25 * ly * lx;
+        let ball = PI * (0.08 * lx).powi(2);
+        let a0 = drop.ls.area();
+        assert!(a0 > 0.0, "no liquid in the droplet_fall setup");
+        assert!(
+            (a0 / (pool + ball) - 1.0).abs() < 0.05,
+            "initial liquid area {a0} vs {}",
+            pool + ball
+        );
+        // The droplet is detached: there is a gas gap between it and the
+        // pool along the vertical centreline.
+        let column = |f: &FreeSurfaceFluid2, y: f64| f.ls.phi.sample(Vec2::new(0.5 * lx, y));
+        assert!(column(&drop, 0.1 * ly) < 0.0, "no pool");
+        assert!(column(&drop, 0.7 * ly) < 0.0, "no droplet");
+        assert!(column(&drop, 0.45 * ly) > 0.0, "droplet is not detached from the pool");
+        // Centroid of the liquid above the pool: the droplet.
+        let drop_y = |f: &FreeSurfaceFluid2| -> f64 {
+            let (mut m, mut my) = (0.0, 0.0);
+            for j in (n * 4 / 10)..n {
+                for i in 0..n {
+                    if f.ls.phi.at(i, j) < 0.0 {
+                        m += 1.0;
+                        my += (j as f64 + 0.5) * dx;
+                    }
+                }
+            }
+            assert!(m > 0.0, "the droplet vanished");
+            my / m
+        };
+        let y0 = drop_y(&drop);
+        assert!(
+            (y0 - 0.7 * ly).abs() < 0.03 * ly,
+            "droplet centroid {y0} vs {}",
+            0.7 * ly
+        );
+        for _ in 0..30 {
+            drop.step(0.004);
+        }
+        // Gravity pulls the droplet down.
+        let y1 = drop_y(&drop);
+        assert!(y1 < y0 - 0.005, "droplet did not fall: {y0} -> {y1}");
+        // Liquid volume is conserved to a few percent by the level-set
+        // advection plus periodic reinitialization.
+        let a1 = drop.ls.area();
+        assert!(
+            (a1 / a0 - 1.0).abs() < 0.05,
+            "droplet_fall liquid volume drift {a0} -> {a1}"
+        );
+        assert!(drop.ls.phi.data.iter().all(|v| v.is_finite()));
+
+        // --- sloshing_tank ------------------------------------------------
+        let mut tank = FreeSurfaceFluid2::sloshing_tank(n, n, dx, 0.05, 3.0);
+        // Half-full tank with a flat free surface at mid height.
+        let s0 = tank.ls.area();
+        assert!(
+            (s0 / (0.5 * lx * ly) - 1.0).abs() < 0.02,
+            "sloshing tank fill {s0} vs {}",
+            0.5 * lx * ly
+        );
+        for j in 0..n {
+            for i in 0..n {
+                let y = (j as f64 + 0.5) * dx;
+                assert!(
+                    (tank.ls.phi.at(i, j) - (y - 0.5 * ly)).abs() < 1e-15,
+                    "the initial surface is not the plane y = Ly/2"
+                );
+            }
+        }
+        // The drive parameters are parked, not applied: the constructor
+        // leaves the solver's forcing fields at rest.
+        assert!(tank.fluid.buoyancy == 0.0);
+        assert!(tank.fluid.vorticity_confinement == 0.0);
+        assert!(tank.fluid.temperature.data.iter().all(|t| *t == 0.0));
+        assert!(tank.fluid.grid.u.iter().all(|u| *u == 0.0));
+        assert!(tank.fluid.grid.v.iter().all(|v| *v == 0.0));
+
+        // Undriven, the configuration is exactly mirror symmetric about
+        // the vertical centreline, and gravity plus the projection
+        // preserve that symmetry.
+        for _ in 0..20 {
+            tank.step(0.004);
+        }
+        let mut worst = 0.0_f64;
+        for j in 0..n {
+            for i in 0..n {
+                worst = worst.max((tank.ls.phi.at(i, j) - tank.ls.phi.at(n - 1 - i, j)).abs());
+            }
+        }
+        assert!(worst < 1e-9, "sloshing tank lost its mirror symmetry: {worst}");
+        // The free surface stays close to mid height and the liquid volume
+        // is conserved to a few percent.
+        let s1 = tank.ls.area();
+        assert!(
+            (s1 / s0 - 1.0).abs() < 0.05,
+            "sloshing tank volume drift {s0} -> {s1}"
+        );
+        let segs = tank.ls.interface_segments();
+        assert!(!segs.is_empty(), "the free surface disappeared");
+        let dev = segs
+            .iter()
+            .map(|s| (s.a.y - 0.5 * ly).abs().max((s.b.y - 0.5 * ly).abs()))
+            .fold(0.0_f64, f64::max);
+        assert!(dev < 0.1 * ly, "free surface moved by {dev}");
+        assert!(tank.ls.phi.data.iter().all(|v| v.is_finite()));
+    }
+
+    #[test]
     fn test_reinitialize_and_fast_marching() {
         let n = 64;
         let dx = 1.0 / n as f64;
