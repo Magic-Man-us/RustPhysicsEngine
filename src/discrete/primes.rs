@@ -475,14 +475,13 @@ pub fn fermat_factor(n: u64) -> Option<(u64, u64)> {
     if n.is_multiple_of(2) {
         return Some((2, n / 2));
     }
-    let mut a = (n as f64).sqrt().ceil() as u64;
-    for _ in 0..1_000_000 {
+    let start = (n as f64).sqrt().ceil() as u64;
+    for a in start..start.saturating_add(1_000_000) {
         let b2 = a.checked_mul(a)?.checked_sub(n)?;
         let b = (b2 as f64).sqrt().round() as u64;
         if b * b == b2 {
             return Some((a - b, a + b));
         }
-        a += 1;
     }
     None
 }

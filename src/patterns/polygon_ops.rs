@@ -731,10 +731,7 @@ fn orient_loops(mut loops: Vec<Polygon2>) -> Vec<Polygon2> {
 
 fn gh_traverse(arena: &mut [GhNode]) -> Vec<Polygon2> {
     let mut result = Vec::new();
-    loop {
-        let Some(start) = arena.iter().position(|n| n.is_x && !n.processed) else {
-            break;
-        };
+    while let Some(start) = arena.iter().position(|n| n.is_x && !n.processed) {
         let mut poly = vec![arena[start].p];
         let mut cur = start;
         let limit = 4 * arena.len();
@@ -1592,10 +1589,10 @@ pub fn hatch_fill(poly: &Polygon2, spacing: f64, angle: f64) -> Vec<Segment2> {
             }
         }
         xs.sort_by(f64::total_cmp);
-        for pair in xs.chunks_exact(2) {
+        for &[x0, x1] in xs.as_chunks::<2>().0 {
             out.push(Segment2 {
-                a: Vec2::new(pair[0], y).rotate(angle),
-                b: Vec2::new(pair[1], y).rotate(angle),
+                a: Vec2::new(x0, y).rotate(angle),
+                b: Vec2::new(x1, y).rotate(angle),
             });
         }
         y += spacing;

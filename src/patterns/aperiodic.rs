@@ -1481,7 +1481,7 @@ pub fn fibonacci_word(n: usize) -> Vec<bool> {
         }
         word = next;
     }
-    word.truncate(n.max(0));
+    word.truncate(n);
     word
 }
 

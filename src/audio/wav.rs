@@ -216,7 +216,7 @@ pub fn wav_write_file(path: &str, data: &WavData, bits: u16, float: bool) -> std
 pub fn wav_info(bytes: &[u8]) -> Result<(u32, u16, u16, usize), SolveError> {
     let (_, channels, fs, bits, _, dlen) = parse_chunks(bytes)?;
     let frame = (bits as usize).div_ceil(8) * channels as usize;
-    Ok((fs, channels, bits, if frame > 0 { dlen / frame } else { 0 }))
+    Ok((fs, channels, bits, dlen.checked_div(frame).unwrap_or(0)))
 }
 
 /// Average all channels down to one.

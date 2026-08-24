@@ -7,6 +7,7 @@
 #![allow(clippy::type_complexity)]
 
 mod core_props;
+mod discrete_props;
 mod fractals_props;
 mod geometry_props;
 mod linalg_props;
