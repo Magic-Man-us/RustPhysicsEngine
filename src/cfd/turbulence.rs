@@ -1019,6 +1019,228 @@ mod tests {
     }
 
     #[test]
+    fn test_energy_spectrum_3d_parseval() {
+        use std::f64::consts::PI;
+        let n = 32;
+        let dx = 2.0 * PI / n as f64;
+        // Single solenoidal mode: u = A cos(k0 z), v = w = 0 with k0 = 3
+        // along z. It is divergence free (u depends only on z) and carries
+        // kinetic energy 0.5 <u²> = A²/4 per unit mass.
+        let amp = 0.8;
+        let k0 = 3.0;
+        let mut u = vec![0.0; n * n * n];
+        let v = vec![0.0; n * n * n];
+        let w = vec![0.0; n * n * n];
+        for k in 0..n {
+            for j in 0..n {
+                for i in 0..n {
+                    u[(k * n + j) * n + i] = amp * (k0 * k as f64 * dx).cos();
+                }
+            }
+        }
+        let (ks, es) = energy_spectrum_3d(&u, &v, &w, n, dx);
+        assert_eq!(ks.len(), n / 2);
+        assert_eq!(es.len(), n / 2);
+        // The box is 2π long, so dk = 1 and the shells sit on integers.
+        let dk = ks[1] - ks[0];
+        assert_close(dk, 1.0, 1e-12, "shell spacing");
+        // Parseval: Σ E(k) dk = 0.5 <|u|²> = A²/4.
+        let total: f64 = es.iter().map(|e| e * dk).sum();
+        assert_close(total, amp * amp / 4.0, 1e-10, "parseval 3d");
+        // All of the energy sits in the k = 3 shell.
+        let peak = (0..es.len())
+            .max_by(|&a, &b| es[a].partial_cmp(&es[b]).unwrap())
+            .unwrap();
+        assert_close(ks[peak], k0, 1e-12, "peak wavenumber");
+        for (m, e) in es.iter().enumerate() {
+            if m != peak {
+                assert!(*e < 1e-18, "leakage {e} into shell {}", ks[m]);
+            }
+        }
+        // Spectra are non-negative by construction.
+        assert!(es.iter().all(|&e| e >= 0.0));
+
+        // Isotropy: the same mode oriented along x or y gives the same
+        // spectrum, and three orthogonal modes superpose additively.
+        let mut ux = vec![0.0; n * n * n];
+        let mut vy = vec![0.0; n * n * n];
+        for k in 0..n {
+            for j in 0..n {
+                for i in 0..n {
+                    let c = (k * n + j) * n + i;
+                    // u depends on y, v depends on x: still divergence free.
+                    ux[c] = amp * (k0 * j as f64 * dx).cos();
+                    vy[c] = amp * (k0 * i as f64 * dx).cos();
+                }
+            }
+        }
+        let (_, es_x) = energy_spectrum_3d(&ux, &v, &w, n, dx);
+        for (a, b) in es_x.iter().zip(&es) {
+            assert_close(*a, *b, 1e-12, "isotropy of the shell average");
+        }
+        let (_, es_sum) = energy_spectrum_3d(&ux, &vy, &u, n, dx);
+        let total_sum: f64 = es_sum.iter().map(|e| e * dk).sum();
+        assert_close(total_sum, 3.0 * amp * amp / 4.0, 1e-9, "three modes superpose");
+
+        // Two modes in different shells land in their own shells with the
+        // right split of the energy.
+        let (a1, k1) = (0.5_f64, 2.0_f64);
+        let (a2, k2) = (0.3_f64, 7.0_f64);
+        let mut two = vec![0.0; n * n * n];
+        for k in 0..n {
+            for j in 0..n {
+                for i in 0..n {
+                    two[(k * n + j) * n + i] = a1 * (k1 * k as f64 * dx).sin()
+                        + a2 * (k2 * k as f64 * dx).sin();
+                }
+            }
+        }
+        let (ks2, es2) = energy_spectrum_3d(&two, &v, &w, n, dx);
+        let shell = |target: f64| -> f64 {
+            let idx = ks2.iter().position(|k| (k - target).abs() < 1e-9).unwrap();
+            es2[idx] * dk
+        };
+        assert_close(shell(k1), a1 * a1 / 4.0, 1e-12, "k = 2 shell energy");
+        assert_close(shell(k2), a2 * a2 / 4.0, 1e-12, "k = 7 shell energy");
+        let total2: f64 = es2.iter().map(|e| e * dk).sum();
+        assert_close(total2, (a1 * a1 + a2 * a2) / 4.0, 1e-10, "parseval, two modes");
+
+        // Dissipation of a single mode: eps = 2 nu k² E integrated over k
+        // reduces to 2 nu k0² × (A²/4).
+        let nu = 0.02;
+        let eps = dissipation_rate_from_spectrum(&ks, &es, nu);
+        let eps_exact = 2.0 * nu * k0 * k0 * amp * amp / 4.0;
+        assert_close(eps, eps_exact, 0.02 * eps_exact, "eps from the 3D spectrum");
+    }
+
+    #[test]
+    fn test_rans_trait_objects_match_closed_form_solutions() {
+        // k-omega SST through the trait: nu_t = a1 k / max(a1 omega, 0) =
+        // k / omega when the shear limiter is inactive.
+        let sst = KOmegaSst::new(2.0, 8.0, 1e-5);
+        {
+            let m: &dyn RansModel = &sst;
+            assert_close(m.eddy_viscosity(), 2.0 / 8.0, 1e-15, "SST nu_t = k/omega");
+            assert!(m.eddy_viscosity() >= 0.0);
+        }
+
+        // Homogeneous decay (s_mag = 0) with the trait's f1 = 1 inner
+        // constants has the closed-form solution
+        //   omega(t) = omega0 / (1 + beta omega0 t),
+        //   k(t)     = k0 (1 + beta omega0 t)^{-beta*/beta}
+        // with beta = 0.075 and beta* = 0.09.
+        let (k0, om0) = (1.0_f64, 10.0_f64);
+        let mut decay: Box<dyn RansModel> = Box::new(KOmegaSst::new(k0, om0, 1e-5));
+        let dt = 1e-4_f64;
+        let steps = 10_000; // t = 1
+        let hist = rans_step(decay.as_mut(), 0.0, dt, steps);
+        assert_eq!(hist.len(), steps);
+        assert!(hist.iter().all(|v| v.is_finite() && *v >= 0.0), "nu_t must stay >= 0");
+        // The working variables decay monotonically without production.
+        assert!(
+            hist.windows(2).all(|w| w[1] <= w[0] + 1e-15),
+            "eddy viscosity is not monotone in free decay"
+        );
+        let t = dt * steps as f64;
+        let (beta, beta_star) = (0.075_f64, 0.09_f64);
+        let s = 1.0 + beta * om0 * t;
+        let om_exact = om0 / s;
+        let k_exact = k0 * s.powf(-beta_star / beta);
+        let nu_exact = k_exact / om_exact;
+        // Forward Euler at dt = 1e-4 (omega dt = 1e-3) is first order, so
+        // ~0.1% is the expected agreement.
+        assert_close(
+            *hist.last().unwrap(),
+            nu_exact,
+            0.01 * nu_exact,
+            "SST free decay vs the exact solution",
+        );
+        // Halving the step halves the error: the discrete solution really
+        // is converging to that closed form.
+        let err_at = |dt: f64| -> f64 {
+            let steps = (t / dt).round() as usize;
+            let mut m: Box<dyn RansModel> = Box::new(KOmegaSst::new(k0, om0, 1e-5));
+            let h = rans_step(m.as_mut(), 0.0, dt, steps);
+            (h.last().unwrap() - nu_exact).abs()
+        };
+        let ratio = err_at(2e-4) / err_at(1e-4);
+        assert!((1.7..2.4).contains(&ratio), "SST time-order ratio {ratio}");
+
+        // Spalart-Allmaras through the trait: `advance` reads s_mag as the
+        // vorticity magnitude and places the wall infinitely far away, so
+        // the destruction term vanishes and the model reduces to pure
+        // exponential production d(nu~)/dt = c_b1 Omega nu~.
+        let sa = SpalartAllmaras::new(1e-3, 1e-5);
+        {
+            let m: &dyn RansModel = &sa;
+            // chi = 100 >> c_v1 = 7.1, so f_v1 -> 1 and nu_t -> nu~.
+            let chi: f64 = 1e-3 / 1e-5;
+            let fv1 = chi.powi(3) / (chi.powi(3) + 7.1_f64.powi(3));
+            assert_close(m.eddy_viscosity(), 1e-3 * fv1, 1e-18, "SA nu_t");
+            assert!(m.eddy_viscosity() > 0.0);
+            assert!(m.eddy_viscosity() < 1e-3, "f_v1 must damp nu~");
+        }
+        let nu_tilde0 = 1e-3;
+        let omega_mag = 4.0;
+        let dt = 1e-3;
+        let steps = 300;
+        let mut sa_model: Box<dyn RansModel> = Box::new(SpalartAllmaras::new(nu_tilde0, 1e-5));
+        let hist = rans_step(sa_model.as_mut(), omega_mag, dt, steps);
+        assert_eq!(hist.len(), steps);
+        assert!(hist.iter().all(|v| v.is_finite() && *v >= 0.0));
+        assert!(
+            hist.windows(2).all(|w| w[1] >= w[0]),
+            "SA nu_t must grow under vorticity"
+        );
+        let cb1 = 0.1355_f64;
+        // Discrete forward-Euler solution: nu~_N = nu~_0 (1 + c_b1 Omega dt)^N.
+        let nu_tilde_n = nu_tilde0 * (1.0 + cb1 * omega_mag * dt).powi(steps as i32);
+        let chi_n = nu_tilde_n / 1e-5;
+        let fv1_n = chi_n.powi(3) / (chi_n.powi(3) + 7.1_f64.powi(3));
+        let nu_t_n = nu_tilde_n * fv1_n;
+        assert_close(
+            *hist.last().unwrap(),
+            nu_t_n,
+            1e-6 * nu_t_n,
+            "SA growth vs the exact Euler solution",
+        );
+        // Which in turn approximates exp(c_b1 Omega t) to O(dt).
+        let nu_tilde_exp = nu_tilde0 * (cb1 * omega_mag * dt * steps as f64).exp();
+        assert_close(nu_tilde_n, nu_tilde_exp, 0.01 * nu_tilde_exp, "SA exponential growth");
+
+        // Zero vorticity leaves the model at rest far from any wall.
+        let mut quiet: Box<dyn RansModel> = Box::new(SpalartAllmaras::new(nu_tilde0, 1e-5));
+        let flat = rans_step(quiet.as_mut(), 0.0, dt, 200);
+        assert_close(
+            *flat.last().unwrap(),
+            quiet.eddy_viscosity(),
+            1e-18,
+            "SA at rest",
+        );
+        assert!(
+            (flat.last().unwrap() / (nu_tilde0 * {
+                let chi: f64 = nu_tilde0 / 1e-5;
+                chi.powi(3) / (chi.powi(3) + 7.1_f64.powi(3))
+            }) - 1.0)
+                .abs()
+                < 1e-9,
+            "SA drifted without production"
+        );
+
+        // Both models satisfy the trait contract of a non-negative eddy
+        // viscosity when driven through a common `dyn` loop.
+        let mut zoo: Vec<Box<dyn RansModel>> = vec![
+            Box::new(KOmegaSst::new(0.5, 20.0, 1e-5)),
+            Box::new(SpalartAllmaras::new(5e-4, 1e-5)),
+            Box::new(KEpsilon::new(0.5, 0.5, 1e-5, KEpsilonVariant::Standard)),
+        ];
+        for m in zoo.iter_mut() {
+            let h = rans_step(m.as_mut(), 1.5, 1e-3, 100);
+            assert!(h.iter().all(|&v| v.is_finite() && v >= 0.0), "negative nu_t: {h:?}");
+        }
+    }
+
+    #[test]
     fn test_structure_and_correlation() {
         let n = 256;
         let u: Vec<f64> = (0..n)
