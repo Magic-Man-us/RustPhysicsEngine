@@ -38,6 +38,7 @@ pub mod solid_mechanics;
 pub mod chemistry;
 pub mod electronics;
 pub mod geometry;
+pub mod graph;
 pub mod propulsion;
 pub mod units;
 pub mod nonlinear;
