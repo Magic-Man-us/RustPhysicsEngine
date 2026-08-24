@@ -96,9 +96,7 @@ pub fn cubic_interp(x_data: &[f64], y_data: &[f64], x: f64) -> f64 {
 
     // Full M array with natural boundary conditions
     let mut m = vec![0.0; n];
-    for i in 0..interior {
-        m[i + 1] = m_interior[i];
-    }
+    m[1..=interior].copy_from_slice(&m_interior[..interior]);
 
     // Find the segment containing x (clamp to endpoints)
     let x_clamped = x.clamp(x_data[0], x_data[n - 1]);
@@ -385,9 +383,7 @@ impl BSpline {
         let n = control.len();
         let interior = n - degree; // interior spans
         let mut knots = Vec::with_capacity(n + degree + 1);
-        for _ in 0..=degree {
-            knots.push(0.0);
-        }
+        knots.resize(knots.len() + degree + 1, 0.0);
         for i in 1..interior {
             knots.push(i as f64);
         }

@@ -321,7 +321,7 @@ mod tests {
     fn test_pcg_matches_cg() {
         let a = CsrMatrix::laplacian_2d(4, 4, 0.5);
         let b: Vec<f64> = (0..16).map(|i| (i as f64 * 0.37).sin()).collect();
-        let x_cg = conjugate_gradient(&a, &b, &vec![0.0; 16], 1e-12, 1000).unwrap();
+        let x_cg = conjugate_gradient(&a, &b, &[0.0; 16], 1e-12, 1000).unwrap();
         let x_pcg = pcg_jacobi(&a, &b, 1e-12, 1000).unwrap();
         for (u, v) in x_cg.iter().zip(&x_pcg) {
             assert!(approx(*u, *v, 1e-8));

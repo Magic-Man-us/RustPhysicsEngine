@@ -540,6 +540,132 @@ mod tests {
     }
 
     #[test]
+    fn test_ellipsoid() {
+        let radii = Vec3::new(1.0, 2.0, 3.0);
+        // Exactly zero at the axis intersections with the surface.
+        assert!(sd_ellipsoid(Vec3::new(1.0, 0.0, 0.0), radii).abs() < 1e-12);
+        assert!(sd_ellipsoid(Vec3::new(0.0, 2.0, 0.0), radii).abs() < 1e-12);
+        assert!(sd_ellipsoid(Vec3::new(0.0, 0.0, 3.0), radii).abs() < 1e-12);
+        // Center: minus the smallest semi-axis (deepest bound).
+        assert!((sd_ellipsoid(Vec3::ZERO, radii) + 1.0).abs() < 1e-12);
+        // On-axis the approximation is the exact 1-D distance.
+        assert!((sd_ellipsoid(Vec3::new(0.5, 0.0, 0.0), radii) + 0.5).abs() < 1e-12);
+        assert!((sd_ellipsoid(Vec3::new(2.0, 0.0, 0.0), radii) - 1.0).abs() < 1e-12);
+        assert!((sd_ellipsoid(Vec3::new(0.0, 0.0, -4.0), radii) - 1.0).abs() < 1e-12);
+        // Equal radii degenerate to the exact sphere SDF everywhere.
+        for p in [
+            Vec3::new(0.3, -1.2, 0.7),
+            Vec3::new(2.0, 2.0, -2.0),
+            Vec3::new(-0.1, 0.05, 0.2),
+        ] {
+            let e = sd_ellipsoid(p, Vec3::new(1.5, 1.5, 1.5));
+            let s = sd_sphere(p, 1.5);
+            assert!((e - s).abs() < 1e-12, "ellipsoid {e} vs sphere {s}");
+        }
+        // Sign is correct off-axis: inside points negative, outside positive.
+        assert!(sd_ellipsoid(Vec3::new(0.5, 1.0, 1.0), radii) < 0.0);
+        assert!(sd_ellipsoid(Vec3::new(1.0, 2.0, 3.0), radii) > 0.0);
+    }
+
+    #[test]
+    fn test_rounded_box() {
+        let half = Vec3::new(1.0, 0.5, 0.75);
+        let r = 0.25;
+        // Zero exactly r beyond each core face center.
+        assert!(sd_rounded_box(Vec3::new(1.25, 0.0, 0.0), half, r).abs() < 1e-12);
+        assert!(sd_rounded_box(Vec3::new(0.0, -0.75, 0.0), half, r).abs() < 1e-12);
+        assert!(sd_rounded_box(Vec3::new(0.0, 0.0, 1.0), half, r).abs() < 1e-12);
+        // Center: core inside distance minus r.
+        assert!((sd_rounded_box(Vec3::ZERO, half, r) + 0.75).abs() < 1e-12);
+        // Beyond a corner: Euclidean corner distance minus r.
+        let corner = sd_rounded_box(Vec3::new(2.0, 1.5, 1.75), half, r);
+        assert!((corner - (3.0_f64.sqrt() - r)).abs() < 1e-12);
+        // Identity: rounding subtracts r from the core box SDF everywhere.
+        for p in [Vec3::new(0.9, 0.4, 0.7), Vec3::new(-3.0, 2.0, 0.1), Vec3::ZERO] {
+            assert!((sd_rounded_box(p, half, r) - (sd_box(p, half) - r)).abs() < 1e-15);
+        }
+    }
+
+    #[test]
+    fn test_cone() {
+        // Apex at the origin opening along −y, half-angle 45°, height 1
+        // (base radius 1 at y = −1).
+        let angle = std::f64::consts::FRAC_PI_4;
+        let h = 1.0;
+        // On the axis above the apex: nearest feature is the apex.
+        assert!((sd_cone(Vec3::new(0.0, 0.5, 0.0), angle, h) - 0.5).abs() < 1e-12);
+        // Inside on the axis: distance to the slanted side is t·cos(45°).
+        let inside = sd_cone(Vec3::new(0.0, -0.5, 0.0), angle, h);
+        assert!((inside + 0.5 / 2.0_f64.sqrt()).abs() < 1e-12, "inside {inside}");
+        // Below the base on the axis: distance to the base disk.
+        assert!((sd_cone(Vec3::new(0.0, -2.0, 0.0), angle, h) - 1.0).abs() < 1e-12);
+        // Points on the lateral surface and base are at distance zero.
+        assert!(sd_cone(Vec3::new(0.5, -0.5, 0.0), angle, h).abs() < 1e-12);
+        assert!(sd_cone(Vec3::new(0.0, -1.0, 0.0), angle, h).abs() < 1e-12);
+        // Rotational symmetry about y.
+        let a = sd_cone(Vec3::new(0.3, -0.4, 0.0), angle, h);
+        let b = sd_cone(Vec3::new(0.0, -0.4, 0.3), angle, h);
+        let c = sd_cone(Vec3::new(0.3 / 2.0_f64.sqrt(), -0.4, 0.3 / 2.0_f64.sqrt()), angle, h);
+        assert!((a - b).abs() < 1e-12 && (a - c).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_smooth_subtract_and_intersect() {
+        let samples = [
+            (1.5_f64, -0.5_f64),
+            (-0.3, 0.4),
+            (0.05, 0.02),
+            (-1.0, -1.2),
+            (2.0, 2.0),
+        ];
+        let k = 0.2;
+        for &(a, b) in &samples {
+            let ss = op_smooth_subtract(a, b, k);
+            let si = op_smooth_intersect(a, b, k);
+            // Bounded between the hard result and hard result + k/4.
+            assert!(ss >= op_subtract(a, b) - 1e-12, "subtract lower bound");
+            assert!(ss <= op_subtract(a, b) + k / 4.0 + 1e-12, "subtract upper bound");
+            assert!(si >= op_intersect(a, b) - 1e-12, "intersect lower bound");
+            assert!(si <= op_intersect(a, b) + k / 4.0 + 1e-12, "intersect upper bound");
+            // k → 0 reduces to the hard max(a, −b) / max(a, b) forms.
+            let tiny = 1e-9;
+            assert!((op_smooth_subtract(a, b, tiny) - a.max(-b)).abs() < 1e-9);
+            assert!((op_smooth_intersect(a, b, tiny) - a.max(b)).abs() < 1e-9);
+        }
+        // Exact agreement with the hard ops outside the blend band:
+        // smooth subtract when |a + b| ≥ k, smooth intersect when |a − b| ≥ k.
+        assert_eq!(op_smooth_subtract(1.5, -0.5, k), op_subtract(1.5, -0.5));
+        assert_eq!(op_smooth_intersect(1.5, -0.5, k), op_intersect(1.5, -0.5));
+    }
+
+    #[test]
+    fn test_bend() {
+        // Bending rotates (x, y) by k·x and keeps z: it is a per-point
+        // isometry of the distance to the origin.
+        let k = 0.3;
+        for p in [
+            Vec3::new(1.0, 0.5, -0.7),
+            Vec3::new(-2.0, 1.0, 0.0),
+            Vec3::new(0.4, -0.3, 2.0),
+        ] {
+            let q = op_bend(p, k);
+            let pxy = Vec2::new(p.x, p.y).magnitude();
+            let qxy = Vec2::new(q.x, q.y).magnitude();
+            assert!((pxy - qxy).abs() < 1e-12, "xy magnitude changed");
+            assert!((p.z - q.z).abs() < 1e-15, "z changed");
+            // Hence a centered sphere SDF is invariant under the warp.
+            assert!((sd_sphere(q, 1.0) - sd_sphere(p, 1.0)).abs() < 1e-12);
+        }
+        // Zero curvature is the identity.
+        let p = Vec3::new(1.3, -0.2, 0.8);
+        assert_eq!(op_bend(p, 0.0), p);
+        // A point on the bend axis (x = 0) is a fixed point.
+        let on_axis = Vec3::new(0.0, 1.5, -0.4);
+        let bent = op_bend(on_axis, k);
+        assert!(bent.distance_to(&on_axis) < 1e-15);
+    }
+
+    #[test]
     fn test_normal_and_lipschitz() {
         let f = |p: Vec3| sd_sphere(p, 1.0);
         let p = Vec3::new(2.0, 1.0, -0.5);

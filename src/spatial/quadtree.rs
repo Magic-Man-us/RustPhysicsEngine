@@ -203,6 +203,120 @@ mod tests {
     }
 
     #[test]
+    fn test_new_tree_is_empty_and_len_counts_accepted_inserts() {
+        let bounds = Rect { min: Vec2::new(-10.0, -10.0), max: Vec2::new(10.0, 10.0) };
+        let qt: Quadtree<usize> = Quadtree::new(bounds, 8, 12);
+        assert!(qt.is_empty());
+        assert_eq!(qt.len(), 0);
+        assert!(qt.query_rect(&bounds).is_empty());
+        assert!(qt.query_circle(&Circle { center: Vec2::ZERO, radius: 100.0 }).is_empty());
+        assert!(qt.nearest(Vec2::ZERO).is_none());
+
+        let mut rng = Rng::new(9_001);
+        let (qt, pts) = build_random(&mut rng, 250);
+        // Every accepted insert increments len exactly once.
+        assert_eq!(qt.len(), pts.len());
+        assert!(!qt.is_empty());
+        // A query covering the whole root returns each point exactly once.
+        let mut all: Vec<usize> = qt.query_rect(&bounds).into_iter().map(|(_, i)| i).collect();
+        all.sort_unstable();
+        assert_eq!(all, (0..pts.len()).collect::<Vec<_>>());
+        // The payload is stored alongside the right position.
+        for (p, i) in qt.query_rect(&bounds) {
+            assert_eq!(p, pts[i]);
+        }
+        // Rejected inserts leave the tree untouched.
+        let mut qt = qt;
+        for outside in [
+            Vec2::new(10.5, 0.0),
+            Vec2::new(0.0, -10.5),
+            Vec2::new(-50.0, 50.0),
+        ] {
+            assert!(!qt.insert(outside, 9_999));
+        }
+        assert_eq!(qt.len(), pts.len());
+    }
+
+    #[test]
+    fn test_subdivision_and_depth_limit_keep_every_point() {
+        // Capacity 1 forces repeated subdivision; all points must remain
+        // retrievable and counted.
+        let bounds = Rect { min: Vec2::ZERO, max: Vec2::new(8.0, 8.0) };
+        let mut qt = Quadtree::new(bounds, 1, 10);
+        let mut rng = Rng::new(9_002);
+        let pts: Vec<Vec2> = (0..200)
+            .map(|_| Vec2::new(rng.next_f64() * 8.0, rng.next_f64() * 8.0))
+            .collect();
+        for (i, &p) in pts.iter().enumerate() {
+            assert!(qt.insert(p, i));
+        }
+        assert_eq!(qt.len(), pts.len());
+        let mut all: Vec<usize> = qt.query_rect(&bounds).into_iter().map(|(_, i)| i).collect();
+        all.sort_unstable();
+        assert_eq!(all, (0..pts.len()).collect::<Vec<_>>());
+
+        // Coincident points exceed capacity at every depth: the depth
+        // limit must stop subdivision and still store all of them.
+        let mut deep = Quadtree::new(bounds, 1, 3);
+        let dup = Vec2::new(1.0, 1.0);
+        for i in 0..12 {
+            assert!(deep.insert(dup, i));
+        }
+        assert_eq!(deep.len(), 12);
+        let found = deep.query_circle(&Circle { center: dup, radius: 1e-9 });
+        assert_eq!(found.len(), 12);
+        let (_, _, d) = deep.nearest(dup).unwrap();
+        assert_eq!(d, 0.0);
+
+        // Points exactly on the root center and on quadrant boundaries
+        // are placed consistently and remain findable.
+        let mut edge = Quadtree::new(bounds, 1, 6);
+        let boundary = [
+            Vec2::new(4.0, 4.0),
+            Vec2::new(4.0, 0.0),
+            Vec2::new(0.0, 4.0),
+            Vec2::new(2.0, 4.0),
+            Vec2::new(4.0, 6.0),
+        ];
+        for (i, &p) in boundary.iter().enumerate() {
+            assert!(edge.insert(p, i));
+        }
+        assert_eq!(edge.len(), boundary.len());
+        for (i, &p) in boundary.iter().enumerate() {
+            let hits = edge.query_circle(&Circle { center: p, radius: 1e-12 });
+            assert!(hits.iter().any(|&(_, j)| j == i), "boundary point {i} lost");
+        }
+    }
+
+    #[test]
+    fn test_nearest_returns_brute_force_argmin() {
+        let mut rng = Rng::new(9_003);
+        let (qt, pts) = build_random(&mut rng, 400);
+        for _ in 0..40 {
+            let q = Vec2::new(rng.next_f64() * 24.0 - 12.0, rng.next_f64() * 24.0 - 12.0);
+            let (np, ni, nd) = qt.nearest(q).unwrap();
+            let (bi, bd) = pts
+                .iter()
+                .enumerate()
+                .map(|(i, p)| (i, p.distance_to(&q)))
+                .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+                .unwrap();
+            // Distance matches the brute-force minimum exactly, the
+            // reported point is the stored point for that payload, and
+            // no other point is strictly closer.
+            assert!((nd - bd).abs() < 1e-12, "quadtree {nd} vs brute {bd}");
+            assert_eq!(np, pts[ni]);
+            assert!((np.distance_to(&q) - nd).abs() < 1e-12);
+            assert!(pts.iter().all(|p| p.distance_to(&q) >= nd - 1e-12));
+            let _ = bi;
+        }
+        // A query at a stored point returns that point at distance 0.
+        let (np, ni, nd) = qt.nearest(pts[17]).unwrap();
+        assert_eq!(nd, 0.0);
+        assert_eq!(np, pts[ni]);
+    }
+
+    #[test]
     fn test_query_rect_matches_brute_force() {
         let mut rng = Rng::new(311);
         let (qt, pts) = build_random(&mut rng, 1000);

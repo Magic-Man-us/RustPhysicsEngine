@@ -316,6 +316,124 @@ mod tests {
     }
 
     #[test]
+    fn test_k_nearest_index_set_and_edge_cases() {
+        let mut rng = Rng::new(327);
+        let pts = random_points3(&mut rng, 300);
+        let tree = KdTree::build(&pts);
+        for _ in 0..20 {
+            let q = random_points3(&mut rng, 1)[0];
+            let k = 5;
+            let knn = tree.k_nearest(q, k);
+            // The returned indices are exactly the k brute-force nearest.
+            let mut order: Vec<usize> = (0..pts.len()).collect();
+            order.sort_by(|&a, &b| {
+                pts[a].distance_to(&q).partial_cmp(&pts[b].distance_to(&q)).unwrap()
+            });
+            let mut brute: Vec<usize> = order[..k].to_vec();
+            brute.sort_unstable();
+            let mut fast: Vec<usize> = knn.iter().map(|&(i, _)| i).collect();
+            fast.sort_unstable();
+            assert_eq!(fast, brute);
+            // Each reported distance is the true distance to that point,
+            // and no excluded point is nearer than the k-th.
+            let kth = knn[k - 1].1;
+            for &(i, d) in &knn {
+                assert!((d - pts[i].distance_to(&q)).abs() < 1e-12);
+            }
+            for i in 0..pts.len() {
+                if !fast.contains(&i) {
+                    assert!(pts[i].distance_to(&q) >= kth - 1e-12);
+                }
+            }
+            // k = 1 agrees with `nearest`.
+            let one = tree.k_nearest(q, 1);
+            assert_eq!(one.len(), 1);
+            assert!((one[0].1 - tree.nearest(q).unwrap().1).abs() < 1e-12);
+        }
+        // k = 0 returns nothing; k ≥ n returns every point, sorted.
+        let q = random_points3(&mut rng, 1)[0];
+        assert!(tree.k_nearest(q, 0).is_empty());
+        let all = tree.k_nearest(q, pts.len() + 10);
+        assert_eq!(all.len(), pts.len());
+        let mut idx: Vec<usize> = all.iter().map(|&(i, _)| i).collect();
+        idx.sort_unstable();
+        assert_eq!(idx, (0..pts.len()).collect::<Vec<_>>());
+        for w in all.windows(2) {
+            assert!(w[0].1 <= w[1].1);
+        }
+    }
+
+    #[test]
+    fn test_within_radius_distances_and_degenerate_radii() {
+        let mut rng = Rng::new(328);
+        let pts = random_points3(&mut rng, 300);
+        let tree = KdTree::build(&pts);
+        for _ in 0..15 {
+            let q = random_points3(&mut rng, 1)[0];
+            let r = 0.5 + rng.next_f64() * 2.0;
+            let hits = tree.within_radius(q, r);
+            // Reported distances are true distances and inside the ball.
+            for &(i, d) in &hits {
+                assert!((d - pts[i].distance_to(&q)).abs() < 1e-12);
+                assert!(d <= r);
+            }
+            // Nothing inside the ball is missed.
+            let inside: Vec<usize> =
+                (0..pts.len()).filter(|&i| pts[i].distance_to(&q) <= r).collect();
+            let mut got: Vec<usize> = hits.iter().map(|&(i, _)| i).collect();
+            got.sort_unstable();
+            assert_eq!(got, inside);
+            // Monotone in r: a larger radius is a superset.
+            let wide: Vec<usize> =
+                tree.within_radius(q, r * 2.0).into_iter().map(|(i, _)| i).collect();
+            assert!(got.iter().all(|i| wide.contains(i)));
+        }
+        // Zero radius centered on a stored point finds that point only
+        // (plus any exact duplicates), at distance 0.
+        let hits = tree.within_radius(pts[42], 0.0);
+        assert!(hits.iter().any(|&(i, _)| i == 42));
+        for &(i, d) in &hits {
+            assert_eq!(d, 0.0);
+            assert_eq!(pts[i], pts[42]);
+        }
+        // A radius beyond the point cloud's diameter returns everything.
+        let mut every: Vec<usize> =
+            tree.within_radius(Vec3::ZERO, 1e6).into_iter().map(|(i, _)| i).collect();
+        every.sort_unstable();
+        assert_eq!(every, (0..pts.len()).collect::<Vec<_>>());
+    }
+
+    #[test]
+    fn test_all_pairs_within_ordering_and_limits() {
+        let mut rng = Rng::new(329);
+        let pts = random_points3(&mut rng, 120);
+        let tree = KdTree::build(&pts);
+        for &r in &[0.5_f64, 1.5, 3.0] {
+            let pairs = tree.all_pairs_within(r);
+            let mut brute = Vec::new();
+            for i in 0..pts.len() {
+                for j in (i + 1)..pts.len() {
+                    if pts[i].distance_to(&pts[j]) <= r {
+                        brute.push((i, j));
+                    }
+                }
+            }
+            assert_eq!(pairs, brute, "r = {r}");
+            // Output is strictly increasing (sorted, no duplicates) and
+            // every pair is reported with i < j.
+            for w in pairs.windows(2) {
+                assert!(w[0] < w[1], "pairs not strictly sorted");
+            }
+            assert!(pairs.iter().all(|&(i, j)| i < j));
+        }
+        // Zero radius over distinct points yields no pairs; a radius past
+        // the diameter yields all n(n−1)/2 of them.
+        assert!(tree.all_pairs_within(0.0).is_empty());
+        let n = pts.len();
+        assert_eq!(tree.all_pairs_within(1e6).len(), n * (n - 1) / 2);
+    }
+
+    #[test]
     fn test_within_radius_matches_brute_force() {
         let mut rng = Rng::new(323);
         let pts = random_points3(&mut rng, 800);

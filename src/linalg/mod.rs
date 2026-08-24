@@ -785,6 +785,164 @@ mod tests {
         assert!(approx(c.data[1][0], 3.0), "got {}", c.data[1][0]);
     }
 
+    // --- Mat4 tests ---
+
+    fn mat4_approx_eq(a: &Mat4, b: &Mat4, tol: f64) -> bool {
+        (0..4).all(|i| (0..4).all(|j| (a.data[i][j] - b.data[i][j]).abs() < tol))
+    }
+
+    /// Diagonally dominant (hence well-conditioned) random 4×4 matrix.
+    fn random_well_conditioned(rng: &mut crate::monte_carlo::Rng) -> Mat4 {
+        let mut m = Mat4::zero();
+        for i in 0..4 {
+            for j in 0..4 {
+                m.data[i][j] = rng.next_f64() * 2.0 - 1.0;
+            }
+            m.data[i][i] += 5.0;
+        }
+        m
+    }
+
+    #[test]
+    fn test_mat4_trace() {
+        let m = Mat4::from_rows(
+            [1.0, 9.0, 9.0, 9.0],
+            [9.0, 2.0, 9.0, 9.0],
+            [9.0, 9.0, 3.0, 9.0],
+            [9.0, 9.0, 9.0, 4.0],
+        );
+        // Sum of the diagonal only.
+        assert!(approx(m.trace(), 10.0));
+        assert!(approx(Mat4::identity().trace(), 4.0));
+        assert!(approx(Mat4::zero().trace(), 0.0));
+        // Transpose-invariance and the cyclic property tr(AB) = tr(BA).
+        assert!(approx(m.trace(), m.transpose().trace()));
+        let mut rng = crate::monte_carlo::Rng::new(4_101);
+        let a = random_well_conditioned(&mut rng);
+        let b = random_well_conditioned(&mut rng);
+        assert!(approx(a.mul_mat(&b).trace(), b.mul_mat(&a).trace()));
+        // Trace of a similarity transform is invariant: tr(P⁻¹AP)=tr(A).
+        let p_inv = b.inverse().unwrap();
+        let similar = p_inv.mul_mat(&a).mul_mat(&b);
+        assert!((similar.trace() - a.trace()).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_mat4_inverse() {
+        // Known diagonal matrix: inverse is the reciprocal diagonal.
+        let d = Mat4::from_rows(
+            [2.0, 0.0, 0.0, 0.0],
+            [0.0, 4.0, 0.0, 0.0],
+            [0.0, 0.0, 5.0, 0.0],
+            [0.0, 0.0, 0.0, 8.0],
+        );
+        let di = d.inverse().unwrap();
+        let expect = Mat4::from_rows(
+            [0.5, 0.0, 0.0, 0.0],
+            [0.0, 0.25, 0.0, 0.0],
+            [0.0, 0.0, 0.2, 0.0],
+            [0.0, 0.0, 0.0, 0.125],
+        );
+        assert!(mat4_approx_eq(&di, &expect, 1e-12));
+
+        // Seeded well-conditioned matrices: A·A⁻¹ = A⁻¹·A = I.
+        let mut rng = crate::monte_carlo::Rng::new(4_102);
+        for _ in 0..10 {
+            let a = random_well_conditioned(&mut rng);
+            let inv = a.inverse().unwrap();
+            assert!(mat4_approx_eq(&a.mul_mat(&inv), &Mat4::identity(), 1e-10));
+            assert!(mat4_approx_eq(&inv.mul_mat(&a), &Mat4::identity(), 1e-10));
+            // det(A⁻¹) = 1/det(A) and (A⁻¹)⁻¹ = A.
+            assert!((inv.determinant() * a.determinant() - 1.0).abs() < 1e-9);
+            assert!(mat4_approx_eq(&inv.inverse().unwrap(), &a, 1e-9));
+            // The inverse transpose commutes: (Aᵀ)⁻¹ = (A⁻¹)ᵀ.
+            assert!(mat4_approx_eq(
+                &a.transpose().inverse().unwrap(),
+                &inv.transpose(),
+                1e-9
+            ));
+        }
+        // A singular matrix (duplicated row) has no inverse.
+        let singular = Mat4::from_rows(
+            [1.0, 2.0, 3.0, 4.0],
+            [1.0, 2.0, 3.0, 4.0],
+            [5.0, 6.0, 7.0, 8.0],
+            [9.0, 1.0, 2.0, 3.0],
+        );
+        assert!(singular.inverse().is_none());
+        assert!(Mat4::zero().inverse().is_none());
+    }
+
+    #[test]
+    fn test_mat4_mul_operator_matches_mul_mat() {
+        let mut rng = crate::monte_carlo::Rng::new(4_103);
+        let a = random_well_conditioned(&mut rng);
+        let b = random_well_conditioned(&mut rng);
+        let c = random_well_conditioned(&mut rng);
+        // The operator is exactly the named method.
+        assert_eq!(a * b, a.mul_mat(&b));
+        // Identity is neutral on both sides.
+        assert_eq!(a * Mat4::identity(), a);
+        assert_eq!(Mat4::identity() * a, a);
+        // Associativity, and agreement with the matrix-vector product.
+        assert!(mat4_approx_eq(&((a * b) * c), &(a * (b * c)), 1e-9));
+        let v = [1.0, -2.0, 0.5, 3.0];
+        let via_matrix = (a * b).mul_vec4(v);
+        let via_sequence = a.mul_vec4(b.mul_vec4(v));
+        for k in 0..4 {
+            assert!((via_matrix[k] - via_sequence[k]).abs() < 1e-9);
+        }
+        // det(AB) = det(A)·det(B).
+        assert!(((a * b).determinant() - a.determinant() * b.determinant()).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_principal_axes_of_symmetric_matrices() {
+        // Diagonal inertia-like tensor: eigenvalues are the diagonal in
+        // descending order and the axes are the coordinate directions.
+        let d = Mat3::from_rows([5.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 3.0]);
+        let (vals, axes) = d.principal_axes().unwrap();
+        assert!(approx(vals[0], 5.0) && approx(vals[1], 3.0) && approx(vals[2], 1.0));
+        for c in 0..3 {
+            let v = Vec3::new(axes.data[0][c], axes.data[1][c], axes.data[2][c]);
+            // Unit eigenvector along a coordinate axis (sign-agnostic).
+            assert!(approx(v.magnitude(), 1.0));
+            let comps = [v.x.abs(), v.y.abs(), v.z.abs()];
+            assert!(comps.iter().filter(|&&x| x > 1e-9).count() == 1);
+        }
+
+        // General symmetric matrix: A·v = λ·v with orthonormal columns.
+        let a = Mat3::from_rows(
+            [4.0, 1.0, -2.0],
+            [1.0, 3.0, 0.5],
+            [-2.0, 0.5, 6.0],
+        );
+        let (vals, axes) = a.principal_axes().unwrap();
+        assert!(vals[0] >= vals[1] && vals[1] >= vals[2], "not descending: {vals:?}");
+        for (c, &lambda) in vals.iter().enumerate() {
+            let v = Vec3::new(axes.data[0][c], axes.data[1][c], axes.data[2][c]);
+            assert!(approx(v.magnitude(), 1.0), "column {c} not unit");
+            let av = a.mul_vec(v);
+            assert!(av.distance_to(&(v * lambda)) < 1e-8, "A·v != λ·v for column {c}");
+        }
+        // Columns are mutually orthogonal: VᵀV = I.
+        assert!(mat3_approx_eq(&axes.transpose().mul_mat(&axes), &Mat3::identity()));
+        // Invariants: eigenvalues reproduce the trace and determinant.
+        assert!(approx(vals.iter().sum::<f64>(), a.trace()));
+        assert!((vals[0] * vals[1] * vals[2] - a.determinant()).abs() < 1e-8);
+        // Reconstruction: A = V·diag(λ)·Vᵀ.
+        let diag = Mat3::from_rows(
+            [vals[0], 0.0, 0.0],
+            [0.0, vals[1], 0.0],
+            [0.0, 0.0, vals[2]],
+        );
+        assert!(mat3_approx_eq(&axes.mul_mat(&diag).mul_mat(&axes.transpose()), &a));
+        // Non-symmetric input is rejected.
+        assert!(Mat3::from_rows([1.0, 2.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0])
+            .principal_axes()
+            .is_err());
+    }
+
     #[test]
     fn test_mat3_approx_eq_different() {
         let a = Mat3::identity();

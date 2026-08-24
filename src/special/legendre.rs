@@ -43,7 +43,7 @@ pub fn legendre_p_assoc(l: u32, m: i32, x: f64) -> f64 {
         for k in (l - ma + 1)..=(l + ma) {
             ratio /= k as f64;
         }
-        let sign = if ma % 2 == 0 { 1.0 } else { -1.0 };
+        let sign = if ma.is_multiple_of(2) { 1.0 } else { -1.0 };
         return sign * ratio * legendre_p_assoc(l, ma as i32, x);
     }
     let m = m as u32;

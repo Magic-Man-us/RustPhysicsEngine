@@ -1038,6 +1038,88 @@ mod tests {
     }
 
     #[test]
+    fn test_rect_intersection_and_union() {
+        let a = Rect { min: Vec2::ZERO, max: Vec2::new(4.0, 2.0) };
+        let b = Rect { min: Vec2::new(1.0, 1.0), max: Vec2::new(6.0, 5.0) };
+        // Overlapping: intersection is the componentwise max/min box.
+        let i = a.intersection(&b).unwrap();
+        assert_eq!(i.min, Vec2::new(1.0, 1.0));
+        assert_eq!(i.max, Vec2::new(4.0, 2.0));
+        assert!((i.area() - 3.0).abs() < 1e-12);
+        // The intersection is symmetric and contained in both inputs.
+        assert_eq!(b.intersection(&a).unwrap(), i);
+        for c in i.corners() {
+            assert!(a.contains_point(c) && b.contains_point(c));
+        }
+        // Disjoint rectangles have no intersection.
+        let far = Rect { min: Vec2::new(10.0, 10.0), max: Vec2::new(11.0, 11.0) };
+        assert!(a.intersection(&far).is_none());
+        // Union: smallest rectangle containing both.
+        let u = a.union(&b);
+        assert_eq!(u.min, Vec2::ZERO);
+        assert_eq!(u.max, Vec2::new(6.0, 5.0));
+        for r in [&a, &b] {
+            for c in r.corners() {
+                assert!(u.contains_point(c));
+            }
+        }
+        // Inclusion-exclusion lower bound: |A ∪ B| box ≥ |A| + |B| − |A ∩ B|.
+        assert!(u.area() >= a.area() + b.area() - i.area() - 1e-12);
+        // Union with a disjoint box still bounds both.
+        let ud = a.union(&far);
+        assert_eq!(ud.min, Vec2::ZERO);
+        assert_eq!(ud.max, Vec2::new(11.0, 11.0));
+    }
+
+    #[test]
+    fn test_rect_expand_and_extents() {
+        let a = Rect { min: Vec2::new(-1.0, 0.0), max: Vec2::new(3.0, 2.0) };
+        let e = a.expand(0.5);
+        // Grown by the margin on every side.
+        assert_eq!(e.min, Vec2::new(-1.5, -0.5));
+        assert_eq!(e.max, Vec2::new(3.5, 2.5));
+        // Expansion contains the original corners; area grows by
+        // (w + 2m)(h + 2m) − wh.
+        for c in a.corners() {
+            assert!(e.contains_point(c));
+        }
+        assert!((e.area() - 5.0_f64 * 3.0_f64).abs() < 1e-12);
+        // Extents are half-widths: center ± extents recovers min/max.
+        let ext = a.extents();
+        assert_eq!(ext, Vec2::new(2.0, 1.0));
+        assert_eq!(a.center() - ext, a.min);
+        assert_eq!(a.center() + ext, a.max);
+        // Area equals the product of the full widths 2·ex · 2·ey.
+        assert!((a.area() - 4.0 * ext.x * ext.y).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_polyline_bounding_box() {
+        let pl = Polyline {
+            points: vec![
+                Vec3::new(1.0, -2.0, 0.5),
+                Vec3::new(-3.0, 4.0, 2.0),
+                Vec3::new(2.0, 1.0, -1.0),
+                Vec3::new(0.0, 0.0, 0.0),
+            ],
+            closed: false,
+        };
+        let bb = pl.bounding_box();
+        // Contains every vertex.
+        for &p in &pl.points {
+            assert!(bb.contains_point(p));
+        }
+        // Tight: every face of the box touches some vertex.
+        assert_eq!(bb.min, Vec3::new(-3.0, -2.0, -1.0));
+        assert_eq!(bb.max, Vec3::new(2.0, 4.0, 2.0));
+        for axis in 0..3 {
+            let get = |v: Vec3| [v.x, v.y, v.z][axis];
+            assert!(pl.points.iter().any(|&p| (get(p) - get(bb.min)).abs() < 1e-15));
+            assert!(pl.points.iter().any(|&p| (get(p) - get(bb.max)).abs() < 1e-15));
+        }
+    }
+
+    #[test]
     fn test_ray_at() {
         let r = Ray::new(Vec3::new(1.0, 0.0, 0.0), Vec3::new(0.0, 3.0, 0.0));
         assert!(r.at(2.0).distance_to(&Vec3::new(1.0, 2.0, 0.0)) < 1e-12);

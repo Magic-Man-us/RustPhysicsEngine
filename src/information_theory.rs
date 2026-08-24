@@ -224,7 +224,7 @@ mod tests {
     #[test]
     fn test_shannon_entropy_nats_fair_coin() {
         let probs = [0.5, 0.5];
-        let expected = 0.6931471805599453;
+        let expected = std::f64::consts::LN_2;
         assert!(approx(shannon_entropy_nats(&probs), expected));
     }
 

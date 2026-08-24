@@ -76,8 +76,7 @@ const HUE_FULL_CIRCLE: f64 = 360.0;
 /// edges of the visible spectrum.
 #[must_use]
 pub fn wavelength_to_rgb(wavelength_nm: f64) -> (f64, f64, f64) {
-    let (mut r, mut g, mut b) = if wavelength_nm < WAVELENGTH_MIN_NM
-        || wavelength_nm > WAVELENGTH_MAX_NM
+    let (mut r, mut g, mut b) = if !(WAVELENGTH_MIN_NM..=WAVELENGTH_MAX_NM).contains(&wavelength_nm)
     {
         (0.0, 0.0, 0.0)
     } else if wavelength_nm < BAND_VIOLET_END {

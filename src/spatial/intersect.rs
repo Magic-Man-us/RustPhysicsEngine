@@ -745,6 +745,41 @@ mod tests {
     }
 
     #[test]
+    fn test_sphere_triangle() {
+        let t = Triangle {
+            a: Vec3::ZERO,
+            b: Vec3::new(2.0, 0.0, 0.0),
+            c: Vec3::new(0.0, 2.0, 0.0),
+        };
+        // Sphere centered over the interior at distance 0.6 < r = 1.
+        let s = Sphere { center: Vec3::new(0.5, 0.5, 0.6), radius: 1.0 };
+        let (contact, pen) = sphere_triangle(&s, &t).unwrap();
+        assert!(contact.distance_to(&Vec3::new(0.5, 0.5, 0.0)) < 1e-12);
+        assert!((pen - 0.4).abs() < 1e-12);
+        // Contact point lies on the triangle plane and is the closest point.
+        assert!(
+            (contact.distance_to(&s.center)
+                - crate::spatial::distance::distance_point_triangle(s.center, &t))
+            .abs()
+                < 1e-12
+        );
+        // Far sphere misses.
+        let far = Sphere { center: Vec3::new(0.5, 0.5, 5.0), radius: 1.0 };
+        assert!(sphere_triangle(&far, &t).is_none());
+        // Grazing at exactly r counts as contact (closed test) with zero
+        // penetration.
+        let graze = Sphere { center: Vec3::new(0.5, 0.5, 1.0), radius: 1.0 };
+        let (gc, gp) = sphere_triangle(&graze, &t).unwrap();
+        assert!(gc.distance_to(&Vec3::new(0.5, 0.5, 0.0)) < 1e-12);
+        assert!(gp.abs() < 1e-12);
+        // Near a vertex: contact clamps to the vertex region.
+        let corner = Sphere { center: Vec3::new(-0.3, -0.3, 0.0), radius: 0.5 };
+        let (vc, vp) = sphere_triangle(&corner, &t).unwrap();
+        assert!(vc.distance_to(&t.a) < 1e-12);
+        assert!((vp - (0.5 - 0.3 * 2.0_f64.sqrt())).abs() < 1e-12);
+    }
+
+    #[test]
     fn test_obb_obb_matches_aabb_for_identity() {
         let mk = |center: Vec3, h: Vec3| Obb {
             center,

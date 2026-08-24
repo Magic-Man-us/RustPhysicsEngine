@@ -270,7 +270,7 @@ pub mod constants {
     // ── Particle masses ─────────────────────────────────────────────────
 
     /// Electron mass (kg)
-    pub const M_ELECTRON: f64 = 9.109_383_7015e-31;
+    pub const M_ELECTRON: f64 = 9.109_383_701_5e-31;
     /// Proton mass (kg)
     pub const M_PROTON: f64 = 1.672_621_923_69e-27;
     /// Neutron mass (kg)
@@ -281,11 +281,11 @@ pub mod constants {
     // ── Electromagnetic constants ───────────────────────────────────────
 
     /// Vacuum permittivity ε₀ (F/m)
-    pub const EPSILON_0: f64 = 8.854_187_8128e-12;
+    pub const EPSILON_0: f64 = 8.854_187_812_8e-12;
     /// Vacuum permeability μ₀ (H/m)
     pub const MU_0: f64 = 1.256_637_062_12e-6;
     /// Coulomb constant k_e = 1/(4πε₀) (N·m²/C²)
-    pub const K_E: f64 = 8.987_551_7923e9;
+    pub const K_E: f64 = 8.987_551_792_3e9;
     /// Impedance of free space Z₀ = μ₀c (Ω)
     pub const VACUUM_IMPEDANCE: f64 = 376.730_313_668;
     /// Magnetic flux quantum Φ₀ = h/(2e) (Wb)
@@ -311,17 +311,17 @@ pub mod constants {
     // ── Atomic & nuclear constants ──────────────────────────────────────
 
     /// Rydberg constant R∞ (m⁻¹)
-    pub const RYDBERG: f64 = 1.097_373_156_8160e7;
+    pub const RYDBERG: f64 = 1.097_373_156_816_0e7;
     /// Rydberg energy (J) ≈ 13.6 eV
-    pub const RYDBERG_ENERGY: f64 = 2.179_872_361_1035e-18;
+    pub const RYDBERG_ENERGY: f64 = 2.179_872_361_103_5e-18;
     /// Bohr radius a₀ (m)
     pub const BOHR_RADIUS: f64 = 5.291_772_109_03e-11;
     /// Bohr magneton μ_B (J/T)
-    pub const BOHR_MAGNETON: f64 = 9.274_010_0783e-24;
+    pub const BOHR_MAGNETON: f64 = 9.274_010_078_3e-24;
     /// Nuclear magneton μ_N (J/T)
-    pub const NUCLEAR_MAGNETON: f64 = 5.050_783_7461e-27;
+    pub const NUCLEAR_MAGNETON: f64 = 5.050_783_746_1e-27;
     /// Fine-structure constant α ≈ 1/137
-    pub const ALPHA: f64 = 7.297_352_5693e-3;
+    pub const ALPHA: f64 = 7.297_352_569_3e-3;
     /// Inverse fine-structure constant 1/α
     pub const ALPHA_INV: f64 = 137.035_999_084;
 
@@ -357,7 +357,7 @@ pub mod constants {
     /// Astronomical unit (m) — exact (IAU 2012)
     pub const AU: f64 = 1.495_978_707e11;
     /// Light-year (m) — exact
-    pub const LIGHT_YEAR: f64 = 9.460_730_472_5808e15;
+    pub const LIGHT_YEAR: f64 = 9.460_730_472_580_8e15;
     /// Parsec (m)
     pub const PARSEC: f64 = 3.085_677_581e16;
     /// Hubble constant H₀ ≈ 69.8 km/s/Mpc (s⁻¹)

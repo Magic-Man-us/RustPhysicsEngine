@@ -205,6 +205,10 @@ mod tests {
         (a - b).abs() / denom < rel_tol
     }
 
+    // The comparisons below are constant-folded, but they are the point:
+    // they pin the ordering and sign conventions of the constant table so
+    // a bad edit to any value fails the build.
+    #[allow(clippy::assertions_on_constants)]
     #[test]
     fn test_constants_sanity() {
         assert!(M_MUON > M_ELECTRON);

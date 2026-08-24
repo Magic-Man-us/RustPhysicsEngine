@@ -214,7 +214,7 @@ mod tests {
     #[test]
     fn test_doubling_time_supercritical() {
         let t = doubling_time(1.001, 1e-3);
-        let expected = 0.6931471805599453;
+        let expected = std::f64::consts::LN_2;
         assert!(approx_rel(t, expected, 1e-9));
     }
 

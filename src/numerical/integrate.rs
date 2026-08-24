@@ -38,7 +38,7 @@ pub fn trapezoid(f: &dyn Fn(f64) -> f64, a: f64, b: f64, n: usize) -> f64 {
 /// If n is odd it is rounded up to the next even number.
 #[must_use]
 pub fn simpson(f: &dyn Fn(f64) -> f64, a: f64, b: f64, n: usize) -> f64 {
-    let n = if n < 2 { 2 } else if n % 2 != 0 { n + 1 } else { n };
+    let n = if n < 2 { 2 } else if !n.is_multiple_of(2) { n + 1 } else { n };
     let h = (b - a) / n as f64;
     let mut sum = f(a) + f(b);
     for i in 1..n {

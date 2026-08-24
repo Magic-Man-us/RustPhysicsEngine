@@ -854,7 +854,7 @@ mod tests {
     fn test_apollonian_integral_gasket() {
         let circles = apollonian_gasket_integral(3);
         assert!(circles.len() > 20);
-        let outer = circles[0].clone();
+        let outer = circles[0];
         assert_gasket_valid(&circles, &outer);
         // Integral gasket: all curvatures are (near) integers.
         for c in &circles[1..] {

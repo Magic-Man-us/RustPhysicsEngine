@@ -86,7 +86,7 @@ pub fn view_factor_parallel_plates(width: f64, height: f64, separation: f64) -> 
     let b = 1.0 + y * y;
     let c = 1.0 + x2 + y * y;
 
-    let term_ln = ((a * b / c) as f64).sqrt().ln();
+    let term_ln = (a * b / c).sqrt().ln();
     let term_x = x * b.sqrt() * (x / b.sqrt()).atan() - x * x.atan();
     let term_y = y * a.sqrt() * (y / a.sqrt()).atan() - y * y.atan();
 

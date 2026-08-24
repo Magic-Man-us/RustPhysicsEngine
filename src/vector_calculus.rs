@@ -1,8 +1,8 @@
-/// Vector calculus operators and field theory for physics grids.
-///
-/// Provides discrete differential operators (gradient, laplacian, divergence, curl)
-/// on 2D and 3D uniform grids, point-wise numerical differentiation via function
-/// pointers, line/surface integrals, and a Jacobi Poisson solver.
+//! Vector calculus operators and field theory for physics grids.
+//!
+//! Provides discrete differential operators (gradient, laplacian, divergence, curl)
+//! on 2D and 3D uniform grids, point-wise numerical differentiation via function
+//! pointers, line/surface integrals, and a Jacobi Poisson solver.
 
 // ---------------------------------------------------------------------------
 // Index helpers
@@ -26,10 +26,10 @@ fn central_diff(f_back: f64, f_fwd: f64, h: f64, at_lo: bool, at_hi: bool) -> f6
     if at_lo && at_hi {
         // Single-cell dimension — derivative is zero.
         0.0
-    } else if at_lo {
-        (f_fwd - f_back) / h // forward difference (denominator is dx, not 2dx)
-    } else if at_hi {
-        (f_fwd - f_back) / h // backward difference
+    } else if at_lo || at_hi {
+        // One-sided difference at a boundary: the caller supplies the two
+        // cells that straddle the sample, so the span is dx, not 2dx.
+        (f_fwd - f_back) / h
     } else {
         (f_fwd - f_back) / (2.0 * h)
     }
@@ -1152,7 +1152,7 @@ mod tests {
             .collect();
 
         let flux = flux_integral_2d(&field, &path);
-        let expected = 6.283185307179586;
+        let expected = std::f64::consts::TAU;
         assert!(
             (flux - expected).abs() < 1e-3,
             "flux {flux} != expected {expected}"

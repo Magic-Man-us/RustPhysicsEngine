@@ -279,7 +279,7 @@ pub fn critical_damping(mass: f64, spring_constant: f64) -> f64 {
 
 /// Logarithmic decrement: δ = 2πζ / √(1 - ζ²)
 pub fn logarithmic_decrement(damping_ratio: f64) -> f64 {
-    assert!(damping_ratio >= 0.0 && damping_ratio < 1.0, "damping ratio must be in [0, 1)");
+    assert!((0.0..1.0).contains(&damping_ratio), "damping ratio must be in [0, 1)");
     2.0 * std::f64::consts::PI * damping_ratio / (1.0 - damping_ratio * damping_ratio).sqrt()
 }
 
@@ -673,7 +673,7 @@ mod tests {
     #[test]
     fn test_angular_velocity() {
         // Δθ=2π, Δt=1 → ω=2π
-        assert!(approx(angular_velocity(2.0 * std::f64::consts::PI, 1.0), 6.283185));
+        assert!(approx(angular_velocity(2.0 * std::f64::consts::PI, 1.0), std::f64::consts::TAU));
     }
 
     #[test]
@@ -742,7 +742,7 @@ mod tests {
     #[test]
     fn test_shm_period_spring() {
         // T = 2π√(m/k) = 2π√(1/4) = 2π*0.5 = π
-        assert!(approx(shm_period_spring(1.0, 4.0), 3.141593));
+        assert!(approx(shm_period_spring(1.0, 4.0), std::f64::consts::PI));
     }
 
     #[test]

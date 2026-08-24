@@ -91,6 +91,11 @@ impl Sobol {
     }
 
     /// The next point in the sequence.
+    ///
+    /// Named `next` to match the sequence vocabulary; it is deliberately an
+    /// inherent method rather than `Iterator`, which cannot borrow `self`
+    /// mutably and yield a fresh `Vec` without allocating an adapter.
+    #[allow(clippy::should_implement_trait)]
     #[must_use]
     pub fn next(&mut self) -> Vec<f64> {
         // Gray-code update using the lowest zero bit of the previous index.
@@ -162,6 +167,10 @@ impl Halton {
     }
 
     /// The next point in the sequence (index starts at 1).
+    ///
+    /// Inherent rather than `Iterator` for the same reason as the Sobol
+    /// sequence above.
+    #[allow(clippy::should_implement_trait)]
     #[must_use]
     pub fn next(&mut self) -> Vec<f64> {
         self.index += 1;

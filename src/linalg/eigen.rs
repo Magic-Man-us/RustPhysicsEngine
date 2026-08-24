@@ -256,7 +256,7 @@ pub fn eigenvalues_general(a: &Matrix, max_iter: usize) -> Result<Vec<Complex>, 
                 });
             }
             let (mut x, mut y, mut w) = (x, y, w);
-            if its > 0 && its % 10 == 0 {
+            if its > 0 && its.is_multiple_of(10) {
                 // Exceptional shift to break rare cycling.
                 t += x;
                 for i in 0..=nn as usize {

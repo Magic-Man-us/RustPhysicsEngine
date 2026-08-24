@@ -430,7 +430,7 @@ mod tests {
         let mut rng = Rng::new(TEST_SEED);
         for _ in 0..1000 {
             let v = rng.next_f64();
-            assert!(v >= 0.0 && v < 1.0, "next_f64 should be in [0, 1), got {v}");
+            assert!((0.0..1.0).contains(&v), "next_f64 should be in [0, 1), got {v}");
         }
     }
 

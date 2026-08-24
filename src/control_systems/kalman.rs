@@ -23,7 +23,7 @@ pub struct KalmanFilter {
 
 /// Shared measurement update given the innovation and Jacobian-like H.
 fn joseph_update(
-    x: &mut Vec<f64>,
+    x: &mut [f64],
     p: &mut Matrix,
     h: &Matrix,
     r: &Matrix,

@@ -550,7 +550,7 @@ mod tests {
     #[test]
     fn test_rectangular_plate_fundamental() {
         let f = rectangular_plate_fundamental(1.0, 100.0, 25.0);
-        assert!(approx(f, 3.14159, 1e-4), "got {f}");
+        assert!(approx(f, std::f64::consts::PI, 1e-4), "got {f}");
     }
 
     #[test]
