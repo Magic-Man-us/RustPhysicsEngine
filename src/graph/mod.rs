@@ -1,9 +1,10 @@
 //! Graphs: representation and structure, shortest paths, network flow,
-//! and matchings.
+//! matchings, and spectral graph theory.
 
 pub mod core;
 pub mod flow;
 pub mod matching;
 pub mod paths;
+pub mod spectral;
 
 pub use core::Graph;
