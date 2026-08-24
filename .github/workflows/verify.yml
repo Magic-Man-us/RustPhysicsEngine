@@ -1,7 +1,12 @@
 name: Verify
 
 # Deeper checks than ci.yml (which builds, tests and reports coverage):
-# randomized property tests, Kani model checking, and a strict lint pass.
+# randomized property tests, Kani model checking, Miri, and a strict lint
+# pass.
+#
+# Every `run:` here is quoted. An unquoted value containing a colon
+# followed by a space is parsed as a nested mapping, which makes the whole
+# file invalid and fails the run before any job starts.
 
 on:
   push:
@@ -21,35 +26,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
       - name: Run the property suite in release mode
-        run: cargo test --release --test properties
-
-  kani:
-    name: Kani model checking
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: model-checking/kani-github-action@v1
-        with:
-          args: --output-format terse
-
-  miri:
-    name: Miri (UB check)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: miri
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo miri setup
-      # The crate contains no `unsafe`, so Miri is a backstop rather than the
-      # primary check, and interpreting all 2700+ tests would dominate CI
-      # time. Scope it to the modules doing the heaviest index and slice
-      # arithmetic, where an out-of-bounds or aliasing mistake would surface.
-      - name: Run core numerics tests under Miri
-        run: cargo miri test --lib -- core:: linalg:: spatial::
-        env:
-          MIRIFLAGS: "-Zmiri-strict-provenance"
+        run: "cargo test --release --test properties"
 
   clippy-strict:
     name: Clippy (strict)
@@ -60,16 +37,46 @@ jobs:
         with:
           components: clippy
       - uses: Swatinem/rust-cache@v2
-      # Default lints are enforced as errors. The float-accuracy lints are
-      # advisory: `suboptimal_flops` alone fires ~2800 times across the
-      # numerics, and rewriting those expressions as `mul_add` changes
-      # rounding, so each one needs a deliberate review rather than a blanket
-      # denial.
+      # Default lints are errors.
+      #
+      # The float-accuracy lints (float_cmp, lossy_float_literal,
+      # imprecise_flops, suboptimal_flops) are deliberately NOT enabled
+      # here. They are allow-by-default, and naming them with -W does not
+      # make them advisory: -D warnings denies the whole warning level, so
+      # every one they raise becomes an error. Enabling them alongside
+      # -D warnings produced 3429 errors, suboptimal_flops accounting for
+      # most of them. Rewriting those expressions as mul_add changes
+      # rounding, so they need review one at a time rather than a blanket
+      # gate. Run them manually when doing that work:
+      #   cargo clippy --all-targets -- -W clippy::suboptimal_flops
       - name: Clippy
-        run: >
-          cargo clippy --all-targets --
-          -D warnings
-          -W clippy::float_cmp
-          -W clippy::lossy_float_literal
-          -W clippy::imprecise_flops
-          -W clippy::suboptimal_flops
+        run: "cargo clippy --all-targets -- -D warnings"
+
+  kani:
+    name: Kani model checking
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: model-checking/kani-github-action@v1
+        with:
+          args: "--output-format terse"
+
+  miri:
+    name: Miri (UB check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: miri
+      - uses: Swatinem/rust-cache@v2
+      - run: "cargo miri setup"
+      # The crate contains no `unsafe`, so Miri is a backstop rather than
+      # the primary check. It interprets at roughly a hundredth of native
+      # speed, so this is scoped to core::, the interval and dual-number
+      # arithmetic where index and slice reasoning is densest, rather than
+      # to the whole suite.
+      - name: Run core numerics tests under Miri
+        run: "cargo miri test --lib -- core::"
+        env:
+          MIRIFLAGS: "-Zmiri-strict-provenance"
