@@ -10,7 +10,6 @@
 //!
 //! The pre-Part-3 first-order RC filters remain here unchanged.
 
-use crate::error::SolveError;
 use crate::fractals::Complex;
 use crate::math::constants::PI;
 use crate::numerical::polynomial_roots;
@@ -1143,11 +1142,6 @@ pub fn first_order_highpass(signal: &[f64], dt: f64, rc: f64) -> Vec<f64> {
     }
     output
 }
-
-/// Placeholder to keep the unused error type import when features are
-/// trimmed.
-#[allow(dead_code)]
-fn _uses_solve_error(_e: SolveError) {}
 
 #[cfg(test)]
 mod tests {

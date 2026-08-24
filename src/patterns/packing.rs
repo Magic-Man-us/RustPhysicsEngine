@@ -1045,8 +1045,8 @@ mod tests {
                     (c.center.x - f64::from(p) / f64::from(q)).abs() < 1e-12
                         && (c.radius - 0.5 / f64::from(q * q)).abs() < 1e-12
                 })
+                .copied()
                 .expect("circle present")
-                .clone()
         };
         let (a, b) = (get(1, 2), get(1, 3));
         assert!((a.center.distance_to(&b.center) - (a.radius + b.radius)).abs() < 1e-12);
