@@ -119,6 +119,47 @@ impl Quaternion {
         ]
     }
 
+    /// Build a unit quaternion from a (proper) rotation matrix using
+    /// Shepperd's method: pick the largest of the four squared
+    /// components from the trace/diagonal to avoid cancellation.
+    pub fn from_rotation_matrix(m: &[[f64; 3]; 3]) -> Self {
+        let trace = m[0][0] + m[1][1] + m[2][2];
+        let q = if trace > 0.0 {
+            let s = (trace + 1.0).sqrt() * 2.0; // 4w
+            Quaternion::new(
+                0.25 * s,
+                (m[2][1] - m[1][2]) / s,
+                (m[0][2] - m[2][0]) / s,
+                (m[1][0] - m[0][1]) / s,
+            )
+        } else if m[0][0] > m[1][1] && m[0][0] > m[2][2] {
+            let s = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() * 2.0; // 4x
+            Quaternion::new(
+                (m[2][1] - m[1][2]) / s,
+                0.25 * s,
+                (m[0][1] + m[1][0]) / s,
+                (m[0][2] + m[2][0]) / s,
+            )
+        } else if m[1][1] > m[2][2] {
+            let s = (1.0 + m[1][1] - m[0][0] - m[2][2]).sqrt() * 2.0; // 4y
+            Quaternion::new(
+                (m[0][2] - m[2][0]) / s,
+                (m[0][1] + m[1][0]) / s,
+                0.25 * s,
+                (m[1][2] + m[2][1]) / s,
+            )
+        } else {
+            let s = (1.0 + m[2][2] - m[0][0] - m[1][1]).sqrt() * 2.0; // 4z
+            Quaternion::new(
+                (m[1][0] - m[0][1]) / s,
+                (m[0][2] + m[2][0]) / s,
+                (m[1][2] + m[2][1]) / s,
+                0.25 * s,
+            )
+        };
+        q.normalize()
+    }
+
     /// Extract axis and angle from this rotation quaternion.
     pub fn to_axis_angle(&self) -> (Vec3, f64) {
         let n = self.normalize();
