@@ -2,6 +2,7 @@
 //! matchings, and spectral graph theory.
 
 pub mod core;
+pub mod coloring;
 pub mod flow;
 pub mod matching;
 pub mod paths;
