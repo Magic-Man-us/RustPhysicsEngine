@@ -224,6 +224,12 @@ mod tests {
         (a - b).abs() < tol
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_polynomial_exact() {
         // f(x) = 3x^3 - 2x + 5, f'(x) = 9x^2 - 2
@@ -270,6 +276,12 @@ mod tests {
         assert!(approx(g[1], 31.0, 1e-13));
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_derivative_exact_on_polynomials() {
         // Dual arithmetic is exact on polynomials: no truncation error,
@@ -358,6 +370,12 @@ mod tests {
         }
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_gradient_and_jacobian_agree_on_a_scalar_field() {
         // The Jacobian of a 1-output function is the gradient row.

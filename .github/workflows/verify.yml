@@ -55,6 +55,11 @@ jobs:
   kani:
     name: Kani model checking
     runs-on: ubuntu-latest
+    # The harnesses quantify over whole f64 domains and several take a square
+    # root, which the solver has to bit-blast. Without a bound a single slow
+    # harness would hold a runner for the six-hour job default; this fails the
+    # job instead, which is the signal that a harness needs narrowing.
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
       - uses: model-checking/kani-github-action@v1
@@ -64,6 +69,7 @@ jobs:
   miri:
     name: Miri (UB check)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
@@ -73,9 +79,16 @@ jobs:
       - run: "cargo miri setup"
       # The crate contains no `unsafe`, so Miri is a backstop rather than
       # the primary check. It interprets at roughly a hundredth of native
-      # speed, so this is scoped to core::, the interval and dual-number
-      # arithmetic where index and slice reasoning is densest, rather than
-      # to the whole suite.
+      # speed -- these 27 tests take twelve minutes -- so it is scoped to
+      # core::, the interval and dual-number arithmetic where index and slice
+      # reasoning is densest, rather than to the whole suite.
+      #
+      # Five tests in there carry #[cfg_attr(miri, ignore)]. Miri evaluates
+      # sin, exp and powi with its own implementations rather than the host's,
+      # and deliberately randomises the result within the slack the language
+      # allows, so a test asserting an exact float value fails under Miri
+      # whatever the code does. Those five are exactness assertions and are
+      # skipped here; they run everywhere else.
       - name: Run core numerics tests under Miri
         run: "cargo miri test --lib -- core::"
         env:

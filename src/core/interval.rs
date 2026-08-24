@@ -348,6 +348,12 @@ mod tests {
         assert!(e.lo <= 1.0 && e.hi >= std::f64::consts::E);
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_sin_ranges() {
         use std::f64::consts::PI;
@@ -367,6 +373,12 @@ mod tests {
         assert!(c.hi >= 1.0);
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_powi_cases() {
         let a = Interval::new(-2.0, 3.0);
