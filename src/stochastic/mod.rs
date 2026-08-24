@@ -3,3 +3,5 @@
 
 pub mod hmm;
 pub mod markov;
+pub mod point_process;
+pub mod sde;
