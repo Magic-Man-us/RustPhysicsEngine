@@ -3,3 +3,5 @@
 
 pub mod block;
 pub mod checksum;
+pub mod convolutional;
+pub mod reed_solomon;
