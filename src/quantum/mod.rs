@@ -1,6 +1,8 @@
 //! Quantum mechanics: the elementary relations here, with the
 //! wavefunction machinery and the Schrodinger solvers in submodules.
 
+pub mod algorithms;
+pub mod circuit;
 pub mod schrodinger;
 pub mod wavefunction;
 
