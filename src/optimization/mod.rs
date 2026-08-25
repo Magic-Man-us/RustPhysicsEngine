@@ -2,6 +2,7 @@
 // and linear/nonlinear least-squares fitting.
 
 pub mod least_squares;
+pub mod convex;
 pub mod integer;
 pub mod lp;
 pub mod metaheuristics;
