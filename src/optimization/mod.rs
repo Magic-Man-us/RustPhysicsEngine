@@ -2,6 +2,7 @@
 // and linear/nonlinear least-squares fitting.
 
 pub mod least_squares;
+pub mod lp;
 
 pub use least_squares::{
     fit_exponential_decay, fit_gaussian_peak, levenberg_marquardt, LmResult,

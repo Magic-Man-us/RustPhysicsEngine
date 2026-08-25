@@ -16,6 +16,7 @@ mod graph_structure_props;
 mod linalg_props;
 mod mesh_props;
 mod numerical_props;
+mod optimization_lp_props;
 mod signal_props;
 mod spatial_props;
 mod special_props;
