@@ -7,6 +7,7 @@
 
 pub mod epidemiology;
 pub mod population;
+pub mod seq_align;
 
 use crate::error::GeomError;
 

@@ -27,6 +27,7 @@ mod population_props;
 mod quantum_circuit_props;
 mod quantum_matter_props;
 mod quantum_props;
+mod seq_align_props;
 mod signal_props;
 mod spatial_props;
 mod special_props;
