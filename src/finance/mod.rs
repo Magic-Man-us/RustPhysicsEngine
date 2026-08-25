@@ -20,4 +20,6 @@
 //! not, and nothing here claims it.
 
 pub mod options;
+pub mod portfolio;
 pub mod rates;
+pub mod risk;
