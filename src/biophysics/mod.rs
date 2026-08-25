@@ -1,3 +1,12 @@
+//! Biophysics: the elementary membrane, transport and mechanics relations
+//! here, with the population-scale models in submodules.
+//!
+//! The roadmap calls this area `bio`; it lives under the existing
+//! `biophysics` module instead, so that there is one home for the subject
+//! rather than two.
+
+pub mod epidemiology;
+
 use crate::math::constants;
 use crate::chemistry::FARADAY;
 

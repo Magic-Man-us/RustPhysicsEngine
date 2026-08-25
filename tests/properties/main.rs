@@ -8,6 +8,7 @@
 
 mod core_props;
 mod discrete_props;
+mod epidemiology_props;
 mod fractals_props;
 mod game_theory_props;
 mod geometry_props;
