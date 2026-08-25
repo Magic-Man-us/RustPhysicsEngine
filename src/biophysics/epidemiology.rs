@@ -26,6 +26,7 @@
 //! than by any average.
 
 use crate::error::GeomError;
+use crate::biophysics::integrate_adaptive as integrate;
 use crate::graph::Graph;
 use crate::monte_carlo::Rng;
 
@@ -53,66 +54,6 @@ impl EpidemicSample {
     pub fn total(&self) -> f64 {
         self.s + self.e + self.i + self.r
     }
-}
-
-/// Integrates a compartment model with adaptive Runge-Kutta and a
-/// step-doubling error estimate.
-///
-/// Epidemic models are not stiff in the way a chemical network is -- the
-/// rates are all of the same order -- so an explicit method is the right
-/// choice and the adaptivity is only there to resolve the peak, where the
-/// curvature is concentrated.
-fn integrate(
-    derivative: impl Fn(&[f64]) -> Vec<f64>,
-    y0: &[f64],
-    t_end: f64,
-    rtol: f64,
-) -> Result<Vec<(f64, Vec<f64>)>, GeomError> {
-    if !(t_end > 0.0) || !(rtol > 0.0) || rtol >= 1.0 {
-        return Err(GeomError::InvalidArgument("integrate: bad parameters"));
-    }
-    let n = y0.len();
-    let rk4 = |y: &[f64], h: f64| -> Vec<f64> {
-        let k1 = derivative(y);
-        let mid1: Vec<f64> = (0..n).map(|i| y[i] + 0.5 * h * k1[i]).collect();
-        let k2 = derivative(&mid1);
-        let mid2: Vec<f64> = (0..n).map(|i| y[i] + 0.5 * h * k2[i]).collect();
-        let k3 = derivative(&mid2);
-        let end: Vec<f64> = (0..n).map(|i| y[i] + h * k3[i]).collect();
-        let k4 = derivative(&end);
-        (0..n)
-            .map(|i| y[i] + h / 6.0 * (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]))
-            .collect()
-    };
-    let mut out = vec![(0.0, y0.to_vec())];
-    let mut t = 0.0;
-    let mut y = y0.to_vec();
-    let mut h = (t_end * 1e-4).min(0.1);
-    let smallest = t_end * 1e-12;
-    while t < t_end {
-        h = h.min(t_end - t);
-        if h < smallest {
-            return Err(GeomError::Degenerate("the step collapsed below the working precision"));
-        }
-        let coarse = rk4(&y, h);
-        let fine = rk4(&rk4(&y, 0.5 * h), 0.5 * h);
-        let error = (0..n)
-            .map(|i| (coarse[i] - fine[i]).abs() / fine[i].abs().max(1e-3))
-            .fold(0.0, f64::max);
-        if error <= rtol {
-            // Richardson: RK4's error is fourth order, so the two-step
-            // result plus a fifteenth of the gap is fifth order.
-            y = (0..n).map(|i| fine[i] + (fine[i] - coarse[i]) / 15.0).collect();
-            t += h;
-            out.push((t, y.clone()));
-        }
-        let growth = if error > 0.0 { 0.9 * (rtol / error).powf(0.2) } else { 4.0 };
-        h *= growth.clamp(0.2, 4.0);
-        if out.len() > 500_000 {
-            return Err(GeomError::Degenerate("the integration did not reach the end time"));
-        }
-    }
-    Ok(out)
 }
 
 fn check_initial(s0: f64, e0: f64, i0: f64) -> Result<(), GeomError> {
