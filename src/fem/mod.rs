@@ -19,5 +19,6 @@
 //! of the matrix for a convergence rate limited only by the smoothness of
 //! the solution.
 
+pub mod fdtd;
 pub mod fem1d;
 pub mod fem2d;
