@@ -22,3 +22,4 @@
 pub mod fdtd;
 pub mod fem1d;
 pub mod fem2d;
+pub mod spectral_pde;

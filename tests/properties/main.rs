@@ -41,6 +41,7 @@ mod rates_props;
 mod seq_align_props;
 mod signal_props;
 mod spatial_props;
+mod spectral_pde_props;
 mod special_props;
 mod monte_carlo_props;
 mod patterns_props;
