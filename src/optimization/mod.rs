@@ -4,6 +4,7 @@
 pub mod least_squares;
 pub mod integer;
 pub mod lp;
+pub mod metaheuristics;
 pub mod network;
 
 pub use least_squares::{
