@@ -53,4 +53,5 @@ mod statmech_props;
 mod stochastic_extremes_props;
 mod stochastic_process_props;
 mod transforms_props;
+mod units_props;
 mod tree_props;

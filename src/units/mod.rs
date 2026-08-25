@@ -1,3 +1,17 @@
+//! Unit conversions, dimensional analysis and the CODATA constants.
+//!
+//! The flat conversion functions below are the original contents of this
+//! module and are unchanged. What sits alongside them now is the typed
+//! machinery: [`quantity`] carries a value together with its seven SI
+//! exponents so that adding a length to a time is a compile-time-shaped
+//! error rather than a silent number, and [`dimensional`] does the
+//! analysis those exponents make possible -- Buckingham's theorem over
+//! exact rationals, the named dimensionless groups, natural units and
+//! the Planck scale.
+
+pub mod dimensional;
+pub mod quantity;
+
 use crate::math::constants::{AMU, C, E_CHARGE, H, PI};
 
 // ---------------------------------------------------------------------------
