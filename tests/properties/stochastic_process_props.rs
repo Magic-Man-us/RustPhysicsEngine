@@ -56,7 +56,7 @@ fn prop_littles_law_holds_across_every_queueing_model() {
     // L = lambda W is a statement about areas under a sample path and assumes
     // nothing about the arrival or service distributions, so it has to hold
     // for every model in the module at every admissible parameter.
-    let mut rng = Rng::new(0x_11771E);
+    let mut rng = Rng::new(0x0011_771E);
     for _ in 0..300 {
         let mu = uniform(&mut rng, 0.2, 4.0);
         let c = 1 + pick(&mut rng, 6);
@@ -103,7 +103,7 @@ fn prop_the_product_form_and_the_balance_equations_agree() {
     // `mmck` builds its distribution from the birth-death product form, one
     // ratio at a time. `Ctmc::stationary` solves pi Q = 0 as a linear system
     // and knows nothing about queues. Two derivations, one answer.
-    let mut rng = Rng::new(0x_B41A_11CE);
+    let mut rng = Rng::new(0xB41A_11CE);
     for _ in 0..120 {
         let mu = uniform(&mut rng, 0.3, 3.0);
         let lambda = uniform(&mut rng, 0.2, 5.0);
@@ -133,7 +133,7 @@ fn prop_a_continuous_chain_is_its_jump_chain_weighted_by_holding_time() {
     // continuous-time chain spends time in a state in proportion to how often
     // it visits times how long it stays, so pi is proportional to nu_i h_i
     // over the embedded chain's stationary law.
-    let mut rng = Rng::new(0x_E3BE_DDED);
+    let mut rng = Rng::new(0xE3BE_DDED);
     for _ in 0..120 {
         let mu = uniform(&mut rng, 0.3, 3.0);
         let lambda = uniform(&mut rng, 0.3, 3.0);
@@ -174,7 +174,7 @@ fn prop_uniformization_is_a_distribution_that_relaxes_to_stationarity() {
     // a property a truncated matrix exponential does not have. And as the
     // horizon grows it must approach the chain's stationary law, monotonically
     // in total variation.
-    let mut rng = Rng::new(0x_0F1F_0417);
+    let mut rng = Rng::new(0x0F1F_0417);
     for _ in 0..60 {
         let mu = uniform(&mut rng, 0.5, 3.0);
         let lambda = uniform(&mut rng, 0.5, 3.0);
@@ -232,7 +232,7 @@ fn prop_the_spectral_density_integrates_to_the_impulse_response_variance() {
     // process variance is sigma^2 times the sum of squared psi weights. The
     // frequency-domain and time-domain descriptions of second-order structure
     // are the same object.
-    let mut rng = Rng::new(0x_5EC7_2A11);
+    let mut rng = Rng::new(0x5EC7_2A11);
     let m = 20_000usize;
     let freqs: Vec<f64> = (0..m)
         .map(|i| {
@@ -273,7 +273,7 @@ fn prop_the_averaged_periodogram_recovers_the_spectral_density() {
     // to the density the model computes from its own coefficients. Nothing in
     // `fft` knows about ARMA models and nothing in `spectral_density` knows
     // about the FFT, so agreement pins both.
-    let mut rng = Rng::new(0x_7E12_0D06);
+    let mut rng = Rng::new(0x7E12_0D06);
     for case in 0..6 {
         let ar = random_stationary_ar(1 + case % 2, &mut rng);
         let ma: Vec<f64> = if case % 3 == 0 { vec![] } else { vec![uniform(&mut rng, -0.6, 0.6)] };
@@ -336,7 +336,7 @@ fn prop_the_sample_autocorrelation_matches_the_model_it_came_from() {
     // The theoretical autocorrelation of an ARMA is gamma_h / gamma_0 with
     // gamma_h = sigma^2 sum_j psi_j psi_{j+h}. `acf` estimates the same
     // quantity from a realisation without ever seeing the coefficients.
-    let mut rng = Rng::new(0x_ACF0_0007);
+    let mut rng = Rng::new(0xACF0_0007);
     for _ in 0..25 {
         let p = 1 + pick(&mut rng, 2);
         let q = pick(&mut rng, 2);
