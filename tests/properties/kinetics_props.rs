@@ -9,6 +9,7 @@
 //! -- which is checkable on random parameters rather than on one worked
 //! example.
 
+use rust_physics_engine::math::constants::{FARADAY, R};
 use rust_physics_engine::monte_carlo::Rng;
 use rust_physics_engine::statistical_mechanics::kinetics::{
     autocatalysis_ignition, avrami_fit, buffer_henderson_hasselbalch, butler_volmer,
@@ -412,11 +413,11 @@ fn prop_the_rate_theories_have_the_scalings_they_claim() {
         assert!(rate > 0.0 && rate.is_finite());
         // An extra RT ln 10 of enthalpy costs exactly one decade.
         let decade =
-            eyring(dh + std::f64::consts::LN_10 * 8.314_462_618 * t, ds, t).unwrap();
+            eyring(dh + std::f64::consts::LN_10 * R * t, ds, t).unwrap();
         assert!(close(decade * 10.0 / rate, 1.0, 1e-9), "an RT ln 10 did not cost a decade");
         // Entropy enters as a pure multiplier.
         assert!(close(
-            eyring(dh, ds + 8.314_462_618, t).unwrap() / rate,
+            eyring(dh, ds + R, t).unwrap() / rate,
             std::f64::consts::E,
             1e-9
         ));
@@ -491,7 +492,11 @@ fn prop_the_electrochemical_relations_scale_as_their_formulas_do() {
         // A decade in the quotient is one Nernst slope, and the offset is
         // the standard potential exactly.
         let decade = nernst(e0, z, 10.0 * ratio, t).unwrap();
-        let slope = std::f64::consts::LN_10 * 8.314_462_618 * t / (z * 96_485.0);
+        // Built from the crate's own constants rather than from copies
+        // of them: transcribing R and F here would make this an
+        // assertion about the transcription, and the Nernst slope is
+        // what it is meant to be about.
+        let slope = std::f64::consts::LN_10 * R * t / (z * FARADAY);
         assert!(close(e - decade, slope, 1e-9 * slope));
         assert!(close(nernst(e0, z, 1.0, t).unwrap(), e0, 1e-12));
         // The standard potential is a pure offset.

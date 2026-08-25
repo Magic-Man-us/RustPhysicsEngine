@@ -264,6 +264,10 @@ pub mod constants {
     pub const N_A: f64 = 6.022_140_76e23;
     /// Molar gas constant R = N_A × k_B (J mol⁻¹ K⁻¹) — exact
     pub const R: f64 = 8.314_462_618;
+    /// Faraday constant F = N_A × e (C/mol) — exact, and computed from
+    /// its two exact factors rather than transcribed, so it cannot
+    /// disagree with them.
+    pub const FARADAY: f64 = N_A * E_CHARGE;
     /// Standard gravitational acceleration (m/s²) — exact by definition
     pub const G_ACCEL: f64 = 9.806_65;
 

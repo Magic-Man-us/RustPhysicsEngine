@@ -22,8 +22,10 @@
 //! error, which is the point of the exercise rather than a detail.
 
 use rust_physics_engine::exact::rational::Rational;
+use rust_physics_engine::exact::symbolic::Expr;
 use rust_physics_engine::units::dimensional::{
-    buckingham_pi, is_dimensionless_group, natural_units_convert, natural_units_power,
+    buckingham_pi, dimensional_check_formula, is_dimensionless_group, natural_units_convert,
+    natural_units_power,
 };
 use rust_physics_engine::units::quantity::{
     parse_quantity, parse_unit, si_prefixes_format, unit_convert, Dim, DimError, Quantity,
@@ -334,4 +336,220 @@ fn prop_natural_units_are_a_consistent_change_of_bookkeeping() {
         assert!(natural_units_power(charged).is_err());
         assert!(natural_units_convert(1.0, charged).is_err());
     }
+}
+
+// ---------------------------------------------------------------------------
+// Checking a symbolic formula
+// ---------------------------------------------------------------------------
+
+/// The variables the generated formulas are built from, with the
+/// dimensions the checker is told about.
+fn formula_vars() -> Vec<(&'static str, Dim)> {
+    vec![
+        ("m", Dim::MASS),
+        ("l", Dim::LENGTH),
+        ("t", Dim::TIME),
+        ("v", Dim::new(1, 0, -1, 0, 0, 0, 0)),
+        ("a", Dim::new(1, 0, -2, 0, 0, 0, 0)),
+        ("q", Dim::new(0, 0, 1, 1, 0, 0, 0)),
+        ("n", Dim::NONE),
+    ]
+}
+
+/// Builds a random expression together with the dimension its
+/// construction guarantees, computed independently of the checker.
+///
+/// Every branch is a rule the checker has to implement: a product's
+/// dimension is the product, a sum keeps its terms' shared dimension, a
+/// transcendental of a pure number is a pure number. The generator
+/// works these out by hand so that agreeing with the checker is
+/// evidence about the checker rather than a tautology.
+fn formula(rng: &mut Rng, vars: &[(&'static str, Dim)], depth: u32) -> (Expr, Dim) {
+    if depth == 0 || rng.below(4) == 0 {
+        return if rng.below(5) == 0 {
+            (Expr::c(1.0 + rng.next_f64()), Dim::NONE)
+        } else {
+            let (name, d) = vars[rng.below(vars.len() as u64) as usize];
+            (Expr::var(name), d)
+        };
+    }
+    match rng.below(6) {
+        0 => {
+            // A product multiplies the dimensions, so the exponents add.
+            let (a, da) = formula(rng, vars, depth - 1);
+            let (b, db) = formula(rng, vars, depth - 1);
+            match da.mul(&db) {
+                Ok(d) => (Expr::mul(vec![a, b]), d),
+                // An exponent left i8; keep the left factor instead.
+                Err(_) => (a, da),
+            }
+        }
+        1 => {
+            // A sum of a term and that term scaled by a pure number is
+            // a legitimate sum, and keeps the term's dimension.
+            let (a, da) = formula(rng, vars, depth - 1);
+            let scale = Expr::c(rng.next_f64());
+            (Expr::add(vec![a.clone(), Expr::mul(vec![a, scale])]), da)
+        }
+        2 => {
+            // An integer power multiplies every exponent.
+            let (a, da) = formula(rng, vars, depth - 1);
+            let n = (rng.below(5) as i8) - 2;
+            match da.pow(n) {
+                Ok(d) => (Expr::pow(a, Expr::Rat(Rational::from_i64(n as i64, 1))), d),
+                Err(_) => (a, da),
+            }
+        }
+        3 => {
+            // The square root of a square, which always comes out.
+            let (a, da) = formula(rng, vars, depth - 1);
+            match da.mul(&da) {
+                Ok(sq) => {
+                    let _ = sq;
+                    (Expr::Sqrt(Box::new(Expr::mul(vec![a.clone(), a]))), da)
+                }
+                Err(_) => (a, da),
+            }
+        }
+        4 => {
+            // A transcendental needs a pure number and returns one, so
+            // feed it the ratio of a thing to itself.
+            let (a, _) = formula(rng, vars, depth - 1);
+            let ratio = Expr::mul(vec![a.clone(), Expr::pow(a, Expr::c(-1.0))]);
+            let e = match rng.below(4) {
+                0 => Expr::Sin(Box::new(ratio)),
+                1 => Expr::Exp(Box::new(ratio)),
+                2 => Expr::Cosh(Box::new(ratio)),
+                _ => Expr::Atan(Box::new(ratio)),
+            };
+            (e, Dim::NONE)
+        }
+        _ => {
+            // Negation and absolute value leave the dimension alone.
+            let (a, da) = formula(rng, vars, depth - 1);
+            if rng.below(2) == 0 {
+                (Expr::Neg(Box::new(a)), da)
+            } else {
+                (Expr::Abs(Box::new(a)), da)
+            }
+        }
+    }
+}
+
+#[test]
+fn prop_the_checker_returns_the_dimension_the_construction_guarantees() {
+    let mut rng = Rng::new(0x51c8_9d02);
+    let vars = formula_vars();
+    for _ in 0..300 {
+        let depth = 1 + rng.below(4) as u32;
+        let (e, want) = formula(&mut rng, &vars, depth);
+        assert_eq!(
+            dimensional_check_formula(&e, &vars),
+            Ok(want),
+            "the construction guarantees {want} for {e:?}"
+        );
+    }
+}
+
+#[test]
+fn prop_a_sum_of_unlike_terms_is_always_refused() {
+    let mut rng = Rng::new(0x77b1_4e0f);
+    let vars = formula_vars();
+    let mut tried = 0;
+    for _ in 0..400 {
+        let depth = 1 + rng.below(3) as u32;
+        let (a, da) = formula(&mut rng, &vars, depth);
+        let depth = 1 + rng.below(3) as u32;
+        let (b, db) = formula(&mut rng, &vars, depth);
+        if da == db {
+            // A sum of like terms is fine, and is the other test's job.
+            assert_eq!(dimensional_check_formula(&Expr::add(vec![a, b]), &vars), Ok(da));
+            continue;
+        }
+        tried += 1;
+        // Whatever the two dimensions are, adding them is refused, and
+        // the error names both of them.
+        match dimensional_check_formula(&Expr::add(vec![a, b]), &vars) {
+            Err(DimError::Mismatch { expected, found }) => {
+                assert_eq!(expected, da);
+                assert_eq!(found, db);
+            }
+            other => panic!("adding {da} to {db} gave {other:?}"),
+        }
+    }
+    assert!(tried > 100, "only {tried} unlike pairs were generated");
+}
+
+#[test]
+fn prop_substituting_an_equal_dimension_leaves_the_formula_alone() {
+    // Replacing a symbol by anything of the same dimension cannot
+    // change the formula's dimension. It is the substitution rule that
+    // makes dimensional analysis usable at all -- you may rewrite a
+    // velocity as a length over a time anywhere it appears.
+    let mut rng = Rng::new(0x2e40_a6b3);
+    let vars = formula_vars();
+    // v is a length over a time, and a is a velocity over a time.
+    let replacements: Vec<(&str, Expr)> = vec![
+        ("v", Expr::mul(vec![Expr::var("l"), Expr::pow(Expr::var("t"), Expr::c(-1.0))])),
+        ("a", Expr::mul(vec![Expr::var("v"), Expr::pow(Expr::var("t"), Expr::c(-1.0))])),
+        ("n", Expr::mul(vec![Expr::var("t"), Expr::pow(Expr::var("t"), Expr::c(-1.0))])),
+    ];
+    for _ in 0..200 {
+        let depth = 1 + rng.below(4) as u32;
+        let (e, want) = formula(&mut rng, &vars, depth);
+        assert_eq!(dimensional_check_formula(&e, &vars), Ok(want));
+        for (name, replacement) in &replacements {
+            let rewritten = e.substitute(name, replacement);
+            assert_eq!(
+                dimensional_check_formula(&rewritten, &vars),
+                Ok(want),
+                "substituting {name} changed the dimension"
+            );
+        }
+    }
+}
+
+#[test]
+fn prop_differentiating_divides_by_the_variables_dimension() {
+    // d/dt lowers a dimension by one power of time, whatever the
+    // expression is and however many rules the differentiator had to
+    // apply to it. That makes this a check on the differentiator as
+    // much as on the checker.
+    //
+    // It also exercises the one case the checker has to be lenient
+    // about: `diff` does not simplify, so the product rule leaves
+    // `0 * t` sitting beside `v * 1`, and a checker that refused that
+    // sum would be useless on anything that had been differentiated.
+    let mut rng = Rng::new(0x6d05_1c94);
+    let vars = formula_vars();
+    let mut confirmed = 0;
+    for _ in 0..200 {
+        let depth = 1 + rng.below(3) as u32;
+        let (mut e, mut want) = formula(&mut rng, &vars, depth);
+        // Make sure the expression really depends on t, or its
+        // derivative is the zero function and there is nothing to
+        // compare. Multiplying by t is the cheapest way to arrange it.
+        if e.substitute("t", &Expr::c(2.0)) == e {
+            e = Expr::mul(vec![e, Expr::var("t")]);
+            let Ok(w) = want.mul(&Dim::TIME) else { continue };
+            want = w;
+        }
+        assert_eq!(dimensional_check_formula(&e, &vars), Ok(want));
+        let Ok(expected) = want.div(&Dim::TIME) else { continue };
+
+        let d = e.diff("t");
+        // The checker must not choke on unsimplified output.
+        let got = dimensional_check_formula(&d, &vars)
+            .unwrap_or_else(|err| panic!("the derivative did not check: {err}"));
+        if got == Dim::NONE && expected != Dim::NONE {
+            // t appeared only under a zero power, so the derivative is
+            // identically zero after all -- and zero belongs to every
+            // dimension, so a pure number is the right answer.
+            continue;
+        }
+        assert_eq!(got, expected, "d/dt of a {want} came out {got}");
+        confirmed += 1;
+    }
+    // Without this the test would pass by skipping everything.
+    assert!(confirmed > 120, "only {confirmed} derivatives were actually compared");
 }

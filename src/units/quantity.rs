@@ -54,6 +54,8 @@ pub enum DimError {
     Overflow,
     /// A unit name was not recognised.
     UnknownUnit(String),
+    /// A formula named a variable whose dimension was not supplied.
+    UnknownVar(String),
     /// The text was not a quantity.
     Malformed(&'static str),
 }
@@ -67,6 +69,7 @@ impl fmt::Display for DimError {
             DimError::NotAPerfectRoot(d) => write!(f, "{d} has no exact root"),
             DimError::Overflow => write!(f, "a dimension exponent overflowed"),
             DimError::UnknownUnit(u) => write!(f, "unknown unit: {u}"),
+            DimError::UnknownVar(v) => write!(f, "no dimension given for variable {v}"),
             DimError::Malformed(m) => write!(f, "malformed quantity: {m}"),
         }
     }
@@ -854,6 +857,142 @@ mod tests {
         // Every entry parses as the unit it claims.
         for (name, _, unit) in constants_codata() {
             assert!(parse_unit(unit).is_ok(), "{name} has an unparseable unit {unit}");
+        }
+    }
+}
+
+
+#[cfg(test)]
+mod table_agreement {
+    use super::*;
+    use crate::math::constants as k;
+
+    /// The crate keeps two constant tables: [`constants_codata`], which
+    /// is the 2022 CODATA adjustment, and `math::constants`, which
+    /// predates it. Having two is not a problem; having two that
+    /// disagree by more than the adjustment is, because then one of
+    /// them has a typo in it. This pins both halves of that.
+    #[test]
+    fn the_two_constant_tables_agree_to_their_vintage() {
+        // Fixed by the 2019 SI redefinition or derived from constants
+        // that are. These are definitions, not measurements, so there
+        // is no revision that could move them and nothing but a
+        // transcription error could make them differ. Bit-for-bit.
+        let exact: Vec<(&str, f64)> = vec![
+            ("speed of light", k::C),
+            ("Planck constant", k::H),
+            ("reduced Planck constant", k::HBAR),
+            ("elementary charge", k::E_CHARGE),
+            ("Boltzmann constant", k::K_B),
+            ("Avogadro constant", k::N_A),
+            ("Stefan-Boltzmann constant", k::SIGMA),
+            ("standard gravity", k::G_ACCEL),
+        ];
+        for (name, mine) in exact {
+            let theirs = codata(name).expect("a listed constant");
+            assert_eq!(mine, theirs, "{name} is exact and the two tables disagree");
+        }
+
+        // Measured, so the 2022 adjustment moved them -- by about a
+        // part in 1e9 for the masses, less for the rest. A digit
+        // transcribed wrongly would show up at 1e-4 or worse, so 1e-8
+        // separates the revision from the mistake.
+        let measured: Vec<(&str, f64)> = vec![
+            ("molar gas constant", k::R),
+            ("gravitational constant", k::G),
+            ("vacuum electric permittivity", k::EPSILON_0),
+            ("vacuum magnetic permeability", k::MU_0),
+            ("fine-structure constant", k::ALPHA),
+            ("electron mass", k::M_ELECTRON),
+            ("proton mass", k::M_PROTON),
+            ("neutron mass", k::M_NEUTRON),
+            ("atomic mass constant", k::AMU),
+            ("Rydberg constant", k::RYDBERG),
+            ("Bohr radius", k::BOHR_RADIUS),
+        ];
+        for (name, mine) in measured {
+            let theirs = codata(name).expect("a listed constant");
+            let rel = (mine - theirs).abs() / theirs.abs();
+            assert!(rel < 1e-8, "{name} differs by {rel:e}, too much for a CODATA revision");
+        }
+    }
+
+    /// Constants that are defined as products of other constants are
+    /// computed here rather than transcribed, so this checks the
+    /// arithmetic against the published figure rather than checking a
+    /// number against itself.
+    #[test]
+    fn the_derived_constants_come_out_of_their_definitions() {
+        // F = N_A e, exactly, and CODATA publishes 96485.33212 C/mol.
+        assert_eq!(k::FARADAY, k::N_A * k::E_CHARGE);
+        assert!((k::FARADAY - 96_485.332_12).abs() / 96_485.332_12 < 1e-10);
+        // R = N_A k_B, exactly, and the table rounds it to ten digits.
+        assert!((k::R - k::N_A * k::K_B).abs() / k::R < 1e-10);
+        // The Stefan-Boltzmann constant is 2 pi^5 k^4 / (15 h^3 c^2).
+        let sigma = 2.0 * std::f64::consts::PI.powi(5) * k::K_B.powi(4)
+            / (15.0 * k::H.powi(3) * k::C.powi(2));
+        assert!((k::SIGMA - sigma).abs() / k::SIGMA < 1e-9);
+        // And the Coulomb constant is 1/(4 pi eps0).
+        let ke = 1.0 / (4.0 * std::f64::consts::PI * k::EPSILON_0);
+        assert!((k::K_E - ke).abs() / k::K_E < 1e-9);
+    }
+
+    /// The unit table carries its own scale factors, and several of
+    /// them are the same physical constant `math::constants` holds.
+    /// Two copies of an exact value that disagree is a bug waiting for
+    /// somebody to hit it from the wrong direction, so they are pinned
+    /// together here.
+    #[test]
+    fn the_unit_table_agrees_with_the_constant_table() {
+        // Both exact by definition, so equality is the right test.
+        assert_eq!(unit_convert(1.0, "eV", "J").unwrap(), k::E_CHARGE);
+        assert_eq!(unit_convert(1.0, "atm", "Pa").unwrap(), k::ATM);
+        assert_eq!(unit_convert(1.0, "cal", "J").unwrap(), k::CALORIE);
+        // A watt-hour is 3600 joules, which is also what an hour of
+        // seconds gives -- two entries in the same table that have to
+        // agree with each other.
+        assert_eq!(
+            unit_convert(1.0, "Wh", "J").unwrap(),
+            unit_convert(1.0, "h", "s").unwrap()
+        );
+        // The Julian year is 365.25 days exactly, by the same table.
+        assert_eq!(
+            unit_convert(1.0, "yr", "s").unwrap(),
+            365.25 * unit_convert(1.0, "d", "s").unwrap()
+        );
+    }
+
+    /// Every unit string in the CODATA table has to parse, or the
+    /// entry is not usable as a quantity -- which is the only reason
+    /// to carry the unit alongside the value at all.
+    #[test]
+    fn every_codata_unit_string_parses_to_the_expected_dimension() {
+        let expected: Vec<(&str, Dim)> = vec![
+            ("speed of light", Dim::new(1, 0, -1, 0, 0, 0, 0)),
+            ("Planck constant", Dim::new(2, 1, -1, 0, 0, 0, 0)),
+            ("elementary charge", Dim::new(0, 0, 1, 1, 0, 0, 0)),
+            ("Boltzmann constant", Dim::new(2, 1, -2, 0, -1, 0, 0)),
+            ("Avogadro constant", Dim::new(0, 0, 0, 0, 0, -1, 0)),
+            ("molar gas constant", Dim::new(2, 1, -2, 0, -1, -1, 0)),
+            ("gravitational constant", Dim::new(3, -1, -2, 0, 0, 0, 0)),
+            ("fine-structure constant", Dim::NONE),
+            ("electron mass", Dim::MASS),
+            ("Rydberg constant", Dim::new(-1, 0, 0, 0, 0, 0, 0)),
+            ("Stefan-Boltzmann constant", Dim::new(0, 1, -3, 0, -4, 0, 0)),
+            ("standard gravity", Dim::new(1, 0, -2, 0, 0, 0, 0)),
+        ];
+        for (name, want) in expected {
+            let (_, _, unit) = constants_codata()
+                .into_iter()
+                .find(|(n, _, _)| *n == name)
+                .expect("a listed constant");
+            let parsed = parse_unit(unit).unwrap_or_else(|e| panic!("{name}: {unit:?}: {e}"));
+            assert_eq!(parsed.1, want, "{name} is listed in {unit}");
+        }
+        // And none of the others is written in a way the parser cannot
+        // read, even where the dimension is not pinned above.
+        for (name, _, unit) in constants_codata() {
+            assert!(parse_unit(unit).is_ok(), "{name} carries an unparseable unit {unit:?}");
         }
     }
 }

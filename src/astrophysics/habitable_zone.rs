@@ -1,5 +1,9 @@
-pub const SOLAR_LUMINOSITY: f64 = 3.828e26;
-pub const SOLAR_TEMPERATURE: f64 = 5778.0;
+use crate::math::constants;
+
+/// Solar luminosity L☉ (W), re-exported from [`constants`].
+pub const SOLAR_LUMINOSITY: f64 = constants::SOLAR_LUMINOSITY;
+/// Solar effective temperature T☉ (K), re-exported from [`constants`].
+pub const SOLAR_TEMPERATURE: f64 = constants::SOLAR_TEMPERATURE;
 pub const HZ_INNER_COEFFICIENT: f64 = 0.95;
 pub const HZ_OUTER_COEFFICIENT: f64 = 1.37;
 
