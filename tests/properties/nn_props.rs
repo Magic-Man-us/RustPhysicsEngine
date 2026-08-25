@@ -32,12 +32,12 @@ use rust_physics_engine::monte_carlo::Rng;
 
 /// A random architecture with two or three hidden layers.
 fn architecture(rng: &mut Rng) -> Vec<usize> {
-    let depth = 2 + (rng.next_u64() % 2) as usize;
-    let mut sizes = vec![1 + (rng.next_u64() % 4) as usize];
+    let depth = 2 + (rng.below(2)) as usize;
+    let mut sizes = vec![1 + (rng.below(4)) as usize];
     for _ in 0..depth {
         sizes.push(1 + (rng.next_u64() % 5) as usize);
     }
-    sizes.push(1 + (rng.next_u64() % 4) as usize);
+    sizes.push(1 + (rng.below(4)) as usize);
     sizes
 }
 
@@ -274,7 +274,7 @@ fn prop_descent_reaches_the_closed_form_least_squares_answer() {
     // about an optimiser is a matter of degree; this is not.
     let mut rng = Rng::new(0x6ee2_bc59);
     for _ in 0..20 {
-        let cols = 2 + (rng.next_u64() % 4) as usize;
+        let cols = 2 + (rng.below(4)) as usize;
         let rows = cols + 10 + (rng.next_u64() % 30) as usize;
         let mut x = Matrix::zeros(rows, cols);
         for i in 0..rows {
@@ -301,7 +301,7 @@ fn prop_convolution_is_linear_and_shift_equivariant() {
     for _ in 0..25 {
         let w = 7 + (rng.next_u64() % 5) as usize;
         let h = 7 + (rng.next_u64() % 5) as usize;
-        let k = 1 + 2 * (rng.next_u64() % 2) as usize; // 1 or 3, so it is odd
+        let k = 1 + 2 * (rng.below(2)) as usize; // 1 or 3, so it is odd
         let a: Vec<f64> = (0..w * h).map(|_| rng.next_gaussian()).collect();
         let b: Vec<f64> = (0..w * h).map(|_| rng.next_gaussian()).collect();
         let kernel: (Vec<f64>, usize, usize) =

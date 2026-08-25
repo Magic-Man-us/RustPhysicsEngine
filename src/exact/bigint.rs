@@ -1277,7 +1277,7 @@ mod tests {
         // Shifts agree with multiply and divide by powers of two.
         let mut rng = Rng::new(31);
         for _ in 0..20 {
-            let a = rand_limbs(1 + (rng.next_u64() % 4) as usize, &mut rng);
+            let a = rand_limbs(1 + (rng.below(4)) as usize, &mut rng);
             let k = (rng.next_u64() % 200) as usize;
             let two_k = BigInt::one().shl(k);
             assert_eq!(a.shl(k), a.mul(&two_k), "shl != mul by 2^k");

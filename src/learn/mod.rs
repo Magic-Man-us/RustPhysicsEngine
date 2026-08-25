@@ -10,5 +10,6 @@
 //! equations, or checking that a clustering agrees with itself under a
 //! relabelling.
 
+pub mod cluster;
 pub mod gp;
 pub mod nn;

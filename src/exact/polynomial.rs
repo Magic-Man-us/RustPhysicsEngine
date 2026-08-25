@@ -1678,7 +1678,7 @@ mod tests {
         for _ in 0..60 {
             let d_a = 2 + (rng.next_u64() % 7) as usize;
             let a = rand_poly(&mut rng, d_a);
-            let d_b = 1 + (rng.next_u64() % 4) as usize;
+            let d_b = 1 + (rng.below(4)) as usize;
             let b = rand_poly(&mut rng, d_b);
             let (q, r) = a.div_rem(&b).expect("non-zero divisor");
             assert!(r.is_zero() || r.degree() < b.degree(), "remainder degree drops");

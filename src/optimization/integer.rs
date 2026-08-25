@@ -2256,7 +2256,7 @@ mod tests {
     fn edit_distance_is_a_metric_and_its_operations_reproduce_the_target() {
         let mut rng = Rng::new(0x00ED_0001);
         let word = |rng: &mut Rng, n: usize| -> Vec<u8> {
-            (0..n).map(|_| b'a' + (rng.next_u64() % 4) as u8).collect()
+            (0..n).map(|_| b'a' + (rng.below(4)) as u8).collect()
         };
         for _ in 0..150 {
             let (la, lb, lc) = (pick(&mut rng, 9), pick(&mut rng, 9), pick(&mut rng, 9));
@@ -2299,9 +2299,9 @@ mod tests {
         let mut rng = Rng::new(0x01C5_0001);
         for _ in 0..150 {
             let a: Vec<u8> =
-                (0..pick(&mut rng, 12)).map(|_| b'a' + (rng.next_u64() % 4) as u8).collect();
+                (0..pick(&mut rng, 12)).map(|_| b'a' + (rng.below(4)) as u8).collect();
             let b: Vec<u8> =
-                (0..pick(&mut rng, 12)).map(|_| b'a' + (rng.next_u64() % 4) as u8).collect();
+                (0..pick(&mut rng, 12)).map(|_| b'a' + (rng.below(4)) as u8).collect();
             let lcs = longest_common_subsequence(&a, &b);
 
             // It really is a subsequence of both.

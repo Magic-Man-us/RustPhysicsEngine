@@ -6,6 +6,7 @@
 #![allow(clippy::needless_range_loop)]
 #![allow(clippy::type_complexity)]
 
+mod cluster_props;
 mod core_props;
 mod discrete_props;
 mod epidemiology_props;

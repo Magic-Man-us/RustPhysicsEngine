@@ -1919,8 +1919,8 @@ mod tests {
         let mut rng = Rng::new(0x_0D0A_0001);
         let mut solved = 0usize;
         for _ in 0..200 {
-            let m = 2 + (rng.next_u64() % 4) as usize;
-            let n = 2 + (rng.next_u64() % 4) as usize;
+            let m = 2 + (rng.below(4)) as usize;
+            let n = 2 + (rng.below(4)) as usize;
             let mut a = Matrix::zeros(m, n);
             for i in 0..m {
                 for j in 0..n {
@@ -2020,8 +2020,8 @@ mod tests {
         let mut rng = Rng::new(0x_0117_0001);
         let mut compared = 0usize;
         for _ in 0..100 {
-            let m = 2 + (rng.next_u64() % 4) as usize;
-            let n = 2 + (rng.next_u64() % 4) as usize;
+            let m = 2 + (rng.below(4)) as usize;
+            let n = 2 + (rng.below(4)) as usize;
             let mut a = Matrix::zeros(m, n);
             for i in 0..m {
                 for j in 0..n {

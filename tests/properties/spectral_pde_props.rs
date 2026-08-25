@@ -143,9 +143,9 @@ fn prop_the_periodic_solver_is_exact_within_the_band_and_mean_free() {
     // derivative in closed form, and the solver has to recover u.
     let mut rng = Rng::new(0x7b1e_44c9);
     for _ in 0..30 {
-        let n = 16 + 8 * (rng.next_u64() % 4) as usize;
+        let n = 16 + 8 * (rng.below(4)) as usize;
         let length = 0.5 + 4.0 * rng.next_f64();
-        let modes = 1 + (rng.next_u64() % 4) as usize;
+        let modes = 1 + (rng.below(4)) as usize;
         let coeffs: Vec<(f64, f64)> =
             (0..modes).map(|_| (2.0 * rng.next_f64() - 1.0, 2.0 * rng.next_f64() - 1.0)).collect();
         // Keep every mode strictly inside the band, so nothing is
@@ -223,7 +223,7 @@ fn prop_collocation_reproduces_what_its_space_contains() {
     // polynomial is exact.
     let mut rng = Rng::new(0x63a0_c7e2);
     for _ in 0..25 {
-        let n = 6 + (rng.next_u64() % 8) as usize;
+        let n = 6 + (rng.below(8)) as usize;
         // Degrees well inside the space; p is a polynomial too, so that
         // -(p u')' stays one and every evaluation is exact.
         let mut pc = poly(&mut rng, 2);

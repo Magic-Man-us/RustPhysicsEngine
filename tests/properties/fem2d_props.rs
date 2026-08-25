@@ -59,11 +59,11 @@ fn csr_get(m: &rust_physics_engine::linalg::sparse::CsrMatrix, i: usize, j: usiz
 
 /// A spread of meshes covering the three generators.
 fn meshes(rng: &mut Rng) -> Vec<FemMesh2> {
-    let nx = 2 + (rng.next_u64() % 4) as usize;
-    let ny = 2 + (rng.next_u64() % 4) as usize;
+    let nx = 2 + (rng.below(4)) as usize;
+    let ny = 2 + (rng.below(4)) as usize;
     let mut out = vec![
         FemMesh2::rect(0.5 + rng.next_f64(), 0.5 + rng.next_f64(), nx, ny).unwrap(),
-        FemMesh2::disk(0.5 + rng.next_f64(), 1 + (rng.next_u64() % 4) as usize).unwrap(),
+        FemMesh2::disk(0.5 + rng.next_f64(), 1 + (rng.below(4)) as usize).unwrap(),
     ];
     // A jittered grid, triangulated by Delaunay. The jitter keeps the
     // points from being cocircular, which is the degenerate case.
@@ -518,7 +518,7 @@ fn prop_convergence_is_second_order_in_the_mesh_size() {
     let mut rng = Rng::new(0x13da_9f27);
     let pi = std::f64::consts::PI;
     for _ in 0..6 {
-        let (a, b) = (1 + (rng.next_u64() % 2) as i32, 1 + (rng.next_u64() % 2) as i32);
+        let (a, b) = (1 + (rng.below(2)) as i32, 1 + (rng.below(2)) as i32);
         let u = move |p: Vec2| (a as f64 * pi * p.x).sin() * (b as f64 * pi * p.y).sin();
         let lam = pi * pi * ((a * a) as f64 + (b * b) as f64);
         let mut errors = Vec::new();

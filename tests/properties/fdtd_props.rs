@@ -362,7 +362,7 @@ fn prop_the_plane_scheme_keeps_the_symmetry_of_its_grid() {
         let n = 21 + 2 * (rng.next_u64() % 6) as usize;
         let eps = vec![1.0; n * n];
         let src = pulsed(30 + (rng.next_u64() % 30) as usize, 0.05 + 0.1 * rng.next_f64(), 1.0);
-        let pml = (rng.next_u64() % 4) as usize;
+        let pml = (rng.below(4)) as usize;
         let r = fdtd_2d_tm(
             &eps,
             (n / 2, n / 2),
@@ -518,7 +518,7 @@ fn prop_the_measured_decay_recovers_the_grids_own_cutoff() {
         // error, so the comparison below could not tell them apart and
         // would be asserting noise.
         let width = 16 + 2 * (rng.next_u64() % 3) as usize;
-        let mode = 2 + (rng.next_u64() % 2) as usize;
+        let mode = 2 + (rng.below(2)) as usize;
         let frac = 0.4 + 0.35 * rng.next_f64();
         let want = waveguide_cutoff_numerical(width, mode, s).unwrap();
         let got = waveguide_cutoff_check_fdtd(width, 200, mode, frac * want, s, 7000).unwrap();

@@ -58,7 +58,7 @@ fn prop_the_variance_ignores_the_targets_and_the_mean_is_linear_in_them() {
     // mean a linear smoother.
     let mut rng = Rng::new(0x6c92_31ad);
     for _ in 0..25 {
-        let count = 6 + (rng.next_u64() % 4) as usize;
+        let count = 6 + (rng.below(4)) as usize;
         let x = scattered(&mut rng, count);
         let q = (0..20).map(|i| vec![i as f64 * 0.18 - 0.4]).collect::<Vec<_>>();
         let noise = if rng.next_f64() < 0.5 { 0.0 } else { 0.05 * rng.next_f64() };
