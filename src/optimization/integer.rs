@@ -27,6 +27,14 @@
 //! against an exact answer on small instances rather than checking the greedy
 //! answer is merely plausible.
 
+// The bitmask searches below isolate the lowest set bit with the standard
+// `x & -x` idiom. Clippy suggests `isolate_lowest_one` instead, which is a
+// better name for the same operation -- but it is still an unstable library
+// feature, and the toolchain Kani pins is far enough behind the one clippy
+// runs on that taking the suggestion breaks the model-checking job outright.
+// The idiom is stable on every toolchain and compiles to the same instruction.
+#![allow(clippy::manual_isolate_lowest_one)]
+
 use crate::error::GeomError;
 use crate::exact::bigint::BigInt;
 use crate::optimization::lp::{simplex, Cmp, LpProblem, LpResult};
@@ -1485,7 +1493,7 @@ fn fill(
     let b = (r / 3) * 3 + c / 3;
     let mut options = available;
     while options != 0 {
-        let bit = options.isolate_lowest_one();
+        let bit = options & options.wrapping_neg();
         options ^= bit;
         let digit = bit.trailing_zeros() as u8 + 1;
         cells[r][c] = digit;
@@ -1556,7 +1564,7 @@ fn queens(
     let mut available = !(cols | left | right) & mask;
     let mut found = 0usize;
     while available != 0 {
-        let bit = available.isolate_lowest_one();
+        let bit = available & available.wrapping_neg();
         available ^= bit;
         placement.push(bit.trailing_zeros() as usize);
         found += queens(
@@ -1607,7 +1615,7 @@ pub fn constraint_propagation_ac3(
         let mut revised = false;
         let mut values = d[a];
         while values != 0 {
-            let bit = values.isolate_lowest_one();
+            let bit = values & values.wrapping_neg();
             values ^= bit;
             // With a not-equal constraint the only unsupported case is a
             // neighbour pinned to this very value.
@@ -2644,7 +2652,7 @@ mod tests {
                 }
                 let mut values = domains[k];
                 while values != 0 {
-                    let bit = values.isolate_lowest_one();
+                    let bit = values & values.wrapping_neg();
                     values ^= bit;
                     assignment[k] = bit;
                     if pairs
