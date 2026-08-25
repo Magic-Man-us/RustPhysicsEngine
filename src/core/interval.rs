@@ -18,10 +18,20 @@ pub struct Interval {
 
 /// Widens a computed lower bound downward by two ulps (covers a ≤ 1 ulp
 /// evaluation error plus the rounding of the widening itself).
+///
+/// The enclosures this module returns are therefore rigorous *conditional on
+/// the host evaluating the elementary functions to within one ulp*. Every real
+/// platform's libm satisfies that for `sqrt`, `exp` and the trigonometric
+/// functions, but the language does not require it, and an implementation that
+/// does not is not covered: running under Miri, whose transcendentals are
+/// deliberately perturbed and vary by several ulps from one call to the next,
+/// the widening is not enough and the enclosure can fail.
 fn down2(x: f64) -> f64 {
     x.next_down().next_down()
 }
 
+/// Widens a computed upper bound upward by two ulps. See [`down2`] for the
+/// accuracy assumption this rests on.
 fn up2(x: f64) -> f64 {
     x.next_up().next_up()
 }
@@ -338,6 +348,14 @@ mod tests {
         assert_eq!((h.lo, h.hi), (0.0, 5.0));
     }
 
+    // The enclosure this asserts holds only if the host's `exp` is accurate to
+    // within the two units in the last place that `up2` widens by, which is
+    // true of every real platform's libm and is not true under Miri. Miri
+    // deliberately perturbs the transcendentals and, measured here, returns a
+    // *different* value from one call of `exp(1.0)` to the next, spanning
+    // several units in the last place either side of e -- more than the
+    // widening covers. The test still runs everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's transcendentals vary by more than the widening covers")]
     #[test]
     fn test_sqrt_exp() {
         let a = Interval::new(4.0, 9.0);
