@@ -1,3 +1,9 @@
+//! Quantum mechanics: the elementary relations here, with the
+//! wavefunction machinery and the Schrodinger solvers in submodules.
+
+pub mod schrodinger;
+pub mod wavefunction;
+
 use crate::math::constants;
 
 // ── Wave-Particle Duality ──
