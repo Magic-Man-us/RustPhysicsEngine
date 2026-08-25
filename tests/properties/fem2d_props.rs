@@ -24,7 +24,8 @@
 
 use rust_physics_engine::error::SolveError;
 use rust_physics_engine::fem::fem2d::{
-    dirichlet_energy, element_gradient, fem_2d_poisson, fem_2d_reaction_diffusion, interpolate,
+    dirichlet_energy, element_gradient, fem_2d_helmholtz, fem_2d_poisson,
+    fem_2d_reaction_diffusion, fem_eigenmodes_drum, fem_eigenvalues_drum, interpolate,
     mass_matrix, stiffness_matrix, FemMesh2,
 };
 use rust_physics_engine::math::Vec2;
@@ -533,6 +534,241 @@ fn prop_convergence_is_second_order_in_the_mesh_size() {
         for w in errors.windows(2) {
             let ratio = w[0] / w[1];
             assert!((ratio - 4.0).abs() < 0.6, "halving h cut the error by {ratio}, not 4");
+        }
+    }
+}
+
+/// The assembled load vector for a source, using the same one-point
+/// centroid rule the module's assembly does, so that identities the
+/// discrete system satisfies exactly come out exact here.
+fn load_vector(mesh: &FemMesh2, f: &dyn Fn(Vec2) -> f64) -> Vec<f64> {
+    let mut load = vec![0.0; mesh.nodes.len()];
+    for t in &mesh.tris {
+        let mid = Vec2::new(
+            (mesh.nodes[t[0]].x + mesh.nodes[t[1]].x + mesh.nodes[t[2]].x) / 3.0,
+            (mesh.nodes[t[0]].y + mesh.nodes[t[1]].y + mesh.nodes[t[2]].y) / 3.0,
+        );
+        let share = signed_area(mesh, t) / 3.0 * f(mid);
+        for k in 0..3 {
+            load[t[k]] += share;
+        }
+    }
+    load
+}
+
+#[test]
+fn prop_the_operator_is_symmetric_so_sources_and_responses_reciprocate() {
+    // Betti reciprocity: with the same homogeneous boundary condition,
+    // the work one source does through the other's response equals the
+    // work the other does through the first's. It is exactly the
+    // symmetry of the stiffness matrix seen from outside the solver, and
+    // it holds for the indefinite Helmholtz operator as well as for the
+    // positive definite Laplacian -- symmetry has nothing to do with
+    // definiteness.
+    let mut rng = Rng::new(0x71b3_44c8);
+    for _ in 0..25 {
+        let m = FemMesh2::rect(1.0, 1.2, 5, 4).unwrap();
+        let (a1, b1) = (2.0 * rng.next_f64() - 1.0, 2.0 * rng.next_f64() - 1.0);
+        let (a2, b2) = (2.0 * rng.next_f64() - 1.0, 2.0 * rng.next_f64() - 1.0);
+        let f1 = move |p: Vec2| a1 + b1 * p.x * p.y;
+        let f2 = move |p: Vec2| a2 * p.y + b2 * p.x * p.x;
+        let (l1, l2) = (load_vector(&m, &f1), load_vector(&m, &f2));
+        for k in [0.0, 1.0, 3.0] {
+            let u1 = fem_2d_helmholtz(&m, k, &f1, &|_| Some(0.0)).unwrap();
+            let u2 = fem_2d_helmholtz(&m, k, &f2, &|_| Some(0.0)).unwrap();
+            let one: f64 = l1.iter().zip(u2.iter()).map(|(a, b)| a * b).sum();
+            let two: f64 = l2.iter().zip(u1.iter()).map(|(a, b)| a * b).sum();
+            assert!(
+                (one - two).abs() < 1e-9 * (1.0 + one.abs()),
+                "k = {k}: {one} against {two}"
+            );
+        }
+    }
+}
+
+#[test]
+fn prop_helmholtz_is_linear_and_reduces_to_poisson_at_zero() {
+    let mut rng = Rng::new(0x2c48_ff10);
+    for _ in 0..20 {
+        let m = FemMesh2::rect(1.0, 1.0, 5, 5).unwrap();
+        let k = 3.0 * rng.next_f64();
+        let (c1, c2) = (2.0 * rng.next_f64() - 1.0, 2.0 * rng.next_f64() - 1.0);
+        let f1 = move |p: Vec2| c1 * (1.0 + p.x);
+        let f2 = move |p: Vec2| c2 * p.y;
+        let g1 = move |p: Vec2| Some(c1 * p.x);
+        let g2 = move |p: Vec2| Some(c2 * p.y * p.y);
+        let u1 = fem_2d_helmholtz(&m, k, &f1, &g1).unwrap();
+        let u2 = fem_2d_helmholtz(&m, k, &f2, &g2).unwrap();
+        let both = fem_2d_helmholtz(&m, k, &|p| f1(p) + f2(p), &|p| {
+            Some(g1(p).unwrap() + g2(p).unwrap())
+        })
+        .unwrap();
+        for i in 0..m.nodes.len() {
+            let want = u1[i] + u2[i];
+            assert!((both[i] - want).abs() < 1e-8 * (1.0 + want.abs()), "node {i}");
+        }
+        let zero = fem_2d_helmholtz(&m, 0.0, &f1, &g1).unwrap();
+        let poisson = fem_2d_poisson(&m, &f1, &g1).unwrap();
+        for i in 0..m.nodes.len() {
+            assert!((zero[i] - poisson[i]).abs() < 1e-8 * (1.0 + poisson[i].abs()));
+        }
+    }
+}
+
+#[test]
+fn prop_the_resonant_response_has_a_simple_pole_at_the_fundamental() {
+    // Expanded in the drum modes the response is a sum of terms
+    // c_j / (lambda_j - k^2). Approaching lambda_1 the first term takes
+    // over, so the response times the gap converges to a constant --
+    // a simple pole, not a pole of any other order and not an essential
+    // singularity. Checking the residue converges is a much stronger
+    // statement than checking the response grows.
+    let mut rng = Rng::new(0x08f2_6a91);
+    for _ in 0..10 {
+        let m = FemMesh2::rect(1.0, 1.0, 6, 6).unwrap();
+        let lambda = fem_eigenvalues_drum(&m, 1).unwrap()[0];
+        let c = 0.5 + rng.next_f64();
+        let f = move |_: Vec2| c;
+        let probe = m
+            .nodes
+            .iter()
+            .position(|p| (p.x - 0.5).abs() < 1e-12 && (p.y - 0.5).abs() < 1e-12)
+            .unwrap();
+        let residue = |gap: f64| {
+            let k2 = lambda * (1.0 - gap);
+            let u = fem_2d_helmholtz(&m, k2.sqrt(), &f, &|_| Some(0.0)).unwrap();
+            u[probe] * (lambda - k2)
+        };
+        let (a, b, d) = (residue(0.05), residue(0.01), residue(0.002));
+        // The residue settles down; the remaining drift is the other
+        // modes' contribution, which falls off with the gap.
+        assert!((b - d).abs() < 0.4 * (a - d).abs() + 1e-12, "the residue did not settle");
+        assert!(d > 0.0, "the residue at the fundamental should be positive for a positive source");
+    }
+}
+
+#[test]
+fn prop_drum_eigenvalues_are_upper_bounds_that_fall_under_refinement() {
+    // Every discrete eigenvalue is a Rayleigh quotient minimised over a
+    // subspace of the true admissible space, so it is an upper bound on
+    // the true one; and a nested refinement enlarges the subspace, so
+    // the bound can only improve. Both halves are exact statements about
+    // the method rather than asymptotic ones.
+    let mut rng = Rng::new(0x4b70_2d3a);
+    for _ in 0..10 {
+        let nx = 3 + (rng.next_u64() % 3) as usize;
+        let coarse = FemMesh2::rect(1.0, 1.0, nx, nx).unwrap();
+        let fine = coarse.refine_uniform();
+        let count = 3.min((nx - 1) * (nx - 1));
+        let a = fem_eigenvalues_drum(&coarse, count).unwrap();
+        let b = fem_eigenvalues_drum(&fine, count).unwrap();
+        for i in 0..count {
+            assert!(a[i] > 0.0, "eigenvalue {i} was not positive");
+            assert!(b[i] <= a[i] + 1e-9, "refining raised eigenvalue {i}");
+            // Both stay above the analytic fundamental, which is the
+            // smallest thing any of them can be.
+            assert!(b[i] >= 2.0 * std::f64::consts::PI.powi(2) - 1e-8);
+            if i > 0 {
+                assert!(a[i] >= a[i - 1] - 1e-9, "the eigenvalues came back unsorted");
+            }
+        }
+    }
+}
+
+#[test]
+fn prop_the_spectrum_scales_with_the_inverse_square_of_the_domain() {
+    // Stretching a drum by s divides every eigenvalue by s^2. The mesh
+    // topology is identical, so this is exact rather than a convergence
+    // statement, and it is the check that catches a missing area factor
+    // in either matrix.
+    let mut rng = Rng::new(0x6d5c_11ae);
+    for _ in 0..12 {
+        let s = 0.4 + 2.0 * rng.next_f64();
+        let unit = FemMesh2::rect(1.0, 1.0, 4, 4).unwrap();
+        let big = FemMesh2::rect(s, s, 4, 4).unwrap();
+        let a = fem_eigenvalues_drum(&unit, 4).unwrap();
+        let b = fem_eigenvalues_drum(&big, 4).unwrap();
+        for i in 0..4 {
+            let want = a[i] / (s * s);
+            assert!((b[i] - want).abs() < 1e-9 * want, "mode {i}: {} vs {want}", b[i]);
+        }
+        // And the spectrum does not care how the plane is turned.
+        let theta = std::f64::consts::TAU * rng.next_f64();
+        let (c, sn) = (theta.cos(), theta.sin());
+        let turned = FemMesh2::new(
+            unit.nodes.iter().map(|p| Vec2::new(c * p.x - sn * p.y, sn * p.x + c * p.y)).collect(),
+            unit.tris.clone(),
+        )
+        .unwrap();
+        let r = fem_eigenvalues_drum(&turned, 4).unwrap();
+        for i in 0..4 {
+            assert!((r[i] - a[i]).abs() < 1e-8 * a[i], "rotation moved mode {i}");
+        }
+    }
+}
+
+#[test]
+fn prop_the_fundamental_mode_keeps_one_sign_and_the_next_does_not() {
+    // Courant's nodal domain theorem: the first eigenfunction of the
+    // Dirichlet Laplacian has no interior zero, and the k-th has at most
+    // k nodal domains -- so the second must change sign. The discrete
+    // modes inherit this on a mesh whose stiffness matrix is an
+    // M-matrix, which the right-triangle rectangle mesh is.
+    let mut rng = Rng::new(0x1fa9_3c60);
+    for _ in 0..10 {
+        let nx = 4 + (rng.next_u64() % 3) as usize;
+        let m = FemMesh2::rect(1.0, 1.0, nx, nx).unwrap();
+        let (values, modes) = fem_eigenmodes_drum(&m, 2).unwrap();
+        let on_boundary: std::collections::HashSet<usize> = m.boundary.iter().copied().collect();
+        let interior: Vec<usize> =
+            (0..m.nodes.len()).filter(|i| !on_boundary.contains(i)).collect();
+        let first: Vec<f64> = interior.iter().map(|&i| modes[0][i]).collect();
+        assert!(
+            first.iter().all(|&v| v > 1e-9) || first.iter().all(|&v| v < -1e-9),
+            "the fundamental changed sign"
+        );
+        assert!(values[1] > values[0], "the second eigenvalue was not larger");
+        let second: Vec<f64> = interior.iter().map(|&i| modes[1][i]).collect();
+        assert!(
+            second.iter().any(|&v| v > 1e-9) && second.iter().any(|&v| v < -1e-9),
+            "the second mode kept one sign"
+        );
+    }
+}
+
+#[test]
+fn prop_each_mode_is_mass_normalised_and_returns_its_own_rayleigh_quotient() {
+    // phi^T M phi = 1 and phi^T K phi = lambda are the two halves of what
+    // solving the generalised problem means, and distinct modes are
+    // M-orthogonal. Getting the Cholesky transform backwards would leave
+    // the eigenvalues plausible and these three identities broken.
+    let mut rng = Rng::new(0x5e21_08d7);
+    for _ in 0..10 {
+        let m = if rng.next_f64() < 0.5 {
+            FemMesh2::rect(1.0, 0.7, 5, 4).unwrap()
+        } else {
+            FemMesh2::disk(1.0, 4).unwrap()
+        };
+        let (values, modes) = fem_eigenmodes_drum(&m, 4).unwrap();
+        let mass = mass_matrix(&m);
+        let stiff = stiffness_matrix(&m);
+        for (i, phi) in modes.iter().enumerate() {
+            let mv = mass.mul_vec(phi);
+            let norm: f64 = phi.iter().zip(mv.iter()).map(|(a, b)| a * b).sum();
+            assert!((norm - 1.0).abs() < 1e-8, "mode {i} had mass norm {norm}");
+            let kv = stiff.mul_vec(phi);
+            let rayleigh: f64 = phi.iter().zip(kv.iter()).map(|(a, b)| a * b).sum();
+            assert!((rayleigh - values[i]).abs() < 1e-6 * values[i], "mode {i}");
+            for &b in &m.boundary {
+                assert_eq!(phi[b], 0.0, "mode {i} was not clamped at node {b}");
+            }
+            for j in 0..i {
+                if (values[i] - values[j]).abs() < 1e-6 * values[i] {
+                    continue;
+                }
+                let dot: f64 = modes[j].iter().zip(mv.iter()).map(|(a, b)| a * b).sum();
+                assert!(dot.abs() < 1e-7, "modes {j} and {i} overlapped by {dot}");
+            }
         }
     }
 }

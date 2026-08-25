@@ -53,6 +53,7 @@
 //! defect a plausibility check on a picture would miss.
 
 use crate::error::{GeomError, SolveError};
+use crate::linalg::matrix::Matrix;
 use crate::linalg::sparse::{pcg_jacobi, CsrMatrix};
 use crate::math::Vec2;
 
@@ -634,6 +635,212 @@ pub fn interpolate(mesh: &FemMesh2, values: &[f64], p: Vec2) -> Option<f64> {
     None
 }
 
+/// Solves the Helmholtz problem `-lap u - k^2 u = f` with Dirichlet data.
+///
+/// This is the same assembly as [`fem_2d_reaction_diffusion`] with a
+/// negative reaction term, but it needs a different solver and the reason
+/// is structural rather than numerical. Once `k^2` passes the first
+/// Dirichlet eigenvalue of the domain the operator stops being positive
+/// definite, and conjugate gradients -- which is a minimisation method --
+/// has nothing left to minimise. A dense LU factorisation is used
+/// instead, which costs `O(n^3)` in the node count and confines this
+/// function to modest meshes.
+///
+/// At `k^2` exactly equal to an eigenvalue the operator is singular: the
+/// homogeneous problem has a nonzero solution, so the inhomogeneous one
+/// has either none or a whole line of them. That is resonance, not a
+/// numerical accident, and it is reported as [`SolveError::Singular`].
+/// Approaching an eigenvalue the response grows like the reciprocal of
+/// the distance to it.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for non-finite data,
+/// [`SolveError::Singular`] at or extremely close to a resonance.
+pub fn fem_2d_helmholtz(
+    mesh: &FemMesh2,
+    k: f64,
+    f: &dyn Fn(Vec2) -> f64,
+    dirichlet: &dyn Fn(Vec2) -> Option<f64>,
+) -> Result<Vec<f64>, SolveError> {
+    if !k.is_finite() {
+        return Err(SolveError::InvalidArgument("the wavenumber must be finite"));
+    }
+    let n = mesh.nodes.len();
+    let asm = assemble(mesh, &|_| -k * k, f)?;
+    let mut fixed = vec![None; n];
+    for &b in &mesh.boundary {
+        if let Some(g) = dirichlet(mesh.nodes[b]) {
+            if !g.is_finite() {
+                return Err(SolveError::InvalidArgument("boundary data must be finite"));
+            }
+            fixed[b] = Some(g);
+        }
+    }
+    let (entries, rhs) = apply_dirichlet(n, &asm.entries, &asm.load, &fixed);
+    let mut dense = Matrix::zeros(n, n);
+    for (i, j, v) in entries {
+        dense.set(i, j, dense.get(i, j) + v);
+    }
+    crate::linalg::lu::solve(&dense, &rhs)
+}
+
+/// The `count` smallest eigenvalues of the Dirichlet Laplacian on the
+/// mesh -- the squared frequencies of a drum clamped at its rim.
+///
+/// The discrete problem is the generalised one `K phi = lambda M phi`
+/// over the interior nodes, solved by transforming it to a standard
+/// symmetric problem through the Cholesky factor of the mass matrix.
+/// Using the consistent mass matrix rather than a lumped one matters
+/// here: lumping shifts the eigenvalues downwards, and it is precisely
+/// their being *upper* bounds that makes them useful.
+///
+/// That bound is the property worth knowing. The discrete eigenvalues
+/// come from the Rayleigh quotient minimised over a subspace of the true
+/// admissible space, and a minimum over less is never smaller, so every
+/// computed eigenvalue is an upper bound on the true one and refining the
+/// mesh can only lower it. A method whose eigenvalues approach the answer
+/// from below has a defect, however good its error looks.
+///
+/// The dense eigensolver is `O(n^3)` in the interior node count, so this
+/// is for meshes of hundreds of nodes rather than thousands.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] if `count` is zero or exceeds the
+/// number of interior nodes; [`SolveError::NotPositiveDefinite`] if the
+/// mass matrix fails to factor, and whatever the eigensolver reports.
+pub fn fem_eigenvalues_drum(mesh: &FemMesh2, count: usize) -> Result<Vec<f64>, SolveError> {
+    Ok(fem_eigenmodes_drum(mesh, count)?.0)
+}
+
+/// The `count` lowest drum modes: eigenvalues and the matching nodal
+/// eigenvectors, the latter given over all nodes with zeros on the
+/// clamped boundary.
+///
+/// Eigenvectors are normalised so that the mass-weighted norm
+/// `phi^T M phi` is one, which is the discrete form of normalising the
+/// mode shape in `L2`.
+///
+/// # Errors
+///
+/// As [`fem_eigenvalues_drum`].
+pub fn fem_eigenmodes_drum(
+    mesh: &FemMesh2,
+    count: usize,
+) -> Result<(Vec<f64>, Vec<Vec<f64>>), SolveError> {
+    let n = mesh.nodes.len();
+    let on_boundary: std::collections::HashSet<usize> = mesh.boundary.iter().copied().collect();
+    let interior: Vec<usize> = (0..n).filter(|i| !on_boundary.contains(i)).collect();
+    let m = interior.len();
+    if count == 0 {
+        return Err(SolveError::InvalidArgument("need at least one mode"));
+    }
+    if count > m {
+        return Err(SolveError::InvalidArgument("the mesh has fewer interior nodes than modes"));
+    }
+    let mut index = vec![usize::MAX; n];
+    for (slot, &i) in interior.iter().enumerate() {
+        index[i] = slot;
+    }
+    let stiff = stiffness_matrix(mesh);
+    let mass = mass_matrix(mesh);
+    let restrict = |src: &CsrMatrix| {
+        let mut d = Matrix::zeros(m, m);
+        for i in 0..n {
+            if index[i] == usize::MAX {
+                continue;
+            }
+            for idx in src.row_ptr[i]..src.row_ptr[i + 1] {
+                let j = src.col_idx[idx];
+                if index[j] != usize::MAX {
+                    let (r, c) = (index[i], index[j]);
+                    d.set(r, c, d.get(r, c) + src.vals[idx]);
+                }
+            }
+        }
+        d
+    };
+    let k_dense = restrict(&stiff);
+    let m_dense = restrict(&mass);
+    // M = L L^T, and the substitution phi = L^-T y turns
+    // K phi = lambda M phi into (L^-1 K L^-T) y = lambda y.
+    let l = crate::linalg::cholesky::cholesky(&m_dense)?;
+    let y = forward_substitute_columns(&l, &k_dense)?;
+    // C^T = L^-1 (L^-1 K)^T, and C is symmetric, so symmetrising here
+    // removes the rounding asymmetry the two solves introduce rather
+    // than leaving the eigensolver to cope with it.
+    let z = forward_substitute_columns(&l, &y.transpose())?;
+    let c = Matrix::from_fn(m, m, |i, j| 0.5 * (z.get(j, i) + z.get(i, j)));
+    let eig = crate::linalg::eigen::eigen_symmetric(&c, 1e-12, 200)?;
+    let mut order: Vec<usize> = (0..m).collect();
+    order.sort_by(|&a, &b| eig.values[a].total_cmp(&eig.values[b]));
+    let mut values = Vec::with_capacity(count);
+    let mut modes = Vec::with_capacity(count);
+    for &slot in order.iter().take(count) {
+        values.push(eig.values[slot]);
+        let y: Vec<f64> = (0..m).map(|r| eig.vectors.get(r, slot)).collect();
+        // phi = L^-T y, a back substitution against the transpose.
+        let mut phi = y;
+        for r in (0..m).rev() {
+            let mut acc = phi[r];
+            for c2 in (r + 1)..m {
+                acc -= l.get(c2, r) * phi[c2];
+            }
+            phi[r] = acc / l.get(r, r);
+        }
+        let mut full = vec![0.0; n];
+        for (slot, &i) in interior.iter().enumerate() {
+            full[i] = phi[slot];
+        }
+        // Normalise in the mass norm, and fix the sign so that a mode is
+        // reproducible: an eigenvector is only defined up to a scale.
+        let norm = mass_quadratic_form(&mass, &full).max(0.0).sqrt();
+        if norm > 0.0 {
+            let biggest = full
+                .iter()
+                .copied()
+                .fold(0.0f64, |a, v| if v.abs() > a.abs() { v } else { a });
+            let sign = if biggest < 0.0 { -1.0 } else { 1.0 };
+            for v in &mut full {
+                *v *= sign / norm;
+            }
+        }
+        modes.push(full);
+    }
+    Ok((values, modes))
+}
+
+/// `v^T M v` for a sparse `M`.
+fn mass_quadratic_form(mass: &CsrMatrix, v: &[f64]) -> f64 {
+    let mv = mass.mul_vec(v);
+    v.iter().zip(mv.iter()).map(|(a, b)| a * b).sum()
+}
+
+/// Solves `L X = B` for `X`, column by column, with `L` lower
+/// triangular.
+fn forward_substitute_columns(l: &Matrix, b: &Matrix) -> Result<Matrix, SolveError> {
+    let n = l.rows;
+    if b.rows != n {
+        return Err(SolveError::DimensionMismatch { expected: n, got: b.rows });
+    }
+    let mut x = Matrix::zeros(n, b.cols);
+    for col in 0..b.cols {
+        for r in 0..n {
+            let mut acc = b.get(r, col);
+            for c in 0..r {
+                acc -= l.get(r, c) * x.get(c, col);
+            }
+            let d = l.get(r, r);
+            if d == 0.0 {
+                return Err(SolveError::Singular);
+            }
+            x.set(r, col, acc / d);
+        }
+    }
+    Ok(x)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -804,6 +1011,166 @@ mod tests {
         assert!((interpolate(&m, &values, p).unwrap() - (3.0 * 0.37 - 0.81)).abs() < 1e-12);
         assert!(interpolate(&m, &values, Vec2::new(2.0, 2.0)).is_none());
         assert!(interpolate(&m, &values[..3], p).is_none());
+    }
+
+    #[test]
+    fn the_square_drum_hears_its_analytic_frequencies_from_above() {
+        // On the unit square the Dirichlet eigenvalues are
+        // pi^2 (m^2 + n^2). The discrete ones are Rayleigh quotients
+        // minimised over a subspace, so each is an upper bound, and
+        // refining lowers it.
+        let exact = [
+            2.0 * PI * PI,
+            5.0 * PI * PI,
+            5.0 * PI * PI,
+            8.0 * PI * PI,
+            10.0 * PI * PI,
+        ];
+        let mut previous: Option<Vec<f64>> = None;
+        let mut errors = Vec::new();
+        for n in [6usize, 12] {
+            let m = FemMesh2::rect(1.0, 1.0, n, n).unwrap();
+            let got = fem_eigenvalues_drum(&m, 5).unwrap();
+            for (i, (&g, &e)) in got.iter().zip(exact.iter()).enumerate() {
+                assert!(g >= e - 1e-8, "mode {i} came in below the exact value: {g} < {e}");
+                assert!((g - e) / e < 0.6, "mode {i} was {g}, wanted {e}");
+            }
+            if let Some(coarse) = &previous {
+                for (i, (&fine, &c)) in got.iter().zip(coarse.iter()).enumerate() {
+                    assert!(fine <= c + 1e-9, "refining raised mode {i}");
+                }
+            }
+            errors.push(got[0] - exact[0]);
+            previous = Some(got);
+        }
+        // Second order, which is the statement that identifies the
+        // space -- an absolute tolerance on one mesh would not.
+        let ratio = errors[0] / errors[1];
+        assert!((ratio - 4.0).abs() < 0.5, "halving h cut the eigenvalue error by {ratio}");
+        // The doubled eigenvalue 5 pi^2 splits, because the mesh cuts
+        // every cell along the same diagonal and so is not symmetric
+        // under exchanging x and y. The split is a mesh artefact of the
+        // same order as the error itself, not a physical degeneracy
+        // lifting.
+        let fine = previous.unwrap();
+        let split = (fine[2] - fine[1]) / exact[1];
+        assert!(split > 0.0, "the pair did not split at all");
+        assert!(split < 0.05, "the pair split by {split}, far more than the discretisation error");
+    }
+
+    #[test]
+    fn the_circular_drum_hears_the_zeros_of_the_bessel_functions() {
+        // The modes of a clamped circular membrane are J_m(j_{m,k} r/R),
+        // so the eigenvalues are (j_{m,k}/R)^2. Checking against the
+        // crate's own Bessel zeros ties the finite element solver to the
+        // analytic membrane rather than to a hard-coded table.
+        let r = 1.0;
+        let m = FemMesh2::disk(r, 8).unwrap();
+        let got = fem_eigenvalues_drum(&m, 5).unwrap();
+        let j0 = crate::special::bessel::bessel_j_zeros(0, 2);
+        let j1 = crate::special::bessel::bessel_j_zeros(1, 1);
+        let j2 = crate::special::bessel::bessel_j_zeros(2, 1);
+        // The order is not by Bessel index. j_{2,1} = 5.136 comes in
+        // below j_{0,2} = 5.520, so the fourth and fifth modes of a
+        // circular drum are the doubly degenerate two-nodal-diameter
+        // pair, and the second radially symmetric mode is only sixth.
+        assert!(j2[0] < j0[1], "the Bessel zeros are not ordered as assumed");
+        let exact = [j0[0], j1[0], j1[0], j2[0], j2[0]].map(|z| (z / r).powi(2));
+        for (i, (&g, &e)) in got.iter().zip(exact.iter()).enumerate() {
+            assert!(g >= e - 1e-6, "mode {i} came in below the exact value");
+            assert!((g - e) / e < 0.08, "mode {i} was {g}, wanted {e}");
+        }
+        // Each degenerate pair is one mode shape turned through a right
+        // angle, so the two must agree far more closely than either
+        // agrees with the analytic value.
+        for (a, b) in [(1usize, 2usize), (3, 4)] {
+            let split = (got[b] - got[a]).abs() / got[a];
+            assert!(split < 0.01, "the pair {a},{b} split by {split}");
+        }
+    }
+
+    #[test]
+    fn helmholtz_reduces_to_poisson_at_zero_wavenumber() {
+        let m = FemMesh2::rect(1.0, 1.0, 5, 5).unwrap();
+        let f = |p: Vec2| 1.0 + p.x;
+        let g = |p: Vec2| Some(p.y * p.y);
+        let a = fem_2d_poisson(&m, &f, &g).unwrap();
+        let b = fem_2d_helmholtz(&m, 0.0, &f, &g).unwrap();
+        for i in 0..m.nodes.len() {
+            assert!((a[i] - b[i]).abs() < 1e-9 * (1.0 + a[i].abs()), "node {i}");
+        }
+    }
+
+    #[test]
+    fn the_helmholtz_response_diverges_and_flips_sign_across_a_resonance() {
+        // Expanded in the drum modes, the response to a source is a sum
+        // of terms with 1/(lambda_j - k^2). Approaching the fundamental
+        // from below the first term dominates and is positive; from
+        // above it dominates and is negative. Both the divergence and
+        // the sign change are properties of the operator, not of the
+        // discretisation.
+        let m = FemMesh2::rect(1.0, 1.0, 8, 8).unwrap();
+        let lambda = fem_eigenvalues_drum(&m, 1).unwrap()[0];
+        let middle = m.nodes.iter().position(|p| {
+            (p.x - 0.5).abs() < 1e-12 && (p.y - 0.5).abs() < 1e-12
+        }).unwrap();
+        let mut previous = 0.0;
+        for gap in [0.2f64, 0.05, 0.01] {
+            let k = (lambda * (1.0 - gap)).sqrt();
+            let u = fem_2d_helmholtz(&m, k, &|_| 1.0, &|_| Some(0.0)).unwrap();
+            assert!(u[middle] > previous, "the response did not grow approaching resonance");
+            previous = u[middle];
+        }
+        let above = fem_2d_helmholtz(
+            &m,
+            (lambda * 1.01).sqrt(),
+            &|_| 1.0,
+            &|_| Some(0.0),
+        )
+        .unwrap();
+        assert!(above[middle] < 0.0, "the response did not flip sign past the resonance");
+        assert!(above[middle].abs() > 1.0, "the response past resonance was not large");
+    }
+
+    #[test]
+    fn eigenmodes_are_mass_normalised_and_orthogonal() {
+        let m = FemMesh2::rect(1.0, 1.0, 7, 6).unwrap();
+        let (values, modes) = fem_eigenmodes_drum(&m, 4).unwrap();
+        let mass = mass_matrix(&m);
+        let stiff = stiffness_matrix(&m);
+        for (i, mode) in modes.iter().enumerate() {
+            assert!((mass_quadratic_form(&mass, mode) - 1.0).abs() < 1e-9);
+            // The Rayleigh quotient of a mode is its own eigenvalue.
+            let kv = stiff.mul_vec(mode);
+            let rayleigh: f64 = mode.iter().zip(kv.iter()).map(|(a, b)| a * b).sum();
+            assert!((rayleigh - values[i]).abs() < 1e-7 * values[i], "mode {i}");
+            // Clamped at the rim.
+            for &b in &m.boundary {
+                assert_eq!(mode[b], 0.0);
+            }
+        }
+        // Distinct modes are M-orthogonal.
+        for i in 0..modes.len() {
+            for j in (i + 1)..modes.len() {
+                if (values[i] - values[j]).abs() < 1e-6 * values[j] {
+                    continue;
+                }
+                let mv = mass.mul_vec(&modes[j]);
+                let dot: f64 = modes[i].iter().zip(mv.iter()).map(|(a, b)| a * b).sum();
+                assert!(dot.abs() < 1e-8, "modes {i} and {j} overlapped by {dot}");
+            }
+        }
+    }
+
+    #[test]
+    fn the_eigenvalue_helpers_refuse_impossible_requests() {
+        let m = FemMesh2::rect(1.0, 1.0, 2, 2).unwrap();
+        assert!(fem_eigenvalues_drum(&m, 0).is_err());
+        // A 2x2 grid has exactly one interior node.
+        assert!(fem_eigenvalues_drum(&m, 1).is_ok());
+        assert!(fem_eigenvalues_drum(&m, 2).is_err());
+        assert!(fem_2d_helmholtz(&m, f64::NAN, &|_| 1.0, &|_| Some(0.0)).is_err());
+        assert!(fem_2d_helmholtz(&m, 1.0, &|_| 1.0, &|_| Some(f64::NAN)).is_err());
     }
 
     #[test]
