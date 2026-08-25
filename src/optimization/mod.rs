@@ -3,6 +3,7 @@
 
 pub mod least_squares;
 pub mod convex;
+pub mod game_theory;
 pub mod integer;
 pub mod lp;
 pub mod metaheuristics;
