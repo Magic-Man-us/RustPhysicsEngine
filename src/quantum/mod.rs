@@ -4,6 +4,8 @@
 pub mod algorithms;
 pub mod circuit;
 pub mod schrodinger;
+pub mod solid_state;
+pub mod spin;
 pub mod wavefunction;
 
 use crate::math::constants;

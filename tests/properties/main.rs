@@ -21,6 +21,7 @@ mod optimization_continuous_props;
 mod optimization_discrete_props;
 mod optimization_lp_props;
 mod quantum_circuit_props;
+mod quantum_matter_props;
 mod quantum_props;
 mod signal_props;
 mod spatial_props;
