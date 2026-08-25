@@ -13,3 +13,4 @@
 pub mod cluster;
 pub mod gp;
 pub mod nn;
+pub mod tree;
