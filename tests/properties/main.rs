@@ -23,6 +23,7 @@ mod numerical_props;
 mod optimization_continuous_props;
 mod optimization_discrete_props;
 mod optimization_lp_props;
+mod phylo_props;
 mod population_props;
 mod quantum_circuit_props;
 mod quantum_matter_props;

@@ -6,6 +6,7 @@
 //! rather than two.
 
 pub mod epidemiology;
+pub mod phylo;
 pub mod population;
 pub mod seq_align;
 
