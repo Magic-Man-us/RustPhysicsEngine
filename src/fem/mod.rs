@@ -20,3 +20,4 @@
 //! the solution.
 
 pub mod fem1d;
+pub mod fem2d;

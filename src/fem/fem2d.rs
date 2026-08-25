@@ -1,0 +1,830 @@
+//! Triangular finite elements in the plane.
+//!
+//! # The linear triangle
+//!
+//! On a triangle the three barycentric coordinates are themselves the
+//! linear shape functions, and their gradients are constant. That single
+//! fact does most of the work: the stiffness integral
+//! `integral grad(phi_i) . grad(phi_j)` has a constant integrand, so it is
+//! the gradient product times the triangle's area, with no quadrature
+//! involved and no error introduced. The whole element matrix for the
+//! Laplacian is
+//!
+//! ```text
+//! K_ij = (b_i b_j + c_i c_j) / (4 A)
+//! ```
+//!
+//! where `b` and `c` are the edge-opposite coordinate differences and `A`
+//! is the signed area. The two-dimensional method inherits everything the
+//! one-dimensional one has -- Galerkin orthogonality, energy
+//! minimisation, best approximation in the energy norm -- because none of
+//! those arguments mentions the dimension.
+//!
+//! # What the mesh has to guarantee
+//!
+//! Two conditions matter and they are different in kind.
+//!
+//! *Conformity* is structural: two triangles meet along a whole shared
+//! edge or at a single shared vertex, never at a vertex hanging in the
+//! middle of a neighbour's edge. Without it the assembled function is not
+//! continuous and the space is not a subspace of `H1`, so the theory does
+//! not apply at all. It is checked here by counting: every edge belongs
+//! to one triangle or two, never more.
+//!
+//! *Shape* is quantitative. The interpolation error carries a factor of
+//! `1/sin(theta_min)`, so a mesh of slivers converges at the same rate
+//! with a much worse constant. [`FemMesh2::quality_min_angle`] reports
+//! the worst angle in the mesh, and uniform refinement leaves it exactly
+//! unchanged -- the four children of a triangle are all similar to their
+//! parent, which is the property that makes repeated refinement safe and
+//! that a red-green or longest-edge scheme has to work to recover.
+//!
+//! # Delaunay and the maximum principle
+//!
+//! The off-diagonal stiffness entry for an interior edge is
+//! `-(cot alpha + cot beta)/2`, the two angles opposite the edge in the
+//! triangles sharing it. It is nonpositive exactly when those angles sum
+//! to no more than `pi` -- which is the Delaunay condition. So a Delaunay
+//! triangulation gives an M-matrix, and an M-matrix gives a discrete
+//! maximum principle: a nonnegative load produces a nonnegative solution,
+//! and a harmonic one attains its extremes on the boundary. On a badly
+//! shaped non-Delaunay mesh the discrete solution can overshoot its own
+//! boundary data while still converging, which is exactly the kind of
+//! defect a plausibility check on a picture would miss.
+
+use crate::error::{GeomError, SolveError};
+use crate::linalg::sparse::{pcg_jacobi, CsrMatrix};
+use crate::math::Vec2;
+
+/// A conforming triangulation of a planar region.
+#[derive(Debug, Clone, PartialEq)]
+pub struct FemMesh2 {
+    /// Vertex coordinates.
+    pub nodes: Vec<Vec2>,
+    /// Triangles as node index triples, counterclockwise.
+    pub tris: Vec<[usize; 3]>,
+    /// Indices of the nodes lying on the boundary, ascending.
+    pub boundary: Vec<usize>,
+}
+
+/// An undirected edge as an ordered index pair.
+fn edge_key(a: usize, b: usize) -> (usize, usize) {
+    if a < b {
+        (a, b)
+    } else {
+        (b, a)
+    }
+}
+
+impl FemMesh2 {
+    /// Builds a mesh from nodes and triangles, orienting every triangle
+    /// counterclockwise and deriving the boundary from the edge counts.
+    ///
+    /// Orienting rather than rejecting is deliberate: a triangle listed
+    /// clockwise describes the same element, and the sign of its area is
+    /// a labelling convention rather than a property of the geometry. A
+    /// *zero* area is not, and is refused.
+    ///
+    /// # Errors
+    ///
+    /// [`GeomError::Empty`] with no triangles;
+    /// [`GeomError::InvalidArgument`] for an out-of-range index or a
+    /// repeated vertex within one triangle; [`GeomError::Degenerate`] for
+    /// a zero-area triangle; [`GeomError::NotManifold`] if any edge is
+    /// shared by more than two triangles.
+    pub fn new(nodes: Vec<Vec2>, tris: Vec<[usize; 3]>) -> Result<Self, GeomError> {
+        if tris.is_empty() || nodes.is_empty() {
+            return Err(GeomError::Empty);
+        }
+        if nodes.iter().any(|p| !(p.x.is_finite() && p.y.is_finite())) {
+            return Err(GeomError::InvalidArgument("node coordinates must be finite"));
+        }
+        let mut oriented = Vec::with_capacity(tris.len());
+        for t in &tris {
+            if t.iter().any(|&i| i >= nodes.len()) {
+                return Err(GeomError::InvalidArgument("triangle index out of range"));
+            }
+            if t[0] == t[1] || t[1] == t[2] || t[0] == t[2] {
+                return Err(GeomError::InvalidArgument("triangle repeats a vertex"));
+            }
+            let area = signed_area(&nodes, t);
+            if area == 0.0 {
+                return Err(GeomError::Degenerate("zero-area triangle"));
+            }
+            oriented.push(if area > 0.0 { *t } else { [t[0], t[2], t[1]] });
+        }
+        // An edge in one triangle is a boundary edge, in two an interior
+        // one, and in three or more the surface is not a surface.
+        let mut counts: std::collections::HashMap<(usize, usize), usize> =
+            std::collections::HashMap::new();
+        for t in &oriented {
+            for k in 0..3 {
+                *counts.entry(edge_key(t[k], t[(k + 1) % 3])).or_insert(0) += 1;
+            }
+        }
+        if counts.values().any(|&c| c > 2) {
+            return Err(GeomError::NotManifold);
+        }
+        let mut on_boundary = vec![false; nodes.len()];
+        for (&(a, b), &c) in &counts {
+            if c == 1 {
+                on_boundary[a] = true;
+                on_boundary[b] = true;
+            }
+        }
+        let boundary = (0..nodes.len()).filter(|&i| on_boundary[i]).collect();
+        Ok(Self { nodes, tris: oriented, boundary })
+    }
+
+    /// A right-triangle mesh of the rectangle `[0, w] x [0, h]`, each
+    /// cell split along one diagonal.
+    ///
+    /// The diagonals all run the same way, which makes the mesh Delaunay
+    /// -- every triangle is right-angled, so no angle opposite an edge
+    /// exceeds a right angle and the pair opposite any interior edge sums
+    /// to `pi` exactly.
+    ///
+    /// # Errors
+    ///
+    /// [`GeomError::InvalidArgument`] for a non-positive extent or a zero
+    /// subdivision count.
+    pub fn rect(w: f64, h: f64, nx: usize, ny: usize) -> Result<Self, GeomError> {
+        if !(w.is_finite() && h.is_finite()) || w <= 0.0 || h <= 0.0 {
+            return Err(GeomError::InvalidArgument("rectangle extents must be positive"));
+        }
+        if nx == 0 || ny == 0 {
+            return Err(GeomError::InvalidArgument("need at least one cell in each direction"));
+        }
+        let mut nodes = Vec::with_capacity((nx + 1) * (ny + 1));
+        for j in 0..=ny {
+            for i in 0..=nx {
+                nodes.push(Vec2::new(w * i as f64 / nx as f64, h * j as f64 / ny as f64));
+            }
+        }
+        let at = |i: usize, j: usize| j * (nx + 1) + i;
+        let mut tris = Vec::with_capacity(2 * nx * ny);
+        for j in 0..ny {
+            for i in 0..nx {
+                tris.push([at(i, j), at(i + 1, j), at(i + 1, j + 1)]);
+                tris.push([at(i, j), at(i + 1, j + 1), at(i, j + 1)]);
+            }
+        }
+        Self::new(nodes, tris)
+    }
+
+    /// A fan-and-rings mesh of the disk of radius `r`, with `n` rings.
+    ///
+    /// The rings carry `6k` points at radius `k r / n`, which keeps the
+    /// arc spacing roughly equal to the radial spacing and so keeps the
+    /// triangles from degenerating towards the rim -- a fixed point count
+    /// per ring would make the outer triangles long and thin.
+    ///
+    /// # Errors
+    ///
+    /// [`GeomError::InvalidArgument`] for a non-positive radius or fewer
+    /// than one ring.
+    pub fn disk(r: f64, n: usize) -> Result<Self, GeomError> {
+        if !r.is_finite() || r <= 0.0 {
+            return Err(GeomError::InvalidArgument("disk radius must be positive"));
+        }
+        if n == 0 {
+            return Err(GeomError::InvalidArgument("need at least one ring"));
+        }
+        let tau = std::f64::consts::TAU;
+        let mut nodes = vec![Vec2::ZERO];
+        let mut ring_start = vec![0usize];
+        for k in 1..=n {
+            ring_start.push(nodes.len());
+            let count = 6 * k;
+            let radius = r * k as f64 / n as f64;
+            for m in 0..count {
+                let a = tau * m as f64 / count as f64;
+                nodes.push(Vec2::new(radius * a.cos(), radius * a.sin()));
+            }
+        }
+        ring_start.push(nodes.len());
+        let mut tris = Vec::new();
+        // Innermost ring: a fan from the centre.
+        for m in 0..6 {
+            tris.push([0, ring_start[1] + m, ring_start[1] + (m + 1) % 6]);
+        }
+        // Between consecutive rings the counts differ by six, so walk
+        // both rings by angle and emit whichever triangle advances the
+        // one that is behind. This is the same merge that keeps a
+        // triangle strip between two unequal polylines conforming.
+        for k in 1..n {
+            let (inner, outer) = (ring_start[k], ring_start[k + 1]);
+            let (ni, no) = (6 * k, 6 * (k + 1));
+            let (mut i, mut o) = (0usize, 0usize);
+            while i < ni || o < no {
+                let ai = i as f64 / ni as f64;
+                let ao = o as f64 / no as f64;
+                if o >= no || (i < ni && ai <= ao) {
+                    tris.push([inner + i % ni, outer + o % no, inner + (i + 1) % ni]);
+                    i += 1;
+                } else {
+                    tris.push([inner + i % ni, outer + o % no, outer + (o + 1) % no]);
+                    o += 1;
+                }
+            }
+        }
+        Self::new(nodes, tris)
+    }
+
+    /// A Delaunay triangulation of a point set.
+    ///
+    /// # Errors
+    ///
+    /// [`GeomError::Empty`] for fewer than three points, and whatever
+    /// [`FemMesh2::new`] reports for a degenerate result -- collinear
+    /// points produce no triangles at all.
+    pub fn from_delaunay(points: &[Vec2]) -> Result<Self, GeomError> {
+        if points.len() < 3 {
+            return Err(GeomError::Empty);
+        }
+        let raw: Vec<(f64, f64)> = points.iter().map(|p| (p.x, p.y)).collect();
+        let tris = crate::geometry::delaunay::delaunay_2d(&raw);
+        if tris.is_empty() {
+            return Err(GeomError::Degenerate("no triangles: the points may be collinear"));
+        }
+        Self::new(points.to_vec(), tris)
+    }
+
+    /// Splits every triangle into four by joining its edge midpoints.
+    ///
+    /// All four children are similar to the parent, so the mesh quality
+    /// is preserved exactly rather than approximately: repeated
+    /// refinement of a good mesh stays good, and repeated refinement of a
+    /// sliver never recovers.
+    pub fn refine_uniform(&self) -> Self {
+        let mut nodes = self.nodes.clone();
+        let mut midpoint: std::collections::HashMap<(usize, usize), usize> =
+            std::collections::HashMap::new();
+        let mut tris = Vec::with_capacity(4 * self.tris.len());
+        for t in &self.tris {
+            let mut mid = [0usize; 3];
+            for k in 0..3 {
+                // Edge k joins vertices k+1 and k+2, so mid[k] is the
+                // node opposite vertex k in the child layout below.
+                let (a, b) = (t[(k + 1) % 3], t[(k + 2) % 3]);
+                let key = edge_key(a, b);
+                mid[k] = *midpoint.entry(key).or_insert_with(|| {
+                    nodes.push(Vec2::new(
+                        0.5 * (self.nodes[a].x + self.nodes[b].x),
+                        0.5 * (self.nodes[a].y + self.nodes[b].y),
+                    ));
+                    nodes.len() - 1
+                });
+            }
+            tris.push([t[0], mid[2], mid[1]]);
+            tris.push([mid[2], t[1], mid[0]]);
+            tris.push([mid[1], mid[0], t[2]]);
+            tris.push([mid[0], mid[1], mid[2]]);
+        }
+        // The children of a conforming mesh are conforming, so this
+        // cannot fail; the boundary is rederived from the edge counts.
+        Self::new(nodes, tris).expect("uniform refinement preserves conformity")
+    }
+
+    /// The smallest interior angle anywhere in the mesh, in radians.
+    ///
+    /// The interpolation error constant grows as `1/sin` of this, which
+    /// is why it is the number to watch rather than the aspect ratio.
+    pub fn quality_min_angle(&self) -> f64 {
+        let mut worst = std::f64::consts::PI;
+        for t in &self.tris {
+            let p = [self.nodes[t[0]], self.nodes[t[1]], self.nodes[t[2]]];
+            for k in 0..3 {
+                let a = p[(k + 1) % 3] - p[k];
+                let b = p[(k + 2) % 3] - p[k];
+                // atan2 of the cross and dot rather than acos of the
+                // normalised dot: the latter loses its precision exactly
+                // where the answer matters, at a very small angle.
+                let angle = (a.x * b.y - a.y * b.x).abs().atan2(a.x * b.x + a.y * b.y);
+                worst = worst.min(angle);
+            }
+        }
+        worst
+    }
+
+    /// The total area of the triangles.
+    pub fn area(&self) -> f64 {
+        self.tris.iter().map(|t| signed_area(&self.nodes, t)).sum()
+    }
+
+    /// The number of distinct edges, which the Euler characteristic
+    /// relates to the node and triangle counts.
+    pub fn edge_count(&self) -> usize {
+        let mut set = std::collections::HashSet::new();
+        for t in &self.tris {
+            for k in 0..3 {
+                set.insert(edge_key(t[k], t[(k + 1) % 3]));
+            }
+        }
+        set.len()
+    }
+}
+
+/// Twice-signed area over two: positive for a counterclockwise triple.
+fn signed_area(nodes: &[Vec2], t: &[usize; 3]) -> f64 {
+    let (a, b, c) = (nodes[t[0]], nodes[t[1]], nodes[t[2]]);
+    0.5 * ((b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y))
+}
+
+/// The constant gradients of the three linear shape functions on a
+/// triangle, together with its area.
+fn shape_gradients(nodes: &[Vec2], t: &[usize; 3]) -> ([Vec2; 3], f64) {
+    let (a, b, c) = (nodes[t[0]], nodes[t[1]], nodes[t[2]]);
+    let area = signed_area(nodes, t);
+    let two = 2.0 * area;
+    // grad(phi_i) is the inward normal of the opposite edge over twice
+    // the area, which is what the barycentric coordinates differentiate
+    // to.
+    let g = [
+        Vec2::new((b.y - c.y) / two, (c.x - b.x) / two),
+        Vec2::new((c.y - a.y) / two, (a.x - c.x) / two),
+        Vec2::new((a.y - b.y) / two, (b.x - a.x) / two),
+    ];
+    (g, area)
+}
+
+/// The centroid of a triangle.
+fn centroid(nodes: &[Vec2], t: &[usize; 3]) -> Vec2 {
+    let (a, b, c) = (nodes[t[0]], nodes[t[1]], nodes[t[2]]);
+    Vec2::new((a.x + b.x + c.x) / 3.0, (a.y + b.y + c.y) / 3.0)
+}
+
+/// Assembled global matrices for the linear triangle.
+///
+/// `stiffness` is the Laplacian, `mass` is the consistent mass matrix,
+/// and `load` is the source vector. Held as dense triplet lists before
+/// compression, which is the cheap way to accumulate element
+/// contributions that overlap.
+struct Assembly {
+    entries: Vec<(usize, usize, f64)>,
+    load: Vec<f64>,
+}
+
+/// Assembles `-div(grad u) + reaction * u` against a source, both
+/// evaluated at the element centroid.
+///
+/// Sampling the coefficients at the centroid is a one-point rule, exact
+/// for a linear integrand and second-order otherwise -- the same order as
+/// the element itself, so it costs nothing asymptotically. The stiffness
+/// term needs no rule at all: the gradients are constant.
+fn assemble(
+    mesh: &FemMesh2,
+    reaction: &dyn Fn(Vec2) -> f64,
+    source: &dyn Fn(Vec2) -> f64,
+) -> Result<Assembly, SolveError> {
+    let n = mesh.nodes.len();
+    let mut entries = Vec::with_capacity(9 * mesh.tris.len());
+    let mut load = vec![0.0; n];
+    for t in &mesh.tris {
+        let (g, area) = shape_gradients(&mesh.nodes, t);
+        let mid = centroid(&mesh.nodes, t);
+        let r = reaction(mid);
+        let f = source(mid);
+        if !(r.is_finite() && f.is_finite()) {
+            return Err(SolveError::InvalidArgument("coefficients must be finite"));
+        }
+        for j in 0..3 {
+            // The one-point rule spreads the load equally over the three
+            // vertices, since each shape function integrates to A/3.
+            load[t[j]] += f * area / 3.0;
+            for k in 0..3 {
+                // The consistent mass matrix of a linear triangle is
+                // A/12 off the diagonal and A/6 on it.
+                let m = if j == k { area / 6.0 } else { area / 12.0 };
+                entries.push((t[j], t[k], area * g[j].dot(&g[k]) + r * m));
+            }
+        }
+    }
+    Ok(Assembly { entries, load })
+}
+
+/// Applies Dirichlet data symmetrically: the known value is moved to the
+/// right-hand side of every equation that saw it, and its own row and
+/// column become the identity.
+fn apply_dirichlet(
+    n: usize,
+    entries: &[(usize, usize, f64)],
+    load: &[f64],
+    fixed: &[Option<f64>],
+) -> (Vec<(usize, usize, f64)>, Vec<f64>) {
+    let mut rhs = load.to_vec();
+    for &(i, j, v) in entries {
+        if let Some(g) = fixed[j] {
+            if fixed[i].is_none() {
+                rhs[i] -= v * g;
+            }
+        }
+    }
+    let mut kept: Vec<(usize, usize, f64)> = entries
+        .iter()
+        .copied()
+        .filter(|&(i, j, _)| fixed[i].is_none() && fixed[j].is_none())
+        .collect();
+    for (i, slot) in fixed.iter().enumerate().take(n) {
+        if let Some(g) = *slot {
+            kept.push((i, i, 1.0));
+            rhs[i] = g;
+        }
+    }
+    (kept, rhs)
+}
+
+/// Solves `-div(grad u) = f` on the mesh with the given Dirichlet data.
+///
+/// `dirichlet` is consulted at every boundary node; returning `None`
+/// leaves that node free, which imposes the natural zero-flux condition
+/// there. Returning `None` everywhere leaves the constant in the kernel
+/// and is reported as [`SolveError::Singular`].
+///
+/// The system is symmetric positive definite once the data is applied, so
+/// it is solved by Jacobi-preconditioned conjugate gradients.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for non-finite data,
+/// [`SolveError::Singular`] if nothing pins the solution, and
+/// [`SolveError::NoConvergence`] if the iteration stalls.
+pub fn fem_2d_poisson(
+    mesh: &FemMesh2,
+    f: &dyn Fn(Vec2) -> f64,
+    dirichlet: &dyn Fn(Vec2) -> Option<f64>,
+) -> Result<Vec<f64>, SolveError> {
+    fem_2d_reaction_diffusion(mesh, &|_| 0.0, f, dirichlet)
+}
+
+/// Solves `-div(grad u) + c u = f` on the mesh with Dirichlet data.
+///
+/// A positive `c` is a reaction term and keeps the problem coercive; a
+/// negative one is the Helmholtz operator `-lap - k^2`, which loses
+/// positive definiteness once `k^2` passes the first eigenvalue of the
+/// domain. See [`fem_2d_helmholtz`] for that case, which needs a
+/// different solver.
+///
+/// # Errors
+///
+/// As [`fem_2d_poisson`], and [`SolveError::NotPositiveDefinite`] if the
+/// reaction term makes the system indefinite.
+pub fn fem_2d_reaction_diffusion(
+    mesh: &FemMesh2,
+    c: &dyn Fn(Vec2) -> f64,
+    f: &dyn Fn(Vec2) -> f64,
+    dirichlet: &dyn Fn(Vec2) -> Option<f64>,
+) -> Result<Vec<f64>, SolveError> {
+    let n = mesh.nodes.len();
+    let asm = assemble(mesh, c, f)?;
+    let mut fixed = vec![None; n];
+    let mut any = false;
+    for &b in &mesh.boundary {
+        if let Some(g) = dirichlet(mesh.nodes[b]) {
+            if !g.is_finite() {
+                return Err(SolveError::InvalidArgument("boundary data must be finite"));
+            }
+            fixed[b] = Some(g);
+            any = true;
+        }
+    }
+    if !any {
+        // Every row of the pure Neumann Laplacian sums to zero because
+        // the shape functions sum to one, so their gradients sum to
+        // zero. A reaction term breaks that and pins the solution.
+        let mut row_sum = vec![0.0; n];
+        for &(i, _, v) in &asm.entries {
+            row_sum[i] += v;
+        }
+        let scale = asm
+            .entries
+            .iter()
+            .filter(|(i, j, _)| i == j)
+            .map(|(_, _, v)| v.abs())
+            .fold(0.0, f64::max)
+            .max(f64::MIN_POSITIVE);
+        if row_sum.iter().all(|s| s.abs() <= 1e-12 * scale) {
+            return Err(SolveError::Singular);
+        }
+    }
+    let (entries, rhs) = apply_dirichlet(n, &asm.entries, &asm.load, &fixed);
+    let matrix = CsrMatrix::from_triplets(n, n, &entries);
+    let scale = rhs.iter().fold(0.0f64, |m, v| m.max(v.abs())).max(1.0);
+    pcg_jacobi(&matrix, &rhs, 1e-13 * scale, 20 * n + 500)
+}
+
+/// The assembled stiffness matrix of the Laplacian, with no boundary
+/// conditions applied.
+///
+/// The off-diagonal entry for an edge is minus half the sum of the
+/// cotangents of the two angles opposite it -- the identity that ties the
+/// M-matrix property to the Delaunay condition, since a cotangent turns
+/// negative exactly when its angle turns obtuse. Every row sums to zero,
+/// because the three shape functions of a triangle sum to the constant
+/// one and so their gradients sum to zero.
+pub fn stiffness_matrix(mesh: &FemMesh2) -> CsrMatrix {
+    let mut entries = Vec::with_capacity(9 * mesh.tris.len());
+    for t in &mesh.tris {
+        let (g, area) = shape_gradients(&mesh.nodes, t);
+        for j in 0..3 {
+            for k in 0..3 {
+                entries.push((t[j], t[k], area * g[j].dot(&g[k])));
+            }
+        }
+    }
+    CsrMatrix::from_triplets(mesh.nodes.len(), mesh.nodes.len(), &entries)
+}
+
+/// The assembled consistent mass matrix.
+///
+/// `A/6` on the diagonal and `A/12` off it, per triangle. Its entries sum
+/// to the area of the mesh, since the shape functions form a partition of
+/// unity; the *lumped* alternative, which puts each row's total on its
+/// diagonal, is what an explicit time integrator wants and is a different
+/// matrix with the same total.
+pub fn mass_matrix(mesh: &FemMesh2) -> CsrMatrix {
+    let mut entries = Vec::with_capacity(9 * mesh.tris.len());
+    for t in &mesh.tris {
+        let area = signed_area(&mesh.nodes, t);
+        for j in 0..3 {
+            for k in 0..3 {
+                entries.push((t[j], t[k], if j == k { area / 6.0 } else { area / 12.0 }));
+            }
+        }
+    }
+    CsrMatrix::from_triplets(mesh.nodes.len(), mesh.nodes.len(), &entries)
+}
+
+/// The gradient of a nodal field on one triangle, which is constant
+/// there because the field is linear.
+///
+/// Returns `None` for an out-of-range triangle index or a mismatched
+/// value count.
+pub fn element_gradient(mesh: &FemMesh2, values: &[f64], tri: usize) -> Option<Vec2> {
+    if tri >= mesh.tris.len() || values.len() != mesh.nodes.len() {
+        return None;
+    }
+    let t = &mesh.tris[tri];
+    let (g, _) = shape_gradients(&mesh.nodes, t);
+    Some(Vec2::new(
+        (0..3).map(|k| g[k].x * values[t[k]]).sum(),
+        (0..3).map(|k| g[k].y * values[t[k]]).sum(),
+    ))
+}
+
+/// The Dirichlet energy `integral |grad u|^2` of a nodal field, computed
+/// exactly.
+///
+/// It is exact rather than quadrature-limited because the gradient is
+/// constant on each triangle, so the integral is a sum of area times a
+/// squared length. This is the energy norm the finite element solution
+/// minimises, and the quantity that must fall when the mesh is refined.
+///
+/// # Errors
+///
+/// [`SolveError::DimensionMismatch`] if the value count does not match
+/// the node count.
+pub fn dirichlet_energy(mesh: &FemMesh2, values: &[f64]) -> Result<f64, SolveError> {
+    if values.len() != mesh.nodes.len() {
+        return Err(SolveError::DimensionMismatch {
+            expected: mesh.nodes.len(),
+            got: values.len(),
+        });
+    }
+    let mut total = 0.0;
+    for (i, t) in mesh.tris.iter().enumerate() {
+        let g = element_gradient(mesh, values, i).expect("index and length just checked");
+        total += signed_area(&mesh.nodes, t) * g.magnitude_squared();
+    }
+    Ok(total)
+}
+
+/// Evaluates a nodal field at an arbitrary point by locating the
+/// containing triangle and interpolating barycentrically.
+///
+/// Returns `None` if the point lies outside every triangle, or if the
+/// value count does not match the mesh. The search is linear in the
+/// triangle count -- there is no spatial index here, so this is for
+/// sampling an answer rather than for an inner loop.
+pub fn interpolate(mesh: &FemMesh2, values: &[f64], p: Vec2) -> Option<f64> {
+    if values.len() != mesh.nodes.len() {
+        return None;
+    }
+    for t in &mesh.tris {
+        let area = signed_area(&mesh.nodes, t);
+        let (a, b, c) = (mesh.nodes[t[0]], mesh.nodes[t[1]], mesh.nodes[t[2]]);
+        // Each barycentric coordinate is the area of the sub-triangle
+        // opposite its own vertex, over the whole area. All three are
+        // nonnegative exactly inside the triangle, which makes the same
+        // computation serve as the containment test.
+        let sub = |u: Vec2, v: Vec2| {
+            0.5 * ((v.x - u.x) * (p.y - u.y) - (p.x - u.x) * (v.y - u.y)) / area
+        };
+        let l0 = sub(b, c);
+        let l1 = sub(c, a);
+        let l2 = sub(a, b);
+        // The tolerance is relative to the coordinates themselves, which
+        // are pure numbers of order one, so a point on a shared edge is
+        // found in whichever triangle comes first rather than in
+        // neither.
+        if l0 >= -1e-12 && l1 >= -1e-12 && l2 >= -1e-12 {
+            return Some(l0 * values[t[0]] + l1 * values[t[1]] + l2 * values[t[2]]);
+        }
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PI: f64 = std::f64::consts::PI;
+
+    /// V - E + T = 1 for any triangulated simply connected region: the
+    /// Euler characteristic of a disk, with the outer face excluded.
+    fn euler(mesh: &FemMesh2) -> i64 {
+        mesh.nodes.len() as i64 - mesh.edge_count() as i64 + mesh.tris.len() as i64
+    }
+
+    #[test]
+    fn the_rectangle_mesh_is_a_conforming_triangulation() {
+        let m = FemMesh2::rect(2.0, 3.0, 4, 5).unwrap();
+        assert_eq!(m.nodes.len(), 5 * 6);
+        assert_eq!(m.tris.len(), 2 * 4 * 5);
+        assert!((m.area() - 6.0).abs() < 1e-12);
+        assert_eq!(euler(&m), 1);
+        // The boundary of a 4x5 grid is its perimeter of nodes.
+        assert_eq!(m.boundary.len(), 2 * (4 + 5));
+        // The cells are 0.5 by 0.6, split along a diagonal, so every
+        // triangle is right-angled with those legs and the smallest
+        // angle is atan of their ratio -- 45 degrees only when the
+        // cells are square, which these are not.
+        let (dx, dy): (f64, f64) = (2.0 / 4.0, 3.0 / 5.0);
+        assert!((m.quality_min_angle() - (dx / dy).atan()).abs() < 1e-12);
+        let square = FemMesh2::rect(1.0, 1.0, 3, 3).unwrap();
+        assert!((square.quality_min_angle() - PI / 4.0).abs() < 1e-12);
+        for t in &m.tris {
+            assert!(signed_area(&m.nodes, t) > 0.0, "a triangle came out clockwise");
+        }
+    }
+
+    #[test]
+    fn the_disk_mesh_closes_up_and_approaches_the_right_area() {
+        for n in [1usize, 2, 5, 9] {
+            let m = FemMesh2::disk(2.0, n).unwrap();
+            assert_eq!(m.nodes.len(), 1 + 3 * n * (n + 1));
+            assert_eq!(euler(&m), 1, "{n} rings");
+            // The outer ring is the boundary and nothing else is.
+            assert_eq!(m.boundary.len(), 6 * n);
+            // A polygon inscribed in the disk, so the area is below the
+            // circle's and rises towards it.
+            let exact = PI * 4.0;
+            assert!(m.area() < exact, "{n} rings overshot the disk");
+            assert!(m.area() > exact * (1.0 - 4.0 / (n * n) as f64 - 0.3));
+        }
+        let coarse = FemMesh2::disk(1.0, 3).unwrap();
+        let fine = FemMesh2::disk(1.0, 12).unwrap();
+        assert!(fine.area() > coarse.area(), "refining the disk lost area");
+    }
+
+    #[test]
+    fn uniform_refinement_multiplies_the_triangles_and_keeps_the_shape() {
+        let m = FemMesh2::rect(1.0, 1.0, 3, 2).unwrap();
+        let (v, e, t) = (m.nodes.len(), m.edge_count(), m.tris.len());
+        let r = m.refine_uniform();
+        // One new node per edge, four children per triangle.
+        assert_eq!(r.nodes.len(), v + e);
+        assert_eq!(r.tris.len(), 4 * t);
+        assert!((r.area() - m.area()).abs() < 1e-12);
+        assert_eq!(euler(&r), 1);
+        // The four children are similar to the parent, so the worst
+        // angle in the mesh is exactly what it was.
+        assert!((r.quality_min_angle() - m.quality_min_angle()).abs() < 1e-14);
+    }
+
+    #[test]
+    fn a_degenerate_or_inconsistent_mesh_is_refused() {
+        let square =
+            vec![Vec2::new(0.0, 0.0), Vec2::new(1.0, 0.0), Vec2::new(1.0, 1.0)];
+        assert_eq!(FemMesh2::new(square.clone(), vec![]), Err(GeomError::Empty));
+        assert!(FemMesh2::new(square.clone(), vec![[0, 1, 5]]).is_err());
+        assert!(FemMesh2::new(square.clone(), vec![[0, 1, 1]]).is_err());
+        let flat = vec![Vec2::new(0.0, 0.0), Vec2::new(1.0, 0.0), Vec2::new(2.0, 0.0)];
+        assert_eq!(
+            FemMesh2::new(flat, vec![[0, 1, 2]]),
+            Err(GeomError::Degenerate("zero-area triangle"))
+        );
+        // Three triangles on one edge is not a surface.
+        let fan = vec![
+            Vec2::new(0.0, 0.0),
+            Vec2::new(1.0, 0.0),
+            Vec2::new(0.0, 1.0),
+            Vec2::new(1.0, 1.0),
+            Vec2::new(-1.0, 1.0),
+        ];
+        assert_eq!(
+            FemMesh2::new(fan, vec![[0, 1, 2], [0, 1, 3], [0, 1, 4]]),
+            Err(GeomError::NotManifold)
+        );
+        assert!(FemMesh2::rect(0.0, 1.0, 2, 2).is_err());
+        assert!(FemMesh2::rect(1.0, 1.0, 0, 2).is_err());
+        assert!(FemMesh2::disk(-1.0, 2).is_err());
+        assert!(FemMesh2::disk(1.0, 0).is_err());
+        assert!(FemMesh2::from_delaunay(&[Vec2::ZERO, Vec2::new(1.0, 0.0)]).is_err());
+    }
+
+    #[test]
+    fn a_clockwise_triangle_is_reoriented_rather_than_rejected() {
+        let p = vec![Vec2::new(0.0, 0.0), Vec2::new(1.0, 0.0), Vec2::new(0.0, 1.0)];
+        let m = FemMesh2::new(p, vec![[0, 2, 1]]).unwrap();
+        assert!(signed_area(&m.nodes, &m.tris[0]) > 0.0);
+        assert!((m.area() - 0.5).abs() < 1e-15);
+    }
+
+    #[test]
+    fn a_linear_solution_is_reproduced_exactly() {
+        // The two-dimensional patch test. A linear field is in the
+        // element space, its Laplacian is zero, and the method must
+        // return it untouched from its boundary values alone.
+        let m = FemMesh2::rect(2.0, 1.0, 6, 4).unwrap();
+        let exact = |p: Vec2| 1.0 + 2.0 * p.x - 3.0 * p.y;
+        let u = fem_2d_poisson(&m, &|_| 0.0, &|p| Some(exact(p))).unwrap();
+        for (i, &got) in u.iter().enumerate() {
+            let want = exact(m.nodes[i]);
+            assert!((got - want).abs() < 1e-10, "node {i} was off by {}", got - want);
+        }
+    }
+
+    #[test]
+    fn poisson_converges_at_second_order_on_the_square() {
+        let u = |p: Vec2| (PI * p.x).sin() * (PI * p.y).sin();
+        let f = |p: Vec2| 2.0 * PI * PI * (PI * p.x).sin() * (PI * p.y).sin();
+        let mut previous = f64::INFINITY;
+        let mut ratios = Vec::new();
+        for n in [4usize, 8, 16, 32] {
+            let m = FemMesh2::rect(1.0, 1.0, n, n).unwrap();
+            let v = fem_2d_poisson(&m, &f, &|_| Some(0.0)).unwrap();
+            let err = v
+                .iter()
+                .enumerate()
+                .map(|(i, &g)| (g - u(m.nodes[i])).abs())
+                .fold(0.0, f64::max);
+            if previous.is_finite() {
+                ratios.push(previous / err);
+            }
+            previous = err;
+        }
+        for r in &ratios {
+            assert!((r - 4.0).abs() < 0.4, "halving h cut the error by {r}, not 4");
+        }
+    }
+
+    #[test]
+    fn a_pure_neumann_problem_is_singular_and_a_reaction_term_fixes_it() {
+        let m = FemMesh2::rect(1.0, 1.0, 4, 4).unwrap();
+        assert_eq!(fem_2d_poisson(&m, &|_| 1.0, &|_| None), Err(SolveError::Singular));
+        let v = fem_2d_reaction_diffusion(&m, &|_| 2.0, &|_| 2.0, &|_| None).unwrap();
+        // -lap u + 2u = 2 with no flux anywhere has the constant
+        // solution u = 1, and the constant is in the element space.
+        for &g in &v {
+            assert!((g - 1.0).abs() < 1e-9, "got {g}");
+        }
+    }
+
+    #[test]
+    fn interpolation_reproduces_the_nodal_values_and_refuses_the_outside() {
+        let m = FemMesh2::rect(1.0, 1.0, 2, 2).unwrap();
+        let values: Vec<f64> = m.nodes.iter().map(|p| 3.0 * p.x - p.y).collect();
+        for (i, &p) in m.nodes.iter().enumerate() {
+            let got = interpolate(&m, &values, p).unwrap();
+            assert!((got - values[i]).abs() < 1e-12);
+        }
+        // A linear field interpolates exactly anywhere inside.
+        let p = Vec2::new(0.37, 0.81);
+        assert!((interpolate(&m, &values, p).unwrap() - (3.0 * 0.37 - 0.81)).abs() < 1e-12);
+        assert!(interpolate(&m, &values, Vec2::new(2.0, 2.0)).is_none());
+        assert!(interpolate(&m, &values[..3], p).is_none());
+    }
+
+    #[test]
+    fn a_delaunay_mesh_of_a_point_set_is_conforming() {
+        let mut points = Vec::new();
+        for i in 0..5 {
+            for j in 0..5 {
+                // A slight stagger keeps the point set from being
+                // cocircular everywhere, which is the degenerate case
+                // for a Delaunay triangulation.
+                let s = if j % 2 == 0 { 0.0 } else { 0.13 };
+                points.push(Vec2::new(i as f64 + s, j as f64));
+            }
+        }
+        let m = FemMesh2::from_delaunay(&points).unwrap();
+        assert!(m.tris.len() > 20);
+        for t in &m.tris {
+            assert!(signed_area(&m.nodes, t) > 0.0);
+        }
+        // The triangulation covers the convex hull, whose area is at
+        // least that of the inner 4x4 block of the staggered grid.
+        assert!(m.area() > 15.0, "the hull came out at {}", m.area());
+    }
+}
