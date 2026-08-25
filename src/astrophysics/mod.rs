@@ -7,6 +7,8 @@ pub mod octree {
 pub mod kepler;
 pub mod lambert;
 pub mod maneuvers;
+pub mod coords;
+pub mod time_systems;
 pub mod orbital_elements;
 pub mod tidal;
 pub mod collisions;

@@ -20,6 +20,7 @@ mod linalg_props;
 mod md_props;
 mod kepler_props;
 mod lambert_props;
+mod coords_props;
 mod mesh_props;
 mod neuro_props;
 mod numerical_props;
