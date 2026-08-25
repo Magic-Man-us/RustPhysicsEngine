@@ -15,6 +15,7 @@ mod graph_flow_props;
 mod graph_props;
 mod graph_structure_props;
 mod linalg_props;
+mod md_props;
 mod mesh_props;
 mod numerical_props;
 mod optimization_continuous_props;

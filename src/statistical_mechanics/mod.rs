@@ -7,6 +7,7 @@
 
 pub mod ising;
 pub mod lattice_models;
+pub mod md;
 
 use crate::math::constants;
 
