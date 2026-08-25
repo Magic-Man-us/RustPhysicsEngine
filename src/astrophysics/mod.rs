@@ -4,6 +4,7 @@ pub mod nbody;
 pub mod octree {
     pub use crate::spatial::octree::*;
 }
+pub mod kepler;
 pub mod orbital_elements;
 pub mod tidal;
 pub mod collisions;
