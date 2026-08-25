@@ -6,6 +6,7 @@
 //! the subject rather than two.
 
 pub mod ising;
+pub mod kinetics;
 pub mod lattice_models;
 pub mod md;
 
