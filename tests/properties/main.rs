@@ -21,6 +21,7 @@ mod md_props;
 mod mesh_props;
 mod neuro_props;
 mod numerical_props;
+mod options_props;
 mod optimization_continuous_props;
 mod optimization_discrete_props;
 mod optimization_lp_props;
