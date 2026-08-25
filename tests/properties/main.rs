@@ -15,6 +15,7 @@ mod fem2d_props;
 mod fractals_props;
 mod game_theory_props;
 mod geometry_props;
+mod gp_props;
 mod graph_flow_props;
 mod graph_props;
 mod graph_structure_props;
