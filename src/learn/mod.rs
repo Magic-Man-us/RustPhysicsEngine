@@ -1,0 +1,13 @@
+//! Learning algorithms, written to be read rather than to be fast.
+//!
+//! Every method here has a closed-form or exactly-checkable property
+//! attached to it, because that is what makes a learning algorithm
+//! testable at all. A network that trains to a plausible loss is not
+//! evidence of anything -- gradient descent will happily reduce the loss
+//! of a model whose gradients are wrong, just more slowly. What settles
+//! it is comparing the analytic gradient against a finite difference,
+//! comparing a linear model fitted by descent against the normal
+//! equations, or checking that a clustering agrees with itself under a
+//! relabelling.
+
+pub mod nn;

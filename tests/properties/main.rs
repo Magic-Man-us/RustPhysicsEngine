@@ -26,6 +26,7 @@ mod lambert_props;
 mod coords_props;
 mod mesh_props;
 mod neuro_props;
+mod nn_props;
 mod numerical_props;
 mod options_props;
 mod optimization_continuous_props;

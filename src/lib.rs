@@ -43,6 +43,7 @@ pub mod propulsion;
 pub mod units;
 pub mod nonlinear;
 pub mod finance;
+pub mod learn;
 pub mod fractals;
 pub mod particle_physics;
 pub mod quaternion;
