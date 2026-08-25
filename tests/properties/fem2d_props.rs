@@ -24,9 +24,10 @@
 
 use rust_physics_engine::error::SolveError;
 use rust_physics_engine::fem::fem2d::{
-    dirichlet_energy, element_gradient, fem_2d_helmholtz, fem_2d_poisson,
-    fem_2d_reaction_diffusion, fem_eigenmodes_drum, fem_eigenvalues_drum, interpolate,
-    mass_matrix, stiffness_matrix, FemMesh2,
+    dirichlet_energy, element_gradient, element_stress, fem_2d_elasticity_plane_stress,
+    fem_2d_heat_transient, fem_2d_helmholtz, fem_2d_poisson, fem_2d_reaction_diffusion,
+    fem_eigenmodes_drum, fem_eigenvalues_drum, interpolate, mass_matrix, strain_energy,
+    stiffness_matrix, von_mises_stress, FemMesh2,
 };
 use rust_physics_engine::math::Vec2;
 use rust_physics_engine::monte_carlo::Rng;
@@ -769,6 +770,367 @@ fn prop_each_mode_is_mass_normalised_and_returns_its_own_rayleigh_quotient() {
                 let dot: f64 = modes[j].iter().zip(mv.iter()).map(|(a, b)| a * b).sum();
                 assert!(dot.abs() < 1e-7, "modes {j} and {i} overlapped by {dot}");
             }
+        }
+    }
+}
+
+#[test]
+fn prop_no_rigid_motion_ever_strains_the_body() {
+    // Two translations and an infinitesimal rotation span the kernel of
+    // the stiffness matrix, so any combination of them is stress free
+    // and energy free. A method that strained under a rotation would be
+    // wrong at first order in the rotation angle and would look exactly
+    // like a real load.
+    let mut rng = Rng::new(0x62d9_1f04);
+    for _ in 0..25 {
+        for m in meshes(&mut rng) {
+            let (tx, ty, w) = (
+                4.0 * rng.next_f64() - 2.0,
+                4.0 * rng.next_f64() - 2.0,
+                2.0 * rng.next_f64() - 1.0,
+            );
+            let u: Vec<Vec2> = m
+                .nodes
+                .iter()
+                .map(|p| Vec2::new(tx - w * p.y, ty + w * p.x))
+                .collect();
+            let e = 1.0 + 300.0 * rng.next_f64();
+            let nu = 0.45 * rng.next_f64();
+            let scale = e * (tx.abs() + ty.abs() + w.abs()).max(1.0);
+            for (i, s) in von_mises_stress(&m, &u, e, nu).unwrap().iter().enumerate() {
+                assert!(*s < 1e-10 * scale, "triangle {i} was stressed by {s}");
+            }
+            assert!(strain_energy(&m, &u, e, nu).unwrap().abs() < 1e-10 * scale);
+        }
+    }
+}
+
+#[test]
+fn prop_a_uniform_strain_state_is_reproduced_and_uniform() {
+    // The elasticity patch test. A linear displacement field lies in the
+    // element space, so prescribing it on the boundary must reproduce it
+    // inside, and every triangle must report the same stress no matter
+    // its shape.
+    let mut rng = Rng::new(0x1a4c_88b7);
+    for _ in 0..25 {
+        let (ex, ey, gamma) = (
+            2e-3 * (rng.next_f64() - 0.5),
+            2e-3 * (rng.next_f64() - 0.5),
+            2e-3 * (rng.next_f64() - 0.5),
+        );
+        let field = move |p: Vec2| {
+            Vec2::new(ex * p.x + 0.5 * gamma * p.y, 0.5 * gamma * p.x + ey * p.y)
+        };
+        let (e, nu) = (10.0 + 200.0 * rng.next_f64(), 0.45 * rng.next_f64());
+        for m in meshes(&mut rng) {
+            let pinned: Vec<(usize, Vec2)> =
+                m.boundary.iter().map(|&b| (b, field(m.nodes[b]))).collect();
+            let u = fem_2d_elasticity_plane_stress(&m, e, nu, &[], &pinned).unwrap();
+            let scale = u.iter().fold(0.0f64, |a, d| a.max(d.x.abs()).max(d.y.abs()));
+            for (i, got) in u.iter().enumerate() {
+                let want = field(m.nodes[i]);
+                let gap = (got.x - want.x).abs().max((got.y - want.y).abs());
+                assert!(gap < 1e-10 * scale, "node {i} was off by {gap}");
+            }
+            // Every element reports the same stress: that is what makes
+            // it a *uniform* strain state, and a shape-dependent answer
+            // would mean the strain matrix is wrong.
+            let first = element_stress(&m, &u, e, nu, 0).unwrap();
+            let mag = first.iter().fold(0.0f64, |a, v| a.max(v.abs())).max(1e-12);
+            for t in 1..m.tris.len() {
+                let s = element_stress(&m, &u, e, nu, t).unwrap();
+                for k in 0..3 {
+                    assert!((s[k] - first[k]).abs() < 1e-8 * mag, "triangle {t} component {k}");
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn prop_the_closed_form_stress_states_hold_for_every_material() {
+    // Uniaxial strain gives sigma_x = E eps and a lateral stress of
+    // exactly zero when the transverse strain is -nu eps; pure shear
+    // gives tau = G gamma with G = E/(2(1+nu)) and a von Mises value of
+    // sqrt(3) tau; and equal biaxial tension gives a von Mises value of
+    // the tension itself -- not zero, because plane stress has a free
+    // surface and so a state that is hydrostatic in plane is not
+    // hydrostatic at all.
+    let mut rng = Rng::new(0x0cd7_5e19);
+    for _ in 0..40 {
+        let (e, nu) = (1.0 + 500.0 * rng.next_f64(), 0.49 * rng.next_f64());
+        let m = FemMesh2::rect(1.0, 1.0, 3, 3).unwrap();
+        let eps = 1e-3 * (rng.next_f64() + 0.1);
+        let uni: Vec<Vec2> =
+            m.nodes.iter().map(|p| Vec2::new(eps * p.x, -nu * eps * p.y)).collect();
+        let s = element_stress(&m, &uni, e, nu, 0).unwrap();
+        assert!((s[0] - e * eps).abs() < 1e-9 * e * eps);
+        assert!(s[1].abs() < 1e-9 * e * eps, "the lateral stress was {}", s[1]);
+        assert!(s[2].abs() < 1e-9 * e * eps);
+        assert!((von_mises_stress(&m, &uni, e, nu).unwrap()[0] - e * eps).abs() < 1e-9 * e * eps);
+        let gamma = 1e-3 * (rng.next_f64() + 0.1);
+        let sh: Vec<Vec2> = m
+            .nodes
+            .iter()
+            .map(|p| Vec2::new(0.5 * gamma * p.y, 0.5 * gamma * p.x))
+            .collect();
+        let g_mod = e / (2.0 * (1.0 + nu));
+        let ss = element_stress(&m, &sh, e, nu, 0).unwrap();
+        assert!((ss[2] - g_mod * gamma).abs() < 1e-9 * g_mod * gamma);
+        let vm = von_mises_stress(&m, &sh, e, nu).unwrap()[0];
+        assert!((vm - 3.0f64.sqrt() * g_mod * gamma).abs() < 1e-9 * vm);
+        let bi: Vec<Vec2> = m.nodes.iter().map(|p| Vec2::new(eps * p.x, eps * p.y)).collect();
+        let bs = element_stress(&m, &bi, e, nu, 0).unwrap();
+        assert!((bs[0] - bs[1]).abs() < 1e-9 * bs[0].abs());
+        let bvm = von_mises_stress(&m, &bi, e, nu).unwrap()[0];
+        assert!((bvm - bs[0].abs()).abs() < 1e-9 * bvm);
+    }
+}
+
+#[test]
+fn prop_von_mises_does_not_care_how_the_plane_is_turned() {
+    // The equivalent stress is an invariant of the stress tensor, so
+    // rotating the body and its displacement field together must leave
+    // it alone element for element. Anything built from sigma_x and
+    // sigma_y separately, rather than from their invariants, would fail
+    // this.
+    let mut rng = Rng::new(0x4f13_7ea2);
+    for _ in 0..25 {
+        let theta = std::f64::consts::TAU * rng.next_f64();
+        let (c, sn) = (theta.cos(), theta.sin());
+        let base = FemMesh2::rect(1.4, 0.9, 4, 3).unwrap();
+        let turned = FemMesh2::new(
+            base.nodes.iter().map(|p| Vec2::new(c * p.x - sn * p.y, sn * p.x + c * p.y)).collect(),
+            base.tris.clone(),
+        )
+        .unwrap();
+        let (e, nu) = (100.0, 0.3);
+        let (a, b, d) = (
+            2e-3 * (rng.next_f64() - 0.5),
+            2e-3 * (rng.next_f64() - 0.5),
+            2e-3 * (rng.next_f64() - 0.5),
+        );
+        let field = move |p: Vec2| Vec2::new(a * p.x + b * p.y, b * p.x + d * p.y);
+        let u: Vec<Vec2> = base.nodes.iter().map(|&p| field(p)).collect();
+        // Carry the displacement field around with the body.
+        let spun: Vec<Vec2> = base
+            .nodes
+            .iter()
+            .map(|&p| {
+                let v = field(p);
+                Vec2::new(c * v.x - sn * v.y, sn * v.x + c * v.y)
+            })
+            .collect();
+        let plain = von_mises_stress(&base, &u, e, nu).unwrap();
+        let rotated = von_mises_stress(&turned, &spun, e, nu).unwrap();
+        let scale = plain.iter().fold(0.0f64, |x, &v| x.max(v)).max(1e-12);
+        for t in 0..base.tris.len() {
+            assert!((plain[t] - rotated[t]).abs() < 1e-9 * scale, "triangle {t}");
+        }
+    }
+}
+
+#[test]
+fn prop_the_loads_do_twice_the_stored_energy() {
+    // Clapeyron's theorem, which follows from the stiffness matrix being
+    // symmetric and nothing else. Also the linear scalings: doubling
+    // every load doubles the displacement and quadruples the energy, and
+    // doubling the modulus halves the displacement.
+    let mut rng = Rng::new(0x3ab6_02c4);
+    for _ in 0..20 {
+        let m = FemMesh2::rect(3.0, 1.0, 6, 2).unwrap();
+        let (e, nu) = (50.0 + 200.0 * rng.next_f64(), 0.45 * rng.next_f64());
+        let clamped: Vec<(usize, Vec2)> = m
+            .nodes
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| p.x < 1e-12)
+            .map(|(i, _)| (i, Vec2::ZERO))
+            .collect();
+        let pull = Vec2::new(2.0 * rng.next_f64() - 1.0, 2.0 * rng.next_f64() - 1.0);
+        let loads: Vec<(usize, Vec2)> = m
+            .nodes
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| (p.x - 3.0).abs() < 1e-12)
+            .map(|(i, _)| (i, pull))
+            .collect();
+        let u = fem_2d_elasticity_plane_stress(&m, e, nu, &loads, &clamped).unwrap();
+        let work: f64 = loads.iter().map(|&(i, f)| f.x * u[i].x + f.y * u[i].y).sum();
+        let energy = strain_energy(&m, &u, e, nu).unwrap();
+        assert!(work > 0.0, "the load did no work");
+        assert!((work - 2.0 * energy).abs() < 1e-9 * work, "{work} against {}", 2.0 * energy);
+        let doubled: Vec<(usize, Vec2)> =
+            loads.iter().map(|&(i, f)| (i, Vec2::new(2.0 * f.x, 2.0 * f.y))).collect();
+        let v = fem_2d_elasticity_plane_stress(&m, e, nu, &doubled, &clamped).unwrap();
+        for i in 0..m.nodes.len() {
+            assert!((v[i].x - 2.0 * u[i].x).abs() < 1e-9 * (1.0 + u[i].x.abs()));
+            assert!((v[i].y - 2.0 * u[i].y).abs() < 1e-9 * (1.0 + u[i].y.abs()));
+        }
+        assert!(
+            (strain_energy(&m, &v, e, nu).unwrap() - 4.0 * energy).abs() < 1e-9 * 4.0 * energy
+        );
+        let stiffer = fem_2d_elasticity_plane_stress(&m, 2.0 * e, nu, &loads, &clamped).unwrap();
+        for i in 0..m.nodes.len() {
+            assert!((stiffer[i].x - 0.5 * u[i].x).abs() < 1e-9 * (1.0 + u[i].x.abs()));
+        }
+    }
+}
+
+#[test]
+fn prop_an_insulated_body_conserves_its_heat_to_the_last_digit() {
+    // With no source and nothing prescribed, 1^T M u is unchanged by
+    // every step and for every theta, because the stiffness rows sum to
+    // zero. It is an algebraic consequence of the assembly rather than
+    // an asymptotic property, so it holds at machine precision however
+    // coarse the step.
+    let mut rng = Rng::new(0x7e0b_3d55);
+    for _ in 0..15 {
+        let m = FemMesh2::rect(1.0, 1.0, 4, 4).unwrap();
+        let k = 1.0 + 3.0 * rng.next_f64();
+        let initial: Vec<f64> =
+            m.nodes.iter().map(|p| (k * p.x).exp() + (k * p.y).sin()).collect();
+        let mass = mass_matrix(&m);
+        let total = |v: &[f64]| -> f64 { mass.mul_vec(v).iter().sum() };
+        let start = total(&initial);
+        for theta in [0.0, 0.5, 1.0] {
+            let dt = 0.002 + 0.01 * rng.next_f64();
+            let h = fem_2d_heat_transient(
+                &m,
+                &initial,
+                0.1,
+                dt,
+                8,
+                theta,
+                &|_| 0.0,
+                &|_| None,
+            )
+            .unwrap();
+            for (n, step) in h.iter().enumerate() {
+                assert!(
+                    (total(step) - start).abs() < 1e-9 * start.abs(),
+                    "theta {theta} step {n} changed the total heat"
+                );
+            }
+            // Diffusion only flattens: the Dirichlet energy falls.
+            let e0 = dirichlet_energy(&m, &h[0]).unwrap();
+            let e1 = dirichlet_energy(&m, &h[8]).unwrap();
+            assert!(e1 < e0 + 1e-12, "the field got rougher");
+        }
+    }
+}
+
+#[test]
+fn prop_a_mode_follows_the_schemes_amplification_factor_exactly() {
+    // Fed a discrete eigenmode the theta scheme is a scalar recurrence
+    // with factor (1 - (1-theta)a)/(1 + theta a), a = alpha lambda dt.
+    // That is an exact algebraic identity, so it separates the
+    // time-stepping error from the spatial one completely -- there is no
+    // spatial error left to confound it.
+    let mut rng = Rng::new(0x2b8e_71c3);
+    for _ in 0..12 {
+        let m = FemMesh2::rect(1.0, 1.0, 4, 4).unwrap();
+        let which = (rng.next_u64() % 3) as usize;
+        let (values, modes) = fem_eigenmodes_drum(&m, which + 1).unwrap();
+        let (lambda, phi) = (values[which], &modes[which]);
+        let alpha = 0.1 + rng.next_f64();
+        let dt = 0.005 + 0.02 * rng.next_f64();
+        let a = alpha * lambda * dt;
+        let peak = phi.iter().fold(0.0f64, |x, &v| x.max(v.abs()));
+        for theta in [0.0, 0.5, 1.0] {
+            // Forward Euler is only stable while a < 2; do not ask it
+            // for something it does not promise.
+            if theta == 0.0 && a >= 1.8 {
+                continue;
+            }
+            let factor = (1.0 - (1.0 - theta) * a) / (1.0 + theta * a);
+            let h = fem_2d_heat_transient(
+                &m, phi, alpha, dt, 5, theta, &|_| 0.0, &|_| Some(0.0),
+            )
+            .unwrap();
+            for (n, step) in h.iter().enumerate() {
+                let want = factor.powi(n as i32);
+                let worst = step
+                    .iter()
+                    .zip(phi.iter())
+                    .filter(|(_, &p)| p.abs() > 0.5 * peak)
+                    .map(|(&s, &p)| (s / p - want).abs())
+                    .fold(0.0f64, f64::max);
+                assert!(
+                    worst < 1e-7 * (1.0 + want.abs()),
+                    "theta {theta} step {n} drifted by {worst}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn prop_crank_nicolson_is_a_stable_but_not_l_stable() {
+    // For a mode too stiff to resolve, backward Euler's factor tends to
+    // zero and Crank-Nicolson's tends to minus one. Both are stable;
+    // only one damps. The stiff mode therefore dies under backward Euler
+    // and survives under Crank-Nicolson, flipping sign every step --
+    // which is why a discontinuous initial condition rings, and why the
+    // usual remedy is to start with a couple of backward Euler steps.
+    let mut rng = Rng::new(0x11c4_9a68);
+    for _ in 0..12 {
+        let m = FemMesh2::rect(1.0, 1.0, 4, 4).unwrap();
+        let (values, modes) = fem_eigenmodes_drum(&m, 3).unwrap();
+        let phi = &modes[2];
+        let peak_at = phi
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.abs().total_cmp(&b.1.abs()))
+            .map(|(i, _)| i)
+            .unwrap();
+        let dt = (20.0 + 60.0 * rng.next_f64()) / values[2];
+        let cn =
+            fem_2d_heat_transient(&m, phi, 1.0, dt, 5, 0.5, &|_| 0.0, &|_| Some(0.0)).unwrap();
+        let be =
+            fem_2d_heat_transient(&m, phi, 1.0, dt, 5, 1.0, &|_| 0.0, &|_| Some(0.0)).unwrap();
+        let start = phi[peak_at].abs();
+        assert!(be[5][peak_at].abs() < 1e-3 * start, "backward Euler failed to damp");
+        assert!(cn[5][peak_at].abs() > 0.4 * start, "Crank-Nicolson damped a stiff mode");
+        for n in 0..5 {
+            assert!(cn[n][peak_at] * cn[n + 1][peak_at] < 0.0, "no oscillation at step {n}");
+        }
+        // Both stay bounded, which is what A-stability means and is the
+        // half forward Euler would fail here.
+        assert!(cn[5][peak_at].abs() <= start * (1.0 + 1e-9));
+    }
+}
+
+#[test]
+fn prop_the_march_settles_onto_the_steady_solution() {
+    // Long enough with a fixed source and fixed boundary, the transient
+    // has to become the Poisson solution -- the two solvers are
+    // consistent or one of them is wrong.
+    let mut rng = Rng::new(0x59fa_c206);
+    for _ in 0..10 {
+        let m = FemMesh2::rect(1.0, 1.0, 4, 4).unwrap();
+        let c = 2.0 * rng.next_f64() - 1.0;
+        let source = move |p: Vec2| 1.0 + c * p.x;
+        let hot = move |p: Vec2| Some(c * p.y);
+        let steady = fem_2d_poisson(&m, &source, &hot).unwrap();
+        let h = fem_2d_heat_transient(
+            &m,
+            &vec![0.0; m.nodes.len()],
+            1.0,
+            0.05,
+            150,
+            1.0,
+            &source,
+            &hot,
+        )
+        .unwrap();
+        for i in 0..m.nodes.len() {
+            assert!(
+                (h[150][i] - steady[i]).abs() < 1e-7 * (1.0 + steady[i].abs()),
+                "node {i}: {} against the steady {}",
+                h[150][i],
+                steady[i]
+            );
         }
     }
 }

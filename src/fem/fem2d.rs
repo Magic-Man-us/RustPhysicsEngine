@@ -406,7 +406,17 @@ fn assemble(
 
 /// Applies Dirichlet data symmetrically: the known value is moved to the
 /// right-hand side of every equation that saw it, and its own row and
-/// column become the identity.
+/// column are replaced by a multiple of the identity.
+///
+/// A *multiple*, not the identity itself. Writing a bare one on the
+/// diagonal is the textbook recipe and it is wrong for any problem whose
+/// natural scale is not one: an elasticity matrix has diagonal entries of
+/// order Young's modulus, so a row of one alongside rows of `1e10` gives
+/// the assembled system a condition number of `1e10` that the physics
+/// never had, and an iterative solver then delivers ten digits fewer than
+/// it should. Scaling the pinned rows to match the rest costs nothing --
+/// the solution is unchanged, since the row still says `u_i = g` -- and
+/// removes the whole artefact.
 fn apply_dirichlet(
     n: usize,
     entries: &[(usize, usize, f64)],
@@ -421,6 +431,21 @@ fn apply_dirichlet(
             }
         }
     }
+    // A representative diagonal magnitude of the free part of the
+    // system, accumulated before the duplicate triplets are merged.
+    let mut diagonal = vec![0.0; n];
+    for &(i, j, v) in entries {
+        if i == j {
+            diagonal[i] += v;
+        }
+    }
+    let free: Vec<f64> = (0..n).filter(|&i| fixed[i].is_none()).map(|i| diagonal[i].abs()).collect();
+    let pivot = if free.is_empty() {
+        1.0
+    } else {
+        free.iter().sum::<f64>() / free.len() as f64
+    };
+    let pivot = if pivot > 0.0 { pivot } else { 1.0 };
     let mut kept: Vec<(usize, usize, f64)> = entries
         .iter()
         .copied()
@@ -428,8 +453,8 @@ fn apply_dirichlet(
         .collect();
     for (i, slot) in fixed.iter().enumerate().take(n) {
         if let Some(g) = *slot {
-            kept.push((i, i, 1.0));
-            rhs[i] = g;
+            kept.push((i, i, pivot));
+            rhs[i] = pivot * g;
         }
     }
     (kept, rhs)
@@ -510,8 +535,11 @@ pub fn fem_2d_reaction_diffusion(
     }
     let (entries, rhs) = apply_dirichlet(n, &asm.entries, &asm.load, &fixed);
     let matrix = CsrMatrix::from_triplets(n, n, &entries);
-    let scale = rhs.iter().fold(0.0f64, |m, v| m.max(v.abs())).max(1.0);
-    pcg_jacobi(&matrix, &rhs, 1e-13 * scale, 20 * n + 500)
+    // The tolerance pcg_jacobi takes is relative to the norm of the
+    // right-hand side, so it is passed as a pure number. Scaling it by
+    // the data would loosen it by however many orders of magnitude the
+    // data happens to span.
+    pcg_jacobi(&matrix, &rhs, 1e-14, 20 * n + 500)
 }
 
 /// The assembled stiffness matrix of the Laplacian, with no boundary
@@ -839,6 +867,359 @@ fn forward_substitute_columns(l: &Matrix, b: &Matrix) -> Result<Matrix, SolveErr
         }
     }
     Ok(x)
+}
+
+/// The plane-stress constitutive matrix, relating
+/// `(sigma_x, sigma_y, tau)` to `(eps_x, eps_y, gamma)`.
+fn plane_stress_d(e: f64, nu: f64) -> [[f64; 3]; 3] {
+    let k = e / (1.0 - nu * nu);
+    [[k, k * nu, 0.0], [k * nu, k, 0.0], [0.0, 0.0, k * 0.5 * (1.0 - nu)]]
+}
+
+/// The strain-displacement matrix of a constant-strain triangle, three
+/// strains by six degrees of freedom.
+fn strain_matrix(g: &[Vec2; 3]) -> [[f64; 6]; 3] {
+    let mut b = [[0.0; 6]; 3];
+    for k in 0..3 {
+        b[0][2 * k] = g[k].x;
+        b[1][2 * k + 1] = g[k].y;
+        b[2][2 * k] = g[k].y;
+        b[2][2 * k + 1] = g[k].x;
+    }
+    b
+}
+
+/// Solves the plane-stress elasticity problem on the mesh.
+///
+/// `loads` are point forces applied at nodes and `fixed` prescribes
+/// displacements at nodes, both components at once. Unit thickness is
+/// assumed throughout, so a force is a force per unit thickness.
+///
+/// # The constant-strain triangle
+///
+/// Displacement is linear on each triangle, so strain -- its gradient --
+/// is constant there, and so is stress. That makes the element matrix
+/// `A B^T D B` with no quadrature, exactly as for the Laplacian, and it
+/// makes the stress field piecewise constant and discontinuous across
+/// every edge. The discontinuity is not a bug to be smoothed away
+/// silently: its size is an error estimate, and averaging it to the
+/// nodes before showing it to anyone is how a coarse mesh comes to look
+/// convincing.
+///
+/// # What has to be pinned
+///
+/// The stiffness matrix has a three-dimensional kernel: two translations
+/// and one infinitesimal rotation. Prescribing fewer than three
+/// independent degrees of freedom leaves the body free to move without
+/// straining, and the system is singular no matter how many loads are
+/// applied. This is checked directly.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for a non-positive modulus, a
+/// Poisson's ratio outside `(-1, 0.5)`, an out-of-range node index, or
+/// non-finite data; [`SolveError::Singular`] if the constraints leave a
+/// rigid body motion free.
+pub fn fem_2d_elasticity_plane_stress(
+    mesh: &FemMesh2,
+    e: f64,
+    nu: f64,
+    loads: &[(usize, Vec2)],
+    fixed: &[(usize, Vec2)],
+) -> Result<Vec<Vec2>, SolveError> {
+    let n = mesh.nodes.len();
+    if !e.is_finite() || e <= 0.0 {
+        return Err(SolveError::InvalidArgument("Young's modulus must be positive"));
+    }
+    if !nu.is_finite() || nu <= -1.0 || nu >= 0.5 {
+        return Err(SolveError::InvalidArgument("Poisson's ratio must lie in (-1, 1/2)"));
+    }
+    let d = plane_stress_d(e, nu);
+    let mut entries = Vec::with_capacity(36 * mesh.tris.len());
+    for t in &mesh.tris {
+        let (g, area) = shape_gradients(&mesh.nodes, t);
+        let b = strain_matrix(&g);
+        // db = D B, then the element matrix is A B^T (D B).
+        let mut db = [[0.0f64; 6]; 3];
+        for r in 0..3 {
+            for c in 0..6 {
+                db[r][c] = (0..3).map(|k| d[r][k] * b[k][c]).sum();
+            }
+        }
+        for i in 0..6 {
+            for j in 0..6 {
+                let v: f64 = (0..3).map(|k| b[k][i] * db[k][j]).sum();
+                entries.push((2 * t[i / 2] + i % 2, 2 * t[j / 2] + j % 2, area * v));
+            }
+        }
+    }
+    let mut rhs = vec![0.0; 2 * n];
+    for &(node, force) in loads {
+        if node >= n {
+            return Err(SolveError::InvalidArgument("load applied to a node that is not there"));
+        }
+        if !(force.x.is_finite() && force.y.is_finite()) {
+            return Err(SolveError::InvalidArgument("loads must be finite"));
+        }
+        rhs[2 * node] += force.x;
+        rhs[2 * node + 1] += force.y;
+    }
+    let mut pinned = vec![None; 2 * n];
+    for &(node, u) in fixed {
+        if node >= n {
+            return Err(SolveError::InvalidArgument("constraint on a node that is not there"));
+        }
+        if !(u.x.is_finite() && u.y.is_finite()) {
+            return Err(SolveError::InvalidArgument("prescribed displacements must be finite"));
+        }
+        pinned[2 * node] = Some(u.x);
+        pinned[2 * node + 1] = Some(u.y);
+    }
+    // Two translations and an infinitesimal rotation about the origin.
+    // If all three survive the constraints the body can move without
+    // straining and the system is singular whatever the loads are.
+    let free_motion = |field: &dyn Fn(Vec2) -> Vec2| {
+        (0..n).all(|i| {
+            let v = field(mesh.nodes[i]);
+            (pinned[2 * i].is_none() || v.x == 0.0) && (pinned[2 * i + 1].is_none() || v.y == 0.0)
+        })
+    };
+    if free_motion(&|_| Vec2::new(1.0, 0.0))
+        || free_motion(&|_| Vec2::new(0.0, 1.0))
+        || free_motion(&|p| Vec2::new(-p.y, p.x))
+    {
+        return Err(SolveError::Singular);
+    }
+    let (entries, rhs) = apply_dirichlet(2 * n, &entries, &rhs, &pinned);
+    let matrix = CsrMatrix::from_triplets(2 * n, 2 * n, &entries);
+    let u = pcg_jacobi(&matrix, &rhs, 1e-14, 200 * n + 2000)?;
+    Ok((0..n).map(|i| Vec2::new(u[2 * i], u[2 * i + 1])).collect())
+}
+
+/// The constant strain `(eps_x, eps_y, gamma)` of one triangle, given a
+/// nodal displacement field.
+///
+/// `gamma` is the engineering shear strain, twice the tensor component.
+/// Returns `None` for an out-of-range index or a mismatched field.
+pub fn element_strain(mesh: &FemMesh2, u: &[Vec2], tri: usize) -> Option<[f64; 3]> {
+    if tri >= mesh.tris.len() || u.len() != mesh.nodes.len() {
+        return None;
+    }
+    let t = &mesh.tris[tri];
+    let (g, _) = shape_gradients(&mesh.nodes, t);
+    let b = strain_matrix(&g);
+    let local = [u[t[0]].x, u[t[0]].y, u[t[1]].x, u[t[1]].y, u[t[2]].x, u[t[2]].y];
+    let mut out = [0.0; 3];
+    for (r, slot) in out.iter_mut().enumerate() {
+        *slot = (0..6).map(|c| b[r][c] * local[c]).sum();
+    }
+    Some(out)
+}
+
+/// The constant stress `(sigma_x, sigma_y, tau)` of one triangle.
+///
+/// Returns `None` for an out-of-range index, a mismatched field, or
+/// material constants outside their admissible ranges.
+pub fn element_stress(
+    mesh: &FemMesh2,
+    u: &[Vec2],
+    e: f64,
+    nu: f64,
+    tri: usize,
+) -> Option<[f64; 3]> {
+    if !e.is_finite() || e <= 0.0 || !nu.is_finite() || nu <= -1.0 || nu >= 0.5 {
+        return None;
+    }
+    let strain = element_strain(mesh, u, tri)?;
+    let d = plane_stress_d(e, nu);
+    let mut out = [0.0; 3];
+    for (r, slot) in out.iter_mut().enumerate() {
+        *slot = (0..3).map(|k| d[r][k] * strain[k]).sum();
+    }
+    Some(out)
+}
+
+/// The total strain energy `(1/2) integral sigma : eps`.
+///
+/// At equilibrium this is half the work the applied loads do, which is
+/// Clapeyron's theorem and follows from nothing more than the stiffness
+/// matrix being symmetric.
+///
+/// # Errors
+///
+/// [`SolveError::DimensionMismatch`] for a mismatched field and
+/// [`SolveError::InvalidArgument`] for invalid material constants.
+pub fn strain_energy(
+    mesh: &FemMesh2,
+    u: &[Vec2],
+    e: f64,
+    nu: f64,
+) -> Result<f64, SolveError> {
+    if u.len() != mesh.nodes.len() {
+        return Err(SolveError::DimensionMismatch { expected: mesh.nodes.len(), got: u.len() });
+    }
+    let mut total = 0.0;
+    for (i, t) in mesh.tris.iter().enumerate() {
+        let strain = element_strain(mesh, u, i).expect("index and length just checked");
+        let stress = element_stress(mesh, u, e, nu, i)
+            .ok_or(SolveError::InvalidArgument("invalid material constants"))?;
+        let density: f64 = (0..3).map(|k| stress[k] * strain[k]).sum();
+        total += 0.5 * signed_area(&mesh.nodes, t) * density;
+    }
+    Ok(total)
+}
+
+/// The von Mises equivalent stress of each triangle, given a nodal
+/// displacement field.
+///
+/// One value per triangle, not per node: the strain of a linear
+/// displacement field is constant on an element and discontinuous across
+/// its edges. That discontinuity is not a bug to be smoothed away
+/// silently -- its size is an error estimate, and averaging it to the
+/// nodes before showing it to anyone is how a coarse mesh comes to look
+/// convincing.
+///
+/// In plane stress the out-of-plane stress is zero rather than free, so
+/// the equivalent stress is
+/// `sqrt(sx^2 - sx sy + sy^2 + 3 tau^2)`. A consequence worth noticing:
+/// equal biaxial tension `sx = sy = s` gives `|s|`, not zero. The
+/// three-dimensional intuition that hydrostatic stress cannot yield a
+/// material does not survive into plane stress, because a state that is
+/// hydrostatic *in plane* has a free surface out of it and so is not
+/// hydrostatic at all.
+///
+/// # Errors
+///
+/// [`SolveError::DimensionMismatch`] if the displacement count does not
+/// match the node count, and [`SolveError::InvalidArgument`] for invalid
+/// material constants.
+pub fn von_mises_stress(
+    mesh: &FemMesh2,
+    u: &[Vec2],
+    e: f64,
+    nu: f64,
+) -> Result<Vec<f64>, SolveError> {
+    if u.len() != mesh.nodes.len() {
+        return Err(SolveError::DimensionMismatch { expected: mesh.nodes.len(), got: u.len() });
+    }
+    (0..mesh.tris.len())
+        .map(|i| {
+            let s = element_stress(mesh, u, e, nu, i)
+                .ok_or(SolveError::InvalidArgument("invalid material constants"))?;
+            Ok((s[0] * s[0] - s[0] * s[1] + s[1] * s[1] + 3.0 * s[2] * s[2]).max(0.0).sqrt())
+        })
+        .collect()
+}
+
+/// Marches the heat equation `u_t = alpha lap u + f` with the
+/// `theta` scheme, returning `steps + 1` snapshots starting from the
+/// initial field.
+///
+/// The step solves
+/// `(M + theta alpha dt K) u_next = (M - (1-theta) alpha dt K) u + dt F`.
+/// `theta = 0` is forward Euler, `1` backward Euler, `1/2`
+/// Crank-Nicolson.
+///
+/// # Stability, and the difference between A-stable and L-stable
+///
+/// Applied to a discrete eigenmode the scheme multiplies its amplitude
+/// by `(1 - (1-theta) a) / (1 + theta a)` each step, with
+/// `a = alpha lambda dt`. For `theta >= 1/2` that factor has magnitude
+/// below one for every positive `a`, which is A-stability, and forward
+/// Euler instead needs `a < 2`.
+///
+/// Crank-Nicolson is A-stable but *not* L-stable: as `a` grows its factor
+/// tends to `-1`, not to zero. A mode too stiff to resolve therefore
+/// survives while flipping sign every step, which is why a discontinuous
+/// initial condition rings under Crank-Nicolson and why the usual remedy
+/// is to take the first couple of steps with backward Euler, whose
+/// factor does tend to zero. That contrast is asserted in the tests.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for a mismatched initial field, a
+/// non-positive step, a `theta` outside `[0, 1]`, a negative diffusivity
+/// or non-finite data; whatever the linear solver reports otherwise.
+#[allow(clippy::too_many_arguments)]
+pub fn fem_2d_heat_transient(
+    mesh: &FemMesh2,
+    initial: &[f64],
+    alpha: f64,
+    dt: f64,
+    steps: usize,
+    theta: f64,
+    source: &dyn Fn(Vec2) -> f64,
+    dirichlet: &dyn Fn(Vec2) -> Option<f64>,
+) -> Result<Vec<Vec<f64>>, SolveError> {
+    let n = mesh.nodes.len();
+    if initial.len() != n {
+        return Err(SolveError::DimensionMismatch { expected: n, got: initial.len() });
+    }
+    if !dt.is_finite() || dt <= 0.0 {
+        return Err(SolveError::InvalidArgument("the time step must be positive"));
+    }
+    if !theta.is_finite() || !(0.0..=1.0).contains(&theta) {
+        return Err(SolveError::InvalidArgument("theta must lie in [0, 1]"));
+    }
+    if !alpha.is_finite() || alpha < 0.0 {
+        return Err(SolveError::InvalidArgument("the diffusivity must be nonnegative"));
+    }
+    if initial.iter().any(|v| !v.is_finite()) {
+        return Err(SolveError::InvalidArgument("the initial field must be finite"));
+    }
+    let asm = assemble(mesh, &|_| 0.0, source)?;
+    let stiff = stiffness_matrix(mesh);
+    let mass = mass_matrix(mesh);
+    let triplets = |m: &CsrMatrix, k: f64| -> Vec<(usize, usize, f64)> {
+        (0..n)
+            .flat_map(|i| {
+                (m.row_ptr[i]..m.row_ptr[i + 1]).map(move |idx| (i, idx))
+            })
+            .map(|(i, idx)| (i, m.col_idx[idx], k * m.vals[idx]))
+            .collect()
+    };
+    let mut fixed = vec![None; n];
+    for &b in &mesh.boundary {
+        if let Some(g) = dirichlet(mesh.nodes[b]) {
+            if !g.is_finite() {
+                return Err(SolveError::InvalidArgument("boundary data must be finite"));
+            }
+            fixed[b] = Some(g);
+        }
+    }
+    // The implicit side is fixed for the whole march, so it is
+    // assembled and factored into a CSR matrix once.
+    let mut lhs = triplets(&mass, 1.0);
+    lhs.extend(triplets(&stiff, theta * alpha * dt));
+    let explicit_mass = triplets(&mass, 1.0);
+    let explicit_stiff = triplets(&stiff, -(1.0 - theta) * alpha * dt);
+    let mut current = initial.to_vec();
+    // Snap the boundary onto its prescribed value before the first step
+    // so that the recorded history is consistent from the outset rather
+    // than at step one.
+    for (i, slot) in fixed.iter().enumerate() {
+        if let Some(g) = *slot {
+            current[i] = g;
+        }
+    }
+    let mut history = vec![current.clone()];
+    let apply = |entries: &[(usize, usize, f64)], v: &[f64]| -> Vec<f64> {
+        let mut out = vec![0.0; n];
+        for &(i, j, k) in entries {
+            out[i] += k * v[j];
+        }
+        out
+    };
+    for _ in 0..steps {
+        let a = apply(&explicit_mass, &current);
+        let b = apply(&explicit_stiff, &current);
+        let rhs: Vec<f64> = (0..n).map(|i| a[i] + b[i] + dt * asm.load[i]).collect();
+        let (entries, rhs) = apply_dirichlet(n, &lhs, &rhs, &fixed);
+        let matrix = CsrMatrix::from_triplets(n, n, &entries);
+        current = pcg_jacobi(&matrix, &rhs, 1e-14, 20 * n + 500)?;
+        history.push(current.clone());
+    }
+    Ok(history)
 }
 
 #[cfg(test)]
@@ -1171,6 +1552,329 @@ mod tests {
         assert!(fem_eigenvalues_drum(&m, 2).is_err());
         assert!(fem_2d_helmholtz(&m, f64::NAN, &|_| 1.0, &|_| Some(0.0)).is_err());
         assert!(fem_2d_helmholtz(&m, 1.0, &|_| 1.0, &|_| Some(f64::NAN)).is_err());
+    }
+
+    /// Boundary nodes pinned to a displacement field.
+    fn pin_boundary(m: &FemMesh2, field: &dyn Fn(Vec2) -> Vec2) -> Vec<(usize, Vec2)> {
+        m.boundary.iter().map(|&b| (b, field(m.nodes[b]))).collect()
+    }
+
+    #[test]
+    fn rigid_body_motions_produce_no_stress() {
+        // Two translations and an infinitesimal rotation span the kernel
+        // of the stiffness matrix. A method that strained under a
+        // rotation would be wrong in a way no convergence study catches,
+        // because the error would be first order in the rotation and
+        // would look like a genuine load.
+        let m = FemMesh2::rect(2.0, 1.0, 4, 3).unwrap();
+        for field in [
+            &(|_: Vec2| Vec2::new(0.7, 0.0)) as &dyn Fn(Vec2) -> Vec2,
+            &|_: Vec2| Vec2::new(0.0, -1.3),
+            &|p: Vec2| Vec2::new(-0.4 * p.y, 0.4 * p.x),
+            &|p: Vec2| Vec2::new(2.0 - 0.4 * p.y, 0.4 * p.x - 1.0),
+        ] {
+            let u: Vec<Vec2> = m.nodes.iter().map(|&p| field(p)).collect();
+            for (i, s) in von_mises_stress(&m, &u, 210e9, 0.3).unwrap().iter().enumerate() {
+                assert!(*s < 1e-3, "triangle {i} was stressed by {s} under a rigid motion");
+            }
+            assert!(strain_energy(&m, &u, 210e9, 0.3).unwrap().abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn an_underconstrained_body_is_reported_as_singular() {
+        let m = FemMesh2::rect(1.0, 1.0, 3, 3).unwrap();
+        let load = [(4usize, Vec2::new(1.0, 0.0))];
+        // Nothing pinned.
+        assert_eq!(
+            fem_2d_elasticity_plane_stress(&m, 1.0, 0.3, &load, &[]),
+            Err(SolveError::Singular)
+        );
+        // One node pinned kills both translations but leaves the
+        // rotation about it free.
+        assert_eq!(
+            fem_2d_elasticity_plane_stress(&m, 1.0, 0.3, &load, &[(0, Vec2::ZERO)]),
+            Err(SolveError::Singular)
+        );
+        // Two distinct nodes fix the rotation as well.
+        assert!(fem_2d_elasticity_plane_stress(
+            &m,
+            1.0,
+            0.3,
+            &load,
+            &[(0, Vec2::ZERO), (3, Vec2::ZERO)]
+        )
+        .is_ok());
+    }
+
+    #[test]
+    fn a_uniform_strain_state_is_reproduced_exactly() {
+        // The elasticity patch test: a linear displacement field is in
+        // the element space, so prescribing it on the boundary must
+        // reproduce it at the interior nodes and give a stress that is
+        // the same on every triangle.
+        let (e, nu) = (70e9, 0.33);
+        let (ex, ey, gamma) = (1e-3, -4e-4, 6e-4);
+        let field = move |p: Vec2| {
+            Vec2::new(ex * p.x + 0.5 * gamma * p.y, 0.5 * gamma * p.x + ey * p.y)
+        };
+        let m = FemMesh2::rect(2.0, 1.5, 5, 4).unwrap();
+        let u =
+            fem_2d_elasticity_plane_stress(&m, e, nu, &[], &pin_boundary(&m, &field)).unwrap();
+        // Relative to the displacement scale rather than absolute: the
+        // displacements here are of order 1e-3, so an absolute
+        // tolerance would be silently asking for three digits more than
+        // a relative one.
+        let scale = u.iter().fold(0.0f64, |a, d| a.max(d.x.abs()).max(d.y.abs()));
+        for (i, got) in u.iter().enumerate() {
+            let want = field(m.nodes[i]);
+            let gap = (got.x - want.x).abs().max((got.y - want.y).abs());
+            assert!(gap < 1e-13 * scale, "node {i} was off by {gap}, scale {scale}");
+        }
+        let d = plane_stress_d(e, nu);
+        let want = [
+            d[0][0] * ex + d[0][1] * ey,
+            d[1][0] * ex + d[1][1] * ey,
+            d[2][2] * gamma,
+        ];
+        for t in 0..m.tris.len() {
+            let got = element_stress(&m, &u, e, nu, t).unwrap();
+            for k in 0..3 {
+                assert!(
+                    (got[k] - want[k]).abs() < 1e-4 * want[k].abs().max(1.0),
+                    "triangle {t} component {k}: {} vs {}",
+                    got[k],
+                    want[k]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn the_closed_form_stress_states_come_out_right() {
+        let (e, nu) = (200e9, 0.3);
+        let m = FemMesh2::rect(1.0, 1.0, 3, 3).unwrap();
+        // Uniaxial tension: strain (e0, -nu e0) gives sigma_x = E e0 and
+        // sigma_y exactly zero, and a von Mises stress of |E e0|.
+        let e0 = 2e-3;
+        let uni = move |p: Vec2| Vec2::new(e0 * p.x, -nu * e0 * p.y);
+        let u: Vec<Vec2> = m.nodes.iter().map(|&p| uni(p)).collect();
+        let s = element_stress(&m, &u, e, nu, 0).unwrap();
+        assert!((s[0] - e * e0).abs() < 1e-3 * e * e0);
+        assert!(s[1].abs() < 1e-6 * e * e0, "the lateral stress was {}", s[1]);
+        assert!((von_mises_stress(&m, &u, e, nu).unwrap()[0] - e * e0).abs() < 1e-3 * e * e0);
+        // Pure shear: tau = G gamma with G = E / (2(1 + nu)), and the
+        // von Mises stress of pure shear is sqrt(3) tau.
+        let gamma = 1e-3;
+        let sh: Vec<Vec2> =
+            m.nodes.iter().map(|p| Vec2::new(0.5 * gamma * p.y, 0.5 * gamma * p.x)).collect();
+        let g_mod = e / (2.0 * (1.0 + nu));
+        let ss = element_stress(&m, &sh, e, nu, 0).unwrap();
+        assert!((ss[2] - g_mod * gamma).abs() < 1e-4 * g_mod * gamma);
+        assert!(ss[0].abs() < 1e-6 * g_mod * gamma && ss[1].abs() < 1e-6 * g_mod * gamma);
+        let vm = von_mises_stress(&m, &sh, e, nu).unwrap()[0];
+        assert!((vm - 3.0f64.sqrt() * g_mod * gamma).abs() < 1e-4 * vm);
+        // Equal biaxial tension is *not* stress free in plane stress:
+        // its von Mises value is the tension itself, because the free
+        // surface makes the state anything but hydrostatic.
+        let bi: Vec<Vec2> = m.nodes.iter().map(|p| Vec2::new(e0 * p.x, e0 * p.y)).collect();
+        let bs = element_stress(&m, &bi, e, nu, 0).unwrap();
+        assert!((bs[0] - bs[1]).abs() < 1e-6 * bs[0].abs());
+        let bvm = von_mises_stress(&m, &bi, e, nu).unwrap()[0];
+        assert!((bvm - bs[0].abs()).abs() < 1e-6 * bvm, "biaxial von Mises was {bvm}");
+    }
+
+    #[test]
+    fn clapeyron_relates_the_work_to_the_strain_energy() {
+        // At equilibrium the loads do exactly twice the stored strain
+        // energy, which follows from the stiffness matrix being
+        // symmetric and nothing else.
+        let (e, nu) = (70e9, 0.3);
+        let m = FemMesh2::rect(4.0, 1.0, 8, 2).unwrap();
+        let clamped: Vec<(usize, Vec2)> = m
+            .nodes
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| p.x < 1e-12)
+            .map(|(i, _)| (i, Vec2::ZERO))
+            .collect();
+        let loads: Vec<(usize, Vec2)> = m
+            .nodes
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| (p.x - 4.0).abs() < 1e-12)
+            .map(|(i, _)| (i, Vec2::new(0.0, -1e6)))
+            .collect();
+        let u = fem_2d_elasticity_plane_stress(&m, e, nu, &loads, &clamped).unwrap();
+        let work: f64 = loads.iter().map(|&(i, f)| f.x * u[i].x + f.y * u[i].y).sum();
+        let energy = strain_energy(&m, &u, e, nu).unwrap();
+        assert!(work > 0.0, "the tip did not move with the load");
+        assert!((work - 2.0 * energy).abs() < 1e-6 * work, "{work} against {}", 2.0 * energy);
+        // The cantilever deflects downwards and the tip moves most.
+        assert!(u.iter().all(|d| d.y <= 1e-12));
+        let tip = loads[0].0;
+        assert!(u[tip].y < u[m.nodes.len() / 2].y);
+        // Doubling the modulus halves the displacement, exactly.
+        let stiffer = fem_2d_elasticity_plane_stress(&m, 2.0 * e, nu, &loads, &clamped).unwrap();
+        assert!((stiffer[tip].y - 0.5 * u[tip].y).abs() < 1e-6 * u[tip].y.abs());
+    }
+
+    #[test]
+    fn elasticity_refuses_impossible_materials_and_indices() {
+        let m = FemMesh2::rect(1.0, 1.0, 2, 2).unwrap();
+        let pin = [(0usize, Vec2::ZERO), (2, Vec2::ZERO)];
+        assert!(fem_2d_elasticity_plane_stress(&m, -1.0, 0.3, &[], &pin).is_err());
+        assert!(fem_2d_elasticity_plane_stress(&m, 1.0, 0.5, &[], &pin).is_err());
+        assert!(fem_2d_elasticity_plane_stress(&m, 1.0, -1.0, &[], &pin).is_err());
+        assert!(fem_2d_elasticity_plane_stress(&m, 1.0, 0.3, &[(99, Vec2::ZERO)], &pin).is_err());
+        assert!(fem_2d_elasticity_plane_stress(&m, 1.0, 0.3, &[], &[(99, Vec2::ZERO)]).is_err());
+        let u = vec![Vec2::ZERO; m.nodes.len()];
+        assert!(von_mises_stress(&m, &u[..2], 1.0, 0.3).is_err());
+        assert!(von_mises_stress(&m, &u, 1.0, 0.7).is_err());
+        assert!(strain_energy(&m, &u[..2], 1.0, 0.3).is_err());
+        assert!(element_strain(&m, &u, 9999).is_none());
+        assert!(element_stress(&m, &u, 1.0, 0.7, 0).is_none());
+    }
+
+    #[test]
+    fn an_insulated_body_conserves_its_heat_exactly() {
+        // With no source and no prescribed boundary, the total heat
+        // 1^T M u is unchanged by every step and for every theta,
+        // because the stiffness rows sum to zero. This is exact, not
+        // asymptotic: it is an algebraic consequence of the assembly.
+        let m = FemMesh2::rect(1.0, 1.0, 5, 5).unwrap();
+        let initial: Vec<f64> =
+            m.nodes.iter().map(|p| (3.0 * p.x).exp() * (1.0 + p.y)).collect();
+        let mass = mass_matrix(&m);
+        let total = |v: &[f64]| -> f64 { mass.mul_vec(v).iter().sum() };
+        let start = total(&initial);
+        for theta in [0.0, 0.5, 1.0] {
+            let h = fem_2d_heat_transient(
+                &m, &initial, 0.05, 0.01, 12, theta, &|_| 0.0, &|_| None,
+            )
+            .unwrap();
+            assert_eq!(h.len(), 13);
+            for (n, step) in h.iter().enumerate() {
+                assert!(
+                    (total(step) - start).abs() < 1e-9 * start.abs(),
+                    "theta {theta} step {n} lost heat"
+                );
+            }
+            // And it flattens: the spread between hottest and coldest
+            // shrinks monotonically as diffusion does its work.
+            let spread = |v: &[f64]| {
+                v.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b))
+                    - v.iter().fold(f64::INFINITY, |a, &b| a.min(b))
+            };
+            assert!(spread(&h[12]) < spread(&h[0]));
+        }
+    }
+
+    #[test]
+    fn a_mode_decays_by_exactly_the_schemes_amplification_factor() {
+        // Fed a discrete eigenmode, the theta scheme is a scalar
+        // recurrence with factor (1 - (1-theta) a) / (1 + theta a),
+        // a = alpha lambda dt. That identity is exact, so it separates a
+        // time-stepping error from a spatial one completely.
+        let m = FemMesh2::rect(1.0, 1.0, 5, 5).unwrap();
+        let (values, modes) = fem_eigenmodes_drum(&m, 1).unwrap();
+        let (lambda, phi) = (values[0], &modes[0]);
+        let (alpha, dt) = (0.3, 0.02);
+        let a = alpha * lambda * dt;
+        for theta in [0.0, 0.5, 1.0] {
+            let factor = (1.0 - (1.0 - theta) * a) / (1.0 + theta * a);
+            let h = fem_2d_heat_transient(
+                &m, phi, alpha, dt, 6, theta, &|_| 0.0, &|_| Some(0.0),
+            )
+            .unwrap();
+            let peak = phi.iter().fold(0.0f64, |x, &v| x.max(v.abs()));
+            for (n, step) in h.iter().enumerate() {
+                let want = factor.powi(n as i32);
+                let got = step
+                    .iter()
+                    .zip(phi.iter())
+                    .map(|(&s, &p)| if p.abs() > 0.5 * peak { s / p } else { want })
+                    .fold(0.0f64, |x, r| x.max((r - want).abs()));
+                assert!(got < 1e-7 * (1.0 + want.abs()), "theta {theta} step {n} drifted by {got}");
+            }
+        }
+    }
+
+    #[test]
+    fn crank_nicolson_is_a_stable_without_being_l_stable() {
+        // For a mode too stiff to resolve, backward Euler's factor tends
+        // to zero and Crank-Nicolson's tends to minus one. So the stiff
+        // mode dies under one scheme and survives, flipping sign every
+        // step, under the other. Both are stable; only one is damping.
+        let m = FemMesh2::rect(1.0, 1.0, 5, 5).unwrap();
+        let (values, modes) = fem_eigenmodes_drum(&m, 4).unwrap();
+        let stiff_mode = &modes[3];
+        let peak_at = stiff_mode
+            .iter()
+            .enumerate()
+            .max_by(|a, b| a.1.abs().total_cmp(&b.1.abs()))
+            .map(|(i, _)| i)
+            .unwrap();
+        // A step far beyond what resolves the mode.
+        let dt = 40.0 / values[3];
+        let cn = fem_2d_heat_transient(
+            &m, stiff_mode, 1.0, dt, 6, 0.5, &|_| 0.0, &|_| Some(0.0),
+        )
+        .unwrap();
+        let be = fem_2d_heat_transient(
+            &m, stiff_mode, 1.0, dt, 6, 1.0, &|_| 0.0, &|_| Some(0.0),
+        )
+        .unwrap();
+        let start = stiff_mode[peak_at].abs();
+        assert!(be[6][peak_at].abs() < 1e-4 * start, "backward Euler failed to damp");
+        assert!(cn[6][peak_at].abs() > 0.5 * start, "Crank-Nicolson damped a stiff mode");
+        // And it alternates sign, which is what a factor near -1 does.
+        for n in 0..6 {
+            assert!(
+                cn[n][peak_at] * cn[n + 1][peak_at] < 0.0,
+                "Crank-Nicolson did not oscillate at step {n}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_march_settles_onto_the_steady_solution() {
+        let m = FemMesh2::rect(1.0, 1.0, 5, 5).unwrap();
+        let source = |p: Vec2| 1.0 + p.x;
+        let hot = |p: Vec2| Some(0.2 * p.y);
+        let steady = fem_2d_poisson(&m, &source, &hot).unwrap();
+        let h = fem_2d_heat_transient(
+            &m,
+            &vec![0.0; m.nodes.len()],
+            1.0,
+            0.05,
+            120,
+            1.0,
+            &source,
+            &hot,
+        )
+        .unwrap();
+        for i in 0..m.nodes.len() {
+            assert!(
+                (h[120][i] - steady[i]).abs() < 1e-6 * (1.0 + steady[i].abs()),
+                "node {i}: {} against the steady {}",
+                h[120][i],
+                steady[i]
+            );
+        }
+    }
+
+    #[test]
+    fn the_heat_march_refuses_impossible_arguments() {
+        let m = FemMesh2::rect(1.0, 1.0, 2, 2).unwrap();
+        let u0 = vec![0.0; m.nodes.len()];
+        let no = |_: Vec2| None;
+        assert!(fem_2d_heat_transient(&m, &u0[..2], 1.0, 0.1, 1, 1.0, &|_| 0.0, &no).is_err());
+        assert!(fem_2d_heat_transient(&m, &u0, 1.0, 0.0, 1, 1.0, &|_| 0.0, &no).is_err());
+        assert!(fem_2d_heat_transient(&m, &u0, 1.0, 0.1, 1, 1.5, &|_| 0.0, &no).is_err());
+        assert!(fem_2d_heat_transient(&m, &u0, -1.0, 0.1, 1, 1.0, &|_| 0.0, &no).is_err());
+        let bad = vec![f64::NAN; m.nodes.len()];
+        assert!(fem_2d_heat_transient(&m, &bad, 1.0, 0.1, 1, 1.0, &|_| 0.0, &no).is_err());
     }
 
     #[test]
