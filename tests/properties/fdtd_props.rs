@@ -25,7 +25,9 @@
 //! index.
 
 use rust_physics_engine::fem::fdtd::{
-    fdtd_1d, fdtd_courant_check, fdtd_courant_check_2d, photonic_crystal_bandgap_1d, Boundary1d,
+    fdtd_1d, fdtd_2d_tm, fdtd_courant_check, fdtd_courant_check_2d,
+    photonic_crystal_bandgap_1d, waveguide_cutoff_check_fdtd, waveguide_cutoff_numerical,
+    Boundary1d,
 };
 use rust_physics_engine::monte_carlo::Rng;
 
@@ -325,5 +327,214 @@ fn prop_a_stack_is_the_same_crystal_however_it_is_described() {
             assert!((a.1 - s * b.1).abs() < 1e-7 * a.1.max(1.0));
         }
         assert!(photonic_crystal_bandgap_1d(ea, ea, da, db, ceiling, 8000).unwrap().is_empty());
+    }
+}
+
+/// A comfortable Courant number for the plane: below the limit, since
+/// unlike one dimension there is no magic value there.
+const PLANE_COURANT: f64 = 0.7;
+
+/// A pulsed drive of the given length at the given frequency in cycles
+/// per step, identically zero once it has finished.
+fn pulsed(length: usize, freq: f64, amplitude: f64) -> impl Fn(usize) -> f64 {
+    move |step: usize| {
+        if step >= length {
+            return 0.0;
+        }
+        let x = step as f64 / length as f64;
+        amplitude
+            * 0.5
+            * (1.0 - (std::f64::consts::TAU * x).cos())
+            * (std::f64::consts::TAU * freq * step as f64).sin()
+    }
+}
+
+#[test]
+fn prop_the_plane_scheme_keeps_the_symmetry_of_its_grid() {
+    // A source at the exact centre of a square vacuum box. The Yee
+    // arrangement is symmetric under reflecting either axis and under
+    // exchanging them, so the field is too -- bit for bit, since nothing
+    // in the update breaks it. An index slip in the staggering shows up
+    // here while still producing something that looks like a wave.
+    let mut rng = Rng::new(0x11f7_36ea);
+    for _ in 0..12 {
+        // Odd, so the centre is a cell.
+        let n = 21 + 2 * (rng.next_u64() % 6) as usize;
+        let eps = vec![1.0; n * n];
+        let src = pulsed(30 + (rng.next_u64() % 30) as usize, 0.05 + 0.1 * rng.next_f64(), 1.0);
+        let pml = (rng.next_u64() % 4) as usize;
+        let r = fdtd_2d_tm(
+            &eps,
+            (n / 2, n / 2),
+            &src,
+            n,
+            n,
+            90,
+            (pml, pml),
+            PLANE_COURANT,
+            1e-6,
+        )
+        .unwrap();
+        let mut nonzero = false;
+        for j in 0..n {
+            for i in 0..n {
+                let v = r.ez[j * n + i];
+                nonzero |= v != 0.0;
+                assert_eq!(v, r.ez[j * n + (n - 1 - i)], "not mirrored in x");
+                assert_eq!(v, r.ez[(n - 1 - j) * n + i], "not mirrored in y");
+                assert_eq!(v, r.ez[i * n + j], "not symmetric under transposition");
+            }
+        }
+        assert!(nonzero, "the field never left the source");
+    }
+}
+
+#[test]
+fn prop_the_plane_march_is_linear_in_its_source() {
+    let mut rng = Rng::new(0x4c02_a9d5);
+    for _ in 0..12 {
+        let (nx, ny) = (30, 26);
+        let eps: Vec<f64> = (0..nx * ny).map(|_| 1.0 + 2.0 * rng.next_f64()).collect();
+        let pml = (rng.next_u64() % 5) as usize;
+        let s1 = pulsed(25, 0.06, 2.0 * rng.next_f64() - 1.0);
+        let s2 = pulsed(40, 0.09, 2.0 * rng.next_f64() - 1.0);
+        // The fastest medium sets the limit, and here it is vacuum.
+        let courant = 0.6;
+        let run = |src: &dyn Fn(usize) -> f64| {
+            fdtd_2d_tm(&eps, (7, 9), src, nx, ny, 70, (pml, pml), courant, 1e-6).unwrap()
+        };
+        let a = run(&s1);
+        let b = run(&s2);
+        let both = run(&|k| s1(k) + s2(k));
+        for i in 0..nx * ny {
+            let want = a.ez[i] + b.ez[i];
+            assert!((both.ez[i] - want).abs() < 1e-12 * (1.0 + want.abs()), "cell {i}");
+        }
+    }
+}
+
+#[test]
+fn prop_a_matched_layer_absorbs_what_a_conductor_returns() {
+    // With the drive switched off, everything left in the interior came
+    // back from the boundary. A conductor returns essentially all of it;
+    // a graded layer a few cells deep returns a thousandth or less, and
+    // a deeper one less still.
+    let mut rng = Rng::new(0x7ae1_2c93);
+    for _ in 0..10 {
+        let (nx, ny) = (56, 56);
+        let eps = vec![1.0; nx * ny];
+        let src = pulsed(90, 0.05 + 0.05 * rng.next_f64(), 0.5 + rng.next_f64());
+        let residual = |pml: usize| {
+            let r = fdtd_2d_tm(
+                &eps,
+                (nx / 2, ny / 2),
+                &src,
+                nx,
+                ny,
+                460,
+                (pml, pml),
+                PLANE_COURANT,
+                1e-6,
+            )
+            .unwrap();
+            let mut peak: f64 = 0.0;
+            for j in pml + 3..ny - pml - 3 {
+                for i in pml + 3..nx - pml - 3 {
+                    peak = peak.max(r.envelope[j * nx + i]);
+                }
+            }
+            peak
+        };
+        let wall = residual(0);
+        let thin = residual(4);
+        let thick = residual(10);
+        assert!(wall > 1e-3, "the conductor returned nothing: {wall}");
+        assert!(wall / thin > 500.0, "four cells were only {}x better", wall / thin);
+        assert!(thick <= thin, "a deeper layer absorbed less");
+    }
+}
+
+#[test]
+fn prop_the_numerical_cutoff_is_exactly_where_the_decay_vanishes() {
+    // omega_c = (2/S) arcsin(S sin(ky/2)) is defined as the frequency at
+    // which the evanescent decay reaches zero, so substituting it back
+    // into the numerical dispersion relation must close to rounding.
+    // The continuum value m pi / a does not, and the gap between them is
+    // second order in the cell size -- with the grid always the slower
+    // of the two.
+    let mut rng = Rng::new(0x63b8_c410);
+    for _ in 0..40 {
+        let width = 6 + (rng.next_u64() % 60) as usize;
+        let mode = 1 + (rng.next_u64() % (width as u64 - 1)) as usize;
+        let courant = 0.2 + 0.5 * rng.next_f64();
+        let wc = waveguide_cutoff_numerical(width, mode, courant).unwrap();
+        let ky = PI * mode as f64 / width as f64;
+        let lhs = (0.5 * wc * courant).sin().powi(2) / (courant * courant);
+        let rhs = (0.5 * ky).sin().powi(2);
+        assert!((lhs - rhs).abs() < 1e-12 * rhs, "the cutoff does not zero the decay");
+        let continuum = ky;
+        assert!(wc < continuum, "the grid was not the slower of the two");
+        // Second order in the cell size: doubling the resolution at the
+        // same physical width quarters the shortfall.
+        let coarse = 1.0 - wc / continuum;
+        let fine_width = 2 * width;
+        let fine_mode = mode;
+        let fine = 1.0
+            - waveguide_cutoff_numerical(fine_width, fine_mode, courant).unwrap()
+                / (PI * fine_mode as f64 / fine_width as f64);
+        assert!(fine < coarse, "refining did not close the gap");
+        // The shortfall is (ky/2)^2 (1 - S^2) / 6 to leading order, so
+        // halving ky quarters it -- but that expansion is a cubic one
+        // and only applies while the mode is well resolved. Three half
+        // waves across six cells is not, and there the shortfall is
+        // simply large rather than quadratically small.
+        if ky < 0.4 {
+            let ratio = coarse / fine;
+            assert!((ratio - 4.0).abs() < 0.6, "the shortfall fell by {ratio}, not 4");
+            let predicted = (0.5 * ky).powi(2) * (1.0 - courant * courant) / 6.0;
+            assert!(
+                (coarse - predicted).abs() < 0.1 * predicted,
+                "shortfall {coarse} against the predicted {predicted}"
+            );
+        }
+    }
+}
+
+#[test]
+fn prop_the_measured_decay_recovers_the_grids_own_cutoff() {
+    // Drive a guide below cutoff, fit the evanescent decay, invert the
+    // numerical dispersion relation. What comes back is the cutoff the
+    // simulation actually has, to a couple of parts in a thousand,
+    // across widths, modes and drive frequencies. Matching the
+    // *numerical* cutoff rather than the continuum one is the point:
+    // the two differ by more than this tolerance at these widths, so
+    // the test would fail against the textbook figure.
+    let mut rng = Rng::new(0x2d94_51fb);
+    let s = 0.5f64.sqrt() * 0.99;
+    for _ in 0..10 {
+        // Modes two and three in a well-resolved guide. Mode one is
+        // deliberately not used here: at these widths the numerical and
+        // continuum cutoffs differ by about as much as the measurement
+        // error, so the comparison below could not tell them apart and
+        // would be asserting noise.
+        let width = 16 + 2 * (rng.next_u64() % 3) as usize;
+        let mode = 2 + (rng.next_u64() % 2) as usize;
+        let frac = 0.4 + 0.35 * rng.next_f64();
+        let want = waveguide_cutoff_numerical(width, mode, s).unwrap();
+        let got = waveguide_cutoff_check_fdtd(width, 200, mode, frac * want, s, 7000).unwrap();
+        assert!(
+            (got - want).abs() < 5e-3 * want,
+            "width {width} mode {mode} at {frac}: got {got}, wanted {want}"
+        );
+        // The continuum figure is further off than the measurement is,
+        // so the measurement really is picking out the grid's value.
+        let continuum = PI * mode as f64 / width as f64;
+        assert!(
+            (got - want).abs() < (continuum - want).abs(),
+            "the measurement was no closer to the grid cutoff than the continuum one is"
+        );
+        // At or above cutoff there is no decay, and saying so beats
+        // returning a number.
+        assert!(waveguide_cutoff_check_fdtd(width, 200, mode, want, s, 400).is_err());
     }
 }

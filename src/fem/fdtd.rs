@@ -349,9 +349,462 @@ pub fn photonic_crystal_bandgap_1d(
     Ok(gaps)
 }
 
+/// The state of a two-dimensional run.
+///
+/// The final snapshot alone is close to useless for a driven problem --
+/// it is whatever phase the oscillation happened to land on -- so the
+/// envelope is carried alongside it. That is a deliberate departure from
+/// returning a bare field: what a steady-state calculation is *for* is
+/// the amplitude, and reconstructing it from one snapshot is not
+/// possible.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Fdtd2d {
+    /// Cells across.
+    pub nx: usize,
+    /// Cells down.
+    pub ny: usize,
+    /// The final `E_z`, row-major with `index = j * nx + i`.
+    pub ez: Vec<f64>,
+    /// The largest `|E_z|` each cell reached over the last quarter of
+    /// the march, which for a driven problem is its steady amplitude
+    /// and for a pulsed one is what passed through.
+    pub envelope: Vec<f64>,
+}
+
+/// The dimensionless per-step loss of a polynomially graded perfectly
+/// matched layer at continuous position `pos` along an axis of `n`
+/// cells.
+///
+/// The grading matters. A layer that switches its conductivity on
+/// abruptly reflects from the discontinuity far more than it absorbs,
+/// which defeats the point; a polynomial ramp of order three is the
+/// usual compromise between a gentle entry and a short layer. The peak
+/// value follows from the round-trip attenuation a layer of this depth
+/// and profile gives: integrating the loss through the layer and back
+/// out gives `exp(-2 s_max D / ((m+1) S))`, so aiming at a reflection
+/// `R0` fixes `s_max`.
+fn pml_loss(pos: f64, n: usize, pml: usize, courant: f64, reflection: f64) -> f64 {
+    if pml == 0 {
+        return 0.0;
+    }
+    const ORDER: f64 = 3.0;
+    let d = pml as f64;
+    let depth = if pos < d {
+        d - pos
+    } else if pos > (n - 1) as f64 - d {
+        pos - ((n - 1) as f64 - d)
+    } else {
+        return 0.0;
+    };
+    let s_max = -(ORDER + 1.0) * courant * reflection.ln() / (2.0 * d);
+    s_max * (depth / d).powf(ORDER)
+}
+
+/// Marches the two-dimensional transverse-magnetic Yee scheme with a
+/// Berenger split-field perfectly matched layer.
+///
+/// `eps_r` is row-major over `nx * ny` cells. `source` gives the value
+/// added softly at `source_pos` on each step, exactly as in
+/// [`fdtd_1d`] -- a continuous sinusoid at `f` cycles per step is
+/// `|s| (TAU * f * s as f64).sin()`, and a pulse is anything with
+/// compact support. Taking the waveform rather than a frequency is what
+/// lets a caller switch the drive off, which is the only way to measure
+/// what a boundary reflects: with a source still running, the field near
+/// it is the source's own and says nothing about the layer.
+///
+/// Ramp a continuous drive on rather than switching it: a step
+/// broadcasts across the whole band the grid can carry, and none of it
+/// is what was asked for.
+///
+/// # Why the field is split
+///
+/// A lossy layer absorbs, but an ordinary lossy layer also *reflects*,
+/// because its impedance differs from the vacuum it adjoins. Berenger's
+/// construction splits `E_z` into the two parts that the two spatial
+/// derivatives feed, and damps each with the loss belonging to its own
+/// axis. The resulting medium is matched at every angle and every
+/// frequency, which no single isotropic conductivity can be: what is
+/// left is only the reflection from grading the profile over a finite
+/// depth, and that is what the `reflection` target controls.
+///
+/// The layer is backed by a conductor. That is not a flaw -- anything
+/// that reaches the backing has crossed the graded layer twice and comes
+/// back attenuated by the round-trip factor the grading was designed
+/// for.
+///
+/// `pml` gives the depth on each axis separately, `(x, y)`. A depth of
+/// zero on an axis leaves plain conducting walls there, which is what a
+/// waveguide wants: absorbing its side walls would stop it being a
+/// waveguide, while absorbing its ends stops the switch-on transient
+/// rattling around forever and swamping the field being measured.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for a grid smaller than the layers
+/// need, a permittivity array of the wrong length or with a non-positive
+/// entry, a source outside the grid, a non-finite frequency, a
+/// reflection target outside `(0, 1)`, or a Courant number above the
+/// two-dimensional limit for the fastest medium present.
+#[allow(clippy::too_many_arguments)]
+pub fn fdtd_2d_tm(
+    eps_r: &[f64],
+    source_pos: (usize, usize),
+    source: &dyn Fn(usize) -> f64,
+    nx: usize,
+    ny: usize,
+    steps: usize,
+    pml: (usize, usize),
+    courant: f64,
+    reflection: f64,
+) -> Result<Fdtd2d, SolveError> {
+    if source_pos.0 >= nx || source_pos.1 >= ny {
+        return Err(SolveError::InvalidArgument("the source is outside the grid"));
+    }
+    let profile = [(source_pos.1 * nx + source_pos.0, 1.0)];
+    march_2d(eps_r, &profile, source, nx, ny, steps, pml, courant, reflection)
+}
+
+/// The shared march. `sources` gives flat cell indices and the weight
+/// each carries, which is what lets a caller excite a whole transverse
+/// profile at once -- a single cell excites every mode a guide has, and
+/// only a profile matching one of them excites that one alone.
+#[allow(clippy::too_many_arguments)]
+fn march_2d(
+    eps_r: &[f64],
+    sources: &[(usize, f64)],
+    source: &dyn Fn(usize) -> f64,
+    nx: usize,
+    ny: usize,
+    steps: usize,
+    pml: (usize, usize),
+    courant: f64,
+    reflection: f64,
+) -> Result<Fdtd2d, SolveError> {
+    if nx < 5 || ny < 5 {
+        return Err(SolveError::InvalidArgument("the grid must be at least five cells across"));
+    }
+    if eps_r.len() != nx * ny {
+        return Err(SolveError::DimensionMismatch { expected: nx * ny, got: eps_r.len() });
+    }
+    if eps_r.iter().any(|&e| !e.is_finite() || e <= 0.0) {
+        return Err(SolveError::InvalidArgument("permittivity must be positive and finite"));
+    }
+    if 2 * pml.0 + 1 >= nx || 2 * pml.1 + 1 >= ny {
+        return Err(SolveError::InvalidArgument("the absorbing layers leave no interior"));
+    }
+    if sources.iter().any(|&(k, w)| k >= nx * ny || !w.is_finite()) {
+        return Err(SolveError::InvalidArgument("a source is outside the grid or not finite"));
+    }
+    if !reflection.is_finite() || reflection <= 0.0 || reflection >= 1.0 {
+        return Err(SolveError::InvalidArgument("the reflection target must lie in (0, 1)"));
+    }
+    let slowest = eps_r.iter().copied().fold(f64::INFINITY, f64::min);
+    if !courant.is_finite()
+        || courant <= 0.0
+        || courant > (slowest / 2.0).sqrt() * (1.0 + 1e-12)
+    {
+        return Err(SolveError::InvalidArgument(
+            "the Courant number exceeds the two-dimensional limit for the fastest medium",
+        ));
+    }
+
+    // Update coefficients, one per grid line. The E lines sit on the
+    // integers and the H lines half a cell off, so each axis needs both.
+    let coeffs = |n: usize, depth: usize, offset: f64| -> (Vec<f64>, Vec<f64>) {
+        (0..n)
+            .map(|k| {
+                let a = 0.5 * pml_loss(k as f64 + offset, n, depth, courant, reflection);
+                ((1.0 - a) / (1.0 + a), courant / (1.0 + a))
+            })
+            .unzip()
+    };
+    let (cax, cbx) = coeffs(nx, pml.0, 0.0);
+    let (cay, cby) = coeffs(ny, pml.1, 0.0);
+    let (dax, dbx) = coeffs(nx, pml.0, 0.5);
+    let (day, dby) = coeffs(ny, pml.1, 0.5);
+
+    let mut ezx = vec![0.0; nx * ny];
+    let mut ezy = vec![0.0; nx * ny];
+    let mut ez = vec![0.0; nx * ny];
+    // Hy[j][i] straddles Ez[j][i] and Ez[j][i+1]; Hx[j][i] straddles
+    // Ez[j][i] and Ez[j+1][i].
+    let mut hy = vec![0.0; ny * (nx - 1)];
+    let mut hx = vec![0.0; (ny - 1) * nx];
+    let mut envelope = vec![0.0; nx * ny];
+    let record_from = steps - steps / 4;
+
+    for step in 0..steps {
+        for j in 0..ny {
+            for i in 0..nx - 1 {
+                let k = j * (nx - 1) + i;
+                hy[k] = dax[i] * hy[k] + dbx[i] * (ez[j * nx + i + 1] - ez[j * nx + i]);
+            }
+        }
+        for j in 0..ny - 1 {
+            for i in 0..nx {
+                let k = j * nx + i;
+                hx[k] = day[j] * hx[k] - dby[j] * (ez[(j + 1) * nx + i] - ez[j * nx + i]);
+            }
+        }
+        // The outermost ring is the conductor backing the layer, so it
+        // is left at zero and the interior is updated.
+        for j in 1..ny - 1 {
+            for i in 1..nx - 1 {
+                let k = j * nx + i;
+                let e = eps_r[k];
+                ezx[k] = cax[i] * ezx[k]
+                    + cbx[i] / e * (hy[j * (nx - 1) + i] - hy[j * (nx - 1) + i - 1]);
+                ezy[k] = cay[j] * ezy[k]
+                    - cby[j] / e * (hx[j * nx + i] - hx[(j - 1) * nx + i]);
+                ez[k] = ezx[k] + ezy[k];
+            }
+        }
+        let drive = source(step);
+        if !drive.is_finite() {
+            return Err(SolveError::InvalidArgument("the source must be finite"));
+        }
+        if drive != 0.0 {
+            for &(k, weight) in sources {
+                ezx[k] += 0.5 * drive * weight;
+                ezy[k] += 0.5 * drive * weight;
+                ez[k] = ezx[k] + ezy[k];
+            }
+        }
+        if !ez.iter().all(|v| v.is_finite()) {
+            return Err(SolveError::NoConvergence { iters: step, residual: f64::INFINITY });
+        }
+        if step >= record_from {
+            for (slot, v) in envelope.iter_mut().zip(ez.iter()) {
+                *slot = f64::max(*slot, v.abs());
+            }
+        }
+    }
+    Ok(Fdtd2d { nx, ny, ez, envelope })
+}
+
+/// Infers a parallel-plate waveguide's cutoff frequency from the
+/// evanescent decay it shows when driven below that cutoff.
+///
+/// The guide is `width` cells between conducting plates, driven in its
+/// `mode`-th transverse pattern at angular frequency `omega` in radians
+/// per unit *time*, with the cell size and the speed of light both one
+/// -- so a step advances the phase by `omega * S`, not by `omega`.
+/// Below cutoff nothing propagates: the field falls off as
+/// `exp(-alpha x)`, and measuring `alpha` down the guide gives the
+/// cutoff back.
+///
+/// # Which cutoff comes back
+///
+/// Not the textbook `m pi c / a`. The grid has its own dispersion
+/// relation,
+///
+/// ```text
+/// sin^2(omega S / 2) / S^2 = sin^2(k_x / 2) + sin^2(k_y / 2)
+/// ```
+///
+/// and an evanescent `k_x = i alpha` turns the first term on the right
+/// into `-sinh^2(alpha / 2)`. Solving for where `alpha` vanishes gives
+/// the *numerical* cutoff
+///
+/// ```text
+/// omega_c = (2 / S) arcsin(S sin(k_y / 2)),   k_y = m pi / a
+/// ```
+///
+/// which is what this returns and what the simulation actually has. It
+/// approaches the continuum value as the guide is resolved more finely,
+/// from below -- the grid is always a little slow -- and the difference
+/// is second order in the cell size. Reporting the continuum figure
+/// would be reporting what the answer ought to be rather than what it
+/// is.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for a mode outside `1..width`, a
+/// guide too short to measure a decay in, or a frequency at or above the
+/// numerical cutoff, where there is no decay to measure;
+/// [`SolveError::NoConvergence`] if the measured profile is not a clean
+/// exponential, which is the honest answer when a mode is close to the
+/// grid's resolution limit: three half-waves across ten cells decays
+/// within a couple of cells, leaving too little of the profile above the
+/// numerical floor to fit a slope to. Widening the guide fixes it.
+pub fn waveguide_cutoff_check_fdtd(
+    width: usize,
+    length: usize,
+    mode: usize,
+    omega: f64,
+    courant: f64,
+    steps: usize,
+) -> Result<f64, SolveError> {
+    if width < 4 || mode == 0 || mode >= width {
+        return Err(SolveError::InvalidArgument("the mode must lie in 1..width"));
+    }
+    if length < 80 {
+        return Err(SolveError::InvalidArgument("the guide is too short to measure a decay"));
+    }
+    if !omega.is_finite() || omega <= 0.0 {
+        return Err(SolveError::InvalidArgument("the frequency must be positive and finite"));
+    }
+    if !courant.is_finite() || courant <= 0.0 || courant > 0.5f64.sqrt() * (1.0 + 1e-12) {
+        return Err(SolveError::InvalidArgument("the Courant number exceeds the plane limit"));
+    }
+    let ky = std::f64::consts::PI * mode as f64 / width as f64;
+    let numerical_cutoff = 2.0 / courant * (courant * (0.5 * ky).sin()).asin();
+    if omega >= numerical_cutoff {
+        return Err(SolveError::InvalidArgument(
+            "the drive is at or above cutoff, so there is no evanescent decay to measure",
+        ));
+    }
+    // The guide runs along x with conducting plates at j = 0 and
+    // j = width. Ez is clamped there, which is what a plate is.
+    let (nx, ny) = (length, width + 1);
+    let eps = vec![1.0; nx * ny];
+    // Absorb the ends but not the plates. Without this the guide is a
+    // closed box: the transient the drive radiates when it switches on
+    // contains frequencies above cutoff, those propagate, nothing damps
+    // them, and after a few thousand steps they are what the envelope
+    // is measuring rather than the evanescent field.
+    let pad = 12usize;
+    // Drive the whole section with the mode's own transverse pattern.
+    // The discrete sine vectors are exactly orthogonal, so this excites
+    // that mode and no other -- which matters, because a lower mode has
+    // a lower cutoff and might be propagating at a frequency where this
+    // one is not, and a single point source would excite it.
+    let column = pad + 3;
+    let profile: Vec<(usize, f64)> = (1..ny - 1)
+        .map(|j| {
+            (j * nx + column, (ky * j as f64).sin())
+        })
+        .collect();
+    // Ramp the drive on over twenty periods, then hold it: the decay
+    // being measured is the steady-state one, and a step would put a
+    // broadband transient down the guide that propagates where the
+    // wanted frequency does not.
+    // `omega` is radians per unit *time*, and a step advances time by
+    // dt = S (the cell size and the speed of light are both one), so the
+    // phase advances by omega * S per step. Driving at omega per step
+    // instead would silently simulate a frequency 1/S times too high --
+    // which still produces a clean exponential, just the wrong one.
+    let period_steps = std::f64::consts::TAU / (omega * courant);
+    let ramp = 20.0 * period_steps;
+    let drive = |step: usize| {
+        let t = step as f64;
+        let window = if t < ramp {
+            0.5 * (1.0 - (std::f64::consts::PI * t / ramp).cos())
+        } else {
+            1.0
+        };
+        window * (omega * courant * t).sin()
+    };
+    let run = march_2d(&eps, &profile, &drive, nx, ny, steps, (pad, 0), courant, 1e-6)?;
+    // Amplitude down the guide, summed across the section so that a
+    // node of the transverse pattern does not read as a zero.
+    let profile: Vec<f64> = (0..nx)
+        .map(|i| (1..ny - 1).map(|j| run.envelope[j * nx + i]).sum::<f64>())
+        .collect();
+    // Fit the log slope well away from the source and from the far end,
+    // where the reflection off the terminating wall contaminates it.
+    // Only a few cells downstream. The source is the mode's own
+    // transverse pattern and the discrete sine vectors are exactly
+    // orthogonal, so no other mode is excited and there is nothing to
+    // wait out -- only the source cell's own near field, which is two
+    // or three cells wide. Backing off a whole guide width instead
+    // would cost most of the dynamic range, and a fast-decaying high
+    // mode has little to spare.
+    let start = column + 3;
+    let end = nx - pad - width - 2;
+    if end <= start + 8 {
+        return Err(SolveError::InvalidArgument("the guide is too short to measure a decay"));
+    }
+    // Fit only across the clean exponential. Two things bound it. Near
+    // the source the higher modes are still present, and they decay
+    // faster, so the profile starts steeper than the mode being
+    // measured -- hence beginning a guide width downstream. Far from it
+    // the evanescent field reaches a floor, set by whatever the layers
+    // failed to absorb, and beyond that the profile flattens; including
+    // that stretch does not merely add scatter, it drags the fitted
+    // slope towards zero, and with a long enough guide it reports no
+    // decay at all.
+    //
+    // The floor is the smallest value in the window, and the fit stops
+    // where the signal is still fifty times above it, which keeps its
+    // contribution to the slope in the third digit.
+    let floor = (start..end).map(|i| profile[i]).fold(f64::INFINITY, f64::min);
+    if !(profile[start] > 0.0) {
+        return Err(SolveError::NoConvergence { iters: steps, residual: profile[start] });
+    }
+    let threshold = (50.0 * floor).max(profile[start] * 1e-13);
+    let mut stop = start;
+    while stop < end && profile[stop] > threshold {
+        stop += 1;
+    }
+    let points: Vec<(f64, f64)> = (start..stop)
+        .filter(|&i| profile[i] > 0.0)
+        .map(|i| (i as f64, profile[i].ln()))
+        .collect();
+    if points.len() < 10 {
+        return Err(SolveError::NoConvergence { iters: steps, residual: points.len() as f64 });
+    }
+    let n = points.len() as f64;
+    let mx = points.iter().map(|p| p.0).sum::<f64>() / n;
+    let my = points.iter().map(|p| p.1).sum::<f64>() / n;
+    let sxx: f64 = points.iter().map(|p| (p.0 - mx) * (p.0 - mx)).sum();
+    let syy: f64 = points.iter().map(|p| (p.1 - my) * (p.1 - my)).sum();
+    let sxy: f64 = points.iter().map(|p| (p.0 - mx) * (p.1 - my)).sum();
+    if sxx <= 0.0 || syy <= 0.0 {
+        return Err(SolveError::NoConvergence { iters: steps, residual: f64::INFINITY });
+    }
+    // A pure exponential gives a correlation of exactly -1 in the log.
+    // Anything appreciably short of that means the profile is not one,
+    // and the slope would be a number rather than a measurement.
+    let correlation = sxy / (sxx * syy).sqrt();
+    if correlation > -0.999 {
+        return Err(SolveError::NoConvergence { iters: steps, residual: correlation });
+    }
+    let alpha = -sxy / sxx;
+    if alpha <= 0.0 {
+        return Err(SolveError::NoConvergence { iters: steps, residual: alpha });
+    }
+    // Invert the numerical dispersion relation for the cutoff:
+    // sin^2(w_c S/2)/S^2 = sin^2(ky/2) = sinh^2(alpha/2) + sin^2(w S/2)/S^2.
+    let rhs = (0.5 * alpha).sinh().powi(2)
+        + (0.5 * omega * courant).sin().powi(2) / (courant * courant);
+    let arg = courant * rhs.sqrt();
+    if !(0.0..=1.0).contains(&arg) {
+        return Err(SolveError::NoConvergence { iters: steps, residual: arg });
+    }
+    Ok(2.0 / courant * arg.asin())
+}
+
+/// The numerical cutoff a parallel-plate guide of this width has on a
+/// grid at this Courant number, `(2/S) arcsin(S sin(k_y/2))`.
+///
+/// The continuum answer is `m pi / a`; this is what the grid actually
+/// gives, and it is always the smaller of the two.
+///
+/// # Errors
+///
+/// [`SolveError::InvalidArgument`] for a mode outside `1..width` or a
+/// Courant number outside the plane limit.
+pub fn waveguide_cutoff_numerical(
+    width: usize,
+    mode: usize,
+    courant: f64,
+) -> Result<f64, SolveError> {
+    if width == 0 || mode == 0 || mode >= width {
+        return Err(SolveError::InvalidArgument("the mode must lie in 1..width"));
+    }
+    if !courant.is_finite() || courant <= 0.0 || courant > 0.5f64.sqrt() * (1.0 + 1e-12) {
+        return Err(SolveError::InvalidArgument("the Courant number exceeds the plane limit"));
+    }
+    let ky = std::f64::consts::PI * mode as f64 / width as f64;
+    Ok(2.0 / courant * (courant * (0.5 * ky).sin()).asin())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const PI: f64 = std::f64::consts::PI;
 
     /// A smooth pulse, wide enough that the grid resolves it well.
     fn pulse(step: usize) -> f64 {
@@ -553,6 +1006,137 @@ mod tests {
             assert!((a.0 - 2.0 * b.0).abs() < 1e-8 * a.0);
             assert!((a.1 - 2.0 * b.1).abs() < 1e-8 * a.1);
         }
+    }
+
+    #[test]
+    fn the_matched_layer_absorbs_what_a_wall_reflects() {
+        // A pulsed source, so that the field left in the interior after
+        // it has stopped is entirely what came back. With the source
+        // still running the interior is its own near field and says
+        // nothing about the boundary at all.
+        let (nx, ny) = (60usize, 60usize);
+        let eps = vec![1.0; nx * ny];
+        let s = 0.5f64.sqrt() * 0.99;
+        let src = |step: usize| -> f64 {
+            if step >= 100 {
+                return 0.0;
+            }
+            let x = step as f64 / 100.0;
+            0.5 * (1.0 - (std::f64::consts::TAU * x).cos())
+                * (std::f64::consts::TAU * 0.07 * step as f64).sin()
+        };
+        let residual = |pml: usize| {
+            let r =
+                fdtd_2d_tm(&eps, (nx / 2, ny / 2), &src, nx, ny, 500, (pml, pml), s, 1e-6)
+                    .unwrap();
+            let mut peak: f64 = 0.0;
+            for j in pml + 3..ny - pml - 3 {
+                for i in pml + 3..nx - pml - 3 {
+                    peak = peak.max(r.envelope[j * nx + i]);
+                }
+            }
+            peak
+        };
+        let wall = residual(0);
+        let thin = residual(4);
+        let thick = residual(10);
+        assert!(wall > 1e-2, "the conductor did not reflect: {wall}");
+        assert!(wall / thin > 1e3, "four cells of layer were only {}x better", wall / thin);
+        assert!(thick < thin, "a deeper layer absorbed less");
+    }
+
+    #[test]
+    fn the_plane_scheme_respects_the_symmetry_of_its_own_grid() {
+        // A source at the exact centre of a square vacuum box: the Yee
+        // arrangement is symmetric under reflecting either axis and
+        // under exchanging them, so the field must be too, bit for bit.
+        // An index slip in the staggering breaks this immediately while
+        // still producing a picture that looks like a wave.
+        let n = 41usize;
+        let eps = vec![1.0; n * n];
+        let s = 0.5f64.sqrt() * 0.9;
+        let src = |step: usize| -> f64 {
+            let t = step as f64 - 20.0;
+            (-t * t / 60.0).exp()
+        };
+        let r = fdtd_2d_tm(&eps, (n / 2, n / 2), &src, n, n, 120, (0, 0), s, 1e-6).unwrap();
+        for j in 0..n {
+            for i in 0..n {
+                let v = r.ez[j * n + i];
+                assert_eq!(v, r.ez[j * n + (n - 1 - i)], "not mirrored in x at ({i}, {j})");
+                assert_eq!(v, r.ez[(n - 1 - j) * n + i], "not mirrored in y at ({i}, {j})");
+                assert_eq!(v, r.ez[i * n + j], "not symmetric under transposition");
+            }
+        }
+    }
+
+    #[test]
+    fn the_numerical_cutoff_sits_below_the_continuum_one_and_approaches_it() {
+        // (2/S) arcsin(S sin(ky/2)) against m pi / a. The grid is always
+        // a little slow, so its cutoff is always the lower of the two,
+        // and the gap closes as the square of the cell size.
+        let s = 0.5f64.sqrt() * 0.99;
+        let mut previous = f64::INFINITY;
+        for width in [8usize, 16, 32, 64] {
+            let got = waveguide_cutoff_numerical(width, 1, s).unwrap();
+            let continuum = PI / width as f64;
+            assert!(got < continuum, "the grid cutoff was not below the continuum one");
+            let relative = (continuum - got) / continuum;
+            assert!(relative < previous, "refining did not close the gap");
+            previous = relative;
+        }
+        assert!(previous < 1e-3, "sixty-four cells still left {previous}");
+        // Higher modes cut off higher, wider guides lower.
+        let a = waveguide_cutoff_numerical(20, 1, s).unwrap();
+        let b = waveguide_cutoff_numerical(20, 2, s).unwrap();
+        let c = waveguide_cutoff_numerical(40, 1, s).unwrap();
+        assert!(b > a && c < a);
+        assert!(waveguide_cutoff_numerical(10, 0, s).is_err());
+        assert!(waveguide_cutoff_numerical(10, 10, s).is_err());
+        assert!(waveguide_cutoff_numerical(10, 1, 1.0).is_err());
+    }
+
+    #[test]
+    fn the_measured_evanescent_decay_gives_the_cutoff_back() {
+        // Drive below cutoff, measure the decay, invert the *numerical*
+        // dispersion relation. The answer that comes back is the grid's
+        // own cutoff, which the simulation actually has, rather than the
+        // continuum figure it is approximating.
+        let s = 0.5f64.sqrt() * 0.99;
+        let width = 16;
+        let want = waveguide_cutoff_numerical(width, 1, s).unwrap();
+        for frac in [0.5, 0.85] {
+            let got = waveguide_cutoff_check_fdtd(width, 200, 1, frac * want, s, 6000).unwrap();
+            assert!(
+                (got - want).abs() < 5e-3 * want,
+                "at {frac} of cutoff the measurement gave {got}, wanted {want}"
+            );
+        }
+        // At or above cutoff there is nothing evanescent to measure, and
+        // saying so beats returning a number.
+        assert!(waveguide_cutoff_check_fdtd(width, 200, 1, want, s, 500).is_err());
+        assert!(waveguide_cutoff_check_fdtd(width, 200, 1, 2.0 * want, s, 500).is_err());
+    }
+
+    #[test]
+    fn the_plane_solver_refuses_impossible_arguments() {
+        let eps = vec![1.0; 40 * 40];
+        let quiet = |_: usize| 0.0;
+        let s = 0.5f64.sqrt() * 0.9;
+        assert!(fdtd_2d_tm(&eps[..16], (0, 0), &quiet, 4, 4, 5, (0, 0), s, 1e-6).is_err());
+        assert!(fdtd_2d_tm(&eps[..100], (0, 0), &quiet, 40, 40, 5, (0, 0), s, 1e-6).is_err());
+        assert!(fdtd_2d_tm(&eps, (99, 0), &quiet, 40, 40, 5, (0, 0), s, 1e-6).is_err());
+        assert!(fdtd_2d_tm(&eps, (0, 0), &quiet, 40, 40, 5, (25, 0), s, 1e-6).is_err());
+        assert!(fdtd_2d_tm(&eps, (0, 0), &quiet, 40, 40, 5, (0, 0), 0.9, 1e-6).is_err());
+        assert!(fdtd_2d_tm(&eps, (0, 0), &quiet, 40, 40, 5, (0, 0), s, 0.0).is_err());
+        assert!(fdtd_2d_tm(&eps, (0, 0), &quiet, 40, 40, 5, (0, 0), s, 1.5).is_err());
+        let mut bad = eps.clone();
+        bad[7] = -1.0;
+        assert!(fdtd_2d_tm(&bad, (0, 0), &quiet, 40, 40, 5, (0, 0), s, 1e-6).is_err());
+        assert!(waveguide_cutoff_check_fdtd(16, 20, 1, 0.05, s, 500).is_err());
+        assert!(waveguide_cutoff_check_fdtd(2, 200, 1, 0.05, s, 500).is_err());
+        assert!(waveguide_cutoff_check_fdtd(16, 200, 1, -1.0, s, 500).is_err());
+        assert!(waveguide_cutoff_check_fdtd(16, 200, 1, 0.05, 1.0, 500).is_err());
     }
 
     #[test]
