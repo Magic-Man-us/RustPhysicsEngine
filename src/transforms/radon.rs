@@ -436,7 +436,7 @@ pub fn hough_circles(
     let cutoff = best / 2;
     let mut peaks: Vec<(usize, usize, usize, u32)> =
         results.into_iter().filter(|&(_, _, _, v)| v > cutoff && v >= 8).collect();
-    peaks.sort_by(|a, b| b.3.cmp(&a.3));
+    peaks.sort_by_key(|a| std::cmp::Reverse(a.3));
     peaks
 }
 

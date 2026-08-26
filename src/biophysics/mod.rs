@@ -1,3 +1,91 @@
+//! Biophysics: the elementary membrane, transport and mechanics relations
+//! here, with the population-scale models in submodules.
+//!
+//! The roadmap calls this area `bio`; it lives under the existing
+//! `biophysics` module instead, so that there is one home for the subject
+//! rather than two.
+
+pub mod epidemiology;
+pub mod neuro;
+pub mod phylo;
+pub mod population;
+pub mod seq_align;
+
+use crate::error::GeomError;
+
+/// Integrates a first-order system with adaptive Runge-Kutta and a
+/// step-doubling error estimate.
+///
+/// The population and epidemic models here are not stiff in the way a
+/// chemical network is -- their rates are all of the same order -- so an
+/// explicit method is the right choice, and the adaptivity is there to
+/// resolve the peaks and turning points where the curvature concentrates.
+pub(crate) fn integrate_adaptive(
+    derivative: impl Fn(&[f64]) -> Vec<f64>,
+    y0: &[f64],
+    t_end: f64,
+    rtol: f64,
+) -> Result<Vec<(f64, Vec<f64>)>, GeomError> {
+    if !(t_end > 0.0) || !(rtol > 0.0) || rtol >= 1.0 {
+        return Err(GeomError::InvalidArgument("integrate: bad parameters"));
+    }
+    let n = y0.len();
+    let rk4 = |y: &[f64], h: f64| -> Vec<f64> {
+        let k1 = derivative(y);
+        let mid1: Vec<f64> = (0..n).map(|i| y[i] + 0.5 * h * k1[i]).collect();
+        let k2 = derivative(&mid1);
+        let mid2: Vec<f64> = (0..n).map(|i| y[i] + 0.5 * h * k2[i]).collect();
+        let k3 = derivative(&mid2);
+        let end: Vec<f64> = (0..n).map(|i| y[i] + h * k3[i]).collect();
+        let k4 = derivative(&end);
+        (0..n)
+            .map(|i| y[i] + h / 6.0 * (k1[i] + 2.0 * k2[i] + 2.0 * k3[i] + k4[i]))
+            .collect()
+    };
+    let mut out = vec![(0.0, y0.to_vec())];
+    let mut t = 0.0;
+    let mut y = y0.to_vec();
+    let mut h = (t_end * 1e-4).min(0.1);
+    let smallest = t_end * 1e-12;
+    while t < t_end {
+        // The accumulated time overshoots `t_end` by a rounding residue --
+        // here of order 1e-14 on a span of 235 -- and the loop condition is
+        // still true. That leftover is not a step to be taken; treating it
+        // as one and then finding it smaller than the working precision
+        // reported a numerical breakdown for an integration that had in
+        // fact finished. The two conditions are distinct: an interval too
+        // short to bother with, and an error controller forced into a step
+        // it cannot take.
+        let remaining = t_end - t;
+        if remaining <= smallest {
+            break;
+        }
+        h = h.min(remaining);
+        if h < smallest {
+            return Err(GeomError::Degenerate("the step collapsed below the working precision"));
+        }
+        let coarse = rk4(&y, h);
+        let fine = rk4(&rk4(&y, 0.5 * h), 0.5 * h);
+        let error = (0..n)
+            .map(|i| (coarse[i] - fine[i]).abs() / fine[i].abs().max(1e-3))
+            .fold(0.0, f64::max);
+        if error <= rtol {
+            // Richardson: RK4's error is fourth order, so the two-step
+            // result plus a fifteenth of the gap is fifth order.
+            y = (0..n).map(|i| fine[i] + (fine[i] - coarse[i]) / 15.0).collect();
+            t += h;
+            out.push((t, y.clone()));
+        }
+        let growth = if error > 0.0 { 0.9 * (rtol / error).powf(0.2) } else { 4.0 };
+        h *= growth.clamp(0.2, 4.0);
+        if out.len() > 500_000 {
+            return Err(GeomError::Degenerate("the integration did not reach the end time"));
+        }
+    }
+    Ok(out)
+}
+
+
 use crate::math::constants;
 use crate::chemistry::FARADAY;
 

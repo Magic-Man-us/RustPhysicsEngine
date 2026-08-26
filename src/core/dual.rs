@@ -78,6 +78,31 @@ impl Dual {
         Self { re: self.re.powi(n), eps: self.eps * n as f64 * self.re.powi(n - 1) }
     }
 
+    /// arctan(x): derivative 1/(1+x²).
+    #[must_use]
+    pub fn atan(self) -> Self {
+        Self { re: self.re.atan(), eps: self.eps / (1.0 + self.re * self.re) }
+    }
+
+    /// sinh(x): derivative cosh(x).
+    #[must_use]
+    pub fn sinh(self) -> Self {
+        Self { re: self.re.sinh(), eps: self.eps * self.re.cosh() }
+    }
+
+    /// cosh(x): derivative sinh(x).
+    #[must_use]
+    pub fn cosh(self) -> Self {
+        Self { re: self.re.cosh(), eps: self.eps * self.re.sinh() }
+    }
+
+    /// tanh(x): derivative 1/cosh²(x).
+    #[must_use]
+    pub fn tanh(self) -> Self {
+        let c = self.re.cosh();
+        Self { re: self.re.tanh(), eps: self.eps / (c * c) }
+    }
+
     /// |x|: derivative sign(x) (undefined at 0; returns 0 there).
     #[must_use]
     pub fn abs(self) -> Self {
@@ -175,12 +200,36 @@ pub fn jacobian(f: impl Fn(&[Dual]) -> Vec<Dual>, x: &[f64]) -> Matrix {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn test_hyperbolic_and_atan_derivatives() {
+        // Each new rule against its closed form, plus the defining
+        // identities cosh^2 - sinh^2 = 1 and tanh = sinh/cosh.
+        for &x in &[-1.3_f64, -0.4, 0.0, 0.25, 1.7] {
+            let d = Dual::variable(x);
+            assert!((d.atan().eps - 1.0 / (1.0 + x * x)).abs() < 1e-12);
+            assert!((d.sinh().eps - x.cosh()).abs() < 1e-12);
+            assert!((d.cosh().eps - x.sinh()).abs() < 1e-12);
+            assert!((d.tanh().eps - 1.0 / (x.cosh() * x.cosh())).abs() < 1e-12);
+            let (sh, ch) = (d.sinh(), d.cosh());
+            assert!((ch.re * ch.re - sh.re * sh.re - 1.0).abs() < 1e-12);
+            assert!((d.tanh().re - sh.re / ch.re).abs() < 1e-12);
+            // atan and tan invert one another, derivatives included.
+            assert!((d.atan().re.tan() - x).abs() < 1e-12);
+        }
+    }
+
     use super::*;
 
     fn approx(a: f64, b: f64, tol: f64) -> bool {
         (a - b).abs() < tol
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_polynomial_exact() {
         // f(x) = 3x^3 - 2x + 5, f'(x) = 9x^2 - 2
@@ -227,6 +276,12 @@ mod tests {
         assert!(approx(g[1], 31.0, 1e-13));
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_derivative_exact_on_polynomials() {
         // Dual arithmetic is exact on polynomials: no truncation error,
@@ -315,6 +370,12 @@ mod tests {
         }
     }
 
+    // Miri evaluates the float intrinsics with its own implementations, which
+    // are allowed to differ from the host's in the last bits and which Miri
+    // deliberately randomises within that slack. This test asserts an exact
+    // value, so it fails under Miri for that reason and not because anything
+    // is wrong; it still runs normally everywhere else.
+    #[cfg_attr(miri, ignore = "Miri's float intrinsics are not bit-exact")]
     #[test]
     fn test_gradient_and_jacobian_agree_on_a_scalar_field() {
         // The Jacobian of a 1-output function is the gradient row.

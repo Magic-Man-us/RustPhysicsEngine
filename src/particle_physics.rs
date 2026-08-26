@@ -22,7 +22,11 @@ pub const CHARGE_DOWN: f64 = -1.0 / 3.0;
 // ---------------------------------------------------------------------------
 // Coupling constants
 // ---------------------------------------------------------------------------
-pub const FINE_STRUCTURE: f64 = 7.297e-3; // α ≈ 1/137
+/// Fine-structure constant α ≈ 1/137, re-exported from
+/// [`crate::math::constants::ALPHA`]. The 7.297e-3 that used to be
+/// written here was the same constant to four digits and a different
+/// number after them.
+pub const FINE_STRUCTURE: f64 = crate::math::constants::ALPHA;
 pub const WEAK_MIXING_ANGLE_SIN2: f64 = 0.2312; // sin²θ_W
 pub const STRONG_COUPLING: f64 = 0.1179; // α_s at M_Z
 

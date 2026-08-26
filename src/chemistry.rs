@@ -1,7 +1,11 @@
 use crate::math::constants;
 
-/// Faraday constant (C/mol)
-pub const FARADAY: f64 = 96485.0;
+/// Faraday constant (C/mol).
+///
+/// Re-exported from [`constants::FARADAY`] so there is one value of it
+/// in the crate; the rounded 96485 that used to live here differed from
+/// N_A × e in the sixth digit.
+pub const FARADAY: f64 = constants::FARADAY;
 
 // ── Reaction Kinetics ──
 

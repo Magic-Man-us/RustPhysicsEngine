@@ -5,6 +5,8 @@ use crate::spatial::intersect::ray_aabb;
 use crate::spatial::primitives::{Aabb, Ray};
 
 /// `ray_aabb` never reports an interval with t_enter > t_exit.
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 fn ray_aabb_interval_ordered() {
     let ox: f64 = kani::any();

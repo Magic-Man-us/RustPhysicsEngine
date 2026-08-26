@@ -2,7 +2,8 @@ use crate::math::constants;
 
 // Atmospheric constants
 pub const EARTH_ROTATION_RATE: f64 = 7.2921e-5; // rad/s
-pub const STANDARD_PRESSURE: f64 = 101_325.0; // Pa
+/// Standard atmosphere (Pa), re-exported from [`constants::ATM`].
+pub const STANDARD_PRESSURE: f64 = constants::ATM;
 pub const STANDARD_TEMPERATURE: f64 = 288.15; // K (15°C)
 pub const DRY_AIR_MOLAR_MASS: f64 = 0.028_97; // kg/mol
 

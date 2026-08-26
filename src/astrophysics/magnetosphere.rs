@@ -4,7 +4,9 @@ use crate::math::constants::PI;
 pub const DEFAULT_MAX_LINES_PER_BODY: usize = 16;
 pub const DEFAULT_POINTS_PER_LINE: usize = 64;
 pub const DEFAULT_MIN_FIELD_STRENGTH: f64 = 1e-6;
-pub const SOLAR_TEMPERATURE: f64 = 5778.0;
+/// Solar effective temperature T☉ (K), re-exported from
+/// [`crate::math::constants::SOLAR_TEMPERATURE`].
+pub const SOLAR_TEMPERATURE: f64 = crate::math::constants::SOLAR_TEMPERATURE;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CelestialBodyType {

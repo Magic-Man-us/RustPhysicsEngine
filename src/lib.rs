@@ -12,6 +12,7 @@
 pub mod math;
 pub mod error;
 pub mod core;
+pub mod discrete;
 pub mod exact;
 pub mod special;
 pub mod classical;
@@ -37,9 +38,12 @@ pub mod solid_mechanics;
 pub mod chemistry;
 pub mod electronics;
 pub mod geometry;
+pub mod graph;
 pub mod propulsion;
 pub mod units;
 pub mod nonlinear;
+pub mod finance;
+pub mod learn;
 pub mod fractals;
 pub mod particle_physics;
 pub mod quaternion;
@@ -53,6 +57,7 @@ pub mod dsp;
 pub mod resonance;
 pub mod cfd;
 pub mod manifold;
+pub mod fem;
 pub mod fields;
 pub mod audio;
 pub mod curves;
@@ -71,7 +76,9 @@ pub mod fluid_instabilities;
 pub mod sim;
 pub mod continuum_mechanics;
 pub mod spatial;
+pub mod stochastic;
 pub mod mesh;
+pub mod codes;
 pub mod patterns;
 
 #[cfg(kani)]

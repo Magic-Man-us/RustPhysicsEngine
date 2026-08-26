@@ -4,6 +4,8 @@ use crate::core::interval::Interval;
 
 /// `Interval::mul` contains all four corner products for symbolic
 /// finite operands.
+// Over 300 seconds: see the table in verification/mod.rs.
+#[cfg(feature = "kani-slow")]
 #[kani::proof]
 fn interval_mul_contains_corner_products() {
     let a_lo: f64 = kani::any();

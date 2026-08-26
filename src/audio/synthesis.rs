@@ -37,7 +37,12 @@ pub fn additive_evolving(harmonics: &[(f64, Vec<f64>)], freq: f64, n: usize, fs:
             harmonics
                 .iter()
                 .map(|(ratio, env)| {
-                    let pos = i as f64 / n.max(1) as f64 * (env.len() - 1).max(0) as f64;
+                    // An empty envelope contributes nothing. Without this the
+                    // env.len() - 1 below underflows.
+                    if env.is_empty() {
+                        return 0.0;
+                    }
+                    let pos = i as f64 / n.max(1) as f64 * (env.len() - 1) as f64;
                     let i0 = pos.floor() as usize;
                     let i1 = (i0 + 1).min(env.len() - 1);
                     let frac = pos - i0 as f64;

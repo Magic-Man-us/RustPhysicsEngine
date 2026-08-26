@@ -17,6 +17,22 @@ impl Rng {
     }
 
     /// Advances the LCG state and returns the next pseudo-random u64.
+    ///
+    /// # The low bits are not random
+    ///
+    /// This is a plain linear congruential generator returning its raw
+    /// state, and for such a generator bit `k` has period at most
+    /// `2^(k+1)`. The bottom bit therefore alternates, the bottom two
+    /// cycle with period four, and so on. Taking `next_u64() % m` for a
+    /// **power of two** `m` reads exactly those bits and produces a
+    /// fixed repeating cycle -- `% 2` gives `0, 1, 0, 1, ...` and `% 4`
+    /// gives `0, 3, 2, 1, ...` for ever. Two such sequences drawn one
+    /// after another are perfectly correlated, which is not a subtle
+    /// statistical defect but a complete absence of randomness.
+    ///
+    /// A modulus with an odd factor mixes in higher bits and is fine.
+    /// Rather than remember which is which, use [`Rng::below`], which
+    /// takes its answer from the top of the word.
     pub fn next_u64(&mut self) -> u64 {
         self.state = self
             .state
@@ -28,6 +44,25 @@ impl Rng {
     /// Returns a uniform random f64 in [0, 1) by extracting the top 53 mantissa bits.
     pub fn next_f64(&mut self) -> f64 {
         (self.next_u64() >> (64 - MANTISSA_BITS)) as f64 / (1u64 << MANTISSA_BITS) as f64
+    }
+
+    /// A uniform integer in `0..n`, taken from the high bits.
+    ///
+    /// Use this rather than `next_u64() % n` whenever `n` might be a
+    /// power of two -- see the note on [`Rng::next_u64`] for why that
+    /// combination returns a short repeating cycle instead of a random
+    /// value. Returns zero for `n == 0`, there being no such range.
+    ///
+    /// Exact for `n` up to `2^53`, which is where the mantissa the
+    /// scaling goes through runs out.
+    pub fn below(&mut self, n: u64) -> u64 {
+        if n == 0 {
+            return 0;
+        }
+        // next_f64 is strictly below one, so the product is strictly
+        // below n; the clamp guards only against a rounding surprise at
+        // the very top of the range.
+        ((self.next_f64() * n as f64) as u64).min(n - 1)
     }
 
     /// Returns a standard normal variate via the Box-Muller transform.

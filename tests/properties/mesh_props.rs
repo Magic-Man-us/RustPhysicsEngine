@@ -147,7 +147,7 @@ fn prop_extruded_polygon_volume_matches_area() {
     let mut rng = Rng::new(903);
     for _ in 0..10 {
         // Random star-shaped (hence simple) polygon around the origin.
-        let n = 5 + (rng.next_u64() % 8) as usize;
+        let n = 5 + (rng.below(8)) as usize;
         let pts: Vec<Vec2> = (0..n)
             .map(|k| {
                 let a = 2.0 * std::f64::consts::PI * k as f64 / n as f64;

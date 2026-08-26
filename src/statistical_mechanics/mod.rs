@@ -1,3 +1,15 @@
+//! Statistical mechanics: the elementary relations here, with lattice
+//! models and Monte Carlo in submodules.
+//!
+//! The roadmap calls this area `statmech`; it lives under the existing
+//! `statistical_mechanics` module instead, so that there is one home for
+//! the subject rather than two.
+
+pub mod ising;
+pub mod kinetics;
+pub mod lattice_models;
+pub mod md;
+
 use crate::math::constants;
 
 // ── Brownian Motion & Diffusion ──

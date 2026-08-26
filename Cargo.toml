@@ -15,5 +15,11 @@ exclude = ["assets/", ".github/", "*.profraw"]
 
 [dependencies]
 
+[features]
+# Enables the Kani harnesses that CBMC cannot decide in a CI-sized budget.
+# See src/verification/mod.rs for the measured times and the reason for the
+# split. Off by default so `cargo kani` runs only the harnesses that finish.
+kani-slow = []
+
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(kani)"] }
