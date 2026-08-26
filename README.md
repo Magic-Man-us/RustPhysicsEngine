@@ -29,8 +29,8 @@ assertion uses `==`.
 
 | | |
 |---|---|
-| **Public functions and methods** | 6,365 (3,949 free functions, 2,416 methods) |
-| **Public types** | 429 structs, enums and traits |
+| **Public functions and methods** | 6,365 (4,124 free functions, 2,241 methods) |
+| **Public types** | 431 structs, enums and traits |
 | **Top-level modules** | 71 public, across 296 source files — see the [module map](docs/MODULE_MAP.md) |
 | **Source** | 266,122 lines of Rust |
 | **Unit tests** | 4,193 |
