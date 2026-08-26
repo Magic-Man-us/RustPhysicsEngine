@@ -909,6 +909,12 @@ strict Clippy pass.
 
 ## Further reading
 
+- [`docs/GUIDE.md`](docs/GUIDE.md) — **start here.** A walk through the library
+  by doing things with it: putting a spacecraft in orbit, pulling a tone out of
+  noise, solving a differential equation and proving the answer converges at
+  the predicted rate, and the tools for not being wrong. Every code block is a
+  file in [`examples/`](examples) that CI compiles and runs, and the output
+  shown is what it actually prints.
 - [`docs/MODULE_MAP.md`](docs/MODULE_MAP.md) — a generated map of every one of
   the 295 modules: a size-annotated tree, tables by subject area, and a row per
   module with its line count, public item counts and summary. Produced by

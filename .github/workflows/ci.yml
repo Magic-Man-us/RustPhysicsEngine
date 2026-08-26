@@ -56,6 +56,17 @@ jobs:
       - name: Check the README example
         run: cargo run --example readme_quickstart
 
+      # docs/GUIDE.md is written around these four files and quotes their
+      # real output, so running them is what keeps the guide honest. Each
+      # one asserts its own results; the printing is for a human reading
+      # the log.
+      - name: Check the guide examples
+        run: |
+          cargo run --example guide_02_orbit
+          cargo run --example guide_03_signal
+          cargo run --example guide_04_fem
+          cargo run --example guide_05_correctness
+
       # Rustdoc warnings are rendering bugs, not style. `[k]` in a formula
       # becomes a broken intra-doc link and `<counts>` becomes an unclosed
       # HTML tag that swallows the rest of the line, so the published docs
