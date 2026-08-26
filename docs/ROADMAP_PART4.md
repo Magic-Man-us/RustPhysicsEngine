@@ -1,5 +1,26 @@
 # ROADMAP PART 4: discrete math, exact arithmetic, stochastic processes, optimization, quantum, statistical mechanics, domains
 
+> **Status: COMPLETE.** All thirty planned sessions are delivered, plus the
+> two cross-references in "Cross-references and shared additions" that were
+> not in the session list: `units::dimensional::dimensional_check_formula`
+> (the `exact::symbolic` tie-in) and the `constants_codata` consolidation.
+>
+> Delivered against this plan: `exact/`, `discrete/`, `graph/`, `codes/`,
+> `stochastic/`, `optimization/`, `quantum/`, `statistical_mechanics/`,
+> `biophysics/`, `finance/`, `astrophysics/`, `fem/`, `learn/` and `units/`.
+> The crate went from 2,981 to 4,193 unit tests and from 107 to 577 property
+> tests over the course of it.
+>
+> The document below is kept as written — it is the specification the work was
+> built against, and the function signatures in it are the ones that shipped.
+> Where a signature changed in implementation the reason is recorded in the
+> commit that changed it. Three specification readings that the plan left
+> genuinely ambiguous are documented in the code rather than here:
+> `quadratic_diophantine_solve` as a definite form, `frobenius_number` with a
+> unit coin, and `stern_brocot_nth` indexed breadth-first.
+>
+> See the README for what the library now contains.
+
 Same rules as Parts 1-3. This part covers everything computational that
 the repo still lacks after 1-3: exact and big-number arithmetic, number
 theory, combinatorics, graphs, error-correcting codes, stochastic

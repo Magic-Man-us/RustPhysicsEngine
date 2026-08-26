@@ -1,3 +1,15 @@
+//! Compact fluid solvers: column, shallow water, and 2-D Euler.
+//!
+//! A draining column for the simplest case, a 1-D shallow-water solver,
+//! and a 2-D incompressible Euler solver that advects velocity and then
+//! restores `∇·u = 0` by pressure projection -- subtracting the gradient
+//! of a pressure field found by solving a Poisson equation, which is what
+//! makes the result divergence-free.
+//!
+//! Written to be read and to run interactively. For well-balanced schemes,
+//! Riemann solvers and the rest of the research-grade machinery see
+//! [`crate::cfd`].
+
 // Grid-based fluid simulation solvers.
 //
 // Three models at increasing fidelity:

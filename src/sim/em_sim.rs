@@ -1,3 +1,18 @@
+//! FDTD electromagnetic simulation in one and two dimensions.
+//!
+//! Explicit leapfrog on a Yee-style grid: the electric and magnetic fields
+//! are staggered by half a cell and half a time step, so each is updated
+//! from the curl of the other and the scheme is second-order accurate with
+//! no matrix to solve.
+//!
+//! Supports dielectric media, hard and soft sources, PEC (perfectly
+//! conducting) walls and Mur first-order absorbing boundaries. Stability
+//! requires the Courant condition, and the limit is set by the fastest
+//! medium in the grid -- that is, the smallest relative permittivity.
+//!
+//! For a Yee grid with Berenger split-field PML, photonic band gaps and
+//! waveguide cutoff, see [`crate::fem::fdtd`].
+
 use crate::math::constants::{C, EPSILON_0, MU_0, PI};
 
 // ── Mur ABC boundary storage ──

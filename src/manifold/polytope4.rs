@@ -1736,7 +1736,7 @@ pub fn kissing_number_known(n: usize) -> Option<usize> {
 // High-dimensional phenomena
 // ---------------------------------------------------------------------------
 
-/// (n-1)-volume of the slice of the unit n-cube [0,1]^n by the hyperplane
+/// (n-1)-volume of the slice of the unit n-cube `[0,1]^n` by the hyperplane
 /// sum(x) = s, times sqrt(n) (the Irwin-Hall density scaled to a volume).
 #[must_use]
 pub fn hypercube_slicing_volume(n: usize, s: f64) -> f64 {

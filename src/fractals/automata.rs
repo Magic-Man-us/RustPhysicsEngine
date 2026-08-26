@@ -633,7 +633,7 @@ pub struct Turmite {
     pub pos: (usize, usize),
     pub dir: u8,
     pub state: u8,
-    /// Indexed by [state][color].
+    /// Indexed by `[state][color]`.
     pub table: Vec<Vec<(u8, u8, u8)>>,
 }
 
@@ -830,7 +830,7 @@ pub struct LifeLike3D {
 }
 
 impl LifeLike3D {
-    /// Parses "B<counts>/S<counts>" where counts are comma-free
+    /// Parses `"B<counts>/S<counts>"` where counts are comma-free
     /// digit runs; multi-digit counts (10-26) are written with
     /// parentheses, e.g. "B(10)(11)/S(12)".
     ///

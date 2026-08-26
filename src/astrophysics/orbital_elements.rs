@@ -1,3 +1,18 @@
+//! Keplerian elements: conversion, propagation, and the anomalies.
+//!
+//! State vectors to elements and back -- semi-major axis, eccentricity,
+//! inclination, longitude of ascending node, argument of periapsis and
+//! true anomaly -- via the specific orbital energy, the angular momentum
+//! and the eccentricity vector.
+//!
+//! The three anomalies (true, eccentric and mean) and the conversions
+//! between them, with Kepler's equation solved by Newton iteration.
+//! Periapsis and apoapsis distances and speeds, orbital period, and
+//! propagation forward in time complete the module.
+//!
+//! For a solver that also handles parabolic and hyperbolic orbits and near
+//! e = 1, see [`crate::astrophysics::kepler`].
+
 use crate::math::Vec3;
 use crate::math::constants::PI;
 

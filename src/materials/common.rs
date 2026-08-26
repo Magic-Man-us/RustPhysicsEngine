@@ -1,3 +1,10 @@
+//! Engineering solids: metals, alloys, polymers and ceramics.
+//!
+//! Density, Young's modulus, yield and tensile strength, Poisson's ratio,
+//! thermal conductivity and expansion, and specific heat. Room-temperature
+//! values; a specific alloy, temper or grade will differ, sometimes
+//! substantially.
+
 /// An engineering material with mechanical and thermal properties.
 ///
 /// All values use SI units:

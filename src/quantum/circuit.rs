@@ -57,7 +57,7 @@ impl QState {
     /// The all-zeros computational basis state.
     ///
     /// # Errors
-    /// Returns an error for zero qubits or more than [`MAX_QUBITS`].
+    /// Returns an error for zero qubits or more than `MAX_QUBITS` (26).
     pub fn zero(n: usize) -> Result<Self, GeomError> {
         Self::basis(n, 0)
     }

@@ -1,3 +1,14 @@
+//! Plane curves: conics, Bézier curves, and parametric families.
+//!
+//! The conic sections with their eccentricities, foci and the
+//! discriminant that classifies a general quadratic; quadratic and cubic
+//! Bézier curves in 2-D and 3-D; and parametric circles, ellipses,
+//! spirals, Lissajous figures, cycloids and helices.
+//!
+//! Arc length and signed curvature close the module. For subdivision
+//! surfaces and B-spline or NURBS patches see [`crate::mesh::surfaces`];
+//! for space curves with Frenet frames see [`crate::patterns::knots`].
+
 use crate::math::Vec3;
 use crate::math::constants::PI;
 

@@ -1,3 +1,14 @@
+//! Semiconductor device physics.
+//!
+//! Carrier statistics -- the intrinsic concentration, Fermi-Dirac
+//! occupancy, the thermal voltage `kT/q` -- and transport by drift and
+//! diffusion, linked by the Einstein relation `D/μ = kT/q`.
+//!
+//! Then the devices: the PN junction's built-in potential and depletion
+//! width, the Shockley diode equation, MOSFET drain current in the linear
+//! and saturation regimes, and solar cells through open-circuit voltage,
+//! fill factor and efficiency.
+
 use crate::math::constants::{E_CHARGE, K_B};
 
 // ---------------------------------------------------------------------------

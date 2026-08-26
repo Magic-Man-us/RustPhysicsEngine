@@ -1,3 +1,14 @@
+//! The five Lagrange points of the circular restricted three-body problem.
+//!
+//! L1, L2 and L3 lie on the line through the two masses and are found by
+//! solving a quintic numerically; L4 and L5 sit at the vertices of
+//! equilateral triangles with the two masses and are exact.
+//!
+//! The collinear points are unstable saddles -- a spacecraft there needs
+//! station-keeping -- while L4 and L5 are stable for a mass ratio below
+//! about 1/24.96, which is why Jupiter's Trojan asteroids stay put.
+//! The Hill radius is here as well.
+
 use crate::math::Vec3;
 
 /// Computes the Hill sphere radius: r_H = d (m / 3M)^(1/3).

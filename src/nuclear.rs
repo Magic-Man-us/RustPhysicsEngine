@@ -1,3 +1,16 @@
+//! Radioactive decay, nuclear binding, and dosimetry.
+//!
+//! Exponential decay in its several parameterisations -- decay constant,
+//! half-life, mean lifetime -- and activity. Binding energy from the mass
+//! defect, binding energy per nucleon (the curve whose peak at iron-56 is
+//! why both fission and fusion release energy), and reaction Q-values.
+//!
+//! Nuclear size follows `R = R₀A^(1/3)`, giving a roughly constant
+//! nuclear density. Dosimetry covers absorbed and equivalent dose and the
+//! inverse-square falloff of intensity with distance.
+//!
+//! For reactor-scale neutron transport see [`crate::neutronics`].
+
 use crate::math::constants;
 
 // ── Radioactive Decay ──

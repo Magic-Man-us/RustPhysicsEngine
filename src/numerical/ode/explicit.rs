@@ -37,7 +37,7 @@ pub fn rk4_solve(
 }
 
 /// Single RK4 step for a system of ODEs (vector state).
-/// f(t, y) returns a Vec<f64> of derivatives matching the length of y.
+/// `f(t, y)` returns a `Vec<f64>` of derivatives matching the length of `y`.
 #[must_use]
 pub fn rk4_step_vec(
     f: &dyn Fn(f64, &[f64]) -> Vec<f64>,

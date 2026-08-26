@@ -168,7 +168,7 @@ pub fn gradient(f: impl Fn(&[Dual]) -> Dual, x: &[f64]) -> Vec<f64> {
     grad
 }
 
-/// Jacobian matrix J[i][j] = ∂fᵢ/∂xⱼ of a vector-valued function.
+/// Jacobian matrix `J[i][j] = ∂fᵢ/∂xⱼ` of a vector-valued function.
 ///
 /// # Panics
 /// Panics if `f` returns an empty vector or `x` is empty.

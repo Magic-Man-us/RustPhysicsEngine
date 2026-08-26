@@ -1,3 +1,18 @@
+//! Thermal radiation and radiative transfer.
+//!
+//! The Stefan-Boltzmann law `j = σT⁴`, Wien's displacement of the
+//! spectral peak, and the colour and brightness temperatures that invert
+//! them.
+//!
+//! Transfer through an absorbing medium: optical depth, the Beer-Lambert
+//! law, and the photon mean free path. Radiation pressure for absorbing
+//! and reflecting surfaces. Surface exchange via Kirchhoff's law
+//! (emissivity equals absorptivity at equilibrium), view factors, and
+//! net radiative exchange between surfaces.
+//!
+//! For the Planck spectrum itself see [`crate::quantum`]; for reactor and
+//! photon shielding see [`crate::neutronics`].
+
 use crate::math::constants;
 
 // Wien's displacement constant in the frequency domain: f_max = WIEN_FREQ_CONSTANT * T

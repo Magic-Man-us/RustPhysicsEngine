@@ -48,7 +48,7 @@ impl DelayLine {
         a * (1.0 - f) + b * f
     }
 
-    /// Alias of [`read`] for tap taps.
+    /// Alias of [`Self::read`].
     #[must_use]
     pub fn tap(&self, d: usize) -> f64 {
         self.read(d)

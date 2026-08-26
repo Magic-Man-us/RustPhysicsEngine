@@ -1,3 +1,14 @@
+//! Heat conduction and convection-diffusion on a grid.
+//!
+//! Explicit finite differences in two and three dimensions, with Dirichlet
+//! and Neumann boundaries, sources, and an advection term for
+//! convection-diffusion.
+//!
+//! Explicit stepping is only conditionally stable: the step must satisfy
+//! `α Δt / Δx² ≤ 1/4` in 2-D and `1/6` in 3-D, so halving the grid spacing
+//! quarters the allowable time step. The stability limit is provided as a
+//! function rather than left to the caller to remember.
+
 // Heat conduction and convection simulation on structured grids.
 //
 // ## Governing PDEs
@@ -40,9 +51,9 @@ pub struct HeatConduction2D {
     pub nx: usize,
     /// Number of grid points in y.
     pub ny: usize,
-    /// Grid spacing in x [m].
+    /// Grid spacing in x (m).
     pub dx: f64,
-    /// Grid spacing in y [m].
+    /// Grid spacing in y (m).
     pub dy: f64,
     /// Thermal diffusivity α = k/(ρcₚ) [m²/s].
     pub diffusivity: f64,
@@ -307,7 +318,7 @@ pub struct ConvectionDiffusion1D {
     pub field: Vec<f64>,
     /// Number of grid points.
     pub nx: usize,
-    /// Grid spacing [m].
+    /// Grid spacing (m).
     pub dx: f64,
     /// Advection velocity [m/s].
     pub velocity: f64,

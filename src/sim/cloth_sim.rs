@@ -1,3 +1,15 @@
+//! Verlet cloth and rope with spring constraints.
+//!
+//! Particles are advanced by position Verlet, which stores the previous
+//! position rather than a velocity: it is stable under stiff constraints
+//! and conserves energy far better than explicit Euler at the same step
+//! size, because velocity is inferred from the positions rather than
+//! integrated separately.
+//!
+//! Structural, shear and bend springs are then satisfied by iterated
+//! position projection -- more iterations gives a stiffer cloth -- with
+//! pinning, sphere and floor collision, and wind and gravity forces.
+
 use crate::math::Vec3;
 
 const DEFAULT_GRAVITY_Y: f64 = -9.81;

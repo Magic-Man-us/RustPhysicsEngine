@@ -1,3 +1,18 @@
+//! Geometric and wave optics.
+//!
+//! Refraction by Snell's law, the critical angle for total internal
+//! reflection, and the Brewster angle at which reflected light is fully
+//! polarized. Imaging through the thin-lens and mirror equations,
+//! magnification, lens power, combined focal lengths and the lensmaker's
+//! radius of curvature.
+//!
+//! Wave optics covers single-slit minima, double-slit maxima, the grating
+//! equation, thin-film interference, and the Rayleigh resolution criterion
+//! `θ = 1.22 λ/D`. Malus's law closes it.
+//!
+//! For Gaussian beams, fibre optics and ray transfer matrices see
+//! [`crate::photonics`].
+
 use crate::math::constants;
 
 // ── Reflection and Refraction ──

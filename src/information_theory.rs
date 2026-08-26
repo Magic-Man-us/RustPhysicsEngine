@@ -1,3 +1,18 @@
+//! Shannon information: entropy, divergence, and channel capacity.
+//!
+//! Entropy in bits and in nats, the maximum-entropy bound for a given
+//! alphabet, and the entropy rate. Then the relations between two
+//! distributions: cross entropy, Kullback-Leibler divergence, and the
+//! Jensen-Shannon divergence -- which unlike KL is symmetric and bounded,
+//! which is why it is the one that behaves like a distance.
+//!
+//! Mutual information and conditional entropy connect the two, and the
+//! binary entropy function gives the capacity of a binary symmetric
+//! channel as `C = 1 − H₂(p)`. Fisher information and the Cramér-Rao
+//! bound cover the estimation side.
+//!
+//! For codes that approach these limits see [`crate::codes`].
+
 // ---------------------------------------------------------------------------
 // Shannon Entropy
 // ---------------------------------------------------------------------------

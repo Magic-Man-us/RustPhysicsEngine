@@ -1,3 +1,16 @@
+//! Magnetohydrodynamics: a conducting fluid and the field frozen into it.
+//!
+//! The dimensionless numbers first, because they decide the regime:
+//! magnetic Reynolds (advection against diffusion, and so whether the
+//! field is frozen in), Lundquist, Hartmann, and the plasma beta -- the
+//! ratio of thermal to magnetic pressure, which says whether the field
+//! or the gas is in charge.
+//!
+//! Wave speeds: Alfvén, and the slow and fast magnetosonic branches.
+//! Equilibria: pinch pressure balance, the Bennett condition, and the
+//! Grad-Shafranov beta limit. Reconnection is covered by the Sweet-Parker
+//! rate and the associated electric field.
+
 use crate::math::constants::{K_B, MU_0, PI};
 
 // ── Frozen-in flux threshold ────────────────────────────────────────────

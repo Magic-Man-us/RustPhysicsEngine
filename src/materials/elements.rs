@@ -1,3 +1,14 @@
+//! The 118 chemical elements.
+//!
+//! Atomic number, symbol, name, atomic mass, density, melting and boiling
+//! points, and thermal and electrical conductivity, with lookup by atomic
+//! number, symbol or name.
+//!
+//! Densities are for the standard state at room temperature, so gases are
+//! quoted at STP. Where an element has no stable isotope the atomic mass
+//! is that of the longest-lived one, and properties that have never been
+//! measured are absent rather than guessed.
+
 /// Classification of an element within the periodic table.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ElementCategory {

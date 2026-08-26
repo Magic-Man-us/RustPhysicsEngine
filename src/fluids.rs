@@ -1,3 +1,19 @@
+//! Fluid statics and single-phase flow.
+//!
+//! Statics: hydrostatic pressure, buoyancy and flotation, Pascal's
+//! principle. Inviscid flow: continuity, Bernoulli, Torricelli, the
+//! Venturi meter. Viscous flow: Stokes drag, the drag equation and
+//! terminal velocity, Poiseuille's law, the Darcy-Weisbach head loss.
+//! Compressible flow: Mach number, stagnation and isentropic ratios.
+//!
+//! Surface tension, capillary rise, vorticity, circulation and the
+//! Kutta-Joukowski lift round it out, along with the dimensionless groups
+//! that decide which regime you are in -- Reynolds, Froude, Weber, Bond,
+//! Peclet, Marangoni, Archimedes.
+//!
+//! These are the closed-form relations. For flow solved on a grid or with
+//! particles see [`crate::cfd`].
+
 use crate::math::constants;
 
 // ── Pressure ──

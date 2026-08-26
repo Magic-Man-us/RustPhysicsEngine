@@ -728,7 +728,7 @@ pub fn delay_embedding(series: &[f64], dim: usize, delay: usize) -> Vec<Vec<f64>
         .collect()
 }
 
-/// Recurrence plot: R[i,j] = true when embedded states i and j are
+/// Recurrence plot: `R[i,j]` is true when embedded states i and j are
 /// within `eps` (row-major over the n embedded points).
 #[must_use]
 pub fn recurrence_plot(series: &[f64], embed_dim: usize, delay: usize, eps: f64) -> Vec<bool> {

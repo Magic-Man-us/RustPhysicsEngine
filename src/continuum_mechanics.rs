@@ -1,3 +1,15 @@
+//! Stress and strain as tensors, and the yield criteria built on them.
+//!
+//! The stress tensor with its invariants, principal stresses, and the
+//! split into hydrostatic and deviatoric parts -- the split that matters
+//! because metals yield on the deviatoric part alone, which is why the von
+//! Mises criterion ignores hydrostatic pressure entirely.
+//!
+//! Strain in both the small-strain and Green-Lagrange forms, the isotropic
+//! 3-D Hooke's law `σᵢⱼ = λ δᵢⱼ ε_kk + 2μ εᵢⱼ` and its compliance
+//! inverse, plane stress and plane strain, and the von Mises, Tresca,
+//! Mohr-Coulomb and Drucker-Prager yield criteria.
+
 use crate::linalg::Mat3;
 
 // ── Stress Tensor ────────────────────────────────────────────────────────────

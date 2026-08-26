@@ -1,3 +1,16 @@
+//! Room acoustics, psychoacoustic scales, and musical pitch.
+//!
+//! Reverberation by Sabine (`RT60 = 0.161 V / A`) and by Eyring, which
+//! differ in how they treat a very absorptive room: Sabine's formula is a
+//! diffuse-field approximation that never reaches zero however absorptive
+//! the surfaces, while Eyring's does. Room modes, critical distance and
+//! the mass-law transmission loss follow.
+//!
+//! The perceptual scales -- mel, bark, ERB, A-weighting, equal-loudness
+//! phon -- map physical frequency and level onto what a listener reports,
+//! and are fits to listening data rather than derivations. Musical pitch
+//! is here too: equal temperament, cents, and MIDI note conversion.
+
 use crate::math::constants::PI;
 
 // ── Sabine constant: 0.161 (derived from 24×ln(10)/c ≈ 0.161 for speed of sound ~343 m/s) ──

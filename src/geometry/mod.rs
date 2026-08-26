@@ -1,3 +1,15 @@
+//! Areas, volumes and surface areas of the standard shapes.
+//!
+//! Plane figures (circle, ellipse, triangle by base-height and by Heron's
+//! formula, regular polygon, sector, annulus) and solids (sphere,
+//! cylinder, cone, ellipsoid, torus, frustum, capsule), with perimeters
+//! and surface areas alongside.
+//!
+//! Closed-form mensuration only. For triangle solving see
+//! [`crate::trigonometry`], for curves and conics see [`crate::curves`],
+//! for polygon algorithms such as triangulation and offsetting see
+//! [`crate::patterns::polygon_ops`], and for meshes see [`crate::mesh`].
+
 use crate::math::constants::PI;
 
 // --- 2D Areas ---

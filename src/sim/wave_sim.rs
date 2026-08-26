@@ -1,3 +1,14 @@
+//! The wave equation in one and two dimensions.
+//!
+//! Explicit second-order finite differences on `∂²u/∂t² = c²∇²u`, with
+//! fixed, free, and Mur first-order absorbing boundaries. The absorbing
+//! condition passes a normally-incident wave out of the domain exactly and
+//! degrades with the angle of incidence.
+//!
+//! Stability requires the Courant number `r = cΔt/Δx` to satisfy `r ≤ 1`
+//! in 1-D and `r ≤ 1/√2` in 2-D. At exactly `r = 1` in one dimension the
+//! scheme is an exact shift and has no dispersion error at all.
+
 // Wave equation simulation on structured grids using finite differences.
 //
 // PDE (1D): ∂²u/∂t² = c² ∂²u/∂x²
@@ -84,7 +95,7 @@ impl WaveEquation1D {
     }
 
     /// Advance one time step using the leapfrog scheme with fixed endpoints
-    /// u[0] = u[nx-1] = 0.
+    /// `u[0] = u[nx-1] = 0`.
     pub fn step(&mut self, dt: f64) {
         let r2 = (self.wave_speed * dt / self.dx).powi(2);
 
@@ -105,9 +116,13 @@ impl WaveEquation1D {
     ///
     /// Interior update is identical to `step`. At the boundaries the outgoing
     /// characteristic is approximated:
-    ///   u[0]^{n+1}     = u[1]^n      + (r - 1)/(r + 1) (u[1]^{n+1}     - u[0]^n)
-    ///   u[nx-1]^{n+1}  = u[nx-2]^n   + (r - 1)/(r + 1) (u[nx-2]^{n+1}  - u[nx-1]^n)
-    /// where r = c dt / dx.
+    ///
+    /// ```text
+    /// u[0]^{n+1}     = u[1]^n      + (r - 1)/(r + 1) (u[1]^{n+1}     - u[0]^n)
+    /// u[nx-1]^{n+1}  = u[nx-2]^n   + (r - 1)/(r + 1) (u[nx-2]^{n+1}  - u[nx-1]^n)
+    /// ```
+    ///
+    /// where `r = c dt / dx`.
     ///
     /// These conditions absorb normally-incident waves perfectly (first order
     /// in angle of incidence for oblique waves).

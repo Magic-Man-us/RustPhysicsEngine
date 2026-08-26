@@ -1,3 +1,21 @@
+//! Wave propagation: mechanical, acoustic and seismic.
+//!
+//! The kinematic relations (`v = fλ` and the wavenumber-frequency pair),
+//! displacement, energy density and intensity, and the inverse-square
+//! falloff of a spherical wave. The Doppler effect in both classical and
+//! relativistic forms, with the Mach cone angle for supersonic sources.
+//!
+//! Standing waves on strings and in open and closed pipes, beats, and
+//! superposition. Boundaries are handled by impedance: the reflection and
+//! transmission coefficients follow from the impedance mismatch, which is
+//! also why they carry a sign.
+//!
+//! Acoustics covers the speed of sound in a gas, sound pressure level and
+//! the decibel scale, and absorption and penetration depth. Seismology
+//! covers P-, S-, Rayleigh and Love wave speeds. Diffraction closes with
+//! the Fraunhofer single-slit pattern, the Airy disk radius and the
+//! Fresnel number.
+
 use crate::math::constants;
 
 // ── Wave Basics ──

@@ -1,3 +1,18 @@
+//! Time-domain signal operations and test waveforms.
+//!
+//! Convolution, cross- and autocorrelation, normalization, windowing, and
+//! the simple smoothers -- moving average, exponential moving average, and
+//! the median filter, which unlike the other two removes impulsive noise
+//! without smearing an edge.
+//!
+//! Waveform generators (sine, square, sawtooth, triangle, noise, chirp)
+//! provide test signals.
+//!
+//! This module is the elementary layer and re-exports the pieces of
+//! [`crate::transforms`] and [`crate::dsp`] most often wanted alongside
+//! it. For FFTs of any length go to [`mod@crate::transforms::fft`]; for filter
+//! *design* go to [`crate::dsp`].
+
 // The FFT moved to `transforms::fft` and the window generators and
 // first-order RC filters to `dsp` (Step 0 of roadmap Part 3); everything
 // stays importable from its old path here.
@@ -22,7 +37,7 @@ const LCG_INCREMENT: u64 = 1442695040888963407;
 
 // --- Convolution & Correlation ---
 
-/// Linear convolution of signal with kernel: y[n] = Σ s[i]·k[n-i]
+/// Linear convolution of signal with kernel: `y[n] = Σ s[i]·k[n-i]`
 #[must_use]
 pub fn convolve(signal: &[f64], kernel: &[f64]) -> Vec<f64> {
     if signal.is_empty() || kernel.is_empty() {
@@ -111,7 +126,7 @@ pub fn moving_average(signal: &[f64], window_size: usize) -> Vec<f64> {
     output
 }
 
-/// Exponential moving average filter: y[n] = α·x[n] + (1-α)·y[n-1]
+/// Exponential moving average filter: `y[n] = α·x[n] + (1-α)·y[n-1]`
 #[must_use]
 pub fn exponential_moving_average(signal: &[f64], alpha: f64) -> Vec<f64> {
     if signal.is_empty() {
@@ -158,7 +173,7 @@ pub fn median_filter(signal: &[f64], window_size: usize) -> Vec<f64> {
 
 // --- Signal Generation ---
 
-/// Generate a sine wave: x[n] = A·sin(2πf·n/fs) for n samples over given duration
+/// Generate a sine wave: `x[n] = A·sin(2πf·n/fs)` for n samples over given duration
 #[must_use]
 pub fn sine_wave(frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> Vec<f64> {
     assert!(sample_rate > 0.0, "sample rate must be positive");

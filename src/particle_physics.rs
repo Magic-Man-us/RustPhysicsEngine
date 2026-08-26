@@ -1,3 +1,19 @@
+//! Relativistic kinematics and scattering for particle collisions.
+//!
+//! Invariant mass -- the quantity every collider analysis is built on,
+//! because it is the same in every frame -- along with centre-of-mass
+//! energy for colliding and fixed-target geometries, and the Lorentz boost
+//! of energy and longitudinal momentum.
+//!
+//! The collider coordinates: rapidity, pseudorapidity and transverse
+//! momentum, chosen because rapidity differences are boost invariant along
+//! the beam. Scattering by the Rutherford cross section and the
+//! Breit-Wigner resonance shape, with the width-lifetime relation
+//! `Γτ = ħ` and branching ratios.
+//!
+//! Also the conservation-law checks -- charge, lepton number, baryon
+//! number -- that say whether a proposed reaction can happen at all.
+
 use crate::math::constants::{C, E_CHARGE, HBAR, K_E};
 
 // ---------------------------------------------------------------------------

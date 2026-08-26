@@ -1,3 +1,17 @@
+//! Linear control: system response, stability margins and PID tuning.
+//!
+//! First- and second-order step and impulse responses in closed form, and
+//! the parameters that characterise them -- natural frequency, damping
+//! ratio, rise and settling time, percent overshoot, bandwidth.
+//!
+//! Stability is assessed through the gain and phase margins, which say how
+//! much extra gain or delay the loop tolerates before it oscillates.
+//! Steady-state error is given by system type.
+//!
+//! PID tuning uses the Ziegler-Nichols rules. They are a starting point
+//! rather than an answer: they were derived for a quarter-amplitude decay
+//! and typically give an aggressive loop that wants detuning.
+
 use crate::math::constants::PI;
 
 // ── Rise-time and settling-time constants ──────────────────────────────

@@ -1,3 +1,18 @@
+//! Radio-frequency engineering: links, lines and noise.
+//!
+//! Link budgets built from free-space path loss, the Friis transmission
+//! equation, antenna gain and effective area, EIRP, beamwidth,
+//! directivity and fade margin.
+//!
+//! Transmission lines: characteristic impedance of coax, velocity factor,
+//! guide wavelength, and the mismatch quantities -- VSWR, return loss,
+//! mismatch loss. Conductors are covered by the skin depth
+//! `δ = √(2ρ/ωμ)`, which is why RF current flows in a thin surface layer.
+//!
+//! Noise and units: thermal noise power and floor in dBm, signal-to-noise
+//! ratio, the Shannon capacity of the resulting channel, and conversions
+//! between watts, dBm, ratios and decibels.
+
 use crate::math::constants;
 
 // ── EM Spectrum Classification ──

@@ -1,5 +1,22 @@
 name: CI
 
+# Build, test and coverage. The deeper checks -- property tests, Kani,
+# Miri and the strict lint pass -- are in verify.yml.
+#
+# `test` and `coverage` are separate jobs on purpose. `cargo llvm-cov` is
+# not a reporting step that reads what `cargo test` already produced:
+# there is nothing to read. It compiles the crate with
+# `-C instrument-coverage` into its own target directory, runs the whole
+# suite again to emit .profraw files, and merges those into the summary.
+# Running the tests IS how it collects coverage.
+#
+# So the two do the same work twice no matter what, and the only question
+# is whether they do it in series or in parallel. As consecutive steps in
+# one job the wall time was their sum -- fifteen to nineteen minutes. As
+# separate jobs it is the slower of the two, and the plain `cargo test`
+# result comes back in a third of that instead of waiting behind the
+# instrumented rebuild.
+
 on:
   push:
     branches: [main]
@@ -11,6 +28,70 @@ env:
 
 jobs:
   test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # Swatinem/rust-cache rather than a hand-rolled actions/cache, which
+      # is what this job used to do and which cached nothing. The crate has
+      # no dependencies -- Cargo.lock holds exactly one package, itself --
+      # so ~/.cargo/registry and ~/.cargo/git are empty, and a key of
+      # hashFiles('**/Cargo.lock') never changes, so after the first save
+      # the cache was restored stale on every run and never written again.
+      # This one keys on the compiler version and the job as well, and
+      # saves each run.
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Test
+        run: cargo test --verbose
+
+      # The README's Quick start section IS this example, so running it here
+      # is what stops the front page of the repository from drifting out of
+      # date. Its assertions are the check; the printed values are for a
+      # human reading the log.
+      - name: Check the README example
+        run: cargo run --example readme_quickstart
+
+      # docs/GUIDE.md is written around these four files and quotes their
+      # real output, so running them is what keeps the guide honest. Each
+      # one asserts its own results; the printing is for a human reading
+      # the log.
+      - name: Check the guide examples
+        run: |
+          cargo run --example guide_02_orbit
+          cargo run --example guide_03_signal
+          cargo run --example guide_04_fem
+          cargo run --example guide_05_correctness
+
+      # Rustdoc warnings are rendering bugs, not style. `[k]` in a formula
+      # becomes a broken intra-doc link and `<counts>` becomes an unclosed
+      # HTML tag that swallows the rest of the line, so the published docs
+      # show something other than what the comment says. There were 81 of
+      # these; denying them keeps the count at zero.
+      - name: Documentation
+        run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
+      # docs/MODULE_MAP.md is generated from the source tree, so it can go
+      # stale the moment a module is added, renamed or resized. This
+      # re-derives it and fails if the committed copy differs, which is the
+      # only thing that keeps a generated file honest.
+      - name: Module map is current
+        run: python3 tools/gen_module_map.py --check
+
+      # Every module carries a //! summary, and the map is built from those
+      # first sentences -- a module without one would appear in the map as a
+      # blank row.
+      - name: Every module is documented
+        run: python3 tools/check_module_docs.py
+
+  coverage:
+    name: Coverage
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,20 +101,11 @@ jobs:
         with:
           components: llvm-tools-preview
 
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Build
-        run: cargo build --verbose
-
-      - name: Test
-        run: cargo test --verbose
+      # A separate cache key from the `test` job, which is the point of
+      # keying on the job: these artifacts are built with
+      # -C instrument-coverage and cargo fingerprints them separately, so
+      # sharing one cache between the two would thrash it.
+      - uses: Swatinem/rust-cache@v2
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov

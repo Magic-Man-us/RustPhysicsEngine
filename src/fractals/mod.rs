@@ -1,3 +1,19 @@
+//! Fractals: escape-time sets, attractors, automata and noise.
+//!
+//! The module root holds the classic escape-time sets computed directly --
+//! Mandelbrot with smooth (continuous) iteration counts, Julia, burning
+//! ship, Newton fractals and the Sierpinski gasket.
+//!
+//! The submodules generalise each direction: [`escape_time`] for a generic
+//! iteration engine, [`attractors`] for chaotic flows and maps,
+//! [`ifs`] for iterated function systems and the chaos game,
+//! [`lsystem`] for Lindenmayer rewriting, [`automata`] for cellular
+//! automata and growth, and [`noise`] for Perlin, OpenSimplex2, Worley and
+//! fBm.
+//!
+//! For the dynamical-systems view -- Lyapunov exponents and bifurcation --
+//! see [`crate::nonlinear`].
+
 pub mod attractors;
 pub mod automata;
 pub mod escape_time;

@@ -1,3 +1,14 @@
+//! Reaction kinetics, chemical thermodynamics and electrochemistry.
+//!
+//! Rate laws for first- and second-order decay and the Arrhenius
+//! temperature dependence `k = A exp(−Eₐ/RT)`; the Gibbs free energy and
+//! its relation to the equilibrium constant, `ΔG° = −RT ln K`, with the
+//! van 't Hoff equation for how K moves with temperature; and Hess's law.
+//!
+//! Electrochemistry covers the Nernst equation, cell potentials and
+//! Faraday electrolysis. Solution chemistry covers pH and pOH, molarity,
+//! dilution and osmotic pressure.
+
 use crate::math::constants;
 
 /// Faraday constant (C/mol).
@@ -21,18 +32,18 @@ pub fn half_life_first_order(rate_constant: f64) -> f64 {
     f64::ln(2.0) / rate_constant
 }
 
-/// First-order concentration decay: [A] = [A]₀ × e^(-kt)
+/// First-order concentration decay: `[A] = [A]₀ × e^(-kt)`
 pub fn concentration_first_order(c0: f64, rate_constant: f64, time: f64) -> f64 {
     c0 * (-rate_constant * time).exp()
 }
 
-/// Second-order integrated rate law: 1/[A] = 1/[A]₀ + kt, returns [A]
+/// Second-order integrated rate law: `1/[A] = 1/[A]₀ + kt`, returns `[A]`
 pub fn concentration_second_order(c0: f64, rate_constant: f64, time: f64) -> f64 {
     assert!(c0 > 0.0, "initial concentration must be positive");
     1.0 / (1.0 / c0 + rate_constant * time)
 }
 
-/// General rate law: r = k × Π([Ci]^ni)
+/// General rate law: `r = k × Π([Ci]^ni)`
 pub fn reaction_rate(k: f64, concentrations: &[f64], orders: &[f64]) -> f64 {
     assert_eq!(
         concentrations.len(),

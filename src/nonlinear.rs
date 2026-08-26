@@ -1,3 +1,18 @@
+//! Chaos in low-dimensional systems.
+//!
+//! The logistic map and its period-doubling route to chaos, the Hénon
+//! map, and the Lorenz and Rössler flows given as derivative functions to
+//! hand to an integrator from [`crate::numerical`].
+//!
+//! Lyapunov exponents are the quantitative test: a positive exponent means
+//! nearby trajectories separate exponentially, which is what makes a
+//! system chaotic rather than merely complicated. Dimension estimators --
+//! box counting and the correlation dimension -- measure the attractor
+//! that results.
+//!
+//! For strange attractors as drawable objects, escape-time fractals and
+//! cellular automata see [`crate::fractals`].
+
 // Chaos theory and nonlinear dynamics: logistic maps, Lyapunov exponents,
 // strange attractors, fractal dimension estimators, and fixed-point analysis.
 

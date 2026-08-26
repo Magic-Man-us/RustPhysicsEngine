@@ -1,3 +1,18 @@
+//! Newtonian gravity and two-body orbits.
+//!
+//! The inverse-square force and its potential energy, the field of a point
+//! mass, escape and circular orbital velocity, and Kepler's third law in
+//! both directions. The vis-viva equation `v² = μ(2/r − 1/a)` ties speed
+//! to position on any conic orbit, and the specific orbital energy fixes
+//! which conic it is.
+//!
+//! Also the Roche limit, the Hill sphere, the Schwarzschild radius and
+//! gravitational time dilation -- the last two are the points at which
+//! Newtonian gravity stops being enough; see [`crate::general_relativity`].
+//!
+//! For orbits propagated rather than characterised, and for transfers
+//! between them, see [`crate::astrophysics`].
+
 use crate::math::{Vec3, constants};
 
 /// Gravitational force magnitude between two masses: F = G * m1 * m2 / r^2

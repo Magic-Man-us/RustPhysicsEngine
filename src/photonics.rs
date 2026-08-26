@@ -1,3 +1,16 @@
+//! Laser beams, optical fibre, and interferometry.
+//!
+//! Gaussian beam propagation: waist, Rayleigh range, radius and curvature
+//! against distance, divergence, the Gouy phase, and on-axis intensity.
+//!
+//! Fibre through the numerical aperture, acceptance angle, and the
+//! V-number that decides single- versus multi-mode operation, plus
+//! attenuation and dispersion broadening. Ray transfer (ABCD) matrices
+//! compose optical elements by matrix multiplication.
+//!
+//! Coherence length and time, fringe visibility, and the Fabry-Pérot
+//! transmission with its free spectral range close the module.
+
 use crate::math::constants;
 
 // ── Fiber Optics Constants ──────────────────────────────────────────────────

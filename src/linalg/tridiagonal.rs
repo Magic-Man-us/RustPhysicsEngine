@@ -1,7 +1,7 @@
 //! Tridiagonal linear solve (Thomas algorithm).
 //!
 //! Reference: Press et al., *Numerical Recipes*, §2.4. Solves
-//! sub[i-1]·x[i-1] + diag[i]·x[i] + sup[i]·x[i+1] = rhs[i] in O(n).
+//! `sub[i-1]·x[i-1] + diag[i]·x[i] + sup[i]·x[i+1] = rhs[i]` in O(n).
 
 use crate::error::SolveError;
 

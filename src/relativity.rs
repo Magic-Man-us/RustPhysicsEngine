@@ -1,3 +1,17 @@
+//! Special relativity.
+//!
+//! The Lorentz factor and the kinematic consequences -- time dilation,
+//! length contraction, the velocity-addition law that keeps `c` a limit,
+//! and the Lorentz transformation of position and time.
+//!
+//! Dynamics: relativistic momentum and kinetic energy, total and rest
+//! energy, and the energy-momentum relation `E² = (pc)² + (mc²)²`. The
+//! relativistic Doppler shift for approaching and receding sources.
+//!
+//! Also proper time and the spacetime interval, whose sign classifies a
+//! separation as timelike, spacelike or null -- the invariant that
+//! replaces separate notions of distance and duration.
+
 use crate::math::constants;
 
 /// Lorentz factor: γ = 1 / sqrt(1 - v^2/c^2)
