@@ -39,6 +39,7 @@ assertion uses `==`.
 | **Function coverage** | 99.33% (20,200 functions, 136 uncovered) |
 | **Formal verification** | 20 Kani harnesses (13 in CI, 7 behind `kani-slow`) |
 | **Undefined behaviour** | Miri-clean; the crate contains no `unsafe` |
+| **API documentation** | `cargo doc` builds warning-free; CI denies rustdoc warnings |
 | **Dependencies** | none — `Cargo.lock` holds exactly one package |
 | **Edition** | 2021, `f64` throughout |
 
@@ -898,10 +899,19 @@ cargo llvm-cov --summary-only            # coverage (needs cargo-llvm-cov)
 cargo kani                               # 13 harnesses (needs Kani)
 cargo kani --features kani-slow          # all 20, much slower
 cargo miri test --lib -- core:: --skip ::core::
+cargo doc --no-deps --open               # API documentation
 ```
 
-CI runs `test` and `coverage` as parallel jobs, and a separate `verify`
-workflow runs the property suite, Kani, Miri and a strict Clippy pass.
+CI runs `test` and `coverage` as parallel jobs — the `test` job also runs the
+README example and builds the documentation with `RUSTDOCFLAGS=-D warnings` —
+and a separate `verify` workflow runs the property suite, Kani, Miri and a
+strict Clippy pass.
+
+## Further reading
+
+- [`docs/ROADMAP_PART4.md`](docs/ROADMAP_PART4.md) — the specification the most
+  recent tranche of work was built against, with the function signatures and
+  the property each module had to satisfy. Marked complete.
 
 ## License
 

@@ -516,7 +516,7 @@ pub mod presets {
         LSystem::new("F", 25.7).rule('F', "F[+F]F[-F]F")
     }
 
-    /// ABOP fig 1.24b: F → F[+F]F[−F][F] at 20°.
+    /// ABOP fig 1.24b: `F → F[+F]F[−F][F]` at 20°.
     #[must_use]
     pub fn plant_b() -> LSystem {
         LSystem::new("F", 20.0).rule('F', "F[+F]F[-F][F]")
@@ -534,13 +534,13 @@ pub mod presets {
         LSystem::new("X", 20.0).rule('X', "F[+X]F[-X]+X").rule('F', "FF")
     }
 
-    /// ABOP fig 1.24e: X → F[+X][−X]FX, F → FF at 25.7°.
+    /// ABOP fig 1.24e: `X → F[+X][−X]FX`, `F → FF` at 25.7°.
     #[must_use]
     pub fn plant_e() -> LSystem {
         LSystem::new("X", 25.7).rule('X', "F[+X][-X]FX").rule('F', "FF")
     }
 
-    /// ABOP fig 1.24f: X → F−[[X]+X]+F[+FX]−X, F → FF at 22.5°.
+    /// ABOP fig 1.24f: `X → F−[[X]+X]+F[+FX]−X`, `F → FF` at 22.5°.
     #[must_use]
     pub fn plant_f() -> LSystem {
         LSystem::new("X", 22.5).rule('X', "F-[[X]+X]+F[+FX]-X").rule('F', "FF")

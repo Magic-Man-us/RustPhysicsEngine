@@ -164,7 +164,7 @@ pub fn blackbody_to_rgb(temperature_k: f64) -> (f64, f64, f64) {
     (r / CHANNEL_MAX, g / CHANNEL_MAX, b / CHANNEL_MAX)
 }
 
-/// Convert linear RGB [0,1] to HSV. H in [0,360), S and V in [0,1].
+/// Convert linear RGB `[0,1]` to HSV. H in `[0,360)`, S and V in `[0,1]`.
 #[must_use]
 pub fn rgb_to_hsv(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
     let max = r.max(g).max(b);
@@ -189,7 +189,7 @@ pub fn rgb_to_hsv(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
     (h, s, v)
 }
 
-/// Convert HSV to linear RGB. H in [0,360), S and V in [0,1].
+/// Convert HSV to linear RGB. H in `[0,360)`, S and V in `[0,1]`.
 #[must_use]
 pub fn hsv_to_rgb(h: f64, s: f64, v: f64) -> (f64, f64, f64) {
     let c = v * s;
@@ -214,7 +214,7 @@ pub fn hsv_to_rgb(h: f64, s: f64, v: f64) -> (f64, f64, f64) {
     (r1 + m, g1 + m, b1 + m)
 }
 
-/// Convert linear RGB [0,1] to HSL. H in [0,360), S and L in [0,1].
+/// Convert linear RGB `[0,1]` to HSL. H in `[0,360)`, S and L in `[0,1]`.
 #[must_use]
 pub fn rgb_to_hsl(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
     let max = r.max(g).max(b);
@@ -243,7 +243,7 @@ pub fn rgb_to_hsl(r: f64, g: f64, b: f64) -> (f64, f64, f64) {
     (h, s, l)
 }
 
-/// Convert HSL to linear RGB. H in [0,360), S and L in [0,1].
+/// Convert HSL to linear RGB. H in `[0,360)`, S and L in `[0,1]`.
 #[must_use]
 pub fn hsl_to_rgb(h: f64, s: f64, l: f64) -> (f64, f64, f64) {
     let c = (1.0 - (2.0 * l - 1.0).abs()) * s;

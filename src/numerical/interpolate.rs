@@ -304,7 +304,7 @@ fn catmull_rom_weights(u: f64) -> [f64; 4] {
 }
 
 /// Uniform Catmull-Rom spline through `points`, parameterized so that
-/// t = i lands exactly on points[i] (t ∈ [0, n−1]; endpoints use
+/// `t = i` lands exactly on `points[i]` (`t ∈ [0, n−1]`; endpoints use
 /// duplicated boundary points).
 ///
 /// # Panics

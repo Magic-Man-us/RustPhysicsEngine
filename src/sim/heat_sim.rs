@@ -40,9 +40,9 @@ pub struct HeatConduction2D {
     pub nx: usize,
     /// Number of grid points in y.
     pub ny: usize,
-    /// Grid spacing in x [m].
+    /// Grid spacing in x (m).
     pub dx: f64,
-    /// Grid spacing in y [m].
+    /// Grid spacing in y (m).
     pub dy: f64,
     /// Thermal diffusivity α = k/(ρcₚ) [m²/s].
     pub diffusivity: f64,
@@ -307,7 +307,7 @@ pub struct ConvectionDiffusion1D {
     pub field: Vec<f64>,
     /// Number of grid points.
     pub nx: usize,
-    /// Grid spacing [m].
+    /// Grid spacing (m).
     pub dx: f64,
     /// Advection velocity [m/s].
     pub velocity: f64,

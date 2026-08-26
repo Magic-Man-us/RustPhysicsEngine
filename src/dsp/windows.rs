@@ -282,25 +282,26 @@ pub fn kaiser_beta_for_attenuation(db: f64) -> f64 {
 // --- Pre-Part-3 generators (wrap `window` with the original symmetric
 // convention) ---
 
-/// Generate a Hann window of length n: w[k] = 0.5·(1 - cos(2πk/(n-1)))
+/// Generate a Hann window of length n: `w[k] = 0.5·(1 - cos(2πk/(n-1)))`
 #[must_use]
 pub fn hann_window(n: usize) -> Vec<f64> {
     window(WindowKind::Hann, n, false)
 }
 
-/// Generate a Hamming window of length n: w[k] = 0.54 - 0.46·cos(2πk/(n-1))
+/// Generate a Hamming window of length n: `w[k] = 0.54 - 0.46·cos(2πk/(n-1))`
 #[must_use]
 pub fn hamming_window(n: usize) -> Vec<f64> {
     window(WindowKind::Hamming, n, false)
 }
 
-/// Generate a Blackman window of length n: w[k] = 0.42 - 0.5·cos(2πk/(n-1)) + 0.08·cos(4πk/(n-1))
+/// Generate a Blackman window of length n:
+    /// `w[k] = 0.42 - 0.5·cos(2πk/(n-1)) + 0.08·cos(4πk/(n-1))`
 #[must_use]
 pub fn blackman_window(n: usize) -> Vec<f64> {
     window(WindowKind::Blackman, n, false)
 }
 
-/// Generate a rectangular (uniform) window of length n: w[k] = 1 for all k
+/// Generate a rectangular (uniform) window of length n: `w[k] = 1` for all k
 #[must_use]
 pub fn rectangular_window(n: usize) -> Vec<f64> {
     window(WindowKind::Rect, n, false)

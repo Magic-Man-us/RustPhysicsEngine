@@ -102,7 +102,7 @@ impl Matrix {
         &self.data[r * self.cols..(r + 1) * self.cols]
     }
 
-    /// Transpose: B[c][r] = A[r][c].
+    /// Transpose: `B[c][r] = A[r][c]`.
     #[must_use]
     pub fn transpose(&self) -> Self {
         let mut out = Self::zeros(self.cols, self.rows);

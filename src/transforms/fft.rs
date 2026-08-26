@@ -62,7 +62,7 @@ fn fft_in_place(buf: &mut [Complex], sign: f64) {
     }
 }
 
-/// Forward FFT: X[k] = Σ x[n]·e^(−j2πkn/N).
+/// Forward FFT: `X[k] = Σ x[n]·e^(−j2πkn/N)`.
 ///
 /// # Panics
 /// Panics unless `input.len()` is a power of two. Use [`fft_any`] for
@@ -75,7 +75,7 @@ pub fn fft(input: &[Complex]) -> Vec<Complex> {
     buf
 }
 
-/// Inverse FFT: x[n] = (1/N)·Σ X[k]·e^(j2πkn/N).
+/// Inverse FFT: `x[n] = (1/N)·Σ X[k]·e^(j2πkn/N)`.
 ///
 /// # Panics
 /// Panics unless `input.len()` is a power of two. Use [`ifft_any`] for
@@ -210,7 +210,7 @@ pub fn ifft_any(x: &[Complex]) -> Vec<Complex> {
 }
 
 /// FFT of a real signal, returning the n/2 + 1 non-redundant bins
-/// (bins k > n/2 satisfy X[n−k] = X[k]*). Any length.
+/// (bins `k > n/2` satisfy `X[n−k] = X[k]*`). Any length.
 #[must_use]
 pub fn rfft(input: &[f64]) -> Vec<Complex> {
     let n = input.len();

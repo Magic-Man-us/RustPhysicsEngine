@@ -56,6 +56,16 @@ jobs:
       - name: Check the README example
         run: cargo run --example readme_quickstart
 
+      # Rustdoc warnings are rendering bugs, not style. `[k]` in a formula
+      # becomes a broken intra-doc link and `<counts>` becomes an unclosed
+      # HTML tag that swallows the rest of the line, so the published docs
+      # show something other than what the comment says. There were 81 of
+      # these; denying them keeps the count at zero.
+      - name: Documentation
+        run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest

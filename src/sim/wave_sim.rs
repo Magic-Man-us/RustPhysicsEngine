@@ -84,7 +84,7 @@ impl WaveEquation1D {
     }
 
     /// Advance one time step using the leapfrog scheme with fixed endpoints
-    /// u[0] = u[nx-1] = 0.
+    /// `u[0] = u[nx-1] = 0`.
     pub fn step(&mut self, dt: f64) {
         let r2 = (self.wave_speed * dt / self.dx).powi(2);
 
@@ -105,9 +105,13 @@ impl WaveEquation1D {
     ///
     /// Interior update is identical to `step`. At the boundaries the outgoing
     /// characteristic is approximated:
-    ///   u[0]^{n+1}     = u[1]^n      + (r - 1)/(r + 1) (u[1]^{n+1}     - u[0]^n)
-    ///   u[nx-1]^{n+1}  = u[nx-2]^n   + (r - 1)/(r + 1) (u[nx-2]^{n+1}  - u[nx-1]^n)
-    /// where r = c dt / dx.
+    ///
+    /// ```text
+    /// u[0]^{n+1}     = u[1]^n      + (r - 1)/(r + 1) (u[1]^{n+1}     - u[0]^n)
+    /// u[nx-1]^{n+1}  = u[nx-2]^n   + (r - 1)/(r + 1) (u[nx-2]^{n+1}  - u[nx-1]^n)
+    /// ```
+    ///
+    /// where `r = c dt / dx`.
     ///
     /// These conditions absorb normally-incident waves perfectly (first order
     /// in angle of incidence for oblique waves).

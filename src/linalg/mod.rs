@@ -63,7 +63,7 @@ impl Mat3 {
             + d[0][2] * (d[1][0] * d[2][1] - d[1][1] * d[2][0])
     }
 
-    /// Returns the transpose of this matrix: A^T[i][j] = A[j][i].
+    /// Returns the transpose of this matrix: `A^T[i][j] = A[j][i]`.
     #[must_use]
     pub fn transpose(&self) -> Self {
         let d = &self.data;

@@ -741,7 +741,7 @@ impl Metric {
     }
 
     /// Max residual of the first Bianchi identity
-    /// R_{i[jkl]} : R_ijkl + R_iklj + R_iljk = 0, normalized by the largest
+    /// `R_{i[jkl]}` : `R_ijkl + R_iklj + R_iljk = 0`, normalized by the largest
     /// Riemann component.
     #[must_use]
     pub fn bianchi_identity_residual(&self, p: &VecN) -> f64 {

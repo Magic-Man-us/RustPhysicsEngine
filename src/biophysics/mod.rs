@@ -111,7 +111,7 @@ pub fn nernst_potential(temperature: f64, z: f64, c_out: f64, c_in: f64) -> f64 
 }
 
 /// Goldman-Hodgkin-Katz voltage equation for K⁺, Na⁺, and Cl⁻.
-/// Vm = (RT/F) × ln((Pk[K]o + Pna[Na]o + Pcl[Cl]i) / (Pk[K]i + Pna[Na]i + Pcl[Cl]o))
+/// `Vm = (RT/F) × ln((Pk[K]o + Pna[Na]o + Pcl[Cl]i) / (Pk[K]i + Pna[Na]i + Pcl[Cl]o))`
 pub fn goldman_potential(
     temperature: f64,
     pk: f64,
@@ -138,12 +138,12 @@ pub fn resting_membrane_potential_typical() -> f64 {
 
 // ── Enzyme Kinetics ──
 
-/// Michaelis-Menten kinetics: v = Vmax × [S] / (Km + [S])
+/// Michaelis-Menten kinetics: `v = Vmax × [S] / (Km + [S])`
 pub fn michaelis_menten(vmax: f64, km: f64, substrate: f64) -> f64 {
     vmax * substrate / (km + substrate)
 }
 
-/// Competitive inhibition: v = Vmax × [S] / (Km(1 + [I]/Ki) + [S])
+/// Competitive inhibition: `v = Vmax × [S] / (Km(1 + [I]/Ki) + [S])`
 pub fn michaelis_menten_inhibited(
     vmax: f64,
     km: f64,
@@ -155,7 +155,7 @@ pub fn michaelis_menten_inhibited(
     vmax * substrate / (km * (1.0 + inhibitor / ki) + substrate)
 }
 
-/// Lineweaver-Burk transform: returns (1/[S], 1/v) for double-reciprocal plot
+/// Lineweaver-Burk transform: returns `(1/[S], 1/v)` for double-reciprocal plot
 pub fn lineweaver_burk(vmax: f64, km: f64, substrate: f64) -> (f64, f64) {
     assert!(substrate > 0.0, "substrate must be positive");
     let v = michaelis_menten(vmax, km, substrate);
@@ -163,7 +163,7 @@ pub fn lineweaver_burk(vmax: f64, km: f64, substrate: f64) -> (f64, f64) {
     (1.0 / substrate, 1.0 / v)
 }
 
-/// Hill equation for cooperative binding: v = Vmax × [S]^n / (K^n + [S]^n)
+/// Hill equation for cooperative binding: `v = Vmax × [S]^n / (K^n + [S]^n)`
 pub fn hill_equation(vmax: f64, k: f64, substrate: f64, n: f64) -> f64 {
     let s_n = substrate.powf(n);
     let k_n = k.powf(n);

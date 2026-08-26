@@ -176,7 +176,7 @@ pub fn kmeans_pp_init(
 /// common enough to matter.
 const RESTARTS: usize = 10;
 
-/// Lloyd's algorithm, restarted [`RESTARTS`] times from independent
+/// Lloyd's algorithm, restarted `RESTARTS` (10) times from independent
 /// k-means++ starts, keeping the run with the lowest inertia.
 ///
 /// The result carries the winning run's inertia history, which is

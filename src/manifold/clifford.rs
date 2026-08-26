@@ -167,7 +167,7 @@ impl Multivector {
         out
     }
 
-    /// Scalar product <a b>_0.
+    /// Scalar product `<a b>_0`.
     #[must_use]
     pub fn scalar_product(&self, o: &Self) -> f64 {
         let mut s = 0.0;
@@ -398,7 +398,7 @@ impl Multivector {
         out
     }
 
-    /// Logarithm of a rotor R = <R>_0 + <R>_2 (bivector generator).
+    /// Logarithm of a rotor `R = <R>_0 + <R>_2` (bivector generator).
     #[must_use]
     pub fn log(&self) -> Option<Self> {
         let s = self.coeffs[0];
@@ -677,7 +677,7 @@ impl Multivector {
     }
 }
 
-/// Basis-blade multiplication table: table[a][b] = (sign, result mask).
+/// Basis-blade multiplication table: `table[a][b] = (sign, result mask)`.
 #[must_use]
 pub fn cayley_table(p: usize, q: usize, r: usize) -> Vec<Vec<(f64, usize)>> {
     let n = 1 << (p + q + r);

@@ -7,21 +7,21 @@
 use crate::fractals::Complex;
 use crate::transforms::fft::{fft_any, ifft_any, rfft};
 
-/// Discrete Fourier Transform: X[k] = Σ x[n]·e^(-j2πkn/N), returns (real, imag) pairs
+/// Discrete Fourier Transform: `X[k] = Σ x[n]·e^(-j2πkn/N)`, returns (real, imag) pairs
 #[must_use]
 pub fn dft(signal: &[f64]) -> Vec<(f64, f64)> {
     let buf: Vec<Complex> = signal.iter().map(|&x| Complex::new(x, 0.0)).collect();
     fft_any(&buf).iter().map(|c| (c.re, c.im)).collect()
 }
 
-/// Inverse DFT: x[n] = (1/N)·Σ X[k]·e^(j2πkn/N)
+/// Inverse DFT: `x[n] = (1/N)·Σ X[k]·e^(j2πkn/N)`
 #[must_use]
 pub fn inverse_dft(spectrum: &[(f64, f64)]) -> Vec<f64> {
     let buf: Vec<Complex> = spectrum.iter().map(|&(re, im)| Complex::new(re, im)).collect();
     ifft_any(&buf).iter().map(|c| c.re).collect()
 }
 
-/// Power spectrum: |X[k]|² = Re² + Im² for each frequency bin.
+/// Power spectrum: `|X[k]|² = Re² + Im²` for each frequency bin.
 ///
 /// Uses the real FFT and reconstructs the upper half from conjugate
 /// symmetry. Output length always equals `signal.len()`.
