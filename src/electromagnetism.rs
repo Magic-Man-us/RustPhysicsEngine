@@ -1,3 +1,17 @@
+//! Classical electromagnetism, from Coulomb's law to radiating dipoles.
+//!
+//! Electrostatics (Coulomb force and field, potential, Gauss flux,
+//! capacitance), magnetostatics (the force on a moving charge, the field
+//! of a wire, solenoid and toroid, dipole moments and torques), induction
+//! (Faraday and motional EMF, self and mutual inductance), and circuits
+//! from Ohm's law through RC transients to the AC steady state -- complex
+//! reactance, RLC impedance, resonance, quality factor and bandwidth,
+//! power factor, and transformer ratios.
+//!
+//! The wave section covers the free-space relations: propagation speed,
+//! the Poynting magnitude, energy density, the impedance of free space
+//! `Z₀ = μ₀c ≈ 376.73 Ω`, dipole radiation and the Larmor power.
+
 use crate::math::{Vec3, constants};
 
 // ── Electrostatics ──

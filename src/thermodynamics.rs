@@ -1,3 +1,21 @@
+//! Thermodynamics: gases, heat transfer, cycles and phase change.
+//!
+//! The ideal gas law in each of its four solved forms, and the kinetic
+//! picture behind it -- average kinetic energy, RMS speed, mean free path.
+//! Work and entropy change along isothermal, isobaric and adiabatic paths.
+//!
+//! Heat transfer by all three mechanisms: Fourier conduction (with an
+//! explicit 1-D stepper and its stability limit), Newton's law of cooling
+//! and convection, and radiative exchange. The dimensionless groups that
+//! classify convection -- Grashof, Rayleigh, Prandtl, Nusselt, Biot --
+//! are here too.
+//!
+//! Cycles through the Carnot efficiency and the coefficients of
+//! performance for refrigerators and heat pumps; phase change through
+//! latent heat, Clausius-Clapeyron, boiling-point elevation, freezing-point
+//! depression, and wet-steam quality. Temperature scale conversions round
+//! it out.
+
 use crate::math::constants;
 
 // ── Ideal Gas Law ──

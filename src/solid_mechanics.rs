@@ -1,3 +1,19 @@
+//! Strength of materials: stress, strain, elastic constants and beams.
+//!
+//! Engineering and true stress and strain, and the elastic constants with
+//! the identities that connect them -- any two of `E`, `G`, `K` and `ν`
+//! determine the other two for an isotropic material, and the conversions
+//! are all here.
+//!
+//! Beam bending: cantilever and simply-supported deflections, bending
+//! moment and stress, and second moments of area for rectangular and
+//! circular sections. Design closes with the von Mises equivalent stress,
+//! the safety factor, and strain energy density.
+//!
+//! For the tensor formulation and yield surfaces see
+//! [`crate::continuum_mechanics`]; for finite-element beams and modal
+//! analysis see [`crate::resonance::structural`].
+
 use crate::math::constants::PI;
 
 // ---------------------------------------------------------------------------

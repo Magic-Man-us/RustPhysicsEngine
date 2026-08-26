@@ -1,3 +1,77 @@
+//! A zero-dependency library for physics, mathematics and engineering
+//! computation.
+//!
+//! # What this is for
+//!
+//! Every routine here is written so that something about it can be
+//! *checked*: against a closed form, against a conservation law, against an
+//! independent implementation of the same quantity, or against an exact
+//! identity over integers. A test that only asserts a function ran is not
+//! evidence. Where a result is approximate its error has a stated bound
+//! derived from the method; where it is exact the assertion uses `==`.
+//!
+//! That principle decides the shape of the API. Solvers return
+//! [`Result`] rather than panicking on non-convergence, so a caller can
+//! tell "did not converge" from "converged to this". Functions validate
+//! their arguments, and the guards are written `!(x > 0.0)` rather than
+//! `x <= 0.0` so that NaN is rejected too. Physical constants come from
+//! one table, [`math::constants`], and the values fixed by the 2019 SI
+//! redefinition are exact.
+//!
+//! # Finding your way around
+//!
+//! The crate is wide -- 71 top-level modules. `docs/MODULE_MAP.md` in the
+//! repository is a generated map of every module with its size and
+//! summary. The rough shape:
+//!
+//! | Area | Modules |
+//! |---|---|
+//! | Numeric primitives | [`core`], [`math`], [`linalg`], [`numerical`], [`special`] |
+//! | Exact and symbolic | [`exact`], [`discrete`], [`graph`], [`codes`] |
+//! | Classical physics | [`classical`], [`gravitation`], [`solid_mechanics`], [`continuum_mechanics`], [`resonance`] |
+//! | Thermal and statistical | [`thermodynamics`], [`statistical_mechanics`], [`radiation`] |
+//! | Electromagnetic | [`electromagnetism`], [`electronics`], [`rf`], [`photonics`], [`plasma`], [`magnetohydrodynamics`] |
+//! | Waves and signals | [`waves`], [`optics`], [`acoustics`], [`transforms`], [`dsp`], [`signal_processing`], [`audio`] |
+//! | Fluids | [`fluids`], [`cfd`], [`fluid_instabilities`], [`propulsion`] |
+//! | Modern physics | [`relativity`], [`general_relativity`], [`quantum`], [`particle_physics`], [`nuclear`], [`neutronics`] |
+//! | Space | [`astrophysics`] |
+//! | PDE solvers | [`fem`], [`sim`], [`fields`], [`vector_calculus`] |
+//! | Life and chemistry | [`chemistry`], [`biophysics`] |
+//! | Probability and data | [`statistics`], [`stochastic`], [`monte_carlo`], [`information_theory`], [`learn`] |
+//! | Decisions | [`optimization`], [`finance`] |
+//! | Geometry | [`geometry`], [`curves`], [`trigonometry`], [`quaternion`], [`manifold`], [`spatial`], [`mesh`] |
+//! | Patterns | [`fractals`], [`patterns`], [`nonlinear`] |
+//! | Reference and utility | [`units`], [`materials`], [`color_science`], [`control_systems`], [`atmosphere`], [`geophysics`], [`error`] |
+//!
+//! # Conventions
+//!
+//! **Units are SI** unless a function's documentation says otherwise, and
+//! angles are radians. [`units`] converts, and [`units::quantity`] carries
+//! dimensions in the type so that adding a velocity to a time is an error
+//! rather than a number.
+//!
+//! **`f64` throughout**, except where exactness is the point: [`exact`]
+//! works over arbitrary-precision integers and rationals, and
+//! [`units::dimensional`] computes null spaces over
+//! [`exact::rational::Rational`] because a group of quantities is exactly
+//! dimensionless or it is not.
+//!
+//! **Randomness comes from [`monte_carlo::Rng`]**, a linear congruential
+//! generator that returns its raw state. The low bits therefore have a
+//! short period, so use [`monte_carlo::Rng::below`] for any small-integer
+//! draw rather than `next_u64() % n`.
+//!
+//! # Example
+//!
+//! ```
+//! use rust_physics_engine::units::quantity::{Dim, Quantity};
+//!
+//! let v = Quantity::new(3.0, Dim::new(1, 0, -1, 0, 0, 0, 0)); // m/s
+//! let t = Quantity::new(2.0, Dim::TIME);
+//! assert_eq!(v.mul(&t).unwrap().dim, Dim::LENGTH);  // exactly a length
+//! assert!(v.add(&t).is_err());                      // and not a time
+//! ```
+
 // Style allowances for a numerics codebase: index loops mirror the math
 // notation in matrix/stencil kernels, and public signatures follow the
 // roadmap's frozen APIs even where clippy would prefer fewer arguments or

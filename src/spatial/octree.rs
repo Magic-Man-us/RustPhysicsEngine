@@ -1,3 +1,15 @@
+//! Barnes-Hut octree for N-body force approximation.
+//!
+//! Direct summation costs O(N²). The octree groups distant bodies and
+//! treats each group as a single mass at its centre of mass, which brings
+//! the cost to O(N log N).
+//!
+//! The approximation is controlled by `theta`: a node is used as a whole
+//! when its width divided by the distance to it is below that threshold.
+//! Smaller `theta` is more accurate and slower, and `theta = 0` degenerates
+//! to direct summation. The conventional default of 0.5 is
+//! [`BH_THETA`].
+
 use crate::math::Vec3;
 use crate::math::constants::G;
 use crate::astrophysics::nbody::Body;

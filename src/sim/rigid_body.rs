@@ -1,3 +1,19 @@
+//! Rigid body dynamics in three dimensions.
+//!
+//! State is position, linear velocity, orientation as a unit quaternion,
+//! and angular velocity. Rotation uses a quaternion rather than Euler
+//! angles because it composes without gimbal lock and stays well
+//! conditioned under renormalization.
+//!
+//! Angular motion follows Euler's equations, which carry the `ω × Iω`
+//! term -- the reason a freely spinning body with three distinct moments
+//! of inertia tumbles rather than spinning steadily about an intermediate
+//! axis.
+//!
+//! Includes inertia tensors for the standard bodies, force and torque
+//! accumulation, sphere-sphere collision detection, and impulse-based
+//! collision response with restitution.
+
 use crate::math::Vec3;
 use crate::quaternion::Quaternion;
 

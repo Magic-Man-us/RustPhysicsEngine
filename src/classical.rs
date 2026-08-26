@@ -1,3 +1,17 @@
+//! Newtonian mechanics: kinematics, dynamics, and the harmonic
+//! oscillator.
+//!
+//! Linear and rotational motion under constant acceleration, forces and
+//! momentum, work, energy and power, collisions in one dimension from
+//! perfectly elastic to perfectly inelastic, moments of inertia for the
+//! standard bodies, and circular motion.
+//!
+//! The oscillator section runs from the undamped period through the
+//! damped response -- damping ratio, logarithmic decrement, quality factor
+//! -- to the driven steady state and its resonance, and ends with the
+//! normal frequencies of two coupled oscillators. For the same problem
+//! solved numerically, or with more than two masses, see [`crate::resonance`].
+
 use crate::math::Vec3;
 
 // ── Kinematics ──

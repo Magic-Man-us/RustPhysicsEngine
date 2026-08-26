@@ -1,3 +1,17 @@
+//! Optimization: continuous, combinatorial, and strategic.
+//!
+//! The module root holds the scalar and unconstrained-gradient methods --
+//! golden section and Brent for a bracketed minimum of one variable, then
+//! gradient descent with and without momentum, Adam, numerical gradients,
+//! and the regression and curve fitting built on them.
+//!
+//! The submodules take it further: [`lp`] for linear programming and
+//! duality, [`integer`] for branch-and-bound and dynamic programming,
+//! [`network`] for flows and scheduling, [`convex`] for L-BFGS, proximal
+//! methods and ADMM, [`metaheuristics`] for the derivative-free and
+//! population-based methods, [`game_theory`] for equilibria and
+//! cooperative solutions, and [`least_squares`] for Levenberg-Marquardt.
+
 // Numerical optimization algorithms: 1D search, gradient-based, derivative-free,
 // and linear/nonlinear least-squares fitting.
 

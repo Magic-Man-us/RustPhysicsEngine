@@ -1,3 +1,15 @@
+//! The standard atmosphere, humidity, and near-surface wind.
+//!
+//! The barometric formula and the ISA lapse-rate model give pressure,
+//! temperature and density against altitude, plus the pressure and density
+//! altitudes an aircraft altimeter reports. Humidity is covered by the
+//! Magnus formulation for dew point and relative humidity.
+//!
+//! Wind includes the power-law shear profile, the wind power density that
+//! sets a turbine's available energy (`P/A = ½ρv³`, so a doubling of wind
+//! speed is eight times the power), the Beaufort scale, and the Coriolis
+//! parameter `f = 2Ω sin φ`.
+
 use crate::math::constants;
 
 // Atmospheric constants

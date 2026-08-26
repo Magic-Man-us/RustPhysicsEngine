@@ -1,3 +1,14 @@
+//! Gravitational radiation from a compact binary.
+//!
+//! Quadrupole-formula results for an inspiralling binary: the emitted
+//! luminosity, the wave frequency (twice the orbital frequency), the
+//! strain amplitude at a given distance, and the time remaining to merger.
+//!
+//! The chirp mass `ℳ = (m₁m₂)^(3/5)/(m₁+m₂)^(1/5)` is the combination
+//! that governs all of them -- it is the parameter the inspiral waveform
+//! actually determines, which is why it is measured far better than either
+//! individual mass.
+
 use crate::math::Vec3;
 use crate::math::constants::{G, C, PI};
 

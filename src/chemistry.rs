@@ -1,3 +1,14 @@
+//! Reaction kinetics, chemical thermodynamics and electrochemistry.
+//!
+//! Rate laws for first- and second-order decay and the Arrhenius
+//! temperature dependence `k = A exp(−Eₐ/RT)`; the Gibbs free energy and
+//! its relation to the equilibrium constant, `ΔG° = −RT ln K`, with the
+//! van 't Hoff equation for how K moves with temperature; and Hess's law.
+//!
+//! Electrochemistry covers the Nernst equation, cell potentials and
+//! Faraday electrolysis. Solution chemistry covers pH and pOH, molarity,
+//! dilution and osmotic pressure.
+
 use crate::math::constants;
 
 /// Faraday constant (C/mol).

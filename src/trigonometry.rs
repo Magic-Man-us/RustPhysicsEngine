@@ -1,3 +1,17 @@
+//! Triangle solving, trigonometric identities, and hyperbolic functions.
+//!
+//! The laws of sines and cosines in both directions -- side from angles
+//! and angle from sides -- and the SAS triangle area.
+//!
+//! The identities are provided as functions rather than left to the caller
+//! to expand: sum and difference, double and half angle, and
+//! product-to-sum. The hyperbolic family includes the reciprocals (`sech`,
+//! `csch`, `coth`) and inverses that `f64` does not provide directly.
+//!
+//! Angle utilities close the module: normalization to `[0, 2π)` or
+//! `(−π, π]`, the signed shortest difference between two angles, and
+//! classification as acute, right or obtuse.
+
 use crate::math::constants::PI;
 
 const TWO_PI: f64 = 2.0 * PI;

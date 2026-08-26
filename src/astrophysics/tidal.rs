@@ -1,3 +1,14 @@
+//! Tidal forces and the Roche limit.
+//!
+//! The tidal acceleration is the *difference* in gravitational pull across
+//! a body, so it falls as `1/r³` rather than `1/r²` -- which is why the
+//! Moon raises larger tides on Earth than the far more massive Sun does.
+//!
+//! The Roche limit is given in both the rigid and fluid forms; the fluid
+//! limit is the larger, because a fluid body deforms and so becomes easier
+//! to pull apart. Tidal heating, the locking timescale and the tidal
+//! tensor complete the module.
+
 use crate::math::Vec3;
 use crate::math::constants::G;
 

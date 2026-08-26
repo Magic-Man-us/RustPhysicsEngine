@@ -1,3 +1,19 @@
+//! Reactor physics: criticality, neutron diffusion, and shielding.
+//!
+//! Criticality through the six-factor formula and `k_eff`, with
+//! reactivity and the reactor period. Neutron transport in diffusion
+//! theory: the diffusion coefficient and length, migration length,
+//! thermal utilization, and the flux in a slab.
+//!
+//! Cross sections and reaction rates convert between microscopic and
+//! macroscopic pictures, including the 1/v absorption law. Operations
+//! covers reactor power, burnup and decay heat.
+//!
+//! Shielding closes with attenuation, half- and tenth-value layers, and
+//! the buildup factor that corrects the exponential law for scattered
+//! photons -- the correction that matters, since ignoring it
+//! underestimates the dose behind a thick shield.
+
 use crate::math::constants;
 
 // ── Neutron Multiplication ──

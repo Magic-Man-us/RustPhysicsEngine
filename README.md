@@ -31,15 +31,15 @@ assertion uses `==`.
 |---|---|
 | **Public functions and methods** | 6,365 (3,949 free functions, 2,416 methods) |
 | **Public types** | 429 structs, enums and traits |
-| **Top-level modules** | 71, across 296 source files |
-| **Source** | 265,190 lines of Rust |
+| **Top-level modules** | 71 public, across 296 source files — see the [module map](docs/MODULE_MAP.md) |
+| **Source** | 266,122 lines of Rust |
 | **Unit tests** | 4,193 |
 | **Property tests** | 577, across 49 files |
 | **Line coverage** | 97.89% (174,685 lines, 3,681 uncovered) |
 | **Function coverage** | 99.33% (20,200 functions, 136 uncovered) |
 | **Formal verification** | 20 Kani harnesses (13 in CI, 7 behind `kani-slow`) |
 | **Undefined behaviour** | Miri-clean; the crate contains no `unsafe` |
-| **API documentation** | `cargo doc` builds warning-free; CI denies rustdoc warnings |
+| **API documentation** | every module carries a `//!` summary; `cargo doc` is warning-free, and CI denies rustdoc warnings |
 | **Dependencies** | none — `Cargo.lock` holds exactly one package |
 | **Edition** | 2021, `f64` throughout |
 
@@ -909,9 +909,16 @@ strict Clippy pass.
 
 ## Further reading
 
+- [`docs/MODULE_MAP.md`](docs/MODULE_MAP.md) — a generated map of every one of
+  the 295 modules: a size-annotated tree, tables by subject area, and a row per
+  module with its line count, public item counts and summary. Produced by
+  [`tools/gen_module_map.py`](tools/gen_module_map.py) from the sources, so
+  nothing in it is transcribed; CI fails if it is out of date.
 - [`docs/ROADMAP_PART4.md`](docs/ROADMAP_PART4.md) — the specification the most
   recent tranche of work was built against, with the function signatures and
   the property each module had to satisfy. Marked complete.
+- `cargo doc --no-deps --open` — the API documentation. The crate root carries
+  an orientation page; every module has a summary.
 
 ## License
 

@@ -1,3 +1,20 @@
+//! Plasma parameters: the characteristic lengths, frequencies and speeds.
+//!
+//! The Debye length is where it starts -- the distance over which a
+//! plasma screens a charge, and therefore the scale below which "plasma"
+//! stops being the right description. The Debye number counts particles
+//! in that sphere, and a plasma is only collective if that number is
+//! large.
+//!
+//! Frequencies: electron and ion plasma frequencies, and the cyclotron
+//! frequencies in a magnetic field, with the associated Larmor radius.
+//! Speeds: thermal, ion-acoustic, Alfvén and magnetosonic. Plus magnetic
+//! pressure, plasma beta, the skin depth, the Coulomb logarithm and the
+//! collision frequency.
+//!
+//! For a conducting fluid treated as a continuum see
+//! [`crate::magnetohydrodynamics`].
+
 use crate::math::constants::{C, E_CHARGE, EPSILON_0, K_B, M_ELECTRON, MU_0, PI};
 
 /// λD = √(ε₀kT / (nq²))

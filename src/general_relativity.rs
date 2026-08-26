@@ -1,3 +1,21 @@
+//! General relativity: black holes and cosmology.
+//!
+//! The Schwarzschild solution -- the metric components, the horizon at
+//! `r_s = 2GM/c²`, proper time and gravitational redshift, the photon
+//! sphere at `1.5 r_s` and the innermost stable circular orbit at
+//! `3 r_s`, with the effective potential and the orbital energy and
+//! angular momentum that produce them. The Kerr solution adds rotation:
+//! the horizon, the ergosphere, the shifted ISCO, and the frame-dragging
+//! rate.
+//!
+//! Cosmology covers the Friedmann equation for the Hubble parameter, the
+//! critical density, redshift-distance relations, luminosity distance,
+//! lookback time, and the scale factor and CMB temperature at a given
+//! redshift.
+//!
+//! For four-vectors and curved-spacetime tensor machinery see
+//! [`crate::manifold::spacetime`] and [`crate::manifold::metric`].
+
 use crate::math::constants::{G, C, PI};
 
 const C2: f64 = C * C;

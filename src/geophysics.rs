@@ -1,3 +1,18 @@
+//! The solid Earth: gravity, seismology, and heat.
+//!
+//! Gravity surveying -- the latitude formula, the free-air and Bouguer
+//! corrections, the resulting anomaly, and Airy isostatic compensation.
+//!
+//! Seismology: P- and S-wave travel times, epicentral distance from the
+//! S−P lag, the Richter and moment magnitude scales, and seismic moment
+//! and energy. The moment magnitude is the one to use for large events,
+//! because Richter saturates.
+//!
+//! Heat flow: pressure and temperature with depth, the geothermal
+//! gradient, and geothermal power. Plate tectonics closes the module with
+//! Euler-pole plate velocities and the square-root-of-age law for
+//! seafloor depth.
+
 use crate::math::constants;
 
 // ── Gravity & Geoid constants ────────────────────────────────────────

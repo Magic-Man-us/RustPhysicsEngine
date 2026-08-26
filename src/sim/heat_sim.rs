@@ -1,3 +1,14 @@
+//! Heat conduction and convection-diffusion on a grid.
+//!
+//! Explicit finite differences in two and three dimensions, with Dirichlet
+//! and Neumann boundaries, sources, and an advection term for
+//! convection-diffusion.
+//!
+//! Explicit stepping is only conditionally stable: the step must satisfy
+//! `α Δt / Δx² ≤ 1/4` in 2-D and `1/6` in 3-D, so halving the grid spacing
+//! quarters the allowable time step. The stability limit is provided as a
+//! function rather than left to the caller to remember.
+
 // Heat conduction and convection simulation on structured grids.
 //
 // ## Governing PDEs

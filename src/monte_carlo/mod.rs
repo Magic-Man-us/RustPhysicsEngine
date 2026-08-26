@@ -1,3 +1,19 @@
+//! Monte Carlo methods and the random number generator behind them.
+//!
+//! Integration (plain, 2-D, and importance-sampled), random walks in one
+//! to three dimensions, the Wiener and Ornstein-Uhlenbeck processes,
+//! Langevin dynamics, and Metropolis-Hastings sampling with a
+//! worked Ising example.
+//!
+//! # A warning about [`Rng`]
+//!
+//! It is a linear congruential generator that returns its raw state, so
+//! the low bits have a short period: `next_u64() % m` for a power-of-two
+//! `m` cycles through a handful of values -- `% 2` gives 0,1,0,1 and `% 4`
+//! gives 0,3,2,1 forever. Use [`Rng::below`], which takes the high bits,
+//! for any small-integer draw. It is adequate for simulation and testing
+//! and is not cryptographically secure.
+
 use crate::math::constants::K_B;
 
 const LCG_MULTIPLIER: u64 = 6_364_136_223_846_793_005;

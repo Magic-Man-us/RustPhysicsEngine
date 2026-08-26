@@ -1,3 +1,21 @@
+//! Dense and sparse linear algebra.
+//!
+//! [`Matrix`] is the dense row-major `f64` type everything here operates
+//! on. The factorizations are chosen by what the matrix is: [`lu`] with
+//! partial pivoting for a general square solve, [`mod@cholesky`] for symmetric
+//! positive-definite (half the work, and it fails cleanly if the matrix is
+//! not), [`qr`] by Householder reflections for least squares, [`mod@svd`] by
+//! one-sided Jacobi for rank and pseudo-inverse, and [`tridiagonal`] for
+//! the Thomas algorithm in O(n).
+//!
+//! [`eigen`] provides the symmetric eigenproblem and general eigenvalues.
+//! [`sparse`] provides CSR storage with conjugate gradient and a
+//! Jacobi-preconditioned variant, for the large systems that the PDE
+//! solvers in [`crate::fem`] produce.
+//!
+//! Note that `pcg_jacobi`'s tolerance is relative to the norm of the
+//! right-hand side, not absolute.
+
 pub mod cholesky;
 pub mod eigen;
 pub mod lu;

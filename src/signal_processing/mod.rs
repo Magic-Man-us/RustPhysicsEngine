@@ -1,3 +1,18 @@
+//! Time-domain signal operations and test waveforms.
+//!
+//! Convolution, cross- and autocorrelation, normalization, windowing, and
+//! the simple smoothers -- moving average, exponential moving average, and
+//! the median filter, which unlike the other two removes impulsive noise
+//! without smearing an edge.
+//!
+//! Waveform generators (sine, square, sawtooth, triangle, noise, chirp)
+//! provide test signals.
+//!
+//! This module is the elementary layer and re-exports the pieces of
+//! [`crate::transforms`] and [`crate::dsp`] most often wanted alongside
+//! it. For FFTs of any length go to [`mod@crate::transforms::fft`]; for filter
+//! *design* go to [`crate::dsp`].
+
 // The FFT moved to `transforms::fft` and the window generators and
 // first-order RC filters to `dsp` (Step 0 of roadmap Part 3); everything
 // stays importable from its old path here.

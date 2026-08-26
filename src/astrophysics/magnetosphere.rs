@@ -1,3 +1,13 @@
+//! Planetary dipole fields and the magnetopause.
+//!
+//! The magnetic dipole field in vector form, field-line tracing by
+//! integration along the field, and the magnetopause standoff distance --
+//! where magnetic pressure balances the solar wind's dynamic pressure,
+//! which is what sets the size of a magnetosphere.
+//!
+//! Field strength falls as `1/r³`, so the standoff distance depends only
+//! weakly (as the sixth root) on the wind pressure.
+
 use crate::math::Vec3;
 use crate::math::constants::PI;
 

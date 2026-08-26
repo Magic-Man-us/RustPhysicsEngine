@@ -1,3 +1,14 @@
+//! Impacts, mergers, and collision probability.
+//!
+//! Impact geometry and speed (including the gravitational focusing that
+//! makes the impact speed at least the escape velocity, however slowly the
+//! bodies approach), perfectly inelastic merger of mass and momentum, and
+//! the energy released.
+//!
+//! Crater scaling and the collision probability for objects sharing a
+//! volume of space follow, along with the debris-flux relations used for
+//! orbital collision risk.
+
 use crate::math::Vec3;
 use crate::math::constants::G;
 

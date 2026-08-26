@@ -1,3 +1,14 @@
+//! The wave equation in one and two dimensions.
+//!
+//! Explicit second-order finite differences on `∂²u/∂t² = c²∇²u`, with
+//! fixed, free, and Mur first-order absorbing boundaries. The absorbing
+//! condition passes a normally-incident wave out of the domain exactly and
+//! degrades with the angle of incidence.
+//!
+//! Stability requires the Courant number `r = cΔt/Δx` to satisfy `r ≤ 1`
+//! in 1-D and `r ≤ 1/√2` in 2-D. At exactly `r = 1` in one dimension the
+//! scheme is an exact shift and has no dispersion error at all.
+
 // Wave equation simulation on structured grids using finite differences.
 //
 // PDE (1D): ∂²u/∂t² = c² ∂²u/∂x²

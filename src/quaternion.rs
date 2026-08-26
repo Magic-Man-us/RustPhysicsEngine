@@ -1,3 +1,17 @@
+//! Unit quaternions for 3-D rotation.
+//!
+//! [`Quaternion`] with the full algebra -- Hamilton product, conjugate,
+//! inverse, norm and normalization -- and conversion to and from axis-angle,
+//! Euler angles and rotation matrices.
+//!
+//! Quaternions are used for orientation rather than Euler angles because
+//! they compose without gimbal lock and interpolate smoothly: [`slerp`]
+//! moves along the great circle at constant angular rate, and [`nlerp`] is
+//! the cheaper normalized-linear approximation to it.
+//!
+//! For the Lie-group view of the same object, and for rotations in four
+//! dimensions, see [`crate::manifold::lie`].
+
 use std::ops::{Add, Mul, Neg, Sub};
 
 use crate::math::constants::PI;

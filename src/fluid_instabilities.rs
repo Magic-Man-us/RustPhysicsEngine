@@ -1,3 +1,18 @@
+//! When a fluid configuration stops being stable, and how fast it comes
+//! apart.
+//!
+//! Each entry here is a growth rate or a threshold. Rayleigh-Taylor for a
+//! heavy fluid over a light one, with the Atwood number and the most
+//! unstable wavelength; Kelvin-Helmholtz for a velocity shear;
+//! Rayleigh-Bénard convection through the Rayleigh number and its critical
+//! value; Plateau-Rayleigh for the breakup of a liquid column into drops;
+//! Richtmyer-Meshkov for a shock crossing an interface; and the Jeans
+//! criterion, which is the same instability applied to a self-gravitating
+//! gas cloud and so sets the mass at which a cloud collapses into a star.
+//!
+//! The Richardson number and its stability test cover stratified shear
+//! flow.
+
 use crate::math::constants;
 
 // ── Constants ────────────────────────────────────────────────────────────────

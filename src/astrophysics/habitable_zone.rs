@@ -1,3 +1,14 @@
+//! Habitable zone boundaries and tidal locking.
+//!
+//! Inner and outer edges scale as the square root of the stellar
+//! luminosity, with the conventional coefficients: 0.95 AU and 1.37 AU per
+//! square root of a solar luminosity.
+//!
+//! Also the mass-luminosity relation for main-sequence stars, equilibrium
+//! temperature for a given albedo, and the tidal locking timescale --
+//! which matters here because low-mass stars have close-in habitable
+//! zones, so their habitable planets are likely to be locked.
+
 use crate::math::constants;
 
 /// Solar luminosity L☉ (W), re-exported from [`constants`].

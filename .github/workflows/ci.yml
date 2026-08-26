@@ -66,6 +66,19 @@ jobs:
         env:
           RUSTDOCFLAGS: "-D warnings"
 
+      # docs/MODULE_MAP.md is generated from the source tree, so it can go
+      # stale the moment a module is added, renamed or resized. This
+      # re-derives it and fails if the committed copy differs, which is the
+      # only thing that keeps a generated file honest.
+      - name: Module map is current
+        run: python3 tools/gen_module_map.py --check
+
+      # Every module carries a //! summary, and the map is built from those
+      # first sentences -- a module without one would appear in the map as a
+      # blank row.
+      - name: Every module is documented
+        run: python3 tools/check_module_docs.py
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest

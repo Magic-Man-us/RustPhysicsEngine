@@ -1,3 +1,15 @@
+//! Colour: the standard spaces, the transforms between them, and
+//! perceptual measures.
+//!
+//! RGB to and from HSV, HSL and CIE XYZ, with the sRGB transfer function
+//! kept separate from the linear values -- the distinction that most
+//! colour bugs come from, since averaging or blending is only meaningful
+//! in linear light.
+//!
+//! Also spectral colour (wavelength to RGB), the Planckian locus
+//! (blackbody temperature to RGB, and the correlated colour temperature
+//! back), relative luminance and the WCAG contrast ratio.
+
 /// Visible spectrum lower bound (nm).
 const WAVELENGTH_MIN_NM: f64 = 380.0;
 /// Visible spectrum upper bound (nm).

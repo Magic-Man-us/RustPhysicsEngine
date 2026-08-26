@@ -1,3 +1,18 @@
+//! Rocket propulsion and impulsive orbital transfers.
+//!
+//! The Tsiolkovsky equation `Δv = v_e ln(m₀/m_f)` and the specific
+//! impulse and mass ratio around it, thrust with and without the
+//! pressure-thrust term, staged Δv, and the gravity-turn loss that makes
+//! the ideal Δv an underestimate for a launch.
+//!
+//! Transfers: Hohmann Δv and time, the bi-elliptic alternative (which
+//! wins beyond a radius ratio of about 11.94), and plane changes. Nozzle
+//! design covers exit velocity, throat area and the area ratio for a given
+//! exit Mach number.
+//!
+//! For Lambert targeting, J2 effects and orbit propagation see
+//! [`crate::astrophysics`].
+
 use crate::math::constants::{PI, R as GAS_R};
 
 // ── Rocket Equation ──

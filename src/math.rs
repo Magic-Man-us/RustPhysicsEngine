@@ -1,3 +1,21 @@
+//! Vectors and the crate's table of physical constants.
+//!
+//! [`Vec2`] and [`Vec3`] with the usual algebra -- addition, scaling, dot
+//! and cross products, norms, normalization, projection, reflection,
+//! rotation and interpolation.
+//!
+//! [`constants`] is the single table the rest of the crate refers back
+//! to, and it is deliberately one table: duplicate definitions elsewhere
+//! are re-exports of it, and a test enforces that they agree. The values
+//! fixed by the 2019 SI redefinition -- `C`, `H`, `HBAR`, `E_CHARGE`,
+//! `K_B`, `N_A` -- are exact by definition rather than measured. Constants
+//! that are products of others, such as `FARADAY = N_A · E_CHARGE`, are
+//! computed from their factors rather than transcribed, so they cannot
+//! disagree with them.
+//!
+//! For the 2022 CODATA set with units attached see
+//! [`crate::units::quantity::constants_codata`].
+
 use std::ops::{Add, Sub, Mul, Neg};
 
 /// 2D vector (fluid grids, planar geometry).

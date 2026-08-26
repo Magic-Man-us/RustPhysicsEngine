@@ -1,3 +1,13 @@
+//! Common liquids.
+//!
+//! Density, dynamic and kinematic viscosity, surface tension, speed of
+//! sound, specific heat, and boiling and freezing points, at room
+//! temperature and one atmosphere.
+//!
+//! Viscosity is the strongly temperature-dependent one: it can change by a
+//! factor of several over a few tens of degrees, so a single figure is
+//! only a starting point.
+
 /// A fluid (liquid) with its mechanical and thermal properties at 20 degrees C
 /// unless otherwise noted in the entry.
 ///

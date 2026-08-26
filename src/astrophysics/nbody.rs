@@ -1,3 +1,17 @@
+//! Direct N-body gravitational simulation.
+//!
+//! Velocity Verlet integration, chosen because it is symplectic: it
+//! conserves a nearby "shadow" energy exactly rather than drifting, so
+//! orbits stay closed over long integrations where Runge-Kutta of the same
+//! order would spiral.
+//!
+//! Softening replaces `1/r²` with `1/(r² + ε²)` to keep close encounters
+//! from producing unbounded accelerations, at the cost of biasing the
+//! force at short range. Includes energy and momentum diagnostics, and
+//! system generators.
+//!
+//! Cost is O(N²) per step. For large N use [`crate::astrophysics::octree`].
+
 use crate::math::Vec3;
 use crate::math::constants::G;
 

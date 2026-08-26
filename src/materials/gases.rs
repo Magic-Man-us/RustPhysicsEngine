@@ -1,3 +1,13 @@
+//! Common gases.
+//!
+//! Molar mass, density at STP, specific heat at constant pressure and the
+//! specific heat ratio `γ`, thermal conductivity, viscosity and the speed
+//! of sound.
+//!
+//! `γ` is the entry most often needed: it fixes the adiabatic relations
+//! and the speed of sound `c = √(γRT/M)`, and it follows the molecular
+//! structure -- about 5/3 for a monatomic gas, 7/5 for a diatomic one.
+
 /// A gas with its thermodynamic and transport properties at STP.
 ///
 /// All values use SI units:
