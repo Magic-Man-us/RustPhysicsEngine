@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -152,7 +153,6 @@ pub fn pyfn_haversine(lat1: f64, lon1: f64, lat2: f64, lon2: f64, r: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "spherical_polygon_area", signature = (vertices))]
 pub fn pyfn_spherical_polygon_area<'py>(py: Python<'py>, vertices: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<f64> {
-    let _ = py;
     let vertices = vertices.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spherical::spherical_polygon_area(&vertices)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -190,7 +190,6 @@ pub fn pyfn_spherical_mean_weighted(points: Vec<crate::generated::types::PyVec3A
 #[pyfunction]
 #[pyo3(name = "spherical_delaunay", signature = (sites))]
 pub fn pyfn_spherical_delaunay<'py>(py: Python<'py>, sites: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let sites = sites.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spherical::spherical_delaunay(&sites)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -217,7 +216,6 @@ pub fn pyfn_spherical_voronoi(sites: Vec<crate::generated::types::PyVec3Arg>) ->
 #[pyfunction]
 #[pyo3(name = "spherical_convex_hull", signature = (points))]
 pub fn pyfn_spherical_convex_hull<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spherical::spherical_convex_hull(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -608,7 +606,6 @@ pub fn pyfn_spherical_harmonic_transform<'py>(py: Python<'py>, f: pyo3::Py<pyo3:
 #[pyfunction]
 #[pyo3(name = "spherical_harmonic_inverse", signature = (coeffs, l_max, theta, phi))]
 pub fn pyfn_spherical_harmonic_inverse<'py>(py: Python<'py>, coeffs: Vec<crate::runtime::coerce::ComplexArg>, l_max: u32, theta: f64, phi: f64) -> PyResult<f64> {
-    let _ = py;
     let coeffs = coeffs.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spherical::spherical_harmonic_inverse(&coeffs, l_max, theta, phi)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -731,7 +728,6 @@ pub fn pyfn_thomson_problem(n: usize, iters: usize, rng: pyo3::PyRefMut<'_, crat
 #[pyfunction]
 #[pyo3(name = "spherical_code_min_angle", signature = (points))]
 pub fn pyfn_spherical_code_min_angle<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spherical::spherical_code_min_angle(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -852,7 +848,6 @@ pub fn pyfn_lebedev_quadrature(order: usize) -> PyResult<Vec<(crate::generated::
 #[pyfunction]
 #[pyo3(name = "gauss_legendre_sphere", signature = (n_theta, n_phi))]
 pub fn pyfn_gauss_legendre_sphere<'py>(py: Python<'py>, n_theta: usize, n_phi: usize) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spherical::gauss_legendre_sphere(n_theta, n_phi)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())

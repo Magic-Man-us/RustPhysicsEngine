@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -100,7 +101,6 @@ pub fn pyfn_fix_orientation(m: pyo3::PyRefMut<'_, crate::generated::types::PyMes
 #[pyfunction]
 #[pyo3(name = "boundary_loops", signature = (m))]
 pub fn pyfn_boundary_loops<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::boundary_loops(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -126,7 +126,6 @@ pub fn pyfn_connected_components(m: crate::generated::types::PyMeshMesh) -> PyRe
 #[pyfunction]
 #[pyo3(name = "non_manifold_edges", signature = (m))]
 pub fn pyfn_non_manifold_edges<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::non_manifold_edges(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -140,7 +139,6 @@ pub fn pyfn_non_manifold_edges<'py>(py: Python<'py>, m: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "duplicate_faces", signature = (m))]
 pub fn pyfn_duplicate_faces<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::duplicate_faces(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -154,7 +152,6 @@ pub fn pyfn_duplicate_faces<'py>(py: Python<'py>, m: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "self_intersections", signature = (m, bvh=None))]
 pub fn pyfn_self_intersections<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, bvh: Option<crate::generated::types::PyBvh>) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let m = m.inner;
     let bvh = bvh.map(|__o| __o.inner);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::self_intersections(&m, bvh.as_ref().map(|__o| __o))));
@@ -184,7 +181,6 @@ pub fn pyfn_decimate_edge_collapse(m: crate::generated::types::PyMeshMesh, targe
 #[pyfunction]
 #[pyo3(name = "vertex_valence", signature = (m))]
 pub fn pyfn_vertex_valence<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<usize>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::vertex_valence(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -199,7 +195,6 @@ pub fn pyfn_vertex_valence<'py>(py: Python<'py>, m: crate::generated::types::PyM
 #[pyfunction]
 #[pyo3(name = "dihedral_angles", signature = (m))]
 pub fn pyfn_dihedral_angles<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::dihedral_angles(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -213,7 +208,6 @@ pub fn pyfn_dihedral_angles<'py>(py: Python<'py>, m: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "sharp_edges", signature = (m, angle_threshold_rad))]
 pub fn pyfn_sharp_edges<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, angle_threshold_rad: f64) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::sharp_edges(&m, angle_threshold_rad)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -228,7 +222,6 @@ pub fn pyfn_sharp_edges<'py>(py: Python<'py>, m: crate::generated::types::PyMesh
 #[pyfunction]
 #[pyo3(name = "discrete_gaussian_curvature", signature = (m))]
 pub fn pyfn_discrete_gaussian_curvature<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::discrete_gaussian_curvature(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -244,7 +237,6 @@ pub fn pyfn_discrete_gaussian_curvature<'py>(py: Python<'py>, m: crate::generate
 #[pyfunction]
 #[pyo3(name = "discrete_mean_curvature", signature = (m))]
 pub fn pyfn_discrete_mean_curvature<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::discrete_mean_curvature(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -261,7 +253,6 @@ pub fn pyfn_discrete_mean_curvature<'py>(py: Python<'py>, m: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "geodesic_distance_dijkstra", signature = (m, source))]
 pub fn pyfn_geodesic_distance_dijkstra<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, source: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::geodesic_distance_dijkstra(&m, source)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -280,7 +271,6 @@ pub fn pyfn_geodesic_distance_dijkstra<'py>(py: Python<'py>, m: crate::generated
 #[pyfunction]
 #[pyo3(name = "geodesic_distance_fast_marching", signature = (m, source))]
 pub fn pyfn_geodesic_distance_fast_marching<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, source: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::geodesic_distance_fast_marching(&m, source)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -297,7 +287,6 @@ pub fn pyfn_geodesic_distance_fast_marching<'py>(py: Python<'py>, m: crate::gene
 #[pyfunction]
 #[pyo3(name = "geodesic_path", signature = (m, from_, to))]
 pub fn pyfn_geodesic_path<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, from_: usize, to: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let m = m.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::analyze::geodesic_path(&m, from_, to)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

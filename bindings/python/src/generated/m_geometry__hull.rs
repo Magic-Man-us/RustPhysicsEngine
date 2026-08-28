@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,7 +24,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "convex_hull_2d", signature = (points))]
 pub fn pyfn_convex_hull_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::geometry::hull::convex_hull_2d(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -39,7 +39,6 @@ pub fn pyfn_convex_hull_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>) -> PyR
 #[pyfunction]
 #[pyo3(name = "polygon_area_signed", signature = (poly))]
 pub fn pyfn_polygon_area_signed<'py>(py: Python<'py>, poly: Vec<(f64, f64)>) -> PyResult<f64> {
-    let _ = py;
     let poly = poly.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::geometry::hull::polygon_area_signed(&poly)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -56,7 +55,6 @@ pub fn pyfn_polygon_area_signed<'py>(py: Python<'py>, poly: Vec<(f64, f64)>) -> 
 #[pyfunction]
 #[pyo3(name = "point_in_polygon", signature = (p, poly))]
 pub fn pyfn_point_in_polygon<'py>(py: Python<'py>, p: (f64, f64), poly: Vec<(f64, f64)>) -> PyResult<bool> {
-    let _ = py;
     let p = (p.0, p.1);
     let poly = poly.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::geometry::hull::point_in_polygon(p, &poly)));
@@ -76,7 +74,6 @@ pub fn pyfn_point_in_polygon<'py>(py: Python<'py>, p: (f64, f64), poly: Vec<(f64
 #[pyfunction]
 #[pyo3(name = "convex_hull_3d", signature = (points))]
 pub fn pyfn_convex_hull_3d<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::geometry::hull::convex_hull_3d(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

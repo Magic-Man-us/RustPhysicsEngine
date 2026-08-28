@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "glider", signature = ())]
 pub fn pyfn_glider<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::glider()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -32,7 +32,6 @@ pub fn pyfn_glider<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "lwss", signature = ())]
 pub fn pyfn_lwss<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::lwss()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -44,7 +43,6 @@ pub fn pyfn_lwss<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "gosper_gun", signature = ())]
 pub fn pyfn_gosper_gun<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::gosper_gun()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -56,7 +54,6 @@ pub fn pyfn_gosper_gun<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "r_pentomino", signature = ())]
 pub fn pyfn_r_pentomino<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::r_pentomino()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -68,7 +65,6 @@ pub fn pyfn_r_pentomino<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "acorn", signature = ())]
 pub fn pyfn_acorn<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::acorn()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -80,7 +76,6 @@ pub fn pyfn_acorn<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "diehard", signature = ())]
 pub fn pyfn_diehard<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::diehard()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -92,7 +87,6 @@ pub fn pyfn_diehard<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "pulsar", signature = ())]
 pub fn pyfn_pulsar<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::pulsar()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -104,7 +98,6 @@ pub fn pyfn_pulsar<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "pentadecathlon", signature = ())]
 pub fn pyfn_pentadecathlon<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::pentadecathlon()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -116,7 +109,6 @@ pub fn pyfn_pentadecathlon<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "block", signature = ())]
 pub fn pyfn_block<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::block()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -128,7 +120,6 @@ pub fn pyfn_block<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "beehive", signature = ())]
 pub fn pyfn_beehive<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::beehive()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -140,7 +131,6 @@ pub fn pyfn_beehive<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
 #[pyfunction]
 #[pyo3(name = "blinker", signature = ())]
 pub fn pyfn_blinker<'py>(py: Python<'py>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::patterns::blinker()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())

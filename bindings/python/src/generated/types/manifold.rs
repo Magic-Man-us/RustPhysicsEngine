@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -237,7 +238,6 @@ impl PyMultivector {
     #[pyo3(name = "grades")]
     #[pyo3(signature = ())]
     fn grades<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.grades()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -704,7 +704,6 @@ impl PyDecMesh {
     #[pyo3(name = "hodge0")]
     #[pyo3(signature = ())]
     fn hodge0<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.hodge0()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -715,7 +714,6 @@ impl PyDecMesh {
     #[pyo3(name = "hodge1")]
     #[pyo3(signature = ())]
     fn hodge1<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.hodge1()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -726,7 +724,6 @@ impl PyDecMesh {
     #[pyo3(name = "hodge2")]
     #[pyo3(signature = ())]
     fn hodge2<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.hodge2()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -737,7 +734,6 @@ impl PyDecMesh {
     #[pyo3(name = "dual_areas")]
     #[pyo3(signature = ())]
     fn dual_areas<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.dual_areas()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -773,7 +769,6 @@ impl PyDecMesh {
     #[pyo3(name = "gradient")]
     #[pyo3(signature = (f))]
     fn gradient<'py>(&self, py: Python<'py>, f: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.gradient(&f)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -785,7 +780,6 @@ impl PyDecMesh {
     #[pyo3(name = "curl")]
     #[pyo3(signature = (w))]
     fn curl<'py>(&self, py: Python<'py>, w: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.curl(&w)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -799,7 +793,6 @@ impl PyDecMesh {
     #[pyo3(name = "divergence")]
     #[pyo3(signature = (w))]
     fn divergence<'py>(&self, py: Python<'py>, w: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.divergence(&w)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -812,7 +805,6 @@ impl PyDecMesh {
     #[pyo3(name = "hodge_decomposition")]
     #[pyo3(signature = (w))]
     fn hodge_decomposition<'py>(&self, py: Python<'py>, w: Vec<f64>) -> PyResult<(Vec<f64>, Vec<f64>, Vec<f64>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.hodge_decomposition(&w)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1, __v.2))
@@ -828,7 +820,6 @@ impl PyDecMesh {
     #[pyo3(name = "harmonic_forms")]
     #[pyo3(signature = ())]
     fn harmonic_forms<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.harmonic_forms()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -840,7 +831,6 @@ impl PyDecMesh {
     #[pyo3(name = "betti_numbers")]
     #[pyo3(signature = ())]
     fn betti_numbers<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.betti_numbers()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -875,7 +865,6 @@ impl PyDecMesh {
     #[pyo3(name = "vector_field_to_1form")]
     #[pyo3(signature = (v))]
     fn vector_field_to_1form<'py>(&self, py: Python<'py>, v: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let v = v.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.vector_field_to_1form(&v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -889,7 +878,6 @@ impl PyDecMesh {
     #[pyo3(name = "heat_flow")]
     #[pyo3(signature = (f0, t, steps))]
     fn heat_flow<'py>(&self, py: Python<'py>, f0: Vec<f64>, t: f64, steps: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.heat_flow(&f0, t, steps)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -901,7 +889,6 @@ impl PyDecMesh {
     #[pyo3(name = "poisson_solve")]
     #[pyo3(signature = (rho, fixed))]
     fn poisson_solve<'py>(&self, py: Python<'py>, rho: Vec<f64>, fixed: Vec<(usize, f64)>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let fixed = fixed.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.poisson_solve(&rho, &fixed)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -926,7 +913,6 @@ impl PyDecMesh {
     #[pyo3(name = "geodesic_heat_method")]
     #[pyo3(signature = (source, t))]
     fn geodesic_heat_method<'py>(&self, py: Python<'py>, source: usize, t: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.geodesic_heat_method(source, t)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -954,7 +940,6 @@ impl PyDecMesh {
     #[pyo3(name = "trivial_connection")]
     #[pyo3(signature = (singularities))]
     fn trivial_connection<'py>(&self, py: Python<'py>, singularities: Vec<(usize, f64)>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let singularities = singularities.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.trivial_connection(&singularities)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -980,7 +965,6 @@ impl PyDecMesh {
     #[pyo3(name = "stream_function")]
     #[pyo3(signature = (v))]
     fn stream_function<'py>(&self, py: Python<'py>, v: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.stream_function(&v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1470,7 +1454,6 @@ impl PySe2 {
     #[pyo3(name = "log")]
     #[pyo3(signature = ())]
     fn log<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.log()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -1503,7 +1486,6 @@ impl PySe2 {
     #[pyo3(name = "adjoint")]
     #[pyo3(signature = ())]
     fn adjoint<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.adjoint()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())
@@ -1537,7 +1519,6 @@ impl PySe2 {
     #[pyo3(name = "to_affine2")]
     #[pyo3(signature = ())]
     fn to_affine2<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.to_affine2()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())
@@ -1642,7 +1623,6 @@ impl PySe3 {
     #[pyo3(name = "adjoint")]
     #[pyo3(signature = ())]
     fn adjoint<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.adjoint()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())
@@ -1764,7 +1744,6 @@ impl PySe3 {
     #[staticmethod]
     #[pyo3(signature = (xi))]
     fn jacobian_left<'py>(py: Python<'py>, xi: crate::generated::types::Pyse3) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let xi = xi.inner;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::lie::Se3::jacobian_left(&xi)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1778,7 +1757,6 @@ impl PySe3 {
     #[staticmethod]
     #[pyo3(signature = (xi))]
     fn jacobian_right<'py>(py: Python<'py>, xi: crate::generated::types::Pyse3) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let xi = xi.inner;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::lie::Se3::jacobian_right(&xi)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -2105,7 +2083,6 @@ impl PySl2R {
     #[pyo3(name = "log")]
     #[pyo3(signature = ())]
     fn log<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.log()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())
@@ -2571,7 +2548,6 @@ impl PySo4 {
     #[pyo3(name = "log")]
     #[pyo3(signature = ())]
     fn log<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.log()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -2655,7 +2631,6 @@ impl PySo4 {
     #[pyo3(name = "apply")]
     #[pyo3(signature = (p))]
     fn apply<'py>(&self, py: Python<'py>, p: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let p = <[f64; 4]>::try_from(p).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 4 values, got {}", __v.len())))?;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.apply(p)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -3523,6 +3498,19 @@ impl PyMetricMetric {
         Ok(__v)
     }
 
+    /// If g = lambda * g_other at `p` (componentwise, consistent), return
+    /// lambda.
+    ///
+    /// Rust: `manifold::metric::Metric::conformal_factor_to`
+    #[pyo3(name = "conformal_factor_to")]
+    #[pyo3(signature = (other, p))]
+    fn conformal_factor_to(&self, other: pyo3::PyRef<'_, crate::generated::types::PyMetricMetric>, p: crate::generated::types::PyVecNArg) -> PyResult<Option<f64>> {
+        let p = p.0;
+        let __r = crate::runtime::guard(|| self.inner.conformal_factor_to(&other.inner, &p));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(__v.map(|__x| __x))
+    }
+
     /// Max residual of the first Bianchi identity
     /// `R_{i[jkl]}` : `R_ijkl + R_iklj + R_iljk = 0`, normalized by the largest
     /// Riemann component.
@@ -3796,7 +3784,6 @@ impl PyPolytope4 {
     #[pyo3(name = "f_vector")]
     #[pyo3(signature = ())]
     fn f_vector<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.f_vector()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -4840,7 +4827,6 @@ impl PyTensorN {
     #[pyo3(name = "get")]
     #[pyo3(signature = (idx))]
     fn get<'py>(&self, py: Python<'py>, idx: Vec<usize>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.get(&idx)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -4851,7 +4837,6 @@ impl PyTensorN {
     #[pyo3(name = "set")]
     #[pyo3(signature = (idx, v))]
     fn set<'py>(&mut self, py: Python<'py>, idx: Vec<usize>, v: f64) -> PyResult<()> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.set(&idx, v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(())

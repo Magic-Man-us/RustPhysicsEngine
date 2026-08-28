@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -25,7 +26,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "radon", signature = (img, w, h, angles, n_rays))]
 pub fn pyfn_radon<'py>(py: Python<'py>, img: Vec<f64>, w: usize, h: usize, angles: Vec<f64>, n_rays: usize) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::radon(&img, w, h, &angles, n_rays)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -39,7 +39,6 @@ pub fn pyfn_radon<'py>(py: Python<'py>, img: Vec<f64>, w: usize, h: usize, angle
 #[pyfunction]
 #[pyo3(name = "inverse_radon_fbp", signature = (sino, angles, out, filter))]
 pub fn pyfn_inverse_radon_fbp<'py>(py: Python<'py>, sino: Vec<Vec<f64>>, angles: Vec<f64>, out: usize, filter: crate::generated::types::PyFbpFilter) -> PyResult<Vec<f64>> {
-    let _ = py;
     let filter = filter.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::inverse_radon_fbp(&sino, &angles, out, filter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -54,7 +53,6 @@ pub fn pyfn_inverse_radon_fbp<'py>(py: Python<'py>, sino: Vec<Vec<f64>>, angles:
 #[pyfunction]
 #[pyo3(name = "inverse_radon_sart", signature = (sino, angles, out, iters))]
 pub fn pyfn_inverse_radon_sart<'py>(py: Python<'py>, sino: Vec<Vec<f64>>, angles: Vec<f64>, out: usize, iters: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::inverse_radon_sart(&sino, &angles, out, iters)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -67,7 +65,6 @@ pub fn pyfn_inverse_radon_sart<'py>(py: Python<'py>, sino: Vec<Vec<f64>>, angles
 #[pyfunction]
 #[pyo3(name = "shepp_logan_phantom", signature = (n))]
 pub fn pyfn_shepp_logan_phantom<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::shepp_logan_phantom(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -111,7 +108,6 @@ pub fn pyfn_abel_transform(f: pyo3::Py<pyo3::PyAny>, y: f64, r_max: f64, n: usiz
 #[pyfunction]
 #[pyo3(name = "inverse_abel", signature = (data, dr))]
 pub fn pyfn_inverse_abel<'py>(py: Python<'py>, data: Vec<f64>, dr: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::inverse_abel(&data, dr)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -125,7 +121,6 @@ pub fn pyfn_inverse_abel<'py>(py: Python<'py>, data: Vec<f64>, dr: f64) -> PyRes
 #[pyfunction]
 #[pyo3(name = "hough_lines", signature = (edges, w, h, n_theta, n_rho))]
 pub fn pyfn_hough_lines<'py>(py: Python<'py>, edges: Vec<bool>, w: usize, h: usize, n_theta: usize, n_rho: usize) -> PyResult<Vec<Vec<u32>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::hough_lines(&edges, w, h, n_theta, n_rho)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -138,7 +133,6 @@ pub fn pyfn_hough_lines<'py>(py: Python<'py>, edges: Vec<bool>, w: usize, h: usi
 #[pyfunction]
 #[pyo3(name = "hough_circles", signature = (edges, w, h, r_min, r_max))]
 pub fn pyfn_hough_circles<'py>(py: Python<'py>, edges: Vec<bool>, w: usize, h: usize, r_min: usize, r_max: usize) -> PyResult<Vec<(usize, usize, usize, u32)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::radon::hough_circles(&edges, w, h, r_min, r_max)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2, __x.3)).collect::<Vec<_>>())

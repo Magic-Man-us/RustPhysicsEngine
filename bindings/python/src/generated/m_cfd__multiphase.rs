@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -227,7 +228,6 @@ pub fn pyfn_droplet_terminal_velocity(d: f64, rho_d: f64, rho_c: f64, mu_c: f64)
 #[pyfunction]
 #[pyo3(name = "sauter_mean_diameter", signature = (diameters))]
 pub fn pyfn_sauter_mean_diameter<'py>(py: Python<'py>, diameters: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::multiphase::sauter_mean_diameter(&diameters)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

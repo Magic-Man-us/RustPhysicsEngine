@@ -242,3 +242,23 @@ impl<'py> IntoPyObject<'py> for Cx {
         Ok(PyComplex::from_doubles(py, self.0.re, self.0.im))
     }
 }
+
+/// Writes a mutated slice of wrapped values back into its Python list.
+///
+/// The counterpart of [`write_back`] for element types that are objects
+/// rather than numbers -- `&mut [Vec2]`, `&mut [Complex]`. The values are
+/// rebuilt as Python objects, so the caller sees the new ones rather than
+/// stale wrappers around the old.
+pub fn write_back_objects<'py, T>(obj: &Bound<'py, PyAny>, values: Vec<T>) -> PyResult<()>
+where
+    T: IntoPyObject<'py>,
+{
+    let list = obj.cast::<PyList>().map_err(|_| {
+        PyTypeError::new_err("this argument is modified in place, so it must be a list")
+    })?;
+    let fresh = PyList::empty(obj.py());
+    for v in values {
+        fresh.append(v)?;
+    }
+    list.set_slice(0, list.len(), fresh.as_any())
+}

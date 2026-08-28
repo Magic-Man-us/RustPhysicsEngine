@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -42,7 +43,6 @@ pub fn pyfn_farey_sequence<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<pyo3::B
 #[pyfunction]
 #[pyo3(name = "stern_brocot_path", signature = (r))]
 pub fn pyfn_stern_brocot_path<'py>(py: Python<'py>, r: crate::runtime::coerce::RationalArg) -> PyResult<Vec<bool>> {
-    let _ = py;
     let r = r.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::rational::stern_brocot_path(&r)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

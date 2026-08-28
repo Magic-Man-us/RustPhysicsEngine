@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -126,7 +127,6 @@ pub fn pyfn_permutations_lex_next<'py>(p: pyo3::Bound<'py, pyo3::PyAny>) -> PyRe
 #[pyfunction]
 #[pyo3(name = "nth_permutation", signature = (n_items, index))]
 pub fn pyfn_nth_permutation<'py>(py: Python<'py>, n_items: usize, index: crate::runtime::coerce::BigIntArg) -> PyResult<Vec<usize>> {
-    let _ = py;
     let index = index.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::nth_permutation(n_items, &index)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -226,7 +226,6 @@ pub fn pyfn_derangements_count<'py>(py: Python<'py>, n: u64) -> PyResult<pyo3::B
 #[pyfunction]
 #[pyo3(name = "is_derangement", signature = (p))]
 pub fn pyfn_is_derangement<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::is_derangement(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -238,7 +237,6 @@ pub fn pyfn_is_derangement<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<bool
 #[pyfunction]
 #[pyo3(name = "is_permutation", signature = (p))]
 pub fn pyfn_is_permutation<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::is_permutation(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -288,7 +286,6 @@ pub fn pyfn_random_derangement(n: usize, rng: pyo3::PyRefMut<'_, crate::generate
 #[pyfunction]
 #[pyo3(name = "permutation_compose", signature = (a, b))]
 pub fn pyfn_permutation_compose<'py>(py: Python<'py>, a: Vec<usize>, b: Vec<usize>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::permutation_compose(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -300,7 +297,6 @@ pub fn pyfn_permutation_compose<'py>(py: Python<'py>, a: Vec<usize>, b: Vec<usiz
 #[pyfunction]
 #[pyo3(name = "permutation_inverse", signature = (p))]
 pub fn pyfn_permutation_inverse<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::permutation_inverse(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -316,7 +312,6 @@ pub fn pyfn_permutation_inverse<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "permutation_cycle_type", signature = (p))]
 pub fn pyfn_permutation_cycle_type<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::permutation_cycle_type(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -345,7 +340,6 @@ pub fn pyfn_permutation_order<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<p
 #[pyfunction]
 #[pyo3(name = "permutation_sign", signature = (p))]
 pub fn pyfn_permutation_sign<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<i8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::permutation_sign(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -358,7 +352,6 @@ pub fn pyfn_permutation_sign<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<i8
 #[pyfunction]
 #[pyo3(name = "permutation_to_cycles", signature = (p))]
 pub fn pyfn_permutation_to_cycles<'py>(py: Python<'py>, p: Vec<usize>) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::permutation_to_cycles(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -376,7 +369,6 @@ pub fn pyfn_permutation_to_cycles<'py>(py: Python<'py>, p: Vec<usize>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "permutation_from_cycles", signature = (n, cycles))]
 pub fn pyfn_permutation_from_cycles<'py>(py: Python<'py>, n: usize, cycles: Vec<Vec<usize>>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::permutation_from_cycles(n, &cycles)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -786,7 +778,6 @@ pub fn pyfn_ramsey_known(s: u64, t: u64) -> PyResult<Option<u64>> {
 #[pyfunction]
 #[pyo3(name = "is_latin_square", signature = (sq))]
 pub fn pyfn_is_latin_square<'py>(py: Python<'py>, sq: Vec<Vec<usize>>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::is_latin_square(&sq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -841,7 +832,6 @@ pub fn pyfn_magic_square(n: usize) -> PyResult<Option<Vec<Vec<u64>>>> {
 #[pyfunction]
 #[pyo3(name = "de_bruijn_sequence", signature = (k, n))]
 pub fn pyfn_de_bruijn_sequence<'py>(py: Python<'py>, k: usize, n: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::de_bruijn_sequence(k, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -897,7 +887,6 @@ pub fn pyfn_josephus(n: usize, k: usize) -> PyResult<usize> {
 #[pyfunction]
 #[pyo3(name = "tower_of_hanoi_moves", signature = (n, from_, to))]
 pub fn pyfn_tower_of_hanoi_moves<'py>(py: Python<'py>, n: u32, from_: u8, to: u8) -> PyResult<Vec<(u8, u8)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::combinatorics::tower_of_hanoi_moves(n, from_, to)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())

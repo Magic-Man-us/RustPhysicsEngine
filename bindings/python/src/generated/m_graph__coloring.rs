@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -25,7 +26,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "greedy_coloring", signature = (g, order))]
 pub fn pyfn_greedy_coloring<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, order: crate::generated::types::PyOrder) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let order = order.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::greedy_coloring(&g, order)));
@@ -39,7 +39,6 @@ pub fn pyfn_greedy_coloring<'py>(py: Python<'py>, g: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "color_count", signature = (coloring))]
 pub fn pyfn_color_count<'py>(py: Python<'py>, coloring: Vec<usize>) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::color_count(&coloring)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -54,7 +53,6 @@ pub fn pyfn_color_count<'py>(py: Python<'py>, coloring: Vec<usize>) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "is_proper_coloring", signature = (g, coloring))]
 pub fn pyfn_is_proper_coloring<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, coloring: Vec<usize>) -> PyResult<bool> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::is_proper_coloring(&g, &coloring)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -76,7 +74,6 @@ pub fn pyfn_is_proper_coloring<'py>(py: Python<'py>, g: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "welsh_powell", signature = (g))]
 pub fn pyfn_welsh_powell<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::welsh_powell(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -166,7 +163,6 @@ pub fn pyfn_chromatic_polynomial_small(g: crate::generated::types::PyGraph) -> P
 #[pyfunction]
 #[pyo3(name = "edge_coloring_vizing", signature = (g))]
 pub fn pyfn_edge_coloring_vizing<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::edge_coloring_vizing(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -180,7 +176,6 @@ pub fn pyfn_edge_coloring_vizing<'py>(py: Python<'py>, g: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "is_proper_edge_coloring", signature = (g, coloring))]
 pub fn pyfn_is_proper_edge_coloring<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, coloring: Vec<usize>) -> PyResult<bool> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::is_proper_edge_coloring(&g, &coloring)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -207,7 +202,6 @@ pub fn pyfn_is_proper_edge_coloring<'py>(py: Python<'py>, g: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "interval_graph_coloring", signature = (intervals))]
 pub fn pyfn_interval_graph_coloring<'py>(py: Python<'py>, intervals: Vec<(f64, f64)>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let intervals = intervals.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::interval_graph_coloring(&intervals)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -227,7 +221,6 @@ pub fn pyfn_interval_graph_coloring<'py>(py: Python<'py>, intervals: Vec<(f64, f
 #[pyfunction]
 #[pyo3(name = "map_coloring_backtrack", signature = (adjacency, k))]
 pub fn pyfn_map_coloring_backtrack<'py>(py: Python<'py>, adjacency: Vec<Vec<usize>>, k: usize) -> PyResult<Option<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::map_coloring_backtrack(&adjacency, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -251,7 +244,6 @@ pub fn pyfn_map_coloring_backtrack<'py>(py: Python<'py>, adjacency: Vec<Vec<usiz
 #[pyfunction]
 #[pyo3(name = "all_maximal_cliques", signature = (g))]
 pub fn pyfn_all_maximal_cliques<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::all_maximal_cliques(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -270,7 +262,6 @@ pub fn pyfn_all_maximal_cliques<'py>(py: Python<'py>, g: crate::generated::types
 #[pyfunction]
 #[pyo3(name = "max_clique_bron_kerbosch", signature = (g))]
 pub fn pyfn_max_clique_bron_kerbosch<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::max_clique_bron_kerbosch(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -289,7 +280,6 @@ pub fn pyfn_max_clique_bron_kerbosch<'py>(py: Python<'py>, g: crate::generated::
 #[pyfunction]
 #[pyo3(name = "independent_set_greedy", signature = (g))]
 pub fn pyfn_independent_set_greedy<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::independent_set_greedy(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -308,7 +298,6 @@ pub fn pyfn_independent_set_greedy<'py>(py: Python<'py>, g: crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "max_independent_set_small", signature = (g))]
 pub fn pyfn_max_independent_set_small<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::max_independent_set_small(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -327,7 +316,6 @@ pub fn pyfn_max_independent_set_small<'py>(py: Python<'py>, g: crate::generated:
 #[pyfunction]
 #[pyo3(name = "vertex_cover_2approx", signature = (g))]
 pub fn pyfn_vertex_cover_2approx<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::vertex_cover_2approx(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -349,7 +337,6 @@ pub fn pyfn_vertex_cover_2approx<'py>(py: Python<'py>, g: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "vertex_cover_exact_small", signature = (g))]
 pub fn pyfn_vertex_cover_exact_small<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::vertex_cover_exact_small(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -367,7 +354,6 @@ pub fn pyfn_vertex_cover_exact_small<'py>(py: Python<'py>, g: crate::generated::
 #[pyfunction]
 #[pyo3(name = "dominating_set_greedy", signature = (g))]
 pub fn pyfn_dominating_set_greedy<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::dominating_set_greedy(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -394,7 +380,6 @@ pub fn pyfn_dominating_set_greedy<'py>(py: Python<'py>, g: crate::generated::typ
 #[pyfunction]
 #[pyo3(name = "feedback_arc_set_greedy", signature = (g))]
 pub fn pyfn_feedback_arc_set_greedy<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::coloring::feedback_arc_set_greedy(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -1198,7 +1199,6 @@ impl PyHeatConduction2D {
     #[pyo3(name = "step_with_source")]
     #[pyo3(signature = (dt, sources))]
     fn step_with_source<'py>(&mut self, py: Python<'py>, dt: f64, sources: Vec<f64>) -> PyResult<()> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.step_with_source(dt, &sources)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(())
@@ -1709,7 +1709,6 @@ impl PyWaveEquation1D {
     #[pyo3(name = "set_initial")]
     #[pyo3(signature = (displacement, velocity, dt))]
     fn set_initial<'py>(&mut self, py: Python<'py>, displacement: Vec<f64>, velocity: Vec<f64>, dt: f64) -> PyResult<()> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.set_initial(&displacement, &velocity, dt)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(())

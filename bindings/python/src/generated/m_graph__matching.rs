@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -31,7 +32,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "hopcroft_karp", signature = (left_n, right_n, edges))]
 pub fn pyfn_hopcroft_karp<'py>(py: Python<'py>, left_n: usize, right_n: usize, edges: Vec<(usize, usize)>) -> PyResult<Vec<Option<usize>>> {
-    let _ = py;
     let edges = edges.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::hopcroft_karp(left_n, right_n, &edges)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -55,7 +55,6 @@ pub fn pyfn_hopcroft_karp<'py>(py: Python<'py>, left_n: usize, right_n: usize, e
 #[pyfunction]
 #[pyo3(name = "hungarian", signature = (cost))]
 pub fn pyfn_hungarian<'py>(py: Python<'py>, cost: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let cost = cost.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::hungarian(&cost)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -80,7 +79,6 @@ pub fn pyfn_hungarian<'py>(py: Python<'py>, cost: crate::generated::types::PyMat
 #[pyfunction]
 #[pyo3(name = "auction_assignment", signature = (cost, eps))]
 pub fn pyfn_auction_assignment<'py>(py: Python<'py>, cost: crate::generated::types::PyMatrixArg, eps: f64) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let cost = cost.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::auction_assignment(&cost, eps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -110,7 +108,6 @@ pub fn pyfn_auction_assignment<'py>(py: Python<'py>, cost: crate::generated::typ
 #[pyfunction]
 #[pyo3(name = "blossom_max_matching", signature = (g))]
 pub fn pyfn_blossom_max_matching<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<Option<usize>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::blossom_max_matching(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -135,7 +132,6 @@ pub fn pyfn_blossom_max_matching<'py>(py: Python<'py>, g: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "stable_marriage", signature = (prefs_a, prefs_b))]
 pub fn pyfn_stable_marriage<'py>(py: Python<'py>, prefs_a: Vec<Vec<usize>>, prefs_b: Vec<Vec<usize>>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::stable_marriage(&prefs_a, &prefs_b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -157,7 +153,6 @@ pub fn pyfn_stable_marriage<'py>(py: Python<'py>, prefs_a: Vec<Vec<usize>>, pref
 #[pyfunction]
 #[pyo3(name = "stable_roommates", signature = (prefs))]
 pub fn pyfn_stable_roommates<'py>(py: Python<'py>, prefs: Vec<Vec<usize>>) -> PyResult<Option<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::stable_roommates(&prefs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -179,7 +174,6 @@ pub fn pyfn_stable_roommates<'py>(py: Python<'py>, prefs: Vec<Vec<usize>>) -> Py
 #[pyfunction]
 #[pyo3(name = "konig_vertex_cover", signature = (g, left, matching))]
 pub fn pyfn_konig_vertex_cover<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, left: Vec<usize>, matching: Vec<Option<usize>>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::konig_vertex_cover(&g, &left, &matching)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -204,7 +198,6 @@ pub fn pyfn_konig_vertex_cover<'py>(py: Python<'py>, g: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "hall_condition_check", signature = (g, left))]
 pub fn pyfn_hall_condition_check<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, left: Vec<usize>) -> PyResult<()> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::hall_condition_check(&g, &left)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -225,7 +218,6 @@ pub fn pyfn_hall_condition_check<'py>(py: Python<'py>, g: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "maximum_weight_bipartite", signature = (weights))]
 pub fn pyfn_maximum_weight_bipartite<'py>(py: Python<'py>, weights: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<Option<usize>>)> {
-    let _ = py;
     let weights = weights.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::maximum_weight_bipartite(&weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -238,7 +230,6 @@ pub fn pyfn_maximum_weight_bipartite<'py>(py: Python<'py>, weights: crate::gener
 #[pyfunction]
 #[pyo3(name = "matching_size", signature = (m))]
 pub fn pyfn_matching_size<'py>(py: Python<'py>, m: Vec<Option<usize>>) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::matching::matching_size(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

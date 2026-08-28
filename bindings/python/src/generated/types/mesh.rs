@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,17 +24,6 @@ use pyo3::prelude::*;
 pub struct PyMeshMesh { pub inner: rust_physics_engine::mesh::Mesh }
 #[pymethods]
 impl PyMeshMesh {
-    /// Builds a `Mesh` from its fields.
-    #[new]
-    #[pyo3(signature = (vertices, indices, normals, uvs))]
-    fn __new__(vertices: Vec<crate::generated::types::PyVec3Arg>, indices: Vec<Vec<usize>>, normals: Option<Vec<crate::generated::types::PyVec3Arg>>, uvs: Option<Vec<crate::generated::types::PyVec2Arg>>) -> PyResult<Self> {
-        let vertices = vertices.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
-        let indices = indices.into_iter().map(|__e| -> PyResult<[usize; 3]> { Ok(<[usize; 3]>::try_from(__e).map_err(|__v: Vec<usize>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?) }).collect::<PyResult<Vec<_>>>()?;
-        let normals = normals.map(|__o| __o.into_iter().map(|__e| __e.0).collect::<Vec<_>>());
-        let uvs = uvs.map(|__o| __o.into_iter().map(|__e| __e.0).collect::<Vec<_>>());
-        Ok(Self { inner: rust_physics_engine::mesh::Mesh { vertices: vertices, indices: indices, normals: normals, uvs: uvs } })
-    }
-
     /// Builds a mesh, validating that every index is in range.
     ///
     /// Errors:
@@ -41,10 +31,9 @@ impl PyMeshMesh {
     /// vertex index `>= vertices.len()`.
     ///
     /// Rust: `mesh::Mesh::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (vertices, indices))]
-    fn new(vertices: Vec<crate::generated::types::PyVec3Arg>, indices: Vec<Vec<usize>>) -> PyResult<crate::generated::types::PyMeshMesh> {
+    fn __new__(vertices: Vec<crate::generated::types::PyVec3Arg>, indices: Vec<Vec<usize>>) -> PyResult<crate::generated::types::PyMeshMesh> {
         let vertices = vertices.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let indices = indices.into_iter().map(|__e| -> PyResult<[usize; 3]> { Ok(<[usize; 3]>::try_from(__e).map_err(|__v: Vec<usize>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?) }).collect::<PyResult<Vec<_>>>()?;
         let __r = crate::runtime::guard(|| rust_physics_engine::mesh::Mesh::new(vertices, indices));
@@ -343,7 +332,6 @@ impl PyMeshMesh {
     #[pyo3(name = "edges")]
     #[pyo3(signature = ())]
     fn edges<'py>(&self, py: Python<'py>) -> PyResult<Vec<(usize, usize)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.edges()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -356,7 +344,6 @@ impl PyMeshMesh {
     #[pyo3(name = "adjacency")]
     #[pyo3(signature = ())]
     fn adjacency<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.adjacency()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -371,7 +358,6 @@ impl PyMeshMesh {
     #[pyo3(name = "face_adjacency")]
     #[pyo3(signature = ())]
     fn face_adjacency<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<Option<usize>>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.face_adjacency()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.into_iter().map(|__x| __x.map(|__x| __x)).collect::<Vec<_>>()).collect::<Vec<_>>())

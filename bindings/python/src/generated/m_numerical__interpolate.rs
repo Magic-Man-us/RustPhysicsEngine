@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -34,7 +35,6 @@ pub fn pyfn_lerp(a: f64, b: f64, t: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "linear_interp", signature = (x_data, y_data, x))]
 pub fn pyfn_linear_interp<'py>(py: Python<'py>, x_data: Vec<f64>, y_data: Vec<f64>, x: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::numerical::interpolate::linear_interp(&x_data, &y_data, x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -48,7 +48,6 @@ pub fn pyfn_linear_interp<'py>(py: Python<'py>, x_data: Vec<f64>, y_data: Vec<f6
 #[pyfunction]
 #[pyo3(name = "cubic_interp", signature = (x_data, y_data, x))]
 pub fn pyfn_cubic_interp<'py>(py: Python<'py>, x_data: Vec<f64>, y_data: Vec<f64>, x: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::numerical::interpolate::cubic_interp(&x_data, &y_data, x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -81,7 +80,6 @@ pub fn pyfn_catmull_rom(points: Vec<crate::generated::types::PyVec3Arg>, t: f64)
 #[pyfunction]
 #[pyo3(name = "catmull_rom_2d", signature = (points, t))]
 pub fn pyfn_catmull_rom_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>, t: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let points = points.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::numerical::interpolate::catmull_rom_2d(&points, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

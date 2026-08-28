@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -246,7 +247,6 @@ pub fn pyfn_shamir_reconstruct<'py>(py: Python<'py>, shares: Vec<(u64, crate::ru
 #[pyfunction]
 #[pyo3(name = "one_time_pad", signature = (data, key))]
 pub fn pyfn_one_time_pad<'py>(py: Python<'py>, data: Vec<u8>, key: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::one_time_pad(&data, &key)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -271,7 +271,6 @@ pub fn pyfn_one_time_pad<'py>(py: Python<'py>, data: Vec<u8>, key: Vec<u8>) -> P
 #[pyfunction]
 #[pyo3(name = "lfsr", signature = (taps, state, n))]
 pub fn pyfn_lfsr<'py>(py: Python<'py>, taps: u64, state: u64, n: usize) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::lfsr(taps, state, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -310,7 +309,6 @@ pub fn pyfn_lfsr_period(taps: u64, width: u32) -> PyResult<u64> {
 #[pyfunction]
 #[pyo3(name = "berlekamp_massey_attack", signature = (stream))]
 pub fn pyfn_berlekamp_massey_attack<'py>(py: Python<'py>, stream: Vec<bool>) -> PyResult<(u64, u64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::berlekamp_massey_attack(&stream)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -365,7 +363,6 @@ pub fn pyfn_birthday_bound(n_bits: u32) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "frequency_analysis", signature = (text))]
 pub fn pyfn_frequency_analysis<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::frequency_analysis(&text)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -384,7 +381,6 @@ pub fn pyfn_frequency_analysis<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "index_of_coincidence", signature = (text))]
 pub fn pyfn_index_of_coincidence<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::index_of_coincidence(&text)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -401,7 +397,6 @@ pub fn pyfn_index_of_coincidence<'py>(py: Python<'py>, text: Vec<u8>) -> PyResul
 #[pyfunction]
 #[pyo3(name = "kasiski_examination", signature = (text))]
 pub fn pyfn_kasiski_examination<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::kasiski_examination(&text)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -417,7 +412,6 @@ pub fn pyfn_kasiski_examination<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "caesar_break", signature = (text))]
 pub fn pyfn_caesar_break<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult<u8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::caesar_break(&text)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -437,7 +431,6 @@ pub fn pyfn_caesar_break<'py>(py: Python<'py>, text: Vec<u8>) -> PyResult<u8> {
 #[pyfunction]
 #[pyo3(name = "vigenere_break", signature = (text, max_key))]
 pub fn pyfn_vigenere_break<'py>(py: Python<'py>, text: Vec<u8>, max_key: usize) -> PyResult<String> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::vigenere_break(&text, max_key)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_string())
@@ -457,7 +450,6 @@ pub fn pyfn_vigenere_break<'py>(py: Python<'py>, text: Vec<u8>, max_key: usize) 
 #[pyfunction]
 #[pyo3(name = "perfect_shuffle_permutation", signature = (n, out))]
 pub fn pyfn_perfect_shuffle_permutation<'py>(py: Python<'py>, n: usize, out: bool) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::perfect_shuffle_permutation(n, out)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -473,7 +465,6 @@ pub fn pyfn_perfect_shuffle_permutation<'py>(py: Python<'py>, n: usize, out: boo
 #[pyfunction]
 #[pyo3(name = "permutation_cipher_period", signature = (perm))]
 pub fn pyfn_permutation_cipher_period<'py>(py: Python<'py>, perm: Vec<usize>) -> PyResult<u64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::crypto_math::permutation_cipher_period(&perm)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

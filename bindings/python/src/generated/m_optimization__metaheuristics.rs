@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -246,7 +247,6 @@ pub fn pyfn_genetic_algorithm_permutation(cost: pyo3::Py<pyo3::PyAny>, n: usize,
 #[pyfunction]
 #[pyo3(name = "pareto_front", signature = (points))]
 pub fn pyfn_pareto_front<'py>(py: Python<'py>, points: Vec<Vec<f64>>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::metaheuristics::pareto_front(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -266,7 +266,6 @@ pub fn pyfn_pareto_front<'py>(py: Python<'py>, points: Vec<Vec<f64>>) -> PyResul
 #[pyfunction]
 #[pyo3(name = "hypervolume_2d", signature = (front, reference))]
 pub fn pyfn_hypervolume_2d<'py>(py: Python<'py>, front: Vec<Vec<f64>>, reference: (f64, f64)) -> PyResult<f64> {
-    let _ = py;
     let reference = (reference.0, reference.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::metaheuristics::hypervolume_2d(&front, reference)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -307,7 +306,6 @@ pub fn pyfn_benchmark_functions() -> PyResult<Vec<crate::generated::types::PyBen
 #[pyfunction]
 #[pyo3(name = "convergence_curve", signature = (history))]
 pub fn pyfn_convergence_curve<'py>(py: Python<'py>, history: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::metaheuristics::convergence_curve(&history)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

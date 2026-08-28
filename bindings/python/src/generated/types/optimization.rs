@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -291,26 +292,15 @@ impl PyCmp {
 pub struct PyLpProblem { pub inner: rust_physics_engine::optimization::lp::LpProblem }
 #[pymethods]
 impl PyLpProblem {
-    /// Builds a `LpProblem` from its fields.
-    #[new]
-    #[pyo3(signature = (c, a, b, constraint_types, bounds, maximize))]
-    fn __new__(c: Vec<f64>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, constraint_types: Vec<crate::generated::types::PyCmp>, bounds: Vec<(f64, f64)>, maximize: bool) -> Self {
-        let a = a.0;
-        let constraint_types = constraint_types.into_iter().map(|__e| __e.to_rust()).collect::<Vec<_>>();
-        let bounds = bounds.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
-        Self { inner: rust_physics_engine::optimization::lp::LpProblem { c: c, a: a, b: b, constraint_types: constraint_types, bounds: bounds, maximize: maximize } }
-    }
-
     /// A problem in the common shape: `A x <= b`, `x >= 0`.
     ///
     /// Errors:
     /// Returns an error if the shapes disagree.
     ///
     /// Rust: `optimization::lp::LpProblem::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (c, a, b, maximize))]
-    fn new(c: Vec<f64>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, maximize: bool) -> PyResult<crate::generated::types::PyLpProblem> {
+    fn __new__(c: Vec<f64>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, maximize: bool) -> PyResult<crate::generated::types::PyLpProblem> {
         let a = a.0;
         let __r = crate::runtime::guard(|| rust_physics_engine::optimization::lp::LpProblem::new(c, a, b, maximize));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -361,7 +351,6 @@ impl PyLpProblem {
     #[pyo3(name = "objective_at")]
     #[pyo3(signature = (x))]
     fn objective_at<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.objective_at(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -373,7 +362,6 @@ impl PyLpProblem {
     #[pyo3(name = "is_feasible")]
     #[pyo3(signature = (x, tol))]
     fn is_feasible<'py>(&self, py: Python<'py>, x: Vec<f64>, tol: f64) -> PyResult<bool> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.is_feasible(&x, tol)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -463,7 +451,7 @@ pub struct PyBenchmark { pub inner: rust_physics_engine::optimization::metaheuri
 impl PyBenchmark {
     #[getter]
     #[pyo3(name = "name")]
-    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.clone().to_string()) }
+    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.to_string()) }
 
     #[getter]
     #[pyo3(name = "bounds")]

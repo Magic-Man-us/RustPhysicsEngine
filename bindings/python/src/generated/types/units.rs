@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -39,7 +40,6 @@ impl PyDim {
     #[pyo3(name = "exponents")]
     #[pyo3(signature = ())]
     fn exponents<'py>(&self, py: Python<'py>) -> PyResult<Vec<i8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.exponents()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())

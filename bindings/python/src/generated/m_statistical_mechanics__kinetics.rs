@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -50,7 +51,6 @@ pub fn pyfn_stoichiometry_matrix(reactions: Vec<crate::generated::types::PyReact
 #[pyfunction]
 #[pyo3(name = "mass_action_rates", signature = (reactions, k, concentrations))]
 pub fn pyfn_mass_action_rates<'py>(py: Python<'py>, reactions: Vec<crate::generated::types::PyReaction>, k: Vec<f64>, concentrations: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let reactions = reactions.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::mass_action_rates(&reactions, &k, &concentrations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -205,7 +205,6 @@ pub fn pyfn_hill_equation(s: f64, vmax: f64, k: f64, n: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "mm_fit", signature = (s, v))]
 pub fn pyfn_mm_fit<'py>(py: Python<'py>, s: Vec<f64>, v: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::mm_fit(&s, &v)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -228,7 +227,6 @@ pub fn pyfn_mm_fit<'py>(py: Python<'py>, s: Vec<f64>, v: Vec<f64>) -> PyResult<(
 #[pyfunction]
 #[pyo3(name = "lineweaver_burk", signature = (s, v))]
 pub fn pyfn_lineweaver_burk<'py>(py: Python<'py>, s: Vec<f64>, v: Vec<f64>) -> PyResult<(Vec<(f64, f64)>, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::lineweaver_burk(&s, &v)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -245,7 +243,6 @@ pub fn pyfn_lineweaver_burk<'py>(py: Python<'py>, s: Vec<f64>, v: Vec<f64>) -> P
 #[pyfunction]
 #[pyo3(name = "hill_fit", signature = (s, v))]
 pub fn pyfn_hill_fit<'py>(py: Python<'py>, s: Vec<f64>, v: Vec<f64>) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::hill_fit(&s, &v)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -316,7 +313,6 @@ pub fn pyfn_steady_state_approx_check(e0: f64, s0: f64, k1: f64, k_minus1: f64, 
 #[pyfunction]
 #[pyo3(name = "equilibrium_composition", signature = (stoich, k_eq, totals))]
 pub fn pyfn_equilibrium_composition<'py>(py: Python<'py>, stoich: crate::generated::types::PyMatrixArg, k_eq: Vec<f64>, totals: Vec<(Vec<f64>, f64)>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let stoich = stoich.0;
     let totals = totals.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::equilibrium_composition(&stoich, &k_eq, &totals)));
@@ -342,7 +338,6 @@ pub fn pyfn_equilibrium_composition<'py>(py: Python<'py>, stoich: crate::generat
 #[pyfunction]
 #[pyo3(name = "oscillating_brusselator", signature = (a, b, c0, t_end))]
 pub fn pyfn_oscillating_brusselator<'py>(py: Python<'py>, a: f64, b: f64, c0: (f64, f64), t_end: f64) -> PyResult<Vec<(f64, Vec<f64>)>> {
-    let _ = py;
     let c0 = (c0.0, c0.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::oscillating_brusselator(a, b, c0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -377,7 +372,6 @@ pub fn pyfn_brusselator_oscillates(a: f64, b: f64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "oregonator", signature = (epsilon, delta, q, f, c0, t_end))]
 pub fn pyfn_oregonator<'py>(py: Python<'py>, epsilon: f64, delta: f64, q: f64, f: f64, c0: (f64, f64, f64), t_end: f64) -> PyResult<Vec<(f64, Vec<f64>)>> {
-    let _ = py;
     let c0 = (c0.0, c0.1, c0.2);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::oregonator(epsilon, delta, q, f, c0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -639,7 +633,6 @@ pub fn pyfn_jmak_avrami(t: f64, k: f64, n: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "avrami_fit", signature = (times, fraction))]
 pub fn pyfn_avrami_fit<'py>(py: Python<'py>, times: Vec<f64>, fraction: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::avrami_fit(&times, &fraction)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -688,7 +681,6 @@ pub fn pyfn_photochemistry_quantum_yield(molecules: f64, photons_absorbed: f64) 
 #[pyfunction]
 #[pyo3(name = "ph_from_equilibria", signature = (acids, base_conc))]
 pub fn pyfn_ph_from_equilibria<'py>(py: Python<'py>, acids: Vec<(f64, f64)>, base_conc: f64) -> PyResult<f64> {
-    let _ = py;
     let acids = acids.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::ph_from_equilibria(&acids, base_conc)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -711,7 +703,6 @@ pub fn pyfn_ph_from_equilibria<'py>(py: Python<'py>, acids: Vec<(f64, f64)>, bas
 #[pyfunction]
 #[pyo3(name = "titration_curve", signature = (acid_pka, acid_conc, acid_volume, base_conc, volume_max, points))]
 pub fn pyfn_titration_curve<'py>(py: Python<'py>, acid_pka: f64, acid_conc: f64, acid_volume: f64, base_conc: f64, volume_max: f64, points: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::kinetics::titration_curve(acid_pka, acid_conc, acid_volume, base_conc, volume_max, points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

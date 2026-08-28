@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -26,13 +27,41 @@ pub fn pyfn_compute_acceleration(bodies: Vec<crate::generated::types::PyBody>, i
     Ok(crate::generated::types::PyVec3 { inner: __v })
 }
 
+/// Initializes acceleration vectors for all bodies by computing pairwise gravitational interactions.
+///
+/// Rust: `astrophysics::nbody::init_accelerations`
+#[pyfunction]
+#[pyo3(name = "init_accelerations", signature = (bodies, softening))]
+pub fn pyfn_init_accelerations<'py>(bodies: pyo3::Bound<'py, pyo3::PyAny>, softening: f64) -> PyResult<()> {
+    let mut bodies__v: Vec<rust_physics_engine::astrophysics::nbody::Body> = bodies.extract::<Vec<crate::generated::types::PyBody>>()?.into_iter().map(|__e| __e.inner).collect();
+    let __r = crate::runtime::guard(|| rust_physics_engine::astrophysics::nbody::init_accelerations(&mut bodies__v, softening));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&bodies, bodies__v.into_iter().map(|__e| crate::generated::types::PyBody { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
+}
+
+/// Performs one velocity Verlet integration step (kick-drift-kick) by
+/// delegating to the generic symplectic integrator
+/// `numerical::ode::symplectic::velocity_verlet` over the flattened
+/// phase-space state.
+///
+/// Rust: `astrophysics::nbody::step_verlet`
+#[pyfunction]
+#[pyo3(name = "step_verlet", signature = (bodies, dt, softening))]
+pub fn pyfn_step_verlet<'py>(bodies: pyo3::Bound<'py, pyo3::PyAny>, dt: f64, softening: f64) -> PyResult<()> {
+    let mut bodies__v: Vec<rust_physics_engine::astrophysics::nbody::Body> = bodies.extract::<Vec<crate::generated::types::PyBody>>()?.into_iter().map(|__e| __e.inner).collect();
+    let __r = crate::runtime::guard(|| rust_physics_engine::astrophysics::nbody::step_verlet(&mut bodies__v, dt, softening));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&bodies, bodies__v.into_iter().map(|__e| crate::generated::types::PyBody { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
+}
+
 /// Computes the total kinetic energy of all bodies: KE = Σ ½m_i v_i².
 ///
 /// Rust: `astrophysics::nbody::kinetic_energy`
 #[pyfunction]
 #[pyo3(name = "kinetic_energy", signature = (bodies))]
 pub fn pyfn_kinetic_energy<'py>(py: Python<'py>, bodies: Vec<crate::generated::types::PyBody>) -> PyResult<f64> {
-    let _ = py;
     let bodies = bodies.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::astrophysics::nbody::kinetic_energy(&bodies)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -45,7 +74,6 @@ pub fn pyfn_kinetic_energy<'py>(py: Python<'py>, bodies: Vec<crate::generated::t
 #[pyfunction]
 #[pyo3(name = "potential_energy", signature = (bodies, softening))]
 pub fn pyfn_potential_energy<'py>(py: Python<'py>, bodies: Vec<crate::generated::types::PyBody>, softening: f64) -> PyResult<f64> {
-    let _ = py;
     let bodies = bodies.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::astrophysics::nbody::potential_energy(&bodies, softening)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -58,7 +86,6 @@ pub fn pyfn_potential_energy<'py>(py: Python<'py>, bodies: Vec<crate::generated:
 #[pyfunction]
 #[pyo3(name = "total_energy", signature = (bodies, softening))]
 pub fn pyfn_total_energy<'py>(py: Python<'py>, bodies: Vec<crate::generated::types::PyBody>, softening: f64) -> PyResult<f64> {
-    let _ = py;
     let bodies = bodies.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::astrophysics::nbody::total_energy(&bodies, softening)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -93,6 +120,8 @@ pub fn pyfn_total_momentum(bodies: Vec<crate::generated::types::PyBody>) -> PyRe
 pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     let _ = (py, m);
     m.add_function(wrap_pyfunction!(pyfn_compute_acceleration, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_init_accelerations, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_step_verlet, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_kinetic_energy, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_potential_energy, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_total_energy, m)?)?;

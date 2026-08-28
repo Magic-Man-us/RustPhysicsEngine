@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -206,7 +207,6 @@ pub fn pyfn_wang_landau(energy: pyo3::Py<pyo3::PyAny>, sites: usize, flatness: f
 #[pyfunction]
 #[pyo3(name = "canonical_from_dos", signature = (log_g, lowest_energy, step, beta))]
 pub fn pyfn_canonical_from_dos<'py>(py: Python<'py>, log_g: Vec<f64>, lowest_energy: f64, step: f64, beta: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::ising::canonical_from_dos(&log_g, lowest_energy, step, beta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -255,7 +255,6 @@ pub fn pyfn_parallel_tempering_ising(n: usize, j: f64, betas: Vec<f64>, sweeps: 
 #[pyfunction]
 #[pyo3(name = "binder_crossing", signature = (temperatures, curves))]
 pub fn pyfn_binder_crossing<'py>(py: Python<'py>, temperatures: Vec<f64>, curves: Vec<Vec<f64>>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::ising::binder_crossing(&temperatures, &curves)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

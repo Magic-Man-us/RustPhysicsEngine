@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,7 +22,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "blasius_solve", signature = (eta_max, n))]
 pub fn pyfn_blasius_solve<'py>(py: Python<'py>, eta_max: f64, n: usize) -> PyResult<Vec<(f64, f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::boundary_layer::blasius_solve(eta_max, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2, __x.3)).collect::<Vec<_>>())
@@ -78,7 +78,6 @@ pub fn pyfn_blasius_drag_plate(l: f64, width: f64, u_inf: f64, nu: f64, rho: f64
 #[pyfunction]
 #[pyo3(name = "falkner_skan_solve", signature = (beta, eta_max, n))]
 pub fn pyfn_falkner_skan_solve<'py>(py: Python<'py>, beta: f64, eta_max: f64, n: usize) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::boundary_layer::falkner_skan_solve(beta, eta_max, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())

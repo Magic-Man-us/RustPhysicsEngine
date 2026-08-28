@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -315,7 +316,6 @@ pub fn pyfn_tensor_product(g: crate::generated::types::PyGraph, h: crate::genera
 #[pyfunction]
 #[pyo3(name = "canonical_form_small", signature = (g))]
 pub fn pyfn_canonical_form_small<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<u64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::core::canonical_form_small(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

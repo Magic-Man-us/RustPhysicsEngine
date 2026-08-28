@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -27,7 +28,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "hop_distances", signature = (g))]
 pub fn pyfn_hop_distances<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::layout::hop_distances(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -51,7 +51,6 @@ pub fn pyfn_hop_distances<'py>(py: Python<'py>, g: crate::generated::types::PyGr
 #[pyfunction]
 #[pyo3(name = "layout_stress", signature = (g, positions))]
 pub fn pyfn_layout_stress<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, positions: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<f64> {
-    let _ = py;
     let g = g.inner;
     let positions = positions.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::layout::layout_stress(&g, &positions)));
@@ -68,7 +67,6 @@ pub fn pyfn_layout_stress<'py>(py: Python<'py>, g: crate::generated::types::PyGr
 #[pyfunction]
 #[pyo3(name = "stress_nd", signature = (g, positions))]
 pub fn pyfn_stress_nd<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, positions: Vec<crate::generated::types::PyVecNArg>) -> PyResult<f64> {
-    let _ = py;
     let g = g.inner;
     let positions = positions.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::layout::stress_nd(&g, &positions)));
@@ -284,7 +282,6 @@ pub fn pyfn_sugiyama_layered(dag: crate::generated::types::PyGraph) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "crossing_number_estimate", signature = (g, layout))]
 pub fn pyfn_crossing_number_estimate<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, layout: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<usize> {
-    let _ = py;
     let g = g.inner;
     let layout = layout.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::layout::crossing_number_estimate(&g, &layout)));
@@ -310,7 +307,6 @@ pub fn pyfn_crossing_number_estimate<'py>(py: Python<'py>, g: crate::generated::
 #[pyfunction]
 #[pyo3(name = "biconnected_components", signature = (g))]
 pub fn pyfn_biconnected_components<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<Vec<(usize, usize)>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::layout::biconnected_components(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

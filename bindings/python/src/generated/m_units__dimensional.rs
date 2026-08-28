@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -52,7 +53,6 @@ pub fn pyfn_buckingham_pi<'py>(py: Python<'py>, dims: Vec<crate::generated::type
 #[pyfunction]
 #[pyo3(name = "is_dimensionless_group", signature = (dims, exponents))]
 pub fn pyfn_is_dimensionless_group<'py>(py: Python<'py>, dims: Vec<crate::generated::types::PyDim>, exponents: Vec<crate::runtime::coerce::RationalArg>) -> PyResult<bool> {
-    let _ = py;
     let dims = dims.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let exponents = exponents.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::units::dimensional::is_dimensionless_group(&dims, &exponents)));
@@ -71,7 +71,6 @@ pub fn pyfn_is_dimensionless_group<'py>(py: Python<'py>, dims: Vec<crate::genera
 #[pyfunction]
 #[pyo3(name = "dimensionless_groups_named", signature = ())]
 pub fn pyfn_dimensionless_groups_named<'py>(py: Python<'py>) -> PyResult<Vec<(String, String, String)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::units::dimensional::dimensionless_groups_named()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0.to_string(), __x.1.to_string(), __x.2.to_string())).collect::<Vec<_>>())
@@ -130,7 +129,6 @@ pub fn pyfn_natural_units_convert(value: f64, dim: crate::generated::types::PyDi
 #[pyfunction]
 #[pyo3(name = "planck_units", signature = ())]
 pub fn pyfn_planck_units<'py>(py: Python<'py>) -> PyResult<Vec<(String, f64, String)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::units::dimensional::planck_units()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0.to_string(), __x.1, __x.2.to_string())).collect::<Vec<_>>())

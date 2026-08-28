@@ -666,6 +666,20 @@ class Generator:
             return self._mut_arg(ty, name)
         if ty.kind in ("unit", "bad", "selfty", "result", "iter"):
             return None
+        if ty.kind == "user" and ty.by_ref and ty.name in self.wrappers:
+            w = self.wrappers[ty.name]
+            if not (w.clone or w.simple_enum):
+                # No `Clone`, so there is no owned value to make. The
+                # wrapper is borrowed for the duration of the call
+                # instead, which is what `&T` means anyway.
+                return dict(
+                    param=f"pyo3::PyRef<'_, crate::generated::types::{w.ident}>",
+                    pre=[],
+                    expr=f"&{name}.inner",
+                    post=[],
+                    py=w.py_name,
+                    owns=False,
+                )
         param = self.param_type(ty)
         conv = self.conv_expr(ty, name)
         if param is None or conv is None:
@@ -789,6 +803,29 @@ class Generator:
                 py=w.py_name,
                 owns=False,
             )
+        if ty.kind == "vec" and ty.inner[0].kind == "user":
+            elem = ty.inner[0]
+            param = self.param_type(elem)
+            conv = self.conv_expr(elem, "__e")
+            back = self._writeback_object(elem, "__e")
+            if param is None or conv is None or back is None or conv[1]:
+                return None
+            rust_elem = self.rust_type(elem)
+            return dict(
+                param="pyo3::Bound<'py, pyo3::PyAny>",
+                pre=[
+                    f"let mut {name}__v: Vec<{rust_elem}> = {name}.extract::<Vec<{param}>>()?"
+                    f".into_iter().map(|__e| {conv[0]}).collect();",
+                ],
+                expr=f"&mut {name}__v",
+                post=[
+                    f"crate::runtime::coerce::write_back_objects(&{name}, "
+                    f"{name}__v.into_iter().map(|__e| {back}).collect::<Vec<_>>())?;"
+                ],
+                py=f"MutableSequence[{self._py_of(elem)}]",
+                owns=False,
+                lifetime=True,
+            )
         if ty.kind == "vec" and ty.inner[0].kind == "prim" and ty.inner[0].name in self.MUT_WRITEBACK:
             p = ty.inner[0].name
             return dict(
@@ -803,6 +840,17 @@ class Generator:
                 lifetime=True,
             )
         return None
+
+    def _writeback_object(self, ty: Ty, var: str) -> str | None:
+        """An expression turning an owned Rust value back into a Python one."""
+        if ty.kind != "user":
+            return None
+        if ty.name in IDENTIFIED:
+            return f"crate::runtime::coerce::Cx({var})" if IDENTIFIED[ty.name] == "complex" else None
+        w = self.wrappers.get(ty.name)
+        if w is None or w.simple_enum:
+            return None
+        return f"crate::generated::types::{w.ident} {{ inner: {var} }}"
 
     CALLABLE_FALLBACK = {
         "f64": "f64::NAN",
@@ -1232,6 +1280,15 @@ DUNDERS = {
 }
 
 
+def _without_detach(plan: dict) -> dict:
+    """Turn off GIL release, and stop asking for a `py` nobody now uses."""
+    needs_py = bool(
+        re.search(r"\bpy\b", plan["ret"]["conv"])
+        or re.search(r"\bpy\b", " ".join(plan["pre"]))
+    )
+    return dict(plan, detach=False, needs_py=needs_py)
+
+
 def sanitize_py(name: str) -> str:
     name = name.lstrip("_") or "arg"
     if name in PY_KEYWORDS:
@@ -1418,10 +1475,17 @@ class Emitter(Generator):
 
     def _body(self, plan, callee: str) -> str:
         lines: list[str] = []
-        if plan["needs_py"] and not plan["lifetime"]:
-            lines.append("let _ = py;")
         lines.extend(plan["pre"])
         call = f"{callee}({', '.join(plan['callargs'])})"
+        if plan.get("discard") == "unit":
+            # A builder returns `&mut Self` for chaining. Keeping that
+            # borrow alive past the call would stop the wrapper being
+            # handed back, and the mutation is the whole point anyway.
+            call = f"{{ {call}; }}"
+        elif plan.get("discard") == "result":
+            # The fallible form: the error still matters, the borrow does
+            # not, and dropping it inside the closure ends it there.
+            call = f"{call}.map(|_| ())"
         mv = "move " if plan["detach"] else ""
         guarded = f"crate::runtime::guard({mv}|| {call})"
         if plan["detach"]:
@@ -1673,8 +1737,19 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for {w.arg_ident} {{
             for f in self.crate.funcs
             if f.impl_type == item.name and f.module == item.module and not f.impl_trait
         ]
+        # `new` is the constructor whether it returns `Self` or
+        # `Result<Self, E>`; the fallible form is common enough here that
+        # missing it would leave a third of the classes unconstructible.
+        ctor_ret = re.compile(
+            rf"^(?:Self|{re.escape(item.name)}"
+            rf"|Result\s*<\s*(?:Self|{re.escape(item.name)})\s*,.*>)$"
+        )
         ctor = next(
-            (f for f in methods if f.name == "new" and not f.self_kind and f.ret in ("Self", item.name)),
+            (
+                f
+                for f in methods
+                if f.name == "new" and not f.self_kind and ctor_ret.match(f.ret.strip())
+            ),
             None,
         )
 
@@ -1723,17 +1798,40 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for {w.arg_ident} {{
             if name in taken:
                 continue
             is_ctor = fn is ctor
+            # A builder -- `&mut self` in, `&mut Self` out, for chaining.
+            # Python gets the same object back, so `c.h(0).cx(0, 1)` reads
+            # as it does in Rust.
+            builder = False
+            if fn.self_kind == "&mut self":
+                own = re.escape(item.name)
+                plain = re.match(rf"^&\s*mut\s+(?:Self|{own})$", fn.ret.strip())
+                wrapped = re.match(
+                    rf"^Result\s*<\s*&\s*mut\s+(?:Self|{own})\s*,\s*(.+)>$", fn.ret.strip()
+                )
+                if plain:
+                    fn = dataclasses.replace(fn, ret="")
+                    builder = True
+                elif wrapped:
+                    fn = dataclasses.replace(fn, ret=f"Result<(), {wrapped.group(1)}>")
+                    builder = True
             plan = self._plan(fn, owner=item)
             if isinstance(plan, str):
                 self.skipped.append((item.module, f"{item.name}.{fn.name}()", plan))
                 continue
             if w.unsendable and fn.self_kind:
-                plan["detach"] = False
+                plan = _without_detach(plan)
             taken.add(name)
             doc = pydoc(fn.doc, f"{item.path}::{fn.name}")
             head: list[str] = []
             recv = ""
-            if fn.self_kind == "&self":
+            if builder:
+                plan = dict(
+                    _without_detach(plan),
+                    discard="result" if plan["err_map"] else "unit",
+                )
+                head.append("mut slf: pyo3::PyRefMut<'py, Self>")
+                recv = "slf.inner."
+            elif fn.self_kind == "&self":
                 head.append("&self")
                 recv = "self.to_rust()." if w.simple_enum else "self.inner."
             elif fn.self_kind == "&mut self":
@@ -1756,10 +1854,10 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for {w.arg_ident} {{
                 else:
                     head.append("&self")
                     recv = "self.inner.clone()."
-            if plan["needs_py"]:
+            if plan["needs_py"] and not builder:
                 head.append("py: Python<'py>")
             head.extend(plan["params"])
-            lt = "<'py>" if (plan["needs_py"] or plan["lifetime"]) else ""
+            lt = "<'py>" if (plan["needs_py"] or plan["lifetime"] or builder) else ""
             attrs = []
             if is_ctor:
                 attrs.append("    #[new]")
@@ -1774,14 +1872,18 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for {w.arg_ident} {{
                 callee = f"{recv}{fn.name}" if recv else f"{w.rust_path}::{fn.name}"
                 body = self._body(plan, callee)
                 ident = sanitize_rust(fn.name)
+            ret_rust = plan["ret"]["rust"]
+            ret_py = plan["ret"]["py"]
+            if builder:
+                ret_rust = "pyo3::PyRefMut<'py, Self>"
+                ret_py = w.py_name
+                body = body[: body.rindex("Ok(())")] + "Ok(slf)"
             rust_name_attr = f'    #[pyo3(name = "{name}")]' if not is_ctor else ""
             block = [rust_doc_lines(doc).replace("///", "    ///")]
             if rust_name_attr:
                 block.append(rust_name_attr)
             block.extend(attrs)
-            block.append(
-                f"    fn {ident}{lt}({', '.join(head)}) -> PyResult<{plan['ret']['rust']}> {{"
-            )
+            block.append(f"    fn {ident}{lt}({', '.join(head)}) -> PyResult<{ret_rust}> {{")
             block.append("    " + body.replace("\n", "\n    "))
             block.append("    }")
             out.append("\n".join(block))
@@ -1795,14 +1897,12 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for {w.arg_ident} {{
                 stubs.append(
                     f"    def {name}(self"
                     + ("".join(f", {n}: {p}" for n, p, _t in plan["annots"]))
-                    + f") -> {plan['ret']['py']}: ..."
+                    + f") -> {ret_py}: ..."
                 )
             else:
                 stubs.append("    @staticmethod")
                 stubs.append(
-                    f"    def {name}"
-                    + self._stub_sig(plan["annots"], plan["ret"]["py"])
-                    + ": ..."
+                    f"    def {name}" + self._stub_sig(plan["annots"], ret_py) + ": ..."
                 )
 
         out.extend(self._operator_methods(w, taken, stubs))
@@ -1910,7 +2010,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for {w.arg_ident} {{
             py_name = sanitize_py(name)
             if py_name in taken:
                 continue
-            needs_clone = ty.kind != "prim"
+            needs_clone = ty.kind not in ("prim", "str")
             if needs_clone and not self.is_clone(ty):
                 continue
             access = f"self.inner.{name}.clone()" if needs_clone else f"self.inner.{name}"
@@ -2045,6 +2145,7 @@ HEADER = """// @generated by bindings/python/generate.py -- do not edit.
 """
 
 ALLOWS = """#![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]

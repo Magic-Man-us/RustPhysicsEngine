@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "convolve", signature = (signal, kernel))]
 pub fn pyfn_convolve<'py>(py: Python<'py>, signal: Vec<f64>, kernel: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::convolve(&signal, &kernel)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -32,7 +32,6 @@ pub fn pyfn_convolve<'py>(py: Python<'py>, signal: Vec<f64>, kernel: Vec<f64>) -
 #[pyfunction]
 #[pyo3(name = "cross_correlate", signature = (x, y))]
 pub fn pyfn_cross_correlate<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::cross_correlate(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -44,7 +43,6 @@ pub fn pyfn_cross_correlate<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> P
 #[pyfunction]
 #[pyo3(name = "auto_correlate", signature = (signal))]
 pub fn pyfn_auto_correlate<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::auto_correlate(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -69,7 +67,6 @@ pub fn pyfn_normalize_signal<'py>(signal: pyo3::Bound<'py, pyo3::PyAny>) -> PyRe
 #[pyfunction]
 #[pyo3(name = "apply_window", signature = (signal, window))]
 pub fn pyfn_apply_window<'py>(py: Python<'py>, signal: Vec<f64>, window: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::apply_window(&signal, &window)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -81,7 +78,6 @@ pub fn pyfn_apply_window<'py>(py: Python<'py>, signal: Vec<f64>, window: Vec<f64
 #[pyfunction]
 #[pyo3(name = "moving_average", signature = (signal, window_size))]
 pub fn pyfn_moving_average<'py>(py: Python<'py>, signal: Vec<f64>, window_size: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::moving_average(&signal, window_size)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -93,7 +89,6 @@ pub fn pyfn_moving_average<'py>(py: Python<'py>, signal: Vec<f64>, window_size: 
 #[pyfunction]
 #[pyo3(name = "exponential_moving_average", signature = (signal, alpha))]
 pub fn pyfn_exponential_moving_average<'py>(py: Python<'py>, signal: Vec<f64>, alpha: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::exponential_moving_average(&signal, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -105,7 +100,6 @@ pub fn pyfn_exponential_moving_average<'py>(py: Python<'py>, signal: Vec<f64>, a
 #[pyfunction]
 #[pyo3(name = "median_filter", signature = (signal, window_size))]
 pub fn pyfn_median_filter<'py>(py: Python<'py>, signal: Vec<f64>, window_size: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::median_filter(&signal, window_size)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -117,7 +111,6 @@ pub fn pyfn_median_filter<'py>(py: Python<'py>, signal: Vec<f64>, window_size: u
 #[pyfunction]
 #[pyo3(name = "sine_wave", signature = (frequency, sample_rate, duration, amplitude))]
 pub fn pyfn_sine_wave<'py>(py: Python<'py>, frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::sine_wave(frequency, sample_rate, duration, amplitude)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -129,7 +122,6 @@ pub fn pyfn_sine_wave<'py>(py: Python<'py>, frequency: f64, sample_rate: f64, du
 #[pyfunction]
 #[pyo3(name = "square_wave", signature = (frequency, sample_rate, duration, amplitude))]
 pub fn pyfn_square_wave<'py>(py: Python<'py>, frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::square_wave(frequency, sample_rate, duration, amplitude)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -141,7 +133,6 @@ pub fn pyfn_square_wave<'py>(py: Python<'py>, frequency: f64, sample_rate: f64, 
 #[pyfunction]
 #[pyo3(name = "sawtooth_wave", signature = (frequency, sample_rate, duration, amplitude))]
 pub fn pyfn_sawtooth_wave<'py>(py: Python<'py>, frequency: f64, sample_rate: f64, duration: f64, amplitude: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::sawtooth_wave(frequency, sample_rate, duration, amplitude)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -153,7 +144,6 @@ pub fn pyfn_sawtooth_wave<'py>(py: Python<'py>, frequency: f64, sample_rate: f64
 #[pyfunction]
 #[pyo3(name = "white_noise", signature = (n, amplitude, seed))]
 pub fn pyfn_white_noise<'py>(py: Python<'py>, n: usize, amplitude: f64, seed: u64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::white_noise(n, amplitude, seed)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -165,7 +155,6 @@ pub fn pyfn_white_noise<'py>(py: Python<'py>, n: usize, amplitude: f64, seed: u6
 #[pyfunction]
 #[pyo3(name = "zero_crossings", signature = (signal))]
 pub fn pyfn_zero_crossings<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::zero_crossings(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -177,7 +166,6 @@ pub fn pyfn_zero_crossings<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<u
 #[pyfunction]
 #[pyo3(name = "rms_level", signature = (signal))]
 pub fn pyfn_rms_level<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::rms_level(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -189,7 +177,6 @@ pub fn pyfn_rms_level<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "peak_to_peak", signature = (signal))]
 pub fn pyfn_peak_to_peak<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::peak_to_peak(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -201,7 +188,6 @@ pub fn pyfn_peak_to_peak<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<f64
 #[pyfunction]
 #[pyo3(name = "crest_factor", signature = (signal))]
 pub fn pyfn_crest_factor<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::signal_processing::crest_factor(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

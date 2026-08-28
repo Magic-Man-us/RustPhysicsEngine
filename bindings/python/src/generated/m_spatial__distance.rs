@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -227,7 +228,6 @@ pub fn pyfn_distance_aabb_aabb(a: crate::generated::types::PyAabb, b: crate::gen
 #[pyfunction]
 #[pyo3(name = "hausdorff_distance", signature = (a, b))]
 pub fn pyfn_hausdorff_distance<'py>(py: Python<'py>, a: Vec<crate::generated::types::PyVec3Arg>, b: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<f64> {
-    let _ = py;
     let a = a.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let b = b.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::distance::hausdorff_distance(&a, &b)));
@@ -244,7 +244,6 @@ pub fn pyfn_hausdorff_distance<'py>(py: Python<'py>, a: Vec<crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "hausdorff_distance_2d", signature = (a, b))]
 pub fn pyfn_hausdorff_distance_2d<'py>(py: Python<'py>, a: Vec<crate::generated::types::PyVec2Arg>, b: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<f64> {
-    let _ = py;
     let a = a.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let b = b.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::distance::hausdorff_distance_2d(&a, &b)));
@@ -262,7 +261,6 @@ pub fn pyfn_hausdorff_distance_2d<'py>(py: Python<'py>, a: Vec<crate::generated:
 #[pyfunction]
 #[pyo3(name = "frechet_distance_2d", signature = (a, b))]
 pub fn pyfn_frechet_distance_2d<'py>(py: Python<'py>, a: Vec<crate::generated::types::PyVec2Arg>, b: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<f64> {
-    let _ = py;
     let a = a.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let b = b.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::distance::frechet_distance_2d(&a, &b)));

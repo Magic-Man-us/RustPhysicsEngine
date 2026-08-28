@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,7 +22,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "additive", signature = (harmonics, freq, n, fs))]
 pub fn pyfn_additive<'py>(py: Python<'py>, harmonics: Vec<(f64, f64, f64)>, freq: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let harmonics = harmonics.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::additive(&harmonics, freq, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -35,7 +35,6 @@ pub fn pyfn_additive<'py>(py: Python<'py>, harmonics: Vec<(f64, f64, f64)>, freq
 #[pyfunction]
 #[pyo3(name = "additive_evolving", signature = (harmonics, freq, n, fs))]
 pub fn pyfn_additive_evolving<'py>(py: Python<'py>, harmonics: Vec<(f64, Vec<f64>)>, freq: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let harmonics = harmonics.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::additive_evolving(&harmonics, freq, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -48,7 +47,6 @@ pub fn pyfn_additive_evolving<'py>(py: Python<'py>, harmonics: Vec<(f64, Vec<f64
 #[pyfunction]
 #[pyo3(name = "fm_simple", signature = (carrier, modulator, index, n, fs))]
 pub fn pyfn_fm_simple<'py>(py: Python<'py>, carrier: f64, modulator: f64, index: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::fm_simple(carrier, modulator, index, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -60,7 +58,6 @@ pub fn pyfn_fm_simple<'py>(py: Python<'py>, carrier: f64, modulator: f64, index:
 #[pyfunction]
 #[pyo3(name = "fm_bessel_sidebands", signature = (index, n_sidebands))]
 pub fn pyfn_fm_bessel_sidebands<'py>(py: Python<'py>, index: f64, n_sidebands: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::fm_bessel_sidebands(index, n_sidebands)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -73,7 +70,6 @@ pub fn pyfn_fm_bessel_sidebands<'py>(py: Python<'py>, index: f64, n_sidebands: u
 #[pyfunction]
 #[pyo3(name = "pm_simple", signature = (carrier, modulator, index, n, fs))]
 pub fn pyfn_pm_simple<'py>(py: Python<'py>, carrier: f64, modulator: f64, index: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::pm_simple(carrier, modulator, index, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -85,7 +81,6 @@ pub fn pyfn_pm_simple<'py>(py: Python<'py>, carrier: f64, modulator: f64, index:
 #[pyfunction]
 #[pyo3(name = "am", signature = (carrier, modulator, depth, n, fs))]
 pub fn pyfn_am<'py>(py: Python<'py>, carrier: f64, modulator: f64, depth: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::am(carrier, modulator, depth, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -97,7 +92,6 @@ pub fn pyfn_am<'py>(py: Python<'py>, carrier: f64, modulator: f64, depth: f64, n
 #[pyfunction]
 #[pyo3(name = "ring_mod", signature = (a, b))]
 pub fn pyfn_ring_mod<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::ring_mod(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -123,7 +117,6 @@ pub fn pyfn_karplus_strong(freq: f64, duration: f64, fs: f64, decay: f64, blend:
 #[pyfunction]
 #[pyo3(name = "karplus_strong_extended", signature = (freq, duration, fs, pick_pos, pick_width, decay, dynamics))]
 pub fn pyfn_karplus_strong_extended<'py>(py: Python<'py>, freq: f64, duration: f64, fs: f64, pick_pos: f64, pick_width: f64, decay: f64, dynamics: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::karplus_strong_extended(freq, duration, fs, pick_pos, pick_width, decay, dynamics)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -167,7 +160,6 @@ pub fn pyfn_granular(grain_source: Vec<f64>, grain_size: f64, density: f64, pitc
 #[pyfunction]
 #[pyo3(name = "vowel_formants", signature = (vowel, voice))]
 pub fn pyfn_vowel_formants<'py>(py: Python<'py>, vowel: char, voice: crate::generated::types::PyVoice) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let voice = voice.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::vowel_formants(vowel, voice)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -181,7 +173,6 @@ pub fn pyfn_vowel_formants<'py>(py: Python<'py>, vowel: char, voice: crate::gene
 #[pyfunction]
 #[pyo3(name = "formant_synth", signature = (f0, formants, n, fs))]
 pub fn pyfn_formant_synth<'py>(py: Python<'py>, f0: f64, formants: Vec<(f64, f64, f64)>, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let formants = formants.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::formant_synth(f0, &formants, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -195,7 +186,6 @@ pub fn pyfn_formant_synth<'py>(py: Python<'py>, f0: f64, formants: Vec<(f64, f64
 #[pyfunction]
 #[pyo3(name = "pulsar_synthesis", signature = (f0, formant, duty, n, fs))]
 pub fn pyfn_pulsar_synthesis<'py>(py: Python<'py>, f0: f64, formant: f64, duty: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::pulsar_synthesis(f0, formant, duty, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -234,7 +224,6 @@ pub fn pyfn_waveshaper(x: f64, f: pyo3::Py<pyo3::PyAny>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "chebyshev_waveshaper", signature = (x, harmonic_amps))]
 pub fn pyfn_chebyshev_waveshaper<'py>(py: Python<'py>, x: f64, harmonic_amps: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::chebyshev_waveshaper(x, &harmonic_amps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -246,7 +235,6 @@ pub fn pyfn_chebyshev_waveshaper<'py>(py: Python<'py>, x: f64, harmonic_amps: Ve
 #[pyfunction]
 #[pyo3(name = "hard_sync_osc", signature = (master_freq, slave_freq, n, fs))]
 pub fn pyfn_hard_sync_osc<'py>(py: Python<'py>, master_freq: f64, slave_freq: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::hard_sync_osc(master_freq, slave_freq, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -259,7 +247,6 @@ pub fn pyfn_hard_sync_osc<'py>(py: Python<'py>, master_freq: f64, slave_freq: f6
 #[pyfunction]
 #[pyo3(name = "supersaw", signature = (freq, detune, n_voices, n, fs))]
 pub fn pyfn_supersaw<'py>(py: Python<'py>, freq: f64, detune: f64, n_voices: usize, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::supersaw(freq, detune, n_voices, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -272,7 +259,6 @@ pub fn pyfn_supersaw<'py>(py: Python<'py>, freq: f64, detune: f64, n_voices: usi
 #[pyfunction]
 #[pyo3(name = "sample_playback", signature = (sample, rate_ratio, loop_start, loop_end, n))]
 pub fn pyfn_sample_playback<'py>(py: Python<'py>, sample: Vec<f64>, rate_ratio: f64, loop_start: usize, loop_end: usize, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::sample_playback(&sample, rate_ratio, loop_start, loop_end, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -285,7 +271,6 @@ pub fn pyfn_sample_playback<'py>(py: Python<'py>, sample: Vec<f64>, rate_ratio: 
 #[pyfunction]
 #[pyo3(name = "drum_kick", signature = (fs, pitch_start, pitch_end, decay))]
 pub fn pyfn_drum_kick<'py>(py: Python<'py>, fs: f64, pitch_start: f64, pitch_end: f64, decay: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::drum_kick(fs, pitch_start, pitch_end, decay)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -297,7 +282,6 @@ pub fn pyfn_drum_kick<'py>(py: Python<'py>, fs: f64, pitch_start: f64, pitch_end
 #[pyfunction]
 #[pyo3(name = "drum_snare", signature = (fs))]
 pub fn pyfn_drum_snare<'py>(py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::drum_snare(fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -309,7 +293,6 @@ pub fn pyfn_drum_snare<'py>(py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "drum_hihat", signature = (fs))]
 pub fn pyfn_drum_hihat<'py>(py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::drum_hihat(fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -321,7 +304,6 @@ pub fn pyfn_drum_hihat<'py>(py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "drum_clap", signature = (fs))]
 pub fn pyfn_drum_clap<'py>(py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::drum_clap(fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -333,7 +315,6 @@ pub fn pyfn_drum_clap<'py>(py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "drum_tom", signature = (fs, pitch))]
 pub fn pyfn_drum_tom<'py>(py: Python<'py>, fs: f64, pitch: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::drum_tom(fs, pitch)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -345,7 +326,6 @@ pub fn pyfn_drum_tom<'py>(py: Python<'py>, fs: f64, pitch: f64) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "mix", signature = (tracks, gains))]
 pub fn pyfn_mix<'py>(py: Python<'py>, tracks: Vec<Vec<f64>>, gains: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::mix(&tracks, &gains)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

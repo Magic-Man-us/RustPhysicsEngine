@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -30,7 +31,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "sum_neumaier", signature = (xs))]
 pub fn pyfn_sum_neumaier<'py>(py: Python<'py>, xs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::core::compensated::sum_neumaier(&xs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -45,7 +45,6 @@ pub fn pyfn_sum_neumaier<'py>(py: Python<'py>, xs: Vec<f64>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "sum_pairwise", signature = (xs))]
 pub fn pyfn_sum_pairwise<'py>(py: Python<'py>, xs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::core::compensated::sum_pairwise(&xs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -61,7 +60,6 @@ pub fn pyfn_sum_pairwise<'py>(py: Python<'py>, xs: Vec<f64>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "dot_compensated", signature = (a, b))]
 pub fn pyfn_dot_compensated<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::core::compensated::dot_compensated(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

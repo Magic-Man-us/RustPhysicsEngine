@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,7 +24,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "dct_i", signature = (x))]
 pub fn pyfn_dct_i<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_i(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -35,7 +35,6 @@ pub fn pyfn_dct_i<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dct_ii", signature = (x))]
 pub fn pyfn_dct_ii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_ii(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -47,7 +46,6 @@ pub fn pyfn_dct_ii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dct_iii", signature = (x))]
 pub fn pyfn_dct_iii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_iii(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -59,7 +57,6 @@ pub fn pyfn_dct_iii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dct_iv", signature = (x))]
 pub fn pyfn_dct_iv<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_iv(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -71,7 +68,6 @@ pub fn pyfn_dct_iv<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "idct_ii", signature = (x))]
 pub fn pyfn_idct_ii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::idct_ii(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -84,7 +80,6 @@ pub fn pyfn_idct_ii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dst_i", signature = (x))]
 pub fn pyfn_dst_i<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dst_i(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -96,7 +91,6 @@ pub fn pyfn_dst_i<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dst_ii", signature = (x))]
 pub fn pyfn_dst_ii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dst_ii(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -111,7 +105,6 @@ pub fn pyfn_dst_ii<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dct_2d", signature = (x, w, h))]
 pub fn pyfn_dct_2d<'py>(py: Python<'py>, x: Vec<f64>, w: usize, h: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_2d(&x, w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -126,7 +119,6 @@ pub fn pyfn_dct_2d<'py>(py: Python<'py>, x: Vec<f64>, w: usize, h: usize) -> PyR
 #[pyfunction]
 #[pyo3(name = "idct_2d", signature = (x, w, h))]
 pub fn pyfn_idct_2d<'py>(py: Python<'py>, x: Vec<f64>, w: usize, h: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::idct_2d(&x, w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -139,7 +131,6 @@ pub fn pyfn_idct_2d<'py>(py: Python<'py>, x: Vec<f64>, w: usize, h: usize) -> Py
 #[pyfunction]
 #[pyo3(name = "hartley", signature = (x))]
 pub fn pyfn_hartley<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::hartley(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -152,7 +143,6 @@ pub fn pyfn_hartley<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "dct_compress", signature = (x, keep_fraction))]
 pub fn pyfn_dct_compress<'py>(py: Python<'py>, x: Vec<f64>, keep_fraction: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_compress(&x, keep_fraction)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -167,7 +157,6 @@ pub fn pyfn_dct_compress<'py>(py: Python<'py>, x: Vec<f64>, keep_fraction: f64) 
 #[pyfunction]
 #[pyo3(name = "dct_poisson_1d", signature = (rhs, dx, bc))]
 pub fn pyfn_dct_poisson_1d<'py>(py: Python<'py>, rhs: Vec<f64>, dx: f64, bc: crate::generated::types::PyDctBc) -> PyResult<Vec<f64>> {
-    let _ = py;
     let bc = bc.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::dct::dct_poisson_1d(&rhs, dx, bc)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

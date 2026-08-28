@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -104,7 +105,6 @@ pub fn pyfn_rfft<'py>(py: Python<'py>, input: Vec<f64>) -> PyResult<Vec<pyo3::Bo
 #[pyfunction]
 #[pyo3(name = "irfft", signature = (x, n))]
 pub fn pyfn_irfft<'py>(py: Python<'py>, x: Vec<crate::runtime::coerce::ComplexArg>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let x = x.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::irfft(&x, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -187,6 +187,20 @@ pub fn pyfn_rfft_2d<'py>(py: Python<'py>, x: Vec<f64>, w: usize, h: usize) -> Py
     Ok(__v.into_iter().map(|__x| crate::runtime::coerce::complex_out(py, __x)).collect::<Vec<_>>())
 }
 
+/// Swap spectrum halves in place so the zero-frequency bin moves to the
+/// center (numpy `fftshift`; for odd n the extra bin lands left of center).
+///
+/// Rust: `transforms::fft::fft_shift`
+#[pyfunction]
+#[pyo3(name = "fft_shift", signature = (x))]
+pub fn pyfn_fft_shift<'py>(x: pyo3::Bound<'py, pyo3::PyAny>) -> PyResult<()> {
+    let mut x__v: Vec<rust_physics_engine::fractals::Complex> = x.extract::<Vec<crate::runtime::coerce::ComplexArg>>()?.into_iter().map(|__e| __e.0).collect();
+    let __r = crate::runtime::guard(|| rust_physics_engine::transforms::fft::fft_shift(&mut x__v));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&x, x__v.into_iter().map(|__e| crate::runtime::coerce::Cx(__e)).collect::<Vec<_>>())?;
+    Ok(())
+}
+
 /// Frequencies (Hz) of the DFT bins for sample spacing `dt`, in FFT
 /// order: 0, 1/(n·dt), …, then the negative frequencies.
 ///
@@ -194,7 +208,6 @@ pub fn pyfn_rfft_2d<'py>(py: Python<'py>, x: Vec<f64>, w: usize, h: usize) -> Py
 #[pyfunction]
 #[pyo3(name = "fft_freqs", signature = (n, dt))]
 pub fn pyfn_fft_freqs<'py>(py: Python<'py>, n: usize, dt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_freqs(n, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -209,7 +222,6 @@ pub fn pyfn_fft_freqs<'py>(py: Python<'py>, n: usize, dt: f64) -> PyResult<Vec<f
 #[pyfunction]
 #[pyo3(name = "fft_convolve_2d", signature = (a, b, w, h))]
 pub fn pyfn_fft_convolve_2d<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>, w: usize, h: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_convolve_2d(&a, &b, w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -222,7 +234,6 @@ pub fn pyfn_fft_convolve_2d<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>, w: u
 #[pyfunction]
 #[pyo3(name = "fft_convolve", signature = (a, b))]
 pub fn pyfn_fft_convolve<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_convolve(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -235,7 +246,6 @@ pub fn pyfn_fft_convolve<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyRe
 #[pyfunction]
 #[pyo3(name = "fft_correlate", signature = (a, b))]
 pub fn pyfn_fft_correlate<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_correlate(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -251,7 +261,6 @@ pub fn pyfn_fft_correlate<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "fft_interpolate", signature = (x, factor))]
 pub fn pyfn_fft_interpolate<'py>(py: Python<'py>, x: Vec<f64>, factor: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_interpolate(&x, factor)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -264,7 +273,6 @@ pub fn pyfn_fft_interpolate<'py>(py: Python<'py>, x: Vec<f64>, factor: usize) ->
 #[pyfunction]
 #[pyo3(name = "fft_differentiate", signature = (x, dt))]
 pub fn pyfn_fft_differentiate<'py>(py: Python<'py>, x: Vec<f64>, dt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_differentiate(&x, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -278,7 +286,6 @@ pub fn pyfn_fft_differentiate<'py>(py: Python<'py>, x: Vec<f64>, dt: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "fft_integrate", signature = (x, dt))]
 pub fn pyfn_fft_integrate<'py>(py: Python<'py>, x: Vec<f64>, dt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_integrate(&x, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -297,7 +304,6 @@ pub fn pyfn_fft_integrate<'py>(py: Python<'py>, x: Vec<f64>, dt: f64) -> PyResul
 #[pyfunction]
 #[pyo3(name = "fft_poisson_2d", signature = (rhs, w, h, dx))]
 pub fn pyfn_fft_poisson_2d<'py>(py: Python<'py>, rhs: Vec<f64>, w: usize, h: usize, dx: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::fft::fft_poisson_2d(&rhs, w, h, dx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -318,6 +324,7 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_fft_3d, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_ifft_3d, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_rfft_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_fft_shift, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_fft_freqs, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_fft_convolve_2d, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_fft_convolve, m)?)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -103,7 +104,6 @@ pub fn pyfn_si_prefixes_format(value: f64) -> PyResult<(f64, String)> {
 #[pyfunction]
 #[pyo3(name = "constants_codata", signature = ())]
 pub fn pyfn_constants_codata<'py>(py: Python<'py>) -> PyResult<Vec<(String, f64, String)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::units::quantity::constants_codata()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0.to_string(), __x.1, __x.2.to_string())).collect::<Vec<_>>())

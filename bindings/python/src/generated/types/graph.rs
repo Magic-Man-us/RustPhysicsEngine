@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -187,7 +188,6 @@ impl PyGraph {
     #[pyo3(name = "edges")]
     #[pyo3(signature = ())]
     fn edges<'py>(&self, py: Python<'py>) -> PyResult<Vec<(usize, usize, f64)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.edges()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -262,7 +262,6 @@ impl PyGraph {
     #[pyo3(name = "connected_components")]
     #[pyo3(signature = ())]
     fn connected_components<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.connected_components()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -279,7 +278,6 @@ impl PyGraph {
     #[pyo3(name = "strongly_connected_components")]
     #[pyo3(signature = ())]
     fn strongly_connected_components<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.strongly_connected_components()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -360,7 +358,6 @@ impl PyGraph {
     #[pyo3(name = "bfs")]
     #[pyo3(signature = (s))]
     fn bfs<'py>(&self, py: Python<'py>, s: usize) -> PyResult<Vec<Option<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.bfs(s)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.map(|__x| __x)).collect::<Vec<_>>())
@@ -373,7 +370,6 @@ impl PyGraph {
     #[pyo3(name = "dfs")]
     #[pyo3(signature = (s))]
     fn dfs<'py>(&self, py: Python<'py>, s: usize) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.dfs(s)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -390,7 +386,6 @@ impl PyGraph {
     #[pyo3(name = "bridges")]
     #[pyo3(signature = ())]
     fn bridges<'py>(&self, py: Python<'py>) -> PyResult<Vec<(usize, usize)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.bridges()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -405,7 +400,6 @@ impl PyGraph {
     #[pyo3(name = "articulation_points")]
     #[pyo3(signature = ())]
     fn articulation_points<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.articulation_points()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -483,7 +477,6 @@ impl PyGraph {
     #[pyo3(name = "eccentricities")]
     #[pyo3(signature = ())]
     fn eccentricities<'py>(&self, py: Python<'py>) -> PyResult<Vec<Option<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.eccentricities()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.map(|__x| __x)).collect::<Vec<_>>())
@@ -519,7 +512,6 @@ impl PyGraph {
     #[pyo3(name = "center")]
     #[pyo3(signature = ())]
     fn center<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.center()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -584,7 +576,6 @@ impl PyGraph {
     #[pyo3(name = "degree_distribution")]
     #[pyo3(signature = ())]
     fn degree_distribution<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.degree_distribution()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -613,7 +604,6 @@ impl PyGraph {
     #[pyo3(name = "k_core")]
     #[pyo3(signature = (k))]
     fn k_core<'py>(&self, py: Python<'py>, k: usize) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.k_core(k)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -630,7 +620,6 @@ impl PyGraph {
     #[pyo3(name = "core_numbers")]
     #[pyo3(signature = ())]
     fn core_numbers<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.core_numbers()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

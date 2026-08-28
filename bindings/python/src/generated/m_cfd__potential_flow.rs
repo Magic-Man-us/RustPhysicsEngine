@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -236,6 +237,22 @@ pub fn pyfn_ground_effect_factor(h_over_b: f64) -> PyResult<f64> {
     Ok(__v)
 }
 
+/// Velocity of a base flow seen through a conformal map at the physical
+/// point z (numerical dW/dζ via the chain rule).
+///
+/// Rust: `cfd::potential_flow::conformal_map_flow`
+#[pyfunction]
+#[pyo3(name = "conformal_map_flow", signature = (map, base, z))]
+pub fn pyfn_conformal_map_flow(map: pyo3::Py<pyo3::PyAny>, base: pyo3::PyRef<'_, crate::generated::types::PyPotentialFlow2>, z: crate::runtime::coerce::ComplexArg) -> PyResult<crate::generated::types::PyVec2> {
+    let __cb_map = std::rc::Rc::new(crate::runtime::Callback::new(map));
+    let map = { let __cb = __cb_map.clone(); move |__a0: rust_physics_engine::fractals::Complex| -> rust_physics_engine::fractals::Complex { { let __r = __cb.call::<_, crate::runtime::coerce::ComplexArg>((crate::runtime::coerce::Cx(__a0),), crate::runtime::coerce::ComplexArg(rust_physics_engine::fractals::Complex::new(f64::NAN, f64::NAN))); __r.0 } } };
+    let z = z.0;
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::potential_flow::conformal_map_flow(&map, &base.inner, z));
+    crate::runtime::callback::check(&[&__cb_map], ())?;
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(crate::generated::types::PyVec2 { inner: __v })
+}
+
 /// Mirror every element across a wall (method of images).
 ///
 /// Rust: `cfd::potential_flow::method_of_images_wall`
@@ -292,6 +309,7 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_oswald_efficiency_estimate, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_vortex_lattice, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_ground_effect_factor, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_conformal_map_flow, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_method_of_images_wall, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_added_mass_cylinder, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_added_mass_sphere, m)?)?;

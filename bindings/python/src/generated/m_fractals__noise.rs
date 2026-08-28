@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -215,7 +216,6 @@ pub fn pyfn_noise_field_3d(n: pyo3::Py<pyo3::PyAny>, bounds: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "terrain_heightmap", signature = (seed, w, h, p, erosion_iters))]
 pub fn pyfn_terrain_heightmap<'py>(py: Python<'py>, seed: u64, w: usize, h: usize, p: crate::generated::types::PyFbmParams, erosion_iters: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let p = p.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::noise::terrain_heightmap(seed, w, h, &p, erosion_iters)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -252,7 +252,6 @@ pub fn pyfn_hydraulic_erosion<'py>(height: pyo3::Bound<'py, pyo3::PyAny>, w: usi
 #[pyfunction]
 #[pyo3(name = "diamond_square", signature = (size_pow2, roughness, seed))]
 pub fn pyfn_diamond_square<'py>(py: Python<'py>, size_pow2: u32, roughness: f64, seed: u64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::noise::diamond_square(size_pow2, roughness, seed)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -269,7 +268,6 @@ pub fn pyfn_diamond_square<'py>(py: Python<'py>, size_pow2: u32, roughness: f64,
 #[pyfunction]
 #[pyo3(name = "spectral_synthesis_2d", signature = (w, h, beta, seed))]
 pub fn pyfn_spectral_synthesis_2d<'py>(py: Python<'py>, w: usize, h: usize, beta: f64, seed: u64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::noise::spectral_synthesis_2d(w, h, beta, seed)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -299,7 +297,6 @@ pub fn pyfn_white_noise_2d(seed: u64, x: f64, y: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "blue_noise_texture", signature = (w, h, seed))]
 pub fn pyfn_blue_noise_texture<'py>(py: Python<'py>, w: usize, h: usize, seed: u64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::noise::blue_noise_texture(w, h, seed)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -312,7 +309,6 @@ pub fn pyfn_blue_noise_texture<'py>(py: Python<'py>, w: usize, h: usize, seed: u
 #[pyfunction]
 #[pyo3(name = "gabor_noise_2d", signature = (x, y, kernels))]
 pub fn pyfn_gabor_noise_2d<'py>(py: Python<'py>, x: f64, y: f64, kernels: Vec<crate::generated::types::PyGaborKernel>) -> PyResult<f64> {
-    let _ = py;
     let kernels = kernels.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::noise::gabor_noise_2d(x, y, &kernels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

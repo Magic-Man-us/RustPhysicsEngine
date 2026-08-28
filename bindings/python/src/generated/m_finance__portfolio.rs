@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -24,7 +25,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "returns_from_prices", signature = (prices))]
 pub fn pyfn_returns_from_prices<'py>(py: Python<'py>, prices: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::returns_from_prices(&prices)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -46,7 +46,6 @@ pub fn pyfn_returns_from_prices<'py>(py: Python<'py>, prices: Vec<f64>) -> PyRes
 #[pyfunction]
 #[pyo3(name = "log_returns", signature = (prices))]
 pub fn pyfn_log_returns<'py>(py: Python<'py>, prices: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::log_returns(&prices)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -63,7 +62,6 @@ pub fn pyfn_log_returns<'py>(py: Python<'py>, prices: Vec<f64>) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "portfolio_variance", signature = (cov, weights))]
 pub fn pyfn_portfolio_variance<'py>(py: Python<'py>, cov: crate::generated::types::PyMatrixArg, weights: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let cov = cov.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::portfolio_variance(&cov, &weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -90,7 +88,6 @@ pub fn pyfn_portfolio_variance<'py>(py: Python<'py>, cov: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "min_variance_weights", signature = (cov))]
 pub fn pyfn_min_variance_weights<'py>(py: Python<'py>, cov: crate::generated::types::PyMatrixArg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let cov = cov.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::min_variance_weights(&cov)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -120,7 +117,6 @@ pub fn pyfn_min_variance_weights<'py>(py: Python<'py>, cov: crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "tangency_portfolio", signature = (mu, cov, risk_free))]
 pub fn pyfn_tangency_portfolio<'py>(py: Python<'py>, mu: Vec<f64>, cov: crate::generated::types::PyMatrixArg, risk_free: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let cov = cov.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::tangency_portfolio(&mu, &cov, risk_free)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -150,7 +146,6 @@ pub fn pyfn_tangency_portfolio<'py>(py: Python<'py>, mu: Vec<f64>, cov: crate::g
 #[pyfunction]
 #[pyo3(name = "markowitz_frontier", signature = (mu, cov, points))]
 pub fn pyfn_markowitz_frontier<'py>(py: Python<'py>, mu: Vec<f64>, cov: crate::generated::types::PyMatrixArg, points: usize) -> PyResult<Vec<(f64, f64, Vec<f64>)>> {
-    let _ = py;
     let cov = cov.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::markowitz_frontier(&mu, &cov, points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -189,7 +184,6 @@ pub fn pyfn_markowitz_frontier<'py>(py: Python<'py>, mu: Vec<f64>, cov: crate::g
 #[pyfunction]
 #[pyo3(name = "risk_parity_weights", signature = (cov))]
 pub fn pyfn_risk_parity_weights<'py>(py: Python<'py>, cov: crate::generated::types::PyMatrixArg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let cov = cov.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::risk_parity_weights(&cov)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -210,7 +204,6 @@ pub fn pyfn_risk_parity_weights<'py>(py: Python<'py>, cov: crate::generated::typ
 #[pyfunction]
 #[pyo3(name = "risk_contributions", signature = (cov, weights))]
 pub fn pyfn_risk_contributions<'py>(py: Python<'py>, cov: crate::generated::types::PyMatrixArg, weights: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let cov = cov.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::risk_contributions(&cov, &weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -240,7 +233,6 @@ pub fn pyfn_risk_contributions<'py>(py: Python<'py>, cov: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "sharpe", signature = (returns, risk_free))]
 pub fn pyfn_sharpe<'py>(py: Python<'py>, returns: Vec<f64>, risk_free: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::sharpe(&returns, risk_free)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -263,7 +255,6 @@ pub fn pyfn_sharpe<'py>(py: Python<'py>, returns: Vec<f64>, risk_free: f64) -> P
 #[pyfunction]
 #[pyo3(name = "sortino", signature = (returns, risk_free, target))]
 pub fn pyfn_sortino<'py>(py: Python<'py>, returns: Vec<f64>, risk_free: f64, target: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::sortino(&returns, risk_free, target)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -285,7 +276,6 @@ pub fn pyfn_sortino<'py>(py: Python<'py>, returns: Vec<f64>, risk_free: f64, tar
 #[pyfunction]
 #[pyo3(name = "max_drawdown", signature = (prices))]
 pub fn pyfn_max_drawdown<'py>(py: Python<'py>, prices: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::max_drawdown(&prices)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -307,7 +297,6 @@ pub fn pyfn_max_drawdown<'py>(py: Python<'py>, prices: Vec<f64>) -> PyResult<f64
 #[pyfunction]
 #[pyo3(name = "calmar", signature = (prices, periods_per_year))]
 pub fn pyfn_calmar<'py>(py: Python<'py>, prices: Vec<f64>, periods_per_year: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::calmar(&prices, periods_per_year)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -329,7 +318,6 @@ pub fn pyfn_calmar<'py>(py: Python<'py>, prices: Vec<f64>, periods_per_year: f64
 #[pyfunction]
 #[pyo3(name = "information_ratio", signature = (portfolio, benchmark))]
 pub fn pyfn_information_ratio<'py>(py: Python<'py>, portfolio: Vec<f64>, benchmark: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::information_ratio(&portfolio, &benchmark)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -353,7 +341,6 @@ pub fn pyfn_information_ratio<'py>(py: Python<'py>, portfolio: Vec<f64>, benchma
 #[pyfunction]
 #[pyo3(name = "capm_beta", signature = (asset, market))]
 pub fn pyfn_capm_beta<'py>(py: Python<'py>, asset: Vec<f64>, market: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::portfolio::capm_beta(&asset, &market)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

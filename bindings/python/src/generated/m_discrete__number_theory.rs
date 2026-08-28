@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -97,7 +98,6 @@ pub fn pyfn_mod_inverse_u64(a: u64, m: u64) -> PyResult<Option<u64>> {
 #[pyfunction]
 #[pyo3(name = "crt", signature = (residues))]
 pub fn pyfn_crt<'py>(py: Python<'py>, residues: Vec<(u64, u64)>) -> PyResult<Option<(u64, u64)>> {
-    let _ = py;
     let residues = residues.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::crt(&residues)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -126,7 +126,6 @@ pub fn pyfn_euler_phi(n: u64) -> PyResult<u64> {
 #[pyfunction]
 #[pyo3(name = "phi_sieve", signature = (n))]
 pub fn pyfn_phi_sieve<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::phi_sieve(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -155,7 +154,6 @@ pub fn pyfn_mobius(n: u64) -> PyResult<i8> {
 #[pyfunction]
 #[pyo3(name = "mobius_sieve", signature = (n))]
 pub fn pyfn_mobius_sieve<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::mobius_sieve(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -167,7 +165,6 @@ pub fn pyfn_mobius_sieve<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i8>> {
 #[pyfunction]
 #[pyo3(name = "divisors", signature = (n))]
 pub fn pyfn_divisors<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::divisors(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -265,7 +262,6 @@ pub fn pyfn_is_deficient(n: u64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "amicable_pairs", signature = (limit))]
 pub fn pyfn_amicable_pairs<'py>(py: Python<'py>, limit: u64) -> PyResult<Vec<(u64, u64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::amicable_pairs(limit)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -309,7 +305,6 @@ pub fn pyfn_primitive_root(p: u64) -> PyResult<Option<u64>> {
 #[pyfunction]
 #[pyo3(name = "all_primitive_roots", signature = (p))]
 pub fn pyfn_all_primitive_roots<'py>(py: Python<'py>, p: u64) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::all_primitive_roots(p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -347,7 +342,6 @@ pub fn pyfn_discrete_log_bsgs(base: u64, target: u64, modulus: u64) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "discrete_log_pohlig_hellman", signature = (base, target, p, factorization))]
 pub fn pyfn_discrete_log_pohlig_hellman<'py>(py: Python<'py>, base: u64, target: u64, p: u64, factorization: Vec<(u64, u32)>) -> PyResult<Option<u64>> {
-    let _ = py;
     let factorization = factorization.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::discrete_log_pohlig_hellman(base, target, p, &factorization)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -413,7 +407,6 @@ pub fn pyfn_tonelli_shanks(a: u64, p: u64) -> PyResult<Option<u64>> {
 #[pyfunction]
 #[pyo3(name = "quadratic_residues", signature = (p))]
 pub fn pyfn_quadratic_residues<'py>(py: Python<'py>, p: u64) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::quadratic_residues(p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -532,7 +525,6 @@ pub fn pyfn_happy_number(n: u64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "collatz_trajectory", signature = (n))]
 pub fn pyfn_collatz_trajectory<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::collatz_trajectory(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -601,7 +593,6 @@ pub fn pyfn_sum_of_four_squares(n: u64) -> PyResult<(u64, u64, u64, u64)> {
 #[pyfunction]
 #[pyo3(name = "pythagorean_triples_primitive", signature = (limit))]
 pub fn pyfn_pythagorean_triples_primitive<'py>(py: Python<'py>, limit: u64) -> PyResult<Vec<(u64, u64, u64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::pythagorean_triples_primitive(limit)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -623,7 +614,6 @@ pub fn pyfn_pythagorean_triples_primitive<'py>(py: Python<'py>, limit: u64) -> P
 #[pyfunction]
 #[pyo3(name = "gaussian_integer_factor", signature = (re, im))]
 pub fn pyfn_gaussian_integer_factor<'py>(py: Python<'py>, re: i64, im: i64) -> PyResult<Vec<(i64, i64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::gaussian_integer_factor(re, im)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -643,7 +633,6 @@ pub fn pyfn_gaussian_integer_factor<'py>(py: Python<'py>, re: i64, im: i64) -> P
 #[pyfunction]
 #[pyo3(name = "frobenius_number", signature = (coins))]
 pub fn pyfn_frobenius_number<'py>(py: Python<'py>, coins: Vec<u64>) -> PyResult<Option<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::frobenius_number(&coins)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -676,7 +665,6 @@ pub fn pyfn_egyptian_fractions_greedy<'py>(py: Python<'py>, r: crate::runtime::c
 #[pyfunction]
 #[pyo3(name = "zeckendorf", signature = (n))]
 pub fn pyfn_zeckendorf<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::zeckendorf(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -708,7 +696,6 @@ pub fn pyfn_lucas_sequence_u(p: i64, q: i64, n: u64, m: u64) -> PyResult<u64> {
 #[pyfunction]
 #[pyo3(name = "quadratic_diophantine_solve", signature = (a, b, c))]
 pub fn pyfn_quadratic_diophantine_solve<'py>(py: Python<'py>, a: i64, b: i64, c: i64) -> PyResult<Vec<(i64, i64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::quadratic_diophantine_solve(a, b, c)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -781,7 +768,6 @@ pub fn pyfn_farey_next<'py>(py: Python<'py>, a: crate::runtime::coerce::Rational
 #[pyfunction]
 #[pyo3(name = "dirichlet_convolution", signature = (f, g))]
 pub fn pyfn_dirichlet_convolution<'py>(py: Python<'py>, f: Vec<i64>, g: Vec<i64>) -> PyResult<Vec<i64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::number_theory::dirichlet_convolution(&f, &g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

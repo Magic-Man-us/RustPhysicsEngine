@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -55,7 +56,6 @@ pub fn pyfn_ogf_coefficients(f: pyo3::Py<pyo3::PyAny>, n: usize, radius: f64) ->
 #[pyfunction]
 #[pyo3(name = "egf_to_ogf", signature = (coeffs))]
 pub fn pyfn_egf_to_ogf<'py>(py: Python<'py>, coeffs: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::egf_to_ogf(&coeffs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -91,7 +91,6 @@ pub fn pyfn_linear_recurrence<'py>(py: Python<'py>, init: Vec<i64>, coeffs: Vec<
 #[pyfunction]
 #[pyo3(name = "linear_recurrence_mod", signature = (init, coeffs, n, m))]
 pub fn pyfn_linear_recurrence_mod<'py>(py: Python<'py>, init: Vec<i64>, coeffs: Vec<i64>, n: u64, m: u64) -> PyResult<u64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::linear_recurrence_mod(&init, &coeffs, n, m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -128,7 +127,6 @@ pub fn pyfn_find_linear_recurrence<'py>(py: Python<'py>, seq: Vec<crate::runtime
 #[pyfunction]
 #[pyo3(name = "berlekamp_massey_gf2", signature = (seq))]
 pub fn pyfn_berlekamp_massey_gf2<'py>(py: Python<'py>, seq: Vec<bool>) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::berlekamp_massey_gf2(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -268,7 +266,6 @@ pub fn pyfn_thue_morse(n: u64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "thue_morse_sequence", signature = (n))]
 pub fn pyfn_thue_morse_sequence<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::thue_morse_sequence(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -284,7 +281,6 @@ pub fn pyfn_thue_morse_sequence<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "kolakoski", signature = (n))]
 pub fn pyfn_kolakoski<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::kolakoski(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -299,7 +295,6 @@ pub fn pyfn_kolakoski<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<u8>> {
 #[pyfunction]
 #[pyo3(name = "recaman", signature = (n))]
 pub fn pyfn_recaman<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::recaman(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -317,7 +312,6 @@ pub fn pyfn_recaman<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i64>> {
 #[pyfunction]
 #[pyo3(name = "ulam_sequence", signature = (a, b, n))]
 pub fn pyfn_ulam_sequence<'py>(py: Python<'py>, a: u64, b: u64, n: usize) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::ulam_sequence(a, b, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -335,7 +329,6 @@ pub fn pyfn_ulam_sequence<'py>(py: Python<'py>, a: u64, b: u64, n: usize) -> PyR
 #[pyfunction]
 #[pyo3(name = "aliquot_sequence", signature = (n, max_steps))]
 pub fn pyfn_aliquot_sequence<'py>(py: Python<'py>, n: u64, max_steps: usize) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::aliquot_sequence(n, max_steps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -374,7 +367,6 @@ pub fn pyfn_ackermann_small<'py>(py: Python<'py>, m: u64, n: u64) -> PyResult<Op
 #[pyfunction]
 #[pyo3(name = "sequence_identify", signature = (terms))]
 pub fn pyfn_sequence_identify<'py>(py: Python<'py>, terms: Vec<i64>) -> PyResult<Vec<String>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::sequences::sequence_identify(&terms)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())

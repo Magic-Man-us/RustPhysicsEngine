@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -86,7 +87,6 @@ pub fn pyfn_thrust_with_pressure(mass_flow_rate: f64, exhaust_velocity: f64, exi
 #[pyfunction]
 #[pyo3(name = "delta_v_staged", signature = (stages))]
 pub fn pyfn_delta_v_staged<'py>(py: Python<'py>, stages: Vec<(f64, f64, f64)>) -> PyResult<f64> {
-    let _ = py;
     let stages = stages.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::propulsion::delta_v_staged(&stages)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

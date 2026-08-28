@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "envelope_follower", signature = (x, attack_ms, release_ms, fs))]
 pub fn pyfn_envelope_follower<'py>(py: Python<'py>, x: Vec<f64>, attack_ms: f64, release_ms: f64, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::envelope::envelope_follower(&x, attack_ms, release_ms, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -32,7 +32,6 @@ pub fn pyfn_envelope_follower<'py>(py: Python<'py>, x: Vec<f64>, attack_ms: f64,
 #[pyfunction]
 #[pyo3(name = "peak_envelope", signature = (x, window))]
 pub fn pyfn_peak_envelope<'py>(py: Python<'py>, x: Vec<f64>, window: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::envelope::peak_envelope(&x, window)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -44,7 +43,6 @@ pub fn pyfn_peak_envelope<'py>(py: Python<'py>, x: Vec<f64>, window: usize) -> P
 #[pyfunction]
 #[pyo3(name = "rms_envelope", signature = (x, window))]
 pub fn pyfn_rms_envelope<'py>(py: Python<'py>, x: Vec<f64>, window: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::envelope::rms_envelope(&x, window)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -56,7 +54,6 @@ pub fn pyfn_rms_envelope<'py>(py: Python<'py>, x: Vec<f64>, window: usize) -> Py
 #[pyfunction]
 #[pyo3(name = "exponential_decay_envelope", signature = (n, tau, fs))]
 pub fn pyfn_exponential_decay_envelope<'py>(py: Python<'py>, n: usize, tau: f64, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::envelope::exponential_decay_envelope(n, tau, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -112,7 +109,6 @@ pub fn pyfn_fade_out<'py>(x: pyo3::Bound<'py, pyo3::PyAny>, n: usize, shape: cra
 #[pyfunction]
 #[pyo3(name = "crossfade", signature = (a, b, shape))]
 pub fn pyfn_crossfade<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>, shape: crate::generated::types::PyFadeShape) -> PyResult<Vec<f64>> {
-    let _ = py;
     let shape = shape.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::envelope::crossfade(&a, &b, shape)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -126,7 +122,6 @@ pub fn pyfn_crossfade<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>, shape: cra
 #[pyfunction]
 #[pyo3(name = "portamento", signature = (from_hz, to_hz, n, fs, exponential))]
 pub fn pyfn_portamento<'py>(py: Python<'py>, from_hz: f64, to_hz: f64, n: usize, fs: f64, exponential: bool) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::envelope::portamento(from_hz, to_hz, n, fs, exponential)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

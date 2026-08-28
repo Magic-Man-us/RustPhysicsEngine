@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -48,7 +49,6 @@ pub fn pyfn_stress_invariants(stress: crate::generated::types::PyMat3) -> PyResu
 #[pyfunction]
 #[pyo3(name = "principal_stresses", signature = (stress))]
 pub fn pyfn_principal_stresses<'py>(py: Python<'py>, stress: crate::generated::types::PyMat3) -> PyResult<Vec<f64>> {
-    let _ = py;
     let stress = stress.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::continuum_mechanics::principal_stresses(&stress)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -182,7 +182,6 @@ pub fn pyfn_hooke_3d(strain: crate::generated::types::PyMat3, youngs: f64, poiss
 #[pyfunction]
 #[pyo3(name = "compliance_matrix_isotropic", signature = (youngs, poisson))]
 pub fn pyfn_compliance_matrix_isotropic<'py>(py: Python<'py>, youngs: f64, poisson: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::continuum_mechanics::compliance_matrix_isotropic(youngs, poisson)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())

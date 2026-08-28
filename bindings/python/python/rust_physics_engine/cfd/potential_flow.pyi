@@ -242,6 +242,15 @@ Rust: `cfd::potential_flow::ground_effect_factor`
     """
     ...
 
+def conformal_map_flow(map: Callable[[complex], complex], base: PotentialFlow2, z: complex) -> Vec2:
+    """
+Velocity of a base flow seen through a conformal map at the physical
+point z (numerical dW/dζ via the chain rule).
+
+Rust: `cfd::potential_flow::conformal_map_flow`
+    """
+    ...
+
 def method_of_images_wall(elements: list[Element], wall: Plane2) -> PotentialFlow2:
     """
 Mirror every element across a wall (method of images).

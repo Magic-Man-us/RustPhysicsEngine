@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -99,7 +100,6 @@ pub fn pyfn_richards(r: f64, k: f64, nu: f64, n0: f64, t: f64) -> PyResult<f64> 
 #[pyfunction]
 #[pyo3(name = "allee_effect_ode", signature = (r, a, k, n0, t_end))]
 pub fn pyfn_allee_effect_ode<'py>(py: Python<'py>, r: f64, a: f64, k: f64, n0: f64, t_end: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::allee_effect_ode(r, a, k, n0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -153,7 +153,6 @@ pub fn pyfn_lotka_volterra(alpha: f64, beta: f64, delta: f64, gamma: f64, x0: f6
 #[pyfunction]
 #[pyo3(name = "rosenzweig_macarthur", signature = (r, k, attack, handling, efficiency, mortality, x0, y0, t_end))]
 pub fn pyfn_rosenzweig_macarthur<'py>(py: Python<'py>, r: f64, k: f64, attack: f64, handling: f64, efficiency: f64, mortality: f64, x0: f64, y0: f64, t_end: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::rosenzweig_macarthur(r, k, attack, handling, efficiency, mortality, x0, y0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -216,7 +215,6 @@ pub fn pyfn_coexistence_condition(k1: f64, k2: f64, alpha12: f64, alpha21: f64) 
 #[pyfunction]
 #[pyo3(name = "competition_lv", signature = (r1, r2, k1, k2, alpha12, alpha21, n1, n2, t_end))]
 pub fn pyfn_competition_lv<'py>(py: Python<'py>, r1: f64, r2: f64, k1: f64, k2: f64, alpha12: f64, alpha21: f64, n1: f64, n2: f64, t_end: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::competition_lv(r1, r2, k1, k2, alpha12, alpha21, n1, n2, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -238,7 +236,6 @@ pub fn pyfn_competition_lv<'py>(py: Python<'py>, r1: f64, r2: f64, k1: f64, k2: 
 #[pyfunction]
 #[pyo3(name = "metapopulation_levins", signature = (c, e, p0, t_end))]
 pub fn pyfn_metapopulation_levins<'py>(py: Python<'py>, c: f64, e: f64, p0: f64, t_end: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::metapopulation_levins(c, e, p0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -289,7 +286,6 @@ pub fn pyfn_leslie_matrix(fecundity: Vec<f64>, survival: Vec<f64>) -> PyResult<c
 #[pyfunction]
 #[pyo3(name = "leslie_growth_rate", signature = (l))]
 pub fn pyfn_leslie_growth_rate<'py>(py: Python<'py>, l: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<f64>)> {
-    let _ = py;
     let l = l.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::leslie_growth_rate(&l)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -306,7 +302,6 @@ pub fn pyfn_leslie_growth_rate<'py>(py: Python<'py>, l: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "stable_age_distribution", signature = (l))]
 pub fn pyfn_stable_age_distribution<'py>(py: Python<'py>, l: crate::generated::types::PyMatrixArg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let l = l.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::stable_age_distribution(&l)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -331,7 +326,6 @@ pub fn pyfn_stable_age_distribution<'py>(py: Python<'py>, l: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "euler_lotka_solve", signature = (lx, mx))]
 pub fn pyfn_euler_lotka_solve<'py>(py: Python<'py>, lx: Vec<f64>, mx: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::euler_lotka_solve(&lx, &mx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -353,7 +347,6 @@ pub fn pyfn_euler_lotka_solve<'py>(py: Python<'py>, lx: Vec<f64>, mx: Vec<f64>) 
 #[pyfunction]
 #[pyo3(name = "ricker_map", signature = (r, k, n0, steps))]
 pub fn pyfn_ricker_map<'py>(py: Python<'py>, r: f64, k: f64, n0: f64, steps: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::ricker_map(r, k, n0, steps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -379,7 +372,6 @@ pub fn pyfn_ricker_map<'py>(py: Python<'py>, r: f64, k: f64, n0: f64, steps: usi
 #[pyfunction]
 #[pyo3(name = "beverton_holt", signature = (ratio, k, n0, steps))]
 pub fn pyfn_beverton_holt<'py>(py: Python<'py>, ratio: f64, k: f64, n0: f64, steps: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::beverton_holt(ratio, k, n0, steps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -400,7 +392,6 @@ pub fn pyfn_beverton_holt<'py>(py: Python<'py>, ratio: f64, k: f64, n0: f64, ste
 #[pyfunction]
 #[pyo3(name = "bifurcation_ricker", signature = (r_lo, r_hi, samples, transient, keep))]
 pub fn pyfn_bifurcation_ricker<'py>(py: Python<'py>, r_lo: f64, r_hi: f64, samples: usize, transient: usize, keep: usize) -> PyResult<Vec<(f64, Vec<f64>)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::bifurcation_ricker(r_lo, r_hi, samples, transient, keep)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -553,7 +544,6 @@ pub fn pyfn_hw_chi_square_test(observed: Vec<f64>) -> PyResult<crate::generated:
 #[pyfunction]
 #[pyo3(name = "selection_one_locus", signature = (p0, w, generations))]
 pub fn pyfn_selection_one_locus<'py>(py: Python<'py>, p0: f64, w: Vec<f64>, generations: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = <[f64; 3]>::try_from(w).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::selection_one_locus(p0, w, generations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -572,7 +562,6 @@ pub fn pyfn_selection_one_locus<'py>(py: Python<'py>, p0: f64, w: Vec<f64>, gene
 #[pyfunction]
 #[pyo3(name = "balanced_polymorphism", signature = (w))]
 pub fn pyfn_balanced_polymorphism<'py>(py: Python<'py>, w: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let w = <[f64; 3]>::try_from(w).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::balanced_polymorphism(w)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -638,7 +627,6 @@ pub fn pyfn_kin_selection_hamilton(r: f64, b: f64, c: f64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "price_equation_decompose", signature = (trait_values, fitness, offspring_trait))]
 pub fn pyfn_price_equation_decompose<'py>(py: Python<'py>, trait_values: Vec<f64>, fitness: Vec<f64>, offspring_trait: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::price_equation_decompose(&trait_values, &fitness, &offspring_trait)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -745,7 +733,6 @@ pub fn pyfn_watterson_theta(segregating: f64, n: u64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "nucleotide_diversity", signature = (sequences))]
 pub fn pyfn_nucleotide_diversity<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::nucleotide_diversity(&sequences)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -762,7 +749,6 @@ pub fn pyfn_nucleotide_diversity<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>) 
 #[pyfunction]
 #[pyo3(name = "segregating_sites", signature = (sequences))]
 pub fn pyfn_segregating_sites<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::segregating_sites(&sequences)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -789,7 +775,6 @@ pub fn pyfn_segregating_sites<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>) -> 
 #[pyfunction]
 #[pyo3(name = "tajima_d", signature = (sequences))]
 pub fn pyfn_tajima_d<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::tajima_d(&sequences)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -814,7 +799,6 @@ pub fn pyfn_tajima_d<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "fst", signature = (subpop_freqs))]
 pub fn pyfn_fst<'py>(py: Python<'py>, subpop_freqs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::population::fst(&subpop_freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

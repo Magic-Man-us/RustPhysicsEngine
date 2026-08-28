@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "dft", signature = (signal))]
 pub fn pyfn_dft<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::fourier::dft(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -32,7 +32,6 @@ pub fn pyfn_dft<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<Vec<(f64, f6
 #[pyfunction]
 #[pyo3(name = "inverse_dft", signature = (spectrum))]
 pub fn pyfn_inverse_dft<'py>(py: Python<'py>, spectrum: Vec<(f64, f64)>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let spectrum = spectrum.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::fourier::inverse_dft(&spectrum)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -48,7 +47,6 @@ pub fn pyfn_inverse_dft<'py>(py: Python<'py>, spectrum: Vec<(f64, f64)>) -> PyRe
 #[pyfunction]
 #[pyo3(name = "power_spectrum", signature = (signal))]
 pub fn pyfn_power_spectrum<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::fourier::power_spectrum(&signal)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -60,7 +58,6 @@ pub fn pyfn_power_spectrum<'py>(py: Python<'py>, signal: Vec<f64>) -> PyResult<V
 #[pyfunction]
 #[pyo3(name = "dominant_frequency", signature = (signal, sample_rate))]
 pub fn pyfn_dominant_frequency<'py>(py: Python<'py>, signal: Vec<f64>, sample_rate: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::fourier::dominant_frequency(&signal, sample_rate)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

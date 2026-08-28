@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -218,7 +219,6 @@ impl PyPolyhedron {
     #[pyo3(name = "edges")]
     #[pyo3(signature = ())]
     fn edges<'py>(&self, py: Python<'py>) -> PyResult<Vec<(usize, usize)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.edges()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -302,7 +302,6 @@ impl PyPolyhedron {
     #[pyo3(name = "faces_around_vertex")]
     #[pyo3(signature = (v))]
     fn faces_around_vertex<'py>(&self, py: Python<'py>, v: usize) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.faces_around_vertex(v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -317,7 +316,6 @@ impl PyPolyhedron {
     #[pyo3(name = "vertex_figure")]
     #[pyo3(signature = (v))]
     fn vertex_figure<'py>(&self, py: Python<'py>, v: usize) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.vertex_figure(v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

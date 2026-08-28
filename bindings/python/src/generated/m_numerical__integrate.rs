@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -120,7 +121,6 @@ pub fn pyfn_romberg(f: pyo3::Py<pyo3::PyAny>, a: f64, b: f64, max_levels: usize,
 #[pyfunction]
 #[pyo3(name = "richardson_extrapolate", signature = (estimates, ratio, order))]
 pub fn pyfn_richardson_extrapolate<'py>(py: Python<'py>, estimates: Vec<f64>, ratio: f64, order: u32) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::numerical::integrate::richardson_extrapolate(&estimates, ratio, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

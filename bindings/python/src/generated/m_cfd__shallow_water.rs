@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -51,7 +52,6 @@ pub fn pyfn_swe_1d_step_hll<'py>(h: pyo3::Bound<'py, pyo3::PyAny>, hu: pyo3::Bou
 #[pyfunction]
 #[pyo3(name = "tsunami_runup_1d", signature = (slope, a, sigma, x0, n, domain, t_end, n_samples))]
 pub fn pyfn_tsunami_runup_1d<'py>(py: Python<'py>, slope: f64, a: f64, sigma: f64, x0: f64, n: usize, domain: f64, t_end: f64, n_samples: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::shallow_water::tsunami_runup_1d(slope, a, sigma, x0, n, domain, t_end, n_samples)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

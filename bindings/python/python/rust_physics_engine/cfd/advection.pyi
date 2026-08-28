@@ -7,6 +7,7 @@ from collections.abc import Callable, Sequence
 from fractions import Fraction
 from typing import Any, Optional
 
+from rust_physics_engine.cfd.grid import CellField2
 from rust_physics_engine.cfd.grid import MacGrid2
 
 class Limiter:
@@ -67,12 +68,54 @@ Rust: `cfd::advection::advect_weno5_1d`
     """
     ...
 
+def advect_semi_lagrangian_2d(q: CellField2, grid: MacGrid2, dt: float) -> CellField2:
+    """
+Semi-Lagrangian advection of a cell field through a MAC velocity
+field (RK2 backtrace, bilinear sampling). Unconditionally stable.
+
+Rust: `cfd::advection::advect_semi_lagrangian_2d`
+    """
+    ...
+
+def advect_bfecc_2d(q: CellField2, grid: MacGrid2, dt: float) -> CellField2:
+    """
+Back-and-forth error compensation and correction (BFECC): second
+order, limited to the local min/max to avoid new extrema.
+
+Rust: `cfd::advection::advect_bfecc_2d`
+    """
+    ...
+
+def advect_maccormack_2d(q: CellField2, grid: MacGrid2, dt: float) -> CellField2:
+    """
+Unsplit MacCormack advection with min/max limiting.
+
+Rust: `cfd::advection::advect_maccormack_2d`
+    """
+    ...
+
+def advect_upwind_2d(q: CellField2, grid: MacGrid2, dt: float) -> CellField2:
+    """
+First-order upwind advection on the 2D grid using face velocities.
+
+Rust: `cfd::advection::advect_upwind_2d`
+    """
+    ...
+
 def advect_velocity_semi_lagrangian(grid: MacGrid2, dt: float) -> None:
     """
 Advect the MAC velocity field itself semi-Lagrangianly (each face
 component backtraced from its own staggered position).
 
 Rust: `cfd::advection::advect_velocity_semi_lagrangian`
+    """
+    ...
+
+def advect_flux_limited_2d(q: CellField2, grid: MacGrid2, dt: float, limiter: Limiter) -> CellField2:
+    """
+Dimensionally split flux-limited (MUSCL) advection on the 2D grid.
+
+Rust: `cfd::advection::advect_flux_limited_2d`
     """
     ...
 

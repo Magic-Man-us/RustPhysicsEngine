@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -270,7 +271,6 @@ pub fn pyfn_transportation_problem(supply: Vec<f64>, demand: Vec<f64>, costs: cr
 #[pyfunction]
 #[pyo3(name = "two_player_zero_sum_lp", signature = (payoff))]
 pub fn pyfn_two_player_zero_sum_lp<'py>(py: Python<'py>, payoff: crate::generated::types::PyMatrixArg) -> PyResult<(Vec<f64>, Vec<f64>, f64)> {
-    let _ = py;
     let payoff = payoff.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::lp::two_player_zero_sum_lp(&payoff)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -301,7 +301,6 @@ pub fn pyfn_two_player_zero_sum_lp<'py>(py: Python<'py>, payoff: crate::generate
 #[pyfunction]
 #[pyo3(name = "chebyshev_center", signature = (a, b))]
 pub fn pyfn_chebyshev_center<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>) -> PyResult<(Vec<f64>, f64)> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::lp::chebyshev_center(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -327,7 +326,6 @@ pub fn pyfn_chebyshev_center<'py>(py: Python<'py>, a: crate::generated::types::P
 #[pyfunction]
 #[pyo3(name = "l1_regression_lp", signature = (x, y))]
 pub fn pyfn_l1_regression_lp<'py>(py: Python<'py>, x: crate::generated::types::PyMatrixArg, y: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let x = x.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::lp::l1_regression_lp(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -349,7 +347,6 @@ pub fn pyfn_l1_regression_lp<'py>(py: Python<'py>, x: crate::generated::types::P
 #[pyfunction]
 #[pyo3(name = "linf_regression_lp", signature = (x, y))]
 pub fn pyfn_linf_regression_lp<'py>(py: Python<'py>, x: crate::generated::types::PyMatrixArg, y: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let x = x.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::lp::linf_regression_lp(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

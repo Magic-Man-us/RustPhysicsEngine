@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -24,7 +25,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "thomas_solve", signature = (sub, diag, sup, rhs))]
 pub fn pyfn_thomas_solve<'py>(py: Python<'py>, sub: Vec<f64>, diag: Vec<f64>, sup: Vec<f64>, rhs: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::tridiagonal::thomas_solve(&sub, &diag, &sup, &rhs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -43,7 +43,6 @@ pub fn pyfn_thomas_solve<'py>(py: Python<'py>, sub: Vec<f64>, diag: Vec<f64>, su
 #[pyfunction]
 #[pyo3(name = "eigen_symmetric_tridiagonal", signature = (diag, off))]
 pub fn pyfn_eigen_symmetric_tridiagonal<'py>(py: Python<'py>, diag: Vec<f64>, off: Vec<f64>) -> PyResult<(Vec<f64>, Vec<Vec<f64>>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::tridiagonal::eigen_symmetric_tridiagonal(&diag, &off)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

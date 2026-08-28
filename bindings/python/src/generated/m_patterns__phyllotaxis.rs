@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -243,7 +244,6 @@ pub fn pyfn_spherical_spiral(turns: f64, n: usize) -> PyResult<Vec<crate::genera
 #[pyfunction]
 #[pyo3(name = "parastichy_counts", signature = (points))]
 pub fn pyfn_parastichy_counts<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<(usize, usize)> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::phyllotaxis::parastichy_counts(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

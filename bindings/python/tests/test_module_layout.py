@@ -87,6 +87,15 @@ def test_constants_are_exposed_both_ways():
     assert rpe.constants.K_B == 1.380_649e-23
 
 
+def test_the_package_docstring_example_actually_runs():
+    """The example in `__init__.py` is a doctest, so it cannot go stale."""
+    import doctest
+
+    result = doctest.testmod(rpe, verbose=False)
+    assert result.attempted > 0
+    assert result.failed == 0
+
+
 def test_a_module_that_does_not_exist_raises():
     with pytest.raises(ImportError):
         importlib.import_module("rust_physics_engine.not_a_module")

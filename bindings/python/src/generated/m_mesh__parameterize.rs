@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -118,7 +119,6 @@ pub fn pyfn_lscm(m: crate::generated::types::PyMeshMesh, pinned: Vec<(usize, cra
 #[pyfunction]
 #[pyo3(name = "conformal_distortion", signature = (m, uv))]
 pub fn pyfn_conformal_distortion<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, uv: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let uv = uv.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::parameterize::conformal_distortion(&m, &uv)));
@@ -137,7 +137,6 @@ pub fn pyfn_conformal_distortion<'py>(py: Python<'py>, m: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "area_distortion", signature = (m, uv))]
 pub fn pyfn_area_distortion<'py>(py: Python<'py>, m: crate::generated::types::PyMeshMesh, uv: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let m = m.inner;
     let uv = uv.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::mesh::parameterize::area_distortion(&m, &uv)));

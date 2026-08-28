@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -36,7 +37,6 @@ pub fn pyfn_lu_decompose(a: crate::generated::types::PyMatrixArg) -> PyResult<cr
 #[pyfunction]
 #[pyo3(name = "solve", signature = (a, b))]
 pub fn pyfn_solve<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::lu::solve(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

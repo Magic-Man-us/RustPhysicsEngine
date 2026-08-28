@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -148,7 +149,6 @@ pub fn pyfn_metropolis_step(energy_current: f64, energy_proposed: f64, temperatu
 #[pyfunction]
 #[pyo3(name = "ising_energy_1d", signature = (spins, j_coupling, h_field))]
 pub fn pyfn_ising_energy_1d<'py>(py: Python<'py>, spins: Vec<i8>, j_coupling: f64, h_field: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::monte_carlo::ising_energy_1d(&spins, j_coupling, h_field)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -160,7 +160,6 @@ pub fn pyfn_ising_energy_1d<'py>(py: Python<'py>, spins: Vec<i8>, j_coupling: f6
 #[pyfunction]
 #[pyo3(name = "ising_magnetization", signature = (spins))]
 pub fn pyfn_ising_magnetization<'py>(py: Python<'py>, spins: Vec<i8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::monte_carlo::ising_magnetization(&spins)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -22,7 +23,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "persistent_homology_vietoris_rips", signature = (points, max_eps, max_dim))]
 pub fn pyfn_persistent_homology_vietoris_rips<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVecNArg>, max_eps: f64, max_dim: usize) -> PyResult<Vec<(usize, f64, f64)>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::dec::persistent_homology_vietoris_rips(&points, max_eps, max_dim)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -37,7 +37,6 @@ pub fn pyfn_persistent_homology_vietoris_rips<'py>(py: Python<'py>, points: Vec<
 #[pyfunction]
 #[pyo3(name = "persistence_diagram_bottleneck", signature = (a, b))]
 pub fn pyfn_persistence_diagram_bottleneck<'py>(py: Python<'py>, a: Vec<(f64, f64)>, b: Vec<(f64, f64)>) -> PyResult<f64> {
-    let _ = py;
     let a = a.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let b = b.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::dec::persistence_diagram_bottleneck(&a, &b)));
@@ -52,7 +51,6 @@ pub fn pyfn_persistence_diagram_bottleneck<'py>(py: Python<'py>, a: Vec<(f64, f6
 #[pyfunction]
 #[pyo3(name = "betti_curve", signature = (pairs, eps_range))]
 pub fn pyfn_betti_curve<'py>(py: Python<'py>, pairs: Vec<(usize, f64, f64)>, eps_range: Vec<f64>) -> PyResult<Vec<(f64, Vec<usize>)>> {
-    let _ = py;
     let pairs = pairs.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::dec::betti_curve(&pairs, &eps_range)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

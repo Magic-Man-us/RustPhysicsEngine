@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -266,7 +267,7 @@ impl PyTleElements {
 
     #[getter]
     #[pyo3(name = "designator")]
-    fn py_get_designator(&self) -> PyResult<String> { Ok(self.inner.designator.clone().to_string()) }
+    fn py_get_designator(&self) -> PyResult<String> { Ok(self.inner.designator.to_string()) }
 
     #[getter]
     #[pyo3(name = "epoch_jd")]

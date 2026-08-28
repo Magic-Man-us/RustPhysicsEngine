@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -159,7 +160,6 @@ pub fn pyfn_critical_path_method(tasks: Vec<(f64, Vec<usize>)>) -> PyResult<(f64
 #[pyfunction]
 #[pyo3(name = "pert", signature = (tasks))]
 pub fn pyfn_pert<'py>(py: Python<'py>, tasks: Vec<(f64, f64, f64, Vec<usize>)>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let tasks = tasks.into_iter().map(|__e| (__e.0, __e.1, __e.2, __e.3)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::pert(&tasks)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -184,7 +184,6 @@ pub fn pyfn_pert<'py>(py: Python<'py>, tasks: Vec<(f64, f64, f64, Vec<usize>)>) 
 #[pyfunction]
 #[pyo3(name = "vehicle_routing_savings", signature = (distance, demand, capacity))]
 pub fn pyfn_vehicle_routing_savings<'py>(py: Python<'py>, distance: crate::generated::types::PyMatrixArg, demand: Vec<f64>, capacity: f64) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let distance = distance.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::vehicle_routing_savings(&distance, &demand, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -211,7 +210,6 @@ pub fn pyfn_vehicle_routing_savings<'py>(py: Python<'py>, distance: crate::gener
 #[pyfunction]
 #[pyo3(name = "job_shop_shifting_bottleneck_lite", signature = (jobs, machines))]
 pub fn pyfn_job_shop_shifting_bottleneck_lite<'py>(py: Python<'py>, jobs: Vec<Vec<(usize, f64)>>, machines: usize) -> PyResult<f64> {
-    let _ = py;
     let jobs = jobs.into_iter().map(|__e| __e.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>()).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::job_shop_shifting_bottleneck_lite(&jobs, machines)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -233,7 +231,6 @@ pub fn pyfn_job_shop_shifting_bottleneck_lite<'py>(py: Python<'py>, jobs: Vec<Ve
 #[pyfunction]
 #[pyo3(name = "scheduling_spt", signature = (jobs))]
 pub fn pyfn_scheduling_spt<'py>(py: Python<'py>, jobs: Vec<f64>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::scheduling_spt(&jobs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -252,7 +249,6 @@ pub fn pyfn_scheduling_spt<'py>(py: Python<'py>, jobs: Vec<f64>) -> PyResult<Vec
 #[pyfunction]
 #[pyo3(name = "scheduling_edd", signature = (jobs))]
 pub fn pyfn_scheduling_edd<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let jobs = jobs.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::scheduling_edd(&jobs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -276,7 +272,6 @@ pub fn pyfn_scheduling_edd<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>) -> PyRes
 #[pyfunction]
 #[pyo3(name = "moore_hodgson", signature = (jobs))]
 pub fn pyfn_moore_hodgson<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let jobs = jobs.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::moore_hodgson(&jobs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -298,7 +293,6 @@ pub fn pyfn_moore_hodgson<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "johnson_two_machine", signature = (jobs))]
 pub fn pyfn_johnson_two_machine<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let jobs = jobs.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::johnson_two_machine(&jobs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -314,7 +308,6 @@ pub fn pyfn_johnson_two_machine<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>) -> 
 #[pyfunction]
 #[pyo3(name = "two_machine_makespan", signature = (jobs, order))]
 pub fn pyfn_two_machine_makespan<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>, order: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let jobs = jobs.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::two_machine_makespan(&jobs, &order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -335,7 +328,6 @@ pub fn pyfn_two_machine_makespan<'py>(py: Python<'py>, jobs: Vec<(f64, f64)>, or
 #[pyfunction]
 #[pyo3(name = "lpt_makespan", signature = (jobs, machines))]
 pub fn pyfn_lpt_makespan<'py>(py: Python<'py>, jobs: Vec<f64>, machines: usize) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::lpt_makespan(&jobs, machines)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -354,7 +346,6 @@ pub fn pyfn_lpt_makespan<'py>(py: Python<'py>, jobs: Vec<f64>, machines: usize) 
 #[pyfunction]
 #[pyo3(name = "interval_scheduling_max", signature = (intervals))]
 pub fn pyfn_interval_scheduling_max<'py>(py: Python<'py>, intervals: Vec<(f64, f64)>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let intervals = intervals.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::interval_scheduling_max(&intervals)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -375,7 +366,6 @@ pub fn pyfn_interval_scheduling_max<'py>(py: Python<'py>, intervals: Vec<(f64, f
 #[pyfunction]
 #[pyo3(name = "weighted_interval_scheduling", signature = (intervals))]
 pub fn pyfn_weighted_interval_scheduling<'py>(py: Python<'py>, intervals: Vec<(f64, f64, f64)>) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let intervals = intervals.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::weighted_interval_scheduling(&intervals)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -391,7 +381,6 @@ pub fn pyfn_weighted_interval_scheduling<'py>(py: Python<'py>, intervals: Vec<(f
 #[pyfunction]
 #[pyo3(name = "gantt_data", signature = (processing, order))]
 pub fn pyfn_gantt_data<'py>(py: Python<'py>, processing: Vec<f64>, order: Vec<usize>) -> PyResult<Vec<(usize, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::network::gantt_data(&processing, &order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())

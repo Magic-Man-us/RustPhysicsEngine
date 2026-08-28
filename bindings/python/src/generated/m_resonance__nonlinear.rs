@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -22,7 +23,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "duffing_response_amplitude", signature = (alpha, beta, delta, gamma, omega))]
 pub fn pyfn_duffing_response_amplitude<'py>(py: Python<'py>, alpha: f64, beta: f64, delta: f64, gamma: f64, omega: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::duffing_response_amplitude(alpha, beta, delta, gamma, omega)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -59,7 +59,6 @@ pub fn pyfn_duffing_jump_frequencies(alpha: f64, beta: f64, delta: f64, gamma: f
 #[pyfunction]
 #[pyo3(name = "duffing_simulate", signature = (alpha, beta, delta, gamma, omega, x0, v0, t_end, dt))]
 pub fn pyfn_duffing_simulate<'py>(py: Python<'py>, alpha: f64, beta: f64, delta: f64, gamma: f64, omega: f64, x0: f64, v0: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::duffing_simulate(alpha, beta, delta, gamma, omega, x0, v0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -72,7 +71,6 @@ pub fn pyfn_duffing_simulate<'py>(py: Python<'py>, alpha: f64, beta: f64, delta:
 #[pyfunction]
 #[pyo3(name = "duffing_poincare", signature = (alpha, beta, delta, gamma, omega, x0, v0, n_points))]
 pub fn pyfn_duffing_poincare<'py>(py: Python<'py>, alpha: f64, beta: f64, delta: f64, gamma: f64, omega: f64, x0: f64, v0: f64, n_points: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::duffing_poincare(alpha, beta, delta, gamma, omega, x0, v0, n_points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -96,7 +94,6 @@ pub fn pyfn_mathieu_stability(a: f64, q: f64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "mathieu_stability_chart", signature = (a_range, q_range, n))]
 pub fn pyfn_mathieu_stability_chart<'py>(py: Python<'py>, a_range: (f64, f64), q_range: (f64, f64), n: usize) -> PyResult<Vec<Vec<bool>>> {
-    let _ = py;
     let a_range = (a_range.0, a_range.1);
     let q_range = (q_range.0, q_range.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::mathieu_stability_chart(a_range, q_range, n)));
@@ -138,7 +135,6 @@ pub fn pyfn_kapitza_pendulum_stable(l: f64, g: f64, a: f64, omega: f64) -> PyRes
 #[pyfunction]
 #[pyo3(name = "van_der_pol_simulate", signature = (mu, omega, x0, v0, t_end, dt))]
 pub fn pyfn_van_der_pol_simulate<'py>(py: Python<'py>, mu: f64, omega: f64, x0: f64, v0: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::van_der_pol_simulate(mu, omega, x0, v0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -189,7 +185,6 @@ pub fn pyfn_fano_lineshape(omega: f64, omega0: f64, gamma: f64, q: f64) -> PyRes
 #[pyfunction]
 #[pyo3(name = "fano_fit", signature = (omega, y))]
 pub fn pyfn_fano_fit<'py>(py: Python<'py>, omega: Vec<f64>, y: Vec<f64>) -> PyResult<(f64, f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::fano_fit(&omega, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1, __v.2, __v.3))
@@ -257,7 +252,6 @@ pub fn pyfn_stochastic_resonance_snr(a: f64, d: f64, noise: f64, omega: f64) -> 
 #[pyfunction]
 #[pyo3(name = "hysteresis_loop", signature = (f_sweep, response_up, response_down))]
 pub fn pyfn_hysteresis_loop<'py>(py: Python<'py>, f_sweep: Vec<f64>, response_up: Vec<f64>, response_down: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::hysteresis_loop(&f_sweep, &response_up, &response_down)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -308,7 +302,6 @@ pub fn pyfn_describing_function<'py>(py: Python<'py>, nonlinearity: pyo3::Py<pyo
 #[pyfunction]
 #[pyo3(name = "subharmonic_response", signature = (alpha, beta, delta, gamma, omega))]
 pub fn pyfn_subharmonic_response<'py>(py: Python<'py>, alpha: f64, beta: f64, delta: f64, gamma: f64, omega: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::nonlinear::subharmonic_response(alpha, beta, delta, gamma, omega)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

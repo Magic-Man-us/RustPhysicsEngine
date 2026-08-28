@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -166,7 +167,6 @@ pub fn pyfn_fem_1d_error_h1(u_h: crate::generated::types::PyFem1dSolution, u_exa
 #[pyfunction]
 #[pyo3(name = "convergence_rate", signature = (errors, hs))]
 pub fn pyfn_convergence_rate<'py>(py: Python<'py>, errors: Vec<f64>, hs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem1d::convergence_rate(&errors, &hs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

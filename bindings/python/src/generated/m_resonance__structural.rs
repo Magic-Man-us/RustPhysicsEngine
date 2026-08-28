@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -22,7 +23,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "experimental_modal_peak_picking", signature = (frf, freqs))]
 pub fn pyfn_experimental_modal_peak_picking<'py>(py: Python<'py>, frf: Vec<crate::runtime::coerce::ComplexArg>, freqs: Vec<f64>) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let frf = frf.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::structural::experimental_modal_peak_picking(&frf, &freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -36,7 +36,6 @@ pub fn pyfn_experimental_modal_peak_picking<'py>(py: Python<'py>, frf: Vec<crate
 #[pyfunction]
 #[pyo3(name = "half_power_bandwidth", signature = (frf_mag, freqs, peak_idx))]
 pub fn pyfn_half_power_bandwidth<'py>(py: Python<'py>, frf_mag: Vec<f64>, freqs: Vec<f64>, peak_idx: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::structural::half_power_bandwidth(&frf_mag, &freqs, peak_idx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -53,7 +52,6 @@ pub fn pyfn_half_power_bandwidth<'py>(py: Python<'py>, frf_mag: Vec<f64>, freqs:
 #[pyfunction]
 #[pyo3(name = "circle_fit", signature = (frf, freqs, window))]
 pub fn pyfn_circle_fit<'py>(py: Python<'py>, frf: Vec<crate::runtime::coerce::ComplexArg>, freqs: Vec<f64>, window: usize) -> PyResult<(f64, f64)> {
-    let _ = py;
     let frf = frf.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::structural::circle_fit(&frf, &freqs, window)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -84,7 +82,6 @@ pub fn pyfn_operational_deflection_shape<'py>(py: Python<'py>, responses: Vec<Ve
 #[pyfunction]
 #[pyo3(name = "stochastic_subspace_identification", signature = (outputs, fs, order))]
 pub fn pyfn_stochastic_subspace_identification<'py>(py: Python<'py>, outputs: Vec<Vec<f64>>, fs: f64, order: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::structural::stochastic_subspace_identification(&outputs, fs, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -97,7 +94,6 @@ pub fn pyfn_stochastic_subspace_identification<'py>(py: Python<'py>, outputs: Ve
 #[pyfunction]
 #[pyo3(name = "shock_response_spectrum", signature = (accel, dt, freqs, zeta))]
 pub fn pyfn_shock_response_spectrum<'py>(py: Python<'py>, accel: Vec<f64>, dt: f64, freqs: Vec<f64>, zeta: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::structural::shock_response_spectrum(&accel, dt, &freqs, zeta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

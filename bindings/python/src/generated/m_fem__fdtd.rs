@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -109,7 +110,6 @@ pub fn pyfn_fdtd_1d(eps_r: Vec<f64>, source: pyo3::Py<pyo3::PyAny>, source_cell:
 #[pyfunction]
 #[pyo3(name = "photonic_crystal_bandgap_1d", signature = (eps_a, eps_b, d_a, d_b, omega_max, samples))]
 pub fn pyfn_photonic_crystal_bandgap_1d<'py>(py: Python<'py>, eps_a: f64, eps_b: f64, d_a: f64, d_b: f64, omega_max: f64, samples: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fdtd::photonic_crystal_bandgap_1d(eps_a, eps_b, d_a, d_b, omega_max, samples)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

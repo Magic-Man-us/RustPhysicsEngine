@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -108,7 +109,6 @@ pub fn pyfn_poisson_3d(rate: f64, min: (f64, f64, f64), max: (f64, f64, f64), rn
 #[pyfunction]
 #[pyo3(name = "hawkes_intensity", signature = (events, mu, alpha, beta, t))]
 pub fn pyfn_hawkes_intensity<'py>(py: Python<'py>, events: Vec<f64>, mu: f64, alpha: f64, beta: f64, t: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::hawkes_intensity(&events, mu, alpha, beta, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -163,7 +163,6 @@ pub fn pyfn_hawkes_process(mu: f64, alpha: f64, beta: f64, t_end: f64, rng: pyo3
 #[pyfunction]
 #[pyo3(name = "hawkes_log_likelihood", signature = (events, t_end, mu, alpha, beta))]
 pub fn pyfn_hawkes_log_likelihood<'py>(py: Python<'py>, events: Vec<f64>, t_end: f64, mu: f64, alpha: f64, beta: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::hawkes_log_likelihood(&events, t_end, mu, alpha, beta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -183,7 +182,6 @@ pub fn pyfn_hawkes_log_likelihood<'py>(py: Python<'py>, events: Vec<f64>, t_end:
 #[pyfunction]
 #[pyo3(name = "hawkes_fit_mle", signature = (events, t_end))]
 pub fn pyfn_hawkes_fit_mle<'py>(py: Python<'py>, events: Vec<f64>, t_end: f64) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::hawkes_fit_mle(&events, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1, __v.2))
@@ -259,7 +257,6 @@ pub fn pyfn_thomas_process(parent_rate: f64, spread: f64, daughter_mean: f64, re
 #[pyfunction]
 #[pyo3(name = "ripley_k", signature = (points, region, r_values))]
 pub fn pyfn_ripley_k<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec2Arg>, region: crate::generated::types::PyRect, r_values: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let region = region.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::ripley_k(&points, &region, &r_values)));
@@ -281,7 +278,6 @@ pub fn pyfn_ripley_k<'py>(py: Python<'py>, points: Vec<crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "l_function", signature = (points, region, r_values))]
 pub fn pyfn_l_function<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec2Arg>, region: crate::generated::types::PyRect, r_values: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let region = region.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::l_function(&points, &region, &r_values)));
@@ -305,7 +301,6 @@ pub fn pyfn_l_function<'py>(py: Python<'py>, points: Vec<crate::generated::types
 #[pyfunction]
 #[pyo3(name = "pair_correlation", signature = (points, region, r, dr))]
 pub fn pyfn_pair_correlation<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec2Arg>, region: crate::generated::types::PyRect, r: f64, dr: f64) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let region = region.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::pair_correlation(&points, &region, r, dr)));
@@ -331,7 +326,6 @@ pub fn pyfn_pair_correlation<'py>(py: Python<'py>, points: Vec<crate::generated:
 #[pyfunction]
 #[pyo3(name = "nearest_neighbor_index", signature = (points, region))]
 pub fn pyfn_nearest_neighbor_index<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec2Arg>, region: crate::generated::types::PyRect) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let region = region.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::nearest_neighbor_index(&points, &region)));
@@ -427,7 +421,6 @@ pub fn pyfn_branching_process_gw(offspring_pmf: Vec<f64>, generations: usize, rn
 #[pyfunction]
 #[pyo3(name = "extinction_probability", signature = (offspring_pgf_coeffs))]
 pub fn pyfn_extinction_probability<'py>(py: Python<'py>, offspring_pgf_coeffs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::point_process::extinction_probability(&offspring_pgf_coeffs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -259,7 +260,6 @@ pub fn pyfn_crossing_number_projection(pl: crate::generated::types::PyPolyline, 
 #[pyfunction]
 #[pyo3(name = "alexander_polynomial_coeffs", signature = (pl))]
 pub fn pyfn_alexander_polynomial_coeffs<'py>(py: Python<'py>, pl: crate::generated::types::PyPolyline) -> PyResult<Vec<i64>> {
-    let _ = py;
     let pl = pl.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::knots::alexander_polynomial_coeffs(&pl)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

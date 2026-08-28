@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -71,7 +72,6 @@ pub fn pyfn_secant(f: pyo3::Py<pyo3::PyAny>, x0: f64, x1: f64, tol: f64, max_ite
 #[pyfunction]
 #[pyo3(name = "polynomial_eval", signature = (coeffs, x))]
 pub fn pyfn_polynomial_eval<'py>(py: Python<'py>, coeffs: Vec<f64>, x: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::numerical::roots::polynomial_eval(&coeffs, x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

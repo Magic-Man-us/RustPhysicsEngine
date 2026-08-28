@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -112,7 +113,6 @@ pub fn pyfn_lambert_universal(r1: crate::generated::types::PyVec3Arg, r2: crate:
 #[pyfunction]
 #[pyo3(name = "porkchop_data", signature = (departures, arrivals, mu, prograde))]
 pub fn pyfn_porkchop_data<'py>(py: Python<'py>, departures: Vec<(f64, crate::generated::types::PyVec3Arg, crate::generated::types::PyVec3Arg)>, arrivals: Vec<(f64, crate::generated::types::PyVec3Arg, crate::generated::types::PyVec3Arg)>, mu: f64, prograde: bool) -> PyResult<Vec<Vec<Option<f64>>>> {
-    let _ = py;
     let departures = departures.into_iter().map(|__e| (__e.0, __e.1.0, __e.2.0)).collect::<Vec<_>>();
     let arrivals = arrivals.into_iter().map(|__e| (__e.0, __e.1.0, __e.2.0)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::astrophysics::lambert::porkchop_data(&departures, &arrivals, mu, prograde)));

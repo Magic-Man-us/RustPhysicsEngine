@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -161,7 +162,6 @@ pub fn pyfn_butterworth_order(pass_: f64, stop: f64, ripple_db: f64, atten_db: f
 #[pyfunction]
 #[pyo3(name = "filtfilt", signature = (sos, x))]
 pub fn pyfn_filtfilt<'py>(py: Python<'py>, sos: crate::generated::types::PySos, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let sos = sos.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::iir::filtfilt(&sos, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -178,7 +178,6 @@ pub fn pyfn_filtfilt<'py>(py: Python<'py>, sos: crate::generated::types::PySos, 
 #[pyfunction]
 #[pyo3(name = "iir_apply", signature = (b, a, x))]
 pub fn pyfn_iir_apply<'py>(py: Python<'py>, b: Vec<f64>, a: Vec<f64>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::iir::iir_apply(&b, &a, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -190,7 +189,6 @@ pub fn pyfn_iir_apply<'py>(py: Python<'py>, b: Vec<f64>, a: Vec<f64>, x: Vec<f64
 #[pyfunction]
 #[pyo3(name = "impulse_response", signature = (sos, n))]
 pub fn pyfn_impulse_response<'py>(py: Python<'py>, sos: crate::generated::types::PySos, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let sos = sos.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::iir::impulse_response(&sos, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -203,7 +201,6 @@ pub fn pyfn_impulse_response<'py>(py: Python<'py>, sos: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "step_response", signature = (sos, n))]
 pub fn pyfn_step_response<'py>(py: Python<'py>, sos: crate::generated::types::PySos, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let sos = sos.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::iir::step_response(&sos, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -303,7 +300,6 @@ pub fn pyfn_rbj_q_from_bandwidth(bw_octaves: f64, fc: f64, fs: f64) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "first_order_lowpass", signature = (signal, dt, rc))]
 pub fn pyfn_first_order_lowpass<'py>(py: Python<'py>, signal: Vec<f64>, dt: f64, rc: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::iir::first_order_lowpass(&signal, dt, rc)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -318,7 +314,6 @@ pub fn pyfn_first_order_lowpass<'py>(py: Python<'py>, signal: Vec<f64>, dt: f64,
 #[pyfunction]
 #[pyo3(name = "first_order_highpass", signature = (signal, dt, rc))]
 pub fn pyfn_first_order_highpass<'py>(py: Python<'py>, signal: Vec<f64>, dt: f64, rc: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::iir::first_order_highpass(&signal, dt, rc)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

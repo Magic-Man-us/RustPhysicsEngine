@@ -10,8 +10,8 @@ the bottom with the reason.
 
 | | in Rust | bound |
 |---|---:|---:|
-| Free functions | 4149 | 4070 |
-| Methods | 2277 | 2229 |
+| Free functions | 4149 | 4086 |
+| Methods | 2277 | 2254 |
 | Classes | 426 | 416 |
 | Constants | 106 | 106 |
 
@@ -28,8 +28,8 @@ The tree comes to 296 Python modules.
 
 | reason | count |
 |---|---:|
-| argument `...` | 91 |
-| return type `...` | 27 |
+| argument `...` | 66 |
+| return type `...` | 11 |
 | re-export shadowed by the submodule `...`; reach it at `...` | 9 |
 | generic (<S: GameState>) | 3 |
 | generic type | 2 |
@@ -101,7 +101,7 @@ The tree comes to 296 Python modules.
 | `astrophysics::lambert` | 4 | 0 |
 | `astrophysics::magnetosphere` | 6 | 1 |
 | `astrophysics::maneuvers` | 8 | 0 |
-| `astrophysics::nbody` | 6 | 2 |
+| `astrophysics::nbody` | 8 | 2 |
 | `astrophysics::orbital_elements` | 15 | 1 |
 | `astrophysics::tidal` | 7 | 0 |
 | `astrophysics::time_systems` | 5 | 0 |
@@ -120,20 +120,20 @@ The tree comes to 296 Python modules.
 | `biophysics::phylo` | 9 | 2 |
 | `biophysics::population` | 36 | 1 |
 | `biophysics::seq_align` | 30 | 2 |
-| `cfd::advection` | 12 | 2 |
+| `cfd::advection` | 17 | 2 |
 | `cfd::boundary_layer` | 31 | 0 |
 | `cfd::grid` | 0 | 4 |
 | `cfd::lbm` | 8 | 4 |
 | `cfd::level_set` | 12 | 6 |
 | `cfd::multiphase` | 34 | 2 |
 | `cfd::porous` | 24 | 1 |
-| `cfd::potential_flow` | 21 | 5 |
+| `cfd::potential_flow` | 22 | 5 |
 | `cfd::riemann` | 26 | 6 |
 | `cfd::shallow_water` | 14 | 1 |
 | `cfd::sph` | 9 | 7 |
 | `cfd::stable_fluids` | 8 | 3 |
 | `cfd::turbulence` | 33 | 4 |
-| `cfd::vortex` | 16 | 4 |
+| `cfd::vortex` | 17 | 4 |
 | `codes::block` | 11 | 2 |
 | `codes::checksum` | 21 | 0 |
 | `codes::compression` | 28 | 2 |
@@ -200,7 +200,7 @@ The tree comes to 296 Python modules.
 | `linalg::tridiagonal` | 2 | 0 |
 | `manifold::clifford` | 4 | 1 |
 | `manifold::dec` | 3 | 1 |
-| `manifold::embedding` | 38 | 0 |
+| `manifold::embedding` | 39 | 0 |
 | `manifold::geodesic` | 8 | 2 |
 | `manifold::hyperbolic` | 43 | 2 |
 | `manifold::lie` | 16 | 14 |
@@ -233,12 +233,12 @@ The tree comes to 296 Python modules.
 | `optimization::network` | 17 | 1 |
 | `patterns::aperiodic` | 13 | 2 |
 | `patterns::knots` | 20 | 0 |
-| `patterns::packing` | 16 | 0 |
+| `patterns::packing` | 17 | 0 |
 | `patterns::phyllotaxis` | 18 | 0 |
 | `patterns::polygon_ops` | 29 | 1 |
 | `patterns::polyhedra` | 32 | 2 |
-| `patterns::sampling` | 26 | 0 |
-| `patterns::space_filling` | 18 | 0 |
+| `patterns::sampling` | 27 | 0 |
+| `patterns::space_filling` | 20 | 0 |
 | `patterns::symmetry` | 14 | 4 |
 | `patterns::tilings` | 10 | 3 |
 | `quantum::algorithms` | 22 | 0 |
@@ -256,7 +256,7 @@ The tree comes to 296 Python modules.
 | `sim::em_sim` | 0 | 2 |
 | `sim::fluid_sim` | 0 | 3 |
 | `sim::heat_sim` | 0 | 3 |
-| `sim::rigid_body` | 1 | 2 |
+| `sim::rigid_body` | 2 | 2 |
 | `sim::wave_sim` | 0 | 2 |
 | `spatial::bvh` | 0 | 1 |
 | `spatial::contain` | 20 | 0 |
@@ -295,7 +295,7 @@ The tree comes to 296 Python modules.
 | `stochastic::sde` | 31 | 1 |
 | `stochastic::timeseries` | 28 | 6 |
 | `transforms::dct` | 12 | 1 |
-| `transforms::fft` | 20 | 1 |
+| `transforms::fft` | 21 | 1 |
 | `transforms::hilbert` | 13 | 0 |
 | `transforms::laplace` | 8 | 0 |
 | `transforms::radon` | 9 | 1 |
@@ -320,8 +320,6 @@ The tree comes to 296 Python modules.
 
 | module | item | reason |
 |---|---|---|
-| `astrophysics::nbody` | `init_accelerations()` | argument `bodies: &mut [Body]` |
-| `astrophysics::nbody` | `step_verlet()` | argument `bodies: &mut [Body]` |
 | `audio::analysis` | `key_estimate()` | argument `chroma_track: &[[f64; 12]]` |
 | `audio::effects` | `bitcrush()` | argument `counter: &mut usize` |
 | `audio::physical` | `sympathetic_resonance()` | argument `strings: &mut [WaveguideString]` |
@@ -331,27 +329,14 @@ The tree comes to 296 Python modules.
 | `audio::synthesis` | `render_sequence()` | argument `synth: &mut dyn Synth` |
 | `audio::synthesis` | `vector_synth()` | argument `sources: [&[f64]; 4]` |
 | `cfd` | `vortex` | re-export shadowed by the submodule `cfd::vortex`; reach it at `cfd.potential_flow.vortex` |
-| `cfd::advection` | `advect_bfecc_2d()` | argument `grid: &MacGrid2` |
-| `cfd::advection` | `advect_flux_limited_2d()` | argument `grid: &MacGrid2` |
-| `cfd::advection` | `advect_maccormack_2d()` | argument `grid: &MacGrid2` |
-| `cfd::advection` | `advect_semi_lagrangian_2d()` | argument `grid: &MacGrid2` |
-| `cfd::advection` | `advect_upwind_2d()` | argument `grid: &MacGrid2` |
 | `cfd::grid` | `CellField2.at_mut()` | return type `&mut f64` |
-| `cfd::level_set` | `LevelSet2.advect()` | argument `grid: &MacGrid2` |
-| `cfd::level_set` | `LevelSet2.intersect()` | argument `other: &LevelSet2` |
-| `cfd::level_set` | `LevelSet2.subtract()` | argument `other: &LevelSet2` |
-| `cfd::level_set` | `LevelSet2.union()` | argument `other: &LevelSet2` |
-| `cfd::level_set` | `Vof2.advect_plic()` | argument `grid: &MacGrid2` |
 | `cfd::multiphase` | `particle_tracking_step()` | argument `p: &mut (Vec3, Vec3)` |
-| `cfd::potential_flow` | `conformal_map_flow()` | argument `base: &PotentialFlow2` |
 | `cfd::potential_flow` | `doublet()` | return type `impl Fn(Vec2) -> (Vec2, f64, f64)` |
 | `cfd::potential_flow` | `sink()` | return type `impl Fn(Vec2) -> (Vec2, f64, f64)` |
 | `cfd::potential_flow` | `source()` | return type `impl Fn(Vec2) -> (Vec2, f64, f64)` |
 | `cfd::potential_flow` | `uniform_flow()` | return type `impl Fn(Vec2) -> (Vec2, f64, f64)` |
 | `cfd::potential_flow` | `vortex()` | return type `impl Fn(Vec2) -> (Vec2, f64, f64)` |
-| `cfd::stable_fluids` | `StableFluid2.particles_advect()` | argument `pts: &mut [Vec2]` |
 | `cfd::turbulence` | `rans_step()` | argument `model: &mut dyn RansModel` |
-| `cfd::vortex` | `point_vortex_step()` | argument `pos: &mut [Vec2]` |
 | `codes::block` | `LinearCode.syndrome_table_small()` | return type `BTreeMap<Vec<bool>, Vec<bool>>` |
 | `codes::compression` | `BitReader` | generic type |
 | `codes::convolutional` | `apply_permutation()` | generic (<T: Copy>) |
@@ -372,12 +357,10 @@ The tree comes to 296 Python modules.
 | `linalg` | `cholesky` | re-export shadowed by the submodule `linalg::cholesky`; reach it at `linalg.cholesky.cholesky` |
 | `linalg` | `svd` | re-export shadowed by the submodule `linalg::svd`; reach it at `linalg.svd.svd` |
 | `manifold::clifford::sta` | `maxwell_residual()` | argument `f: &dyn Fn(&[f64; 4]) -> Multivector` |
-| `manifold::embedding` | `geodesic_kmeans()` | argument `metric: &Metric` |
 | `manifold::embedding` | `riemannian_gradient_descent_stiefel()` | argument `grad: &dyn Fn(&Matrix) -> Matrix` |
 | `manifold::lie` | `Sl2R.exp()` | argument `a: [[f64; 2]; 2]` |
 | `manifold::lie` | `Su2.from_matrix_2x2()` | argument `m: [[Complex; 2]; 2]` |
-| `manifold::lie` | `pose_graph_optimize()` | argument `poses: &mut [Se3]` |
-| `manifold::metric` | `Metric.conformal_factor_to()` | argument `other: &Metric` |
+| `manifold::lie` | `pose_graph_optimize()` | argument `edges: &[(usize, usize, Se3, [[f64; 6]; 6])]` |
 | `manifold::metric` | `Metric.covariant_derivative_tensor()` | argument `t: &dyn Fn(&VecN) -> TensorN` |
 | `manifold::metric` | `Metric.frw()` | argument `a: fn(f64) -> f64` |
 | `manifold::metric` | `Metric.gaussian_curvature_surface()` | argument `f: fn(f64, f64) -> Vec3` |
@@ -410,35 +393,14 @@ The tree comes to 296 Python modules.
 | `optimization::metaheuristics` | `nsga2()` | argument `objectives: &[&dyn Fn(&[f64]) -> f64]` |
 | `optimization::metaheuristics` | `simulated_annealing_generic()` | generic (<S: Clone>) |
 | `optimization::metaheuristics` | `tabu_search()` | generic (<S: Clone + std::hash::Hash + Eq>) |
-| `patterns::packing` | `circle_pack_relax()` | argument `circles: &mut [Circle]` |
-| `patterns::sampling` | `lloyd_relaxation()` | argument `points: &mut [Vec2]` |
-| `patterns::space_filling` | `sort_by_hilbert()` | argument `points: &mut [Vec2]` |
-| `patterns::space_filling` | `sort_by_morton()` | argument `points: &mut [Vec3]` |
 | `photonics` | `apply_ray_matrix()` | argument `matrix: &RayMatrix` |
 | `photonics` | `multiply_ray_matrices()` | argument `m1: &RayMatrix` |
 | `quantum::algorithms` | `hhl_lite_2x2()` | argument `a: &[[f64; 2]; 2]` |
 | `quantum::algorithms` | `vqe_lite()` | argument `ansatz: &dyn Fn(&[f64]) -> Result<Circuit, GeomError>` |
-| `quantum::circuit` | `Circuit.append()` | return type `Result<&mut Self, GeomError>` |
-| `quantum::circuit` | `Circuit.barrier()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.ccx()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.cphase()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.cx()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.cz()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.gate()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.h()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.phase()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.rx()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.ry()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.rz()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.swap()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.x()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.y()` | return type `&mut Self` |
-| `quantum::circuit` | `Circuit.z()` | return type `&mut Self` |
 | `quantum::circuit` | `Gate.from_matrix()` | argument `matrix: [[Complex; 2]; 2]` |
 | `quantum::spin` | `lanczos()` | argument `matvec: &dyn Fn(&[Complex]) -> Vec<Complex>` |
 | `quaternion` | `Quaternion.from_rotation_matrix()` | argument `m: &[[f64; 3]; 3]` |
 | `sim::rigid_body` | `RigidBodySystem.add_body()` | argument `body: RigidBody` |
-| `sim::rigid_body` | `sphere_sphere_collision()` | argument `a: &RigidBody` |
 | `spatial::quadtree` | `Quadtree` | generic type |
 | `special` | `beta` | re-export shadowed by the submodule `special::beta`; reach it at `special.beta.beta` |
 | `special` | `erf` | re-export shadowed by the submodule `special::erf`; reach it at `special.erf.erf` |
@@ -455,6 +417,3 @@ The tree comes to 296 Python modules.
 | `transforms` | `fft` | re-export shadowed by the submodule `transforms::fft`; reach it at `transforms.fft.fft` |
 | `transforms` | `hilbert` | re-export shadowed by the submodule `transforms::hilbert`; reach it at `transforms.hilbert.hilbert` |
 | `transforms` | `radon` | re-export shadowed by the submodule `transforms::radon`; reach it at `transforms.radon.radon` |
-| `transforms::fft` | `FftPlan.execute()` | argument `x: &mut [Complex]` |
-| `transforms::fft` | `FftPlan.execute_inverse()` | argument `x: &mut [Complex]` |
-| `transforms::fft` | `fft_shift()` | argument `x: &mut [Complex]` |

@@ -19,6 +19,8 @@ Rust: `transforms::fft::FftPlan`
     def __init__(self, n: int) -> None: ...
     def len(self) -> int: ...
     def is_empty(self) -> bool: ...
+    def execute(self, x: MutableSequence[complex]) -> None: ...
+    def execute_inverse(self, x: MutableSequence[complex]) -> None: ...
 
 def next_power_of_two(n: int) -> int:
     """
@@ -144,6 +146,15 @@ Panics:
 Panics unless `x.len() == w * h`.
 
 Rust: `transforms::fft::rfft_2d`
+    """
+    ...
+
+def fft_shift(x: MutableSequence[complex]) -> None:
+    """
+Swap spectrum halves in place so the zero-frequency bin moves to the
+center (numpy `fftshift`; for odd n the extra bin lands left of center).
+
+Rust: `transforms::fft::fft_shift`
     """
     ...
 

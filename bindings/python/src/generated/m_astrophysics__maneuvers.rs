@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -221,7 +222,6 @@ pub fn pyfn_sun_synchronous_inclination(a: f64, e: f64, j2: f64, body_radius: f6
 #[pyfunction]
 #[pyo3(name = "ground_track", signature = (r0, v0, mu, rotation_rate, duration, samples))]
 pub fn pyfn_ground_track<'py>(py: Python<'py>, r0: crate::generated::types::PyVec3Arg, v0: crate::generated::types::PyVec3Arg, mu: f64, rotation_rate: f64, duration: f64, samples: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let r0 = r0.0;
     let v0 = v0.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::astrophysics::maneuvers::ground_track(r0, v0, mu, rotation_rate, duration, samples)));

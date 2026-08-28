@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -22,7 +23,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "kaplan_yorke_dimension", signature = (spectrum))]
 pub fn pyfn_kaplan_yorke_dimension<'py>(py: Python<'py>, spectrum: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let spectrum = <[f64; 3]>::try_from(spectrum).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::kaplan_yorke_dimension(spectrum)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -41,7 +41,6 @@ pub fn pyfn_kaplan_yorke_dimension<'py>(py: Python<'py>, spectrum: Vec<f64>) -> 
 #[pyfunction]
 #[pyo3(name = "correlation_dimension", signature = (points, r_min, r_max, n_r))]
 pub fn pyfn_correlation_dimension<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec3Arg>, r_min: f64, r_max: f64, n_r: usize) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::correlation_dimension(&points, r_min, r_max, n_r)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -58,7 +57,6 @@ pub fn pyfn_correlation_dimension<'py>(py: Python<'py>, points: Vec<crate::gener
 #[pyfunction]
 #[pyo3(name = "box_counting_dimension_3d", signature = (points, scales))]
 pub fn pyfn_box_counting_dimension_3d<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec3Arg>, scales: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::box_counting_dimension_3d(&points, &scales)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -74,7 +72,6 @@ pub fn pyfn_box_counting_dimension_3d<'py>(py: Python<'py>, points: Vec<crate::g
 #[pyfunction]
 #[pyo3(name = "delay_embedding", signature = (series, dim, delay))]
 pub fn pyfn_delay_embedding<'py>(py: Python<'py>, series: Vec<f64>, dim: usize, delay: usize) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::delay_embedding(&series, dim, delay)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -87,7 +84,6 @@ pub fn pyfn_delay_embedding<'py>(py: Python<'py>, series: Vec<f64>, dim: usize, 
 #[pyfunction]
 #[pyo3(name = "recurrence_plot", signature = (series, embed_dim, delay, eps))]
 pub fn pyfn_recurrence_plot<'py>(py: Python<'py>, series: Vec<f64>, embed_dim: usize, delay: usize, eps: f64) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::recurrence_plot(&series, embed_dim, delay, eps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -105,7 +101,6 @@ pub fn pyfn_recurrence_plot<'py>(py: Python<'py>, series: Vec<f64>, embed_dim: u
 #[pyfunction]
 #[pyo3(name = "largest_lyapunov_rosenstein", signature = (series, embed_dim, delay, mean_period, max_iter))]
 pub fn pyfn_largest_lyapunov_rosenstein<'py>(py: Python<'py>, series: Vec<f64>, embed_dim: usize, delay: usize, mean_period: usize, max_iter: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::largest_lyapunov_rosenstein(&series, embed_dim, delay, mean_period, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -121,7 +116,6 @@ pub fn pyfn_largest_lyapunov_rosenstein<'py>(py: Python<'py>, series: Vec<f64>, 
 #[pyfunction]
 #[pyo3(name = "feigenbaum_estimate", signature = (bifurcations))]
 pub fn pyfn_feigenbaum_estimate<'py>(py: Python<'py>, bifurcations: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::attractors::feigenbaum_estimate(&bifurcations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

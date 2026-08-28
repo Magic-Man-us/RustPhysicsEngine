@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,7 +22,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "equal_temperament", signature = (n_divisions, base_hz, base_midi))]
 pub fn pyfn_equal_temperament<'py>(py: Python<'py>, n_divisions: u32, base_hz: f64, base_midi: u8) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::equal_temperament(n_divisions, base_hz, base_midi)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -33,7 +33,6 @@ pub fn pyfn_equal_temperament<'py>(py: Python<'py>, n_divisions: u32, base_hz: f
 #[pyfunction]
 #[pyo3(name = "just_intonation_5limit", signature = ())]
 pub fn pyfn_just_intonation_5limit<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::just_intonation_5limit()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -45,7 +44,6 @@ pub fn pyfn_just_intonation_5limit<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "pythagorean", signature = ())]
 pub fn pyfn_pythagorean<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::pythagorean()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -57,7 +55,6 @@ pub fn pyfn_pythagorean<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "meantone_quarter_comma", signature = ())]
 pub fn pyfn_meantone_quarter_comma<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::meantone_quarter_comma()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -69,7 +66,6 @@ pub fn pyfn_meantone_quarter_comma<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "werckmeister_iii", signature = ())]
 pub fn pyfn_werckmeister_iii<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::werckmeister_iii()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -81,7 +77,6 @@ pub fn pyfn_werckmeister_iii<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "kirnberger_iii", signature = ())]
 pub fn pyfn_kirnberger_iii<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::kirnberger_iii()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -93,7 +88,6 @@ pub fn pyfn_kirnberger_iii<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "young", signature = ())]
 pub fn pyfn_young<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::young()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -106,7 +100,6 @@ pub fn pyfn_young<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "bohlen_pierce", signature = ())]
 pub fn pyfn_bohlen_pierce<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::bohlen_pierce()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -118,7 +111,6 @@ pub fn pyfn_bohlen_pierce<'py>(py: Python<'py>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "harmonic_series_scale", signature = (n))]
 pub fn pyfn_harmonic_series_scale<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::harmonic_series_scale(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -132,7 +124,6 @@ pub fn pyfn_harmonic_series_scale<'py>(py: Python<'py>, n: usize) -> PyResult<Ve
 #[pyfunction]
 #[pyo3(name = "scala_parse", signature = (scl))]
 pub fn pyfn_scala_parse<'py>(py: Python<'py>, scl: String) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::scala_parse(&scl)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -217,7 +208,6 @@ pub fn pyfn_consonance_plomp_levelt(f1: f64, f2: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "dissonance_curve", signature = (base, partials, ratio_range, n))]
 pub fn pyfn_dissonance_curve<'py>(py: Python<'py>, base: f64, partials: Vec<(f64, f64)>, ratio_range: (f64, f64), n: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let partials = partials.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let ratio_range = (ratio_range.0, ratio_range.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::dissonance_curve(base, &partials, ratio_range, n)));
@@ -278,7 +268,6 @@ pub fn pyfn_schisma() -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "midi_to_freq_tuned", signature = (midi, a4, temperament))]
 pub fn pyfn_midi_to_freq_tuned<'py>(py: Python<'py>, midi: u8, a4: f64, temperament: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::midi_to_freq_tuned(midi, a4, &temperament)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -290,7 +279,6 @@ pub fn pyfn_midi_to_freq_tuned<'py>(py: Python<'py>, midi: u8, a4: f64, temperam
 #[pyfunction]
 #[pyo3(name = "circle_of_fifths", signature = (start, n))]
 pub fn pyfn_circle_of_fifths<'py>(py: Python<'py>, start: u8, n: usize) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::circle_of_fifths(start, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -302,7 +290,6 @@ pub fn pyfn_circle_of_fifths<'py>(py: Python<'py>, start: u8, n: usize) -> PyRes
 #[pyfunction]
 #[pyo3(name = "scale_degrees", signature = (root, mode))]
 pub fn pyfn_scale_degrees<'py>(py: Python<'py>, root: u8, mode: crate::generated::types::PyMode) -> PyResult<Vec<u8>> {
-    let _ = py;
     let mode = mode.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::scale_degrees(root, mode)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -315,7 +302,6 @@ pub fn pyfn_scale_degrees<'py>(py: Python<'py>, root: u8, mode: crate::generated
 #[pyfunction]
 #[pyo3(name = "chord_tones", signature = (root, quality))]
 pub fn pyfn_chord_tones<'py>(py: Python<'py>, root: u8, quality: crate::generated::types::PyChordQuality) -> PyResult<Vec<u8>> {
-    let _ = py;
     let quality = quality.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::tuning::chord_tones(root, quality)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -132,7 +133,6 @@ pub fn pyfn_brooks_corey(h: f64, h_b: f64, lambda_: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "richards_equation_1d", signature = (theta0, soil, dz, dt, steps, bc_top, bc_bottom))]
 pub fn pyfn_richards_equation_1d<'py>(py: Python<'py>, theta0: Vec<f64>, soil: crate::generated::types::PyVanGenuchtenArg, dz: f64, dt: f64, steps: usize, bc_top: f64, bc_bottom: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let soil = soil.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::porous::richards_equation_1d(&theta0, &soil, dz, dt, steps, bc_top, bc_bottom)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -223,7 +223,6 @@ pub fn pyfn_dispersion_coefficient(alpha_l: f64, u: f64, d_m: f64) -> PyResult<f
 #[pyfunction]
 #[pyo3(name = "advection_dispersion_1d", signature = (c, u, d, dx, dt, retardation, decay))]
 pub fn pyfn_advection_dispersion_1d<'py>(py: Python<'py>, c: Vec<f64>, u: f64, d: f64, dx: f64, dt: f64, retardation: f64, decay: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::porous::advection_dispersion_1d(&c, u, d, dx, dt, retardation, decay)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

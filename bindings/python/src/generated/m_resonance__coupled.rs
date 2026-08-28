@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -46,7 +47,6 @@ pub fn pyfn_wilberforce_pendulum(m: f64, k: f64, i: f64, kappa: f64, eps: f64) -
 #[pyfunction]
 #[pyo3(name = "huygens_sync_simulate", signature = (omega1, omega2, coupling, t_end, dt))]
 pub fn pyfn_huygens_sync_simulate<'py>(py: Python<'py>, omega1: f64, omega2: f64, coupling: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::coupled::huygens_sync_simulate(omega1, omega2, coupling, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -62,7 +62,6 @@ pub fn pyfn_huygens_sync_simulate<'py>(py: Python<'py>, omega1: f64, omega2: f64
 #[pyfunction]
 #[pyo3(name = "kuramoto", signature = (n, k, omegas, theta0, t_end, dt))]
 pub fn pyfn_kuramoto<'py>(py: Python<'py>, n: usize, k: f64, omegas: Vec<f64>, theta0: Vec<f64>, t_end: f64, dt: f64) -> PyResult<(Vec<Vec<f64>>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::coupled::kuramoto(n, k, &omegas, &theta0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -76,7 +75,6 @@ pub fn pyfn_kuramoto<'py>(py: Python<'py>, n: usize, k: f64, omegas: Vec<f64>, t
 #[pyfunction]
 #[pyo3(name = "kuramoto_critical_coupling", signature = (omegas))]
 pub fn pyfn_kuramoto_critical_coupling<'py>(py: Python<'py>, omegas: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::coupled::kuramoto_critical_coupling(&omegas)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

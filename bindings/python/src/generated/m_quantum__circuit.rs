@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -284,7 +285,6 @@ pub fn pyfn_no_cloning_fidelity_bound() -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "pauli_decompose", signature = (h))]
 pub fn pyfn_pauli_decompose<'py>(py: Python<'py>, h: Vec<Vec<crate::runtime::coerce::ComplexArg>>) -> PyResult<Vec<(String, f64)>> {
-    let _ = py;
     let h = h.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::circuit::pauli_decompose(&h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -104,8 +105,7 @@ impl PyExtendedKalmanFilter {
     /// Rust: `control_systems::kalman::ExtendedKalmanFilter::update`
     #[pyo3(name = "update")]
     #[pyo3(signature = (z))]
-    fn update<'py>(&mut self, py: Python<'py>, z: Vec<f64>) -> PyResult<()> {
-        let _ = py;
+    fn update(&mut self, z: Vec<f64>) -> PyResult<()> {
         let __r = crate::runtime::guard(|| self.inner.update(&z));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -170,7 +170,6 @@ impl PyKalmanFilter {
     #[pyo3(name = "update")]
     #[pyo3(signature = (z))]
     fn update<'py>(&mut self, py: Python<'py>, z: Vec<f64>) -> PyResult<()> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.update(&z)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;

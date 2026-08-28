@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -27,7 +28,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "spike_times", signature = (trace, level))]
 pub fn pyfn_spike_times<'py>(py: Python<'py>, trace: Vec<(f64, f64)>, level: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let trace = trace.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::spike_times(&trace, level)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -93,7 +93,6 @@ pub fn pyfn_hodgkin_huxley(i_ext: pyo3::Py<pyo3::PyAny>, t_end: f64, dt: f64) ->
 #[pyfunction]
 #[pyo3(name = "hh_spike_times", signature = (trace))]
 pub fn pyfn_hh_spike_times<'py>(py: Python<'py>, trace: Vec<(f64, f64, f64, f64, f64)>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let trace = trace.into_iter().map(|__e| (__e.0, __e.1, __e.2, __e.3, __e.4)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::hh_spike_times(&trace)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -137,7 +136,6 @@ pub fn pyfn_hh_spike_threshold_estimate() -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "hh_fi_curve", signature = (currents))]
 pub fn pyfn_hh_fi_curve<'py>(py: Python<'py>, currents: Vec<f64>) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::hh_fi_curve(&currents)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -164,7 +162,6 @@ pub fn pyfn_hh_fi_curve<'py>(py: Python<'py>, currents: Vec<f64>) -> PyResult<Ve
 #[pyfunction]
 #[pyo3(name = "fitzhugh_nagumo_neuron", signature = (a, b, tau, current, v0, w0, t_end, dt))]
 pub fn pyfn_fitzhugh_nagumo_neuron<'py>(py: Python<'py>, a: f64, b: f64, tau: f64, current: f64, v0: f64, w0: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::fitzhugh_nagumo_neuron(a, b, tau, current, v0, w0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -185,7 +182,6 @@ pub fn pyfn_fitzhugh_nagumo_neuron<'py>(py: Python<'py>, a: f64, b: f64, tau: f6
 #[pyfunction]
 #[pyo3(name = "morris_lecar", signature = (params, current, v0, w0, t_end, dt))]
 pub fn pyfn_morris_lecar<'py>(py: Python<'py>, params: crate::generated::types::PyMorrisLecar, current: f64, v0: f64, w0: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let params = params.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::morris_lecar(&params, current, v0, w0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -217,7 +213,6 @@ pub fn pyfn_morris_lecar<'py>(py: Python<'py>, params: crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "izhikevich", signature = (a, b, c, d, current, t_end, dt))]
 pub fn pyfn_izhikevich<'py>(py: Python<'py>, a: f64, b: f64, c: f64, d: f64, current: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::izhikevich(a, b, c, d, current, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -235,7 +230,6 @@ pub fn pyfn_izhikevich<'py>(py: Python<'py>, a: f64, b: f64, c: f64, d: f64, cur
 #[pyfunction]
 #[pyo3(name = "izhikevich_presets", signature = ())]
 pub fn pyfn_izhikevich_presets<'py>(py: Python<'py>) -> PyResult<Vec<(String, Vec<f64>)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::izhikevich_presets()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0.to_string(), __x.1.to_vec())).collect::<Vec<_>>())
@@ -265,7 +259,6 @@ pub fn pyfn_izhikevich_presets<'py>(py: Python<'py>) -> PyResult<Vec<(String, Ve
 #[pyfunction]
 #[pyo3(name = "adex", signature = (c_m, g_l, e_l, slope, v_t, tau_w, a, b, v_reset, current, t_end, dt))]
 pub fn pyfn_adex<'py>(py: Python<'py>, c_m: f64, g_l: f64, e_l: f64, slope: f64, v_t: f64, tau_w: f64, a: f64, b: f64, v_reset: f64, current: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::adex(c_m, g_l, e_l, slope, v_t, tau_w, a, b, v_reset, current, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -334,7 +327,6 @@ pub fn pyfn_lif_fi_exact(current: f64, tau: f64, v_th: f64, v_reset: f64, refrac
 #[pyfunction]
 #[pyo3(name = "interspike_intervals", signature = (spikes))]
 pub fn pyfn_interspike_intervals<'py>(py: Python<'py>, spikes: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::interspike_intervals(&spikes)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -357,7 +349,6 @@ pub fn pyfn_interspike_intervals<'py>(py: Python<'py>, spikes: Vec<f64>) -> PyRe
 #[pyfunction]
 #[pyo3(name = "cv_isi", signature = (spikes))]
 pub fn pyfn_cv_isi<'py>(py: Python<'py>, spikes: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::cv_isi(&spikes)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -378,7 +369,6 @@ pub fn pyfn_cv_isi<'py>(py: Python<'py>, spikes: Vec<f64>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "fano_factor", signature = (counts))]
 pub fn pyfn_fano_factor<'py>(py: Python<'py>, counts: Vec<u64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::fano_factor(&counts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -422,7 +412,6 @@ pub fn pyfn_poisson_spike_train(rate: f64, t_end: f64, rng: pyo3::PyRefMut<'_, c
 #[pyfunction]
 #[pyo3(name = "psth", signature = (trains, bin, t_end))]
 pub fn pyfn_psth<'py>(py: Python<'py>, trains: Vec<Vec<f64>>, bin: f64, t_end: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::psth(&trains, bin, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -439,7 +428,6 @@ pub fn pyfn_psth<'py>(py: Python<'py>, trains: Vec<Vec<f64>>, bin: f64, t_end: f
 #[pyfunction]
 #[pyo3(name = "raster_data", signature = (trains))]
 pub fn pyfn_raster_data<'py>(py: Python<'py>, trains: Vec<Vec<f64>>) -> PyResult<Vec<(f64, usize)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::raster_data(&trains)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -466,7 +454,6 @@ pub fn pyfn_raster_data<'py>(py: Python<'py>, trains: Vec<Vec<f64>>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "spike_triggered_average", signature = (stimulus, dt, spikes, window))]
 pub fn pyfn_spike_triggered_average<'py>(py: Python<'py>, stimulus: Vec<f64>, dt: f64, spikes: Vec<f64>, window: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::spike_triggered_average(&stimulus, dt, &spikes, window)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -495,7 +482,6 @@ pub fn pyfn_spike_triggered_average<'py>(py: Python<'py>, stimulus: Vec<f64>, dt
 #[pyfunction]
 #[pyo3(name = "tuning_curve_fit_von_mises", signature = (angles, rates))]
 pub fn pyfn_tuning_curve_fit_von_mises<'py>(py: Python<'py>, angles: Vec<f64>, rates: Vec<f64>) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::tuning_curve_fit_von_mises(&angles, &rates)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -517,7 +503,6 @@ pub fn pyfn_tuning_curve_fit_von_mises<'py>(py: Python<'py>, angles: Vec<f64>, r
 #[pyfunction]
 #[pyo3(name = "synapse_exp", signature = (g_max, tau, spikes, t))]
 pub fn pyfn_synapse_exp<'py>(py: Python<'py>, g_max: f64, tau: f64, spikes: Vec<f64>, t: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::synapse_exp(g_max, tau, &spikes, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -539,7 +524,6 @@ pub fn pyfn_synapse_exp<'py>(py: Python<'py>, g_max: f64, tau: f64, spikes: Vec<
 #[pyfunction]
 #[pyo3(name = "alpha_synapse", signature = (g_max, tau, spikes, t))]
 pub fn pyfn_alpha_synapse<'py>(py: Python<'py>, g_max: f64, tau: f64, spikes: Vec<f64>, t: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::alpha_synapse(g_max, tau, &spikes, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -586,7 +570,6 @@ pub fn pyfn_stdp_window(delta: f64, a_plus: f64, a_minus: f64, tau_plus: f64, ta
 #[pyfunction]
 #[pyo3(name = "stdp_train", signature = (pre, post, a_plus, a_minus, tau_plus, tau_minus))]
 pub fn pyfn_stdp_train<'py>(py: Python<'py>, pre: Vec<f64>, post: Vec<f64>, a_plus: f64, a_minus: f64, tau_plus: f64, tau_minus: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::stdp_train(&pre, &post, a_plus, a_minus, tau_plus, tau_minus)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -667,7 +650,6 @@ pub fn pyfn_hopfield_store(patterns: Vec<Vec<i8>>) -> PyResult<crate::generated:
 #[pyfunction]
 #[pyo3(name = "hopfield_recall", signature = (w, probe, steps))]
 pub fn pyfn_hopfield_recall<'py>(py: Python<'py>, w: crate::generated::types::PyMatrixArg, probe: Vec<i8>, steps: usize) -> PyResult<Vec<i8>> {
-    let _ = py;
     let w = w.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::hopfield_recall(&w, &probe, steps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -684,7 +666,6 @@ pub fn pyfn_hopfield_recall<'py>(py: Python<'py>, w: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "hopfield_energy", signature = (w, state))]
 pub fn pyfn_hopfield_energy<'py>(py: Python<'py>, w: crate::generated::types::PyMatrixArg, state: Vec<i8>) -> PyResult<f64> {
-    let _ = py;
     let w = w.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::hopfield_energy(&w, &state)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -737,7 +718,6 @@ pub fn pyfn_hopfield_capacity_check(n: usize, stored: usize, trials: usize, rng:
 #[pyfunction]
 #[pyo3(name = "wilson_cowan", signature = (c_ee, c_ei, c_ie, c_ii, p_e, p_i, tau_e, tau_i, slope, threshold, e0, i0, t_end, dt))]
 pub fn pyfn_wilson_cowan<'py>(py: Python<'py>, c_ee: f64, c_ei: f64, c_ie: f64, c_ii: f64, p_e: f64, p_i: f64, tau_e: f64, tau_i: f64, slope: f64, threshold: f64, e0: f64, i0: f64, t_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::wilson_cowan(c_ee, c_ei, c_ie, c_ii, p_e, p_i, tau_e, tau_i, slope, threshold, e0, i0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -787,7 +767,6 @@ pub fn pyfn_length_constant(r_m: f64, r_i: f64, diameter: f64) -> PyResult<f64> 
 #[pyfunction]
 #[pyo3(name = "cable_equation_1d", signature = (length, lambda_, v_injected, points))]
 pub fn pyfn_cable_equation_1d<'py>(py: Python<'py>, length: f64, lambda_: f64, v_injected: f64, points: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::neuro::cable_equation_1d(length, lambda_, v_injected, points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

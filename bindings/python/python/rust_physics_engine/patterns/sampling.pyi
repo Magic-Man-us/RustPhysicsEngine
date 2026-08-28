@@ -284,6 +284,19 @@ Rust: `patterns::sampling::random_unit_vector`
     """
     ...
 
+def lloyd_relaxation(points: MutableSequence[Vec2 | Sequence[float]], region: Rect, iterations: int) -> None:
+    """
+Lloyd relaxation toward a centroidal Voronoi arrangement: each
+iteration moves every point to the centroid of its (grid-sampled)
+Voronoi cell within `region`.
+
+Panics:
+Panics when `points` is empty.
+
+Rust: `patterns::sampling::lloyd_relaxation`
+    """
+    ...
+
 def stipple(density: Callable[[Vec2 | Sequence[float]], float], region: Rect, n: int, iterations: int, rng: Rng) -> list[Vec2]:
     """
 Weighted stippling: `n` seed points relaxed by density-weighted

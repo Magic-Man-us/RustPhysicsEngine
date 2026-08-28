@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "weight", signature = (v))]
 pub fn pyfn_weight<'py>(py: Python<'py>, v: Vec<bool>) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::block::weight(&v)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -35,7 +35,6 @@ pub fn pyfn_weight<'py>(py: Python<'py>, v: Vec<bool>) -> PyResult<usize> {
 #[pyfunction]
 #[pyo3(name = "xor", signature = (a, b))]
 pub fn pyfn_xor<'py>(py: Python<'py>, a: Vec<bool>, b: Vec<bool>) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::block::xor(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -188,7 +187,6 @@ pub fn pyfn_ldpc_regular(n: usize, wc: usize, wr: usize, rng: pyo3::PyRefMut<'_,
 #[pyfunction]
 #[pyo3(name = "ldpc_decode_bp", signature = (h, llr, iters))]
 pub fn pyfn_ldpc_decode_bp<'py>(py: Python<'py>, h: crate::generated::types::PyGf2Matrix, llr: Vec<f64>, iters: usize) -> PyResult<(Vec<bool>, bool)> {
-    let _ = py;
     let h = h.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::block::ldpc_decode_bp(&h, &llr, iters)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -210,7 +208,6 @@ pub fn pyfn_ldpc_decode_bp<'py>(py: Python<'py>, h: crate::generated::types::PyG
 #[pyfunction]
 #[pyo3(name = "ldpc_decode_bitflip", signature = (h, recv, iters))]
 pub fn pyfn_ldpc_decode_bitflip<'py>(py: Python<'py>, h: crate::generated::types::PyGf2Matrix, recv: Vec<bool>, iters: usize) -> PyResult<Vec<bool>> {
-    let _ = py;
     let h = h.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::block::ldpc_decode_bitflip(&h, &recv, iters)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

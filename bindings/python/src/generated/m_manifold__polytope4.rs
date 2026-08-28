@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "rotation_4d_planes", signature = ())]
 pub fn pyfn_rotation_4d_planes<'py>(py: Python<'py>) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::polytope4::rotation_4d_planes()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -134,7 +134,6 @@ pub fn pyfn_cross_polytope_n(n: usize) -> PyResult<(Vec<crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "hypercube_graph_n", signature = (n))]
 pub fn pyfn_hypercube_graph_n<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<(usize, usize)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::polytope4::hypercube_graph_n(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())

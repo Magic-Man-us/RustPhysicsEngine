@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -118,7 +119,6 @@ pub fn pyfn_distance_matrix_jc69(seqs: Vec<Vec<u8>>) -> PyResult<crate::generate
 #[pyfunction]
 #[pyo3(name = "parsimony_fitch", signature = (tree, characters))]
 pub fn pyfn_parsimony_fitch<'py>(py: Python<'py>, tree: crate::generated::types::PyPhyloTree, characters: Vec<u8>) -> PyResult<u64> {
-    let _ = py;
     let tree = tree.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::phylo::parsimony_fitch(&tree, &characters)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -152,7 +152,6 @@ pub fn pyfn_parsimony_fitch<'py>(py: Python<'py>, tree: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "likelihood_jc69", signature = (tree, seqs))]
 pub fn pyfn_likelihood_jc69<'py>(py: Python<'py>, tree: crate::generated::types::PyPhyloTree, seqs: Vec<Vec<u8>>) -> PyResult<f64> {
-    let _ = py;
     let tree = tree.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::phylo::likelihood_jc69(&tree, &seqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -292,7 +291,6 @@ pub fn pyfn_gamma_statistic(tree: crate::generated::types::PyPhyloTree) -> PyRes
 #[pyfunction]
 #[pyo3(name = "lineage_through_time", signature = (tree))]
 pub fn pyfn_lineage_through_time<'py>(py: Python<'py>, tree: crate::generated::types::PyPhyloTree) -> PyResult<Vec<(f64, usize)>> {
-    let _ = py;
     let tree = tree.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::phylo::lineage_through_time(&tree)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

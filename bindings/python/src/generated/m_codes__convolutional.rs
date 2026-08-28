@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -29,7 +30,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "interleaver_block", signature = (n, rows))]
 pub fn pyfn_interleaver_block<'py>(py: Python<'py>, n: usize, rows: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::convolutional::interleaver_block(n, rows)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -62,7 +62,6 @@ pub fn pyfn_interleaver_random(n: usize, rng: pyo3::PyRefMut<'_, crate::generate
 #[pyfunction]
 #[pyo3(name = "qpp_interleaver", signature = (n, f1, f2))]
 pub fn pyfn_qpp_interleaver<'py>(py: Python<'py>, n: usize, f1: usize, f2: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::convolutional::qpp_interleaver(n, f1, f2)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -105,7 +104,6 @@ pub fn pyfn_awgn_sigma(snr_db: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "llr_from_awgn", signature = (samples, sigma))]
 pub fn pyfn_llr_from_awgn<'py>(py: Python<'py>, samples: Vec<f64>, sigma: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::convolutional::llr_from_awgn(&samples, sigma)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

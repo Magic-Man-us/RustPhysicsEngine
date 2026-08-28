@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -94,7 +95,6 @@ pub fn pyfn_penrose_p2_seed(radius: f64) -> PyResult<Vec<crate::generated::types
 #[pyfunction]
 #[pyo3(name = "ratio_thick_to_thin", signature = (tiles))]
 pub fn pyfn_ratio_thick_to_thin<'py>(py: Python<'py>, tiles: Vec<crate::generated::types::PyPlacedTile>) -> PyResult<f64> {
-    let _ = py;
     let tiles = tiles.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::aperiodic::ratio_thick_to_thin(&tiles)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -182,7 +182,6 @@ pub fn pyfn_pinwheel(extent: crate::generated::types::PyRect, iterations: usize)
 #[pyfunction]
 #[pyo3(name = "fibonacci_word", signature = (n))]
 pub fn pyfn_fibonacci_word<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::aperiodic::fibonacci_word(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -201,7 +200,6 @@ pub fn pyfn_fibonacci_word<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<bool>
 #[pyfunction]
 #[pyo3(name = "cut_and_project_1d", signature = (slope, extent))]
 pub fn pyfn_cut_and_project_1d<'py>(py: Python<'py>, slope: f64, extent: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::aperiodic::cut_and_project_1d(slope, extent)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

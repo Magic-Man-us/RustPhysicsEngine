@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -37,7 +38,7 @@ pub struct PyMaterial { pub inner: rust_physics_engine::materials::common::Mater
 impl PyMaterial {
     #[getter]
     #[pyo3(name = "name")]
-    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.clone().to_string()) }
+    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.to_string()) }
 
     #[getter]
     #[pyo3(name = "density")]
@@ -145,11 +146,11 @@ impl PyElementsElement {
 
     #[getter]
     #[pyo3(name = "symbol")]
-    fn py_get_symbol(&self) -> PyResult<String> { Ok(self.inner.symbol.clone().to_string()) }
+    fn py_get_symbol(&self) -> PyResult<String> { Ok(self.inner.symbol.to_string()) }
 
     #[getter]
     #[pyo3(name = "name")]
-    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.clone().to_string()) }
+    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.to_string()) }
 
     #[getter]
     #[pyo3(name = "atomic_mass")]
@@ -241,11 +242,11 @@ impl PyElementsElement {
 
     #[getter]
     #[pyo3(name = "electron_configuration")]
-    fn py_get_electron_configuration(&self) -> PyResult<String> { Ok(self.inner.electron_configuration.clone().to_string()) }
+    fn py_get_electron_configuration(&self) -> PyResult<String> { Ok(self.inner.electron_configuration.to_string()) }
 
     #[getter]
     #[pyo3(name = "oxidation_states")]
-    fn py_get_oxidation_states(&self) -> PyResult<String> { Ok(self.inner.oxidation_states.clone().to_string()) }
+    fn py_get_oxidation_states(&self) -> PyResult<String> { Ok(self.inner.oxidation_states.to_string()) }
 
     fn __repr__(&self) -> String { format!("{:?}", self.inner).replacen("Element", "Element", 1) }
 
@@ -402,7 +403,7 @@ pub struct PyFluid { pub inner: rust_physics_engine::materials::fluids::Fluid }
 impl PyFluid {
     #[getter]
     #[pyo3(name = "name")]
-    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.clone().to_string()) }
+    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.to_string()) }
 
     #[getter]
     #[pyo3(name = "density")]
@@ -502,11 +503,11 @@ pub struct PyGas { pub inner: rust_physics_engine::materials::gases::Gas }
 impl PyGas {
     #[getter]
     #[pyo3(name = "name")]
-    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.clone().to_string()) }
+    fn py_get_name(&self) -> PyResult<String> { Ok(self.inner.name.to_string()) }
 
     #[getter]
     #[pyo3(name = "formula")]
-    fn py_get_formula(&self) -> PyResult<String> { Ok(self.inner.formula.clone().to_string()) }
+    fn py_get_formula(&self) -> PyResult<String> { Ok(self.inner.formula.to_string()) }
 
     #[getter]
     #[pyo3(name = "molar_mass")]

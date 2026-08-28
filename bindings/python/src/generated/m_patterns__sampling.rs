@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -398,6 +399,25 @@ pub fn pyfn_random_unit_vector(rng: pyo3::PyRefMut<'_, crate::generated::types::
     Ok(crate::generated::types::PyVec3 { inner: __v })
 }
 
+/// Lloyd relaxation toward a centroidal Voronoi arrangement: each
+/// iteration moves every point to the centroid of its (grid-sampled)
+/// Voronoi cell within `region`.
+///
+/// Panics:
+/// Panics when `points` is empty.
+///
+/// Rust: `patterns::sampling::lloyd_relaxation`
+#[pyfunction]
+#[pyo3(name = "lloyd_relaxation", signature = (points, region, iterations))]
+pub fn pyfn_lloyd_relaxation<'py>(points: pyo3::Bound<'py, pyo3::PyAny>, region: crate::generated::types::PyRect, iterations: usize) -> PyResult<()> {
+    let mut points__v: Vec<rust_physics_engine::math::Vec2> = points.extract::<Vec<crate::generated::types::PyVec2Arg>>()?.into_iter().map(|__e| __e.0).collect();
+    let region = region.inner;
+    let __r = crate::runtime::guard(|| rust_physics_engine::patterns::sampling::lloyd_relaxation(&mut points__v, &region, iterations));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&points, points__v.into_iter().map(|__e| crate::generated::types::PyVec2 { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
+}
+
 /// Weighted stippling: `n` seed points relaxed by density-weighted
 /// Lloyd iterations, so point density tracks `density`.
 ///
@@ -446,6 +466,7 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_random_simple_polygon, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_random_rotation, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_random_unit_vector, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_lloyd_relaxation, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_stipple, m)?)?;
     Ok(())
 }

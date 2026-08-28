@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -31,7 +32,6 @@ pub fn pyfn_wrap_phase(p: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "unwrap_phase", signature = (p))]
 pub fn pyfn_unwrap_phase<'py>(py: Python<'py>, p: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::unwrap_phase(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -48,7 +48,6 @@ pub fn pyfn_unwrap_phase<'py>(py: Python<'py>, p: Vec<f64>) -> PyResult<Vec<f64>
 #[pyfunction]
 #[pyo3(name = "unwrap_phase_2d", signature = (p, w, h))]
 pub fn pyfn_unwrap_phase_2d<'py>(py: Python<'py>, p: Vec<f64>, w: usize, h: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::unwrap_phase_2d(&p, w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -63,7 +62,6 @@ pub fn pyfn_unwrap_phase_2d<'py>(py: Python<'py>, p: Vec<f64>, w: usize, h: usiz
 #[pyfunction]
 #[pyo3(name = "phase_difference", signature = (a, b))]
 pub fn pyfn_phase_difference<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::phase_difference(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -79,7 +77,6 @@ pub fn pyfn_phase_difference<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> 
 #[pyfunction]
 #[pyo3(name = "group_delay_from_phase", signature = (phase, freqs))]
 pub fn pyfn_group_delay_from_phase<'py>(py: Python<'py>, phase: Vec<f64>, freqs: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::group_delay_from_phase(&phase, &freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -96,7 +93,6 @@ pub fn pyfn_group_delay_from_phase<'py>(py: Python<'py>, phase: Vec<f64>, freqs:
 #[pyfunction]
 #[pyo3(name = "phase_locked_loop", signature = (x, fs, f0, bandwidth))]
 pub fn pyfn_phase_locked_loop<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, f0: f64, bandwidth: f64) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::phase_locked_loop(&x, fs, f0, bandwidth)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -108,7 +104,6 @@ pub fn pyfn_phase_locked_loop<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, f0: f6
 #[pyfunction]
 #[pyo3(name = "zero_crossing_times", signature = (x, fs))]
 pub fn pyfn_zero_crossing_times<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::zero_crossing_times(&x, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -121,7 +116,6 @@ pub fn pyfn_zero_crossing_times<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> P
 #[pyfunction]
 #[pyo3(name = "phase_vs_reference", signature = (x, ref_freq, fs))]
 pub fn pyfn_phase_vs_reference<'py>(py: Python<'py>, x: Vec<f64>, ref_freq: f64, fs: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::phase::phase_vs_reference(&x, ref_freq, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

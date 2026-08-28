@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -161,7 +162,6 @@ pub fn pyfn_schwarzschild_geodesic_metric(m: f64) -> PyResult<crate::generated::
 #[pyfunction]
 #[pyo3(name = "orbit_schwarzschild_full", signature = (m, e, l, r0, tau_end, dt))]
 pub fn pyfn_orbit_schwarzschild_full<'py>(py: Python<'py>, m: f64, e: f64, l: f64, r0: f64, tau_end: f64, dt: f64) -> PyResult<Vec<(f64, f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spacetime::orbit_schwarzschild_full(m, e, l, r0, tau_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2, __x.3)).collect::<Vec<_>>())
@@ -176,7 +176,6 @@ pub fn pyfn_orbit_schwarzschild_full<'py>(py: Python<'py>, m: f64, e: f64, l: f6
 #[pyfunction]
 #[pyo3(name = "photon_ray_trace_schwarzschild", signature = (m, b, phi_max))]
 pub fn pyfn_photon_ray_trace_schwarzschild<'py>(py: Python<'py>, m: f64, b: f64, phi_max: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spacetime::photon_ray_trace_schwarzschild(m, b, phi_max)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -313,7 +312,6 @@ pub fn pyfn_gw_chirp_mass(m1: f64, m2: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "gw_waveform_inspiral", signature = (m1, m2, d, t))]
 pub fn pyfn_gw_waveform_inspiral<'py>(py: Python<'py>, m1: f64, m2: f64, d: f64, t: Vec<f64>) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spacetime::gw_waveform_inspiral(m1, m2, d, &t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -340,7 +338,6 @@ pub fn pyfn_kk_reduce_geodesic_to_charged(geo5: Vec<crate::generated::types::PyG
 #[pyfunction]
 #[pyo3(name = "kk_compactification_mass_spectrum", signature = (radius, n_max))]
 pub fn pyfn_kk_compactification_mass_spectrum<'py>(py: Python<'py>, radius: f64, n_max: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::spacetime::kk_compactification_mass_spectrum(radius, n_max)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

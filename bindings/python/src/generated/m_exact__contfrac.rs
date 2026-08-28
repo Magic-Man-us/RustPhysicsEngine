@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -29,7 +30,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "continued_fraction_f64", signature = (x, max_terms))]
 pub fn pyfn_continued_fraction_f64<'py>(py: Python<'py>, x: f64, max_terms: usize) -> PyResult<Vec<i64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::contfrac::continued_fraction_f64(x, max_terms)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -121,7 +121,6 @@ pub fn pyfn_generalized_cf_eval(a: pyo3::Py<pyo3::PyAny>, b: pyo3::Py<pyo3::PyAn
 #[pyfunction]
 #[pyo3(name = "cf_e", signature = (n))]
 pub fn pyfn_cf_e<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::contfrac::cf_e(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -138,7 +137,6 @@ pub fn pyfn_cf_e<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i64>> {
 #[pyfunction]
 #[pyo3(name = "cf_pi_terms", signature = (n))]
 pub fn pyfn_cf_pi_terms<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::contfrac::cf_pi_terms(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -157,7 +155,6 @@ pub fn pyfn_cf_pi_terms<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<i64>> {
 #[pyfunction]
 #[pyo3(name = "gauss_map_orbit", signature = (x, n))]
 pub fn pyfn_gauss_map_orbit<'py>(py: Python<'py>, x: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::contfrac::gauss_map_orbit(x, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -109,7 +110,6 @@ pub fn pyfn_lorentz_force_sta(f: crate::generated::types::PyMultivector, velocit
 #[pyfunction]
 #[pyo3(name = "proper_time", signature = (path))]
 pub fn pyfn_proper_time<'py>(py: Python<'py>, path: Vec<crate::generated::types::PyMultivector>) -> PyResult<f64> {
-    let _ = py;
     let path = path.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::clifford::sta::proper_time(&path)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

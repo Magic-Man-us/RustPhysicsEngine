@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -29,7 +30,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "tight_binding_1d", signature = (t_hop, on_site, periodic))]
 pub fn pyfn_tight_binding_1d<'py>(py: Python<'py>, t_hop: f64, on_site: Vec<f64>, periodic: bool) -> PyResult<(Vec<f64>, Vec<Vec<f64>>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::tight_binding_1d(t_hop, &on_site, periodic)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -117,7 +117,6 @@ pub fn pyfn_ssh_edge_states(cells: usize, t1: f64, t2: f64) -> PyResult<usize> {
 #[pyfunction]
 #[pyo3(name = "tight_binding_square", signature = (nx, ny, t_hop))]
 pub fn pyfn_tight_binding_square<'py>(py: Python<'py>, nx: usize, ny: usize, t_hop: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::tight_binding_square(nx, ny, t_hop)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -147,7 +146,6 @@ pub fn pyfn_graphene_dispersion(kx: f64, ky: f64, t_hop: f64) -> PyResult<(f64, 
 #[pyfunction]
 #[pyo3(name = "dirac_points_graphene", signature = ())]
 pub fn pyfn_dirac_points_graphene<'py>(py: Python<'py>) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::dirac_points_graphene()));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -186,7 +184,6 @@ pub fn pyfn_kronig_penney(v0: f64, a: f64, b: f64, energy: f64, mass: f64, hbar:
 #[pyfunction]
 #[pyo3(name = "kronig_penney_bands", signature = (v0, a, b, energy_range, samples, mass, hbar))]
 pub fn pyfn_kronig_penney_bands<'py>(py: Python<'py>, v0: f64, a: f64, b: f64, energy_range: (f64, f64), samples: usize, mass: f64, hbar: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let energy_range = (energy_range.0, energy_range.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::kronig_penney_bands(v0, a, b, energy_range, samples, mass, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -262,7 +259,6 @@ pub fn pyfn_density_of_states_3d_free(energy: f64, mass: f64, hbar: f64) -> PyRe
 #[pyfunction]
 #[pyo3(name = "dos_from_bands", signature = (levels, sigma, points))]
 pub fn pyfn_dos_from_bands<'py>(py: Python<'py>, levels: Vec<f64>, sigma: f64, points: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::dos_from_bands(&levels, sigma, points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -472,7 +468,6 @@ pub fn pyfn_landau_levels(field: f64, n: usize, mass: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "hofstadter_butterfly", signature = (q_max, k_samples))]
 pub fn pyfn_hofstadter_butterfly<'py>(py: Python<'py>, q_max: usize, k_samples: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::hofstadter_butterfly(q_max, k_samples)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -706,7 +701,6 @@ pub fn pyfn_anderson_localization_1d(n: usize, disorder: f64, energy: f64, trial
 #[pyfunction]
 #[pyo3(name = "conductance_landauer", signature = (transmissions))]
 pub fn pyfn_conductance_landauer<'py>(py: Python<'py>, transmissions: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::solid_state::conductance_landauer(&transmissions)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

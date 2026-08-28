@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -74,7 +75,6 @@ pub fn pyfn_equivalent_rate(rate: f64, from_: crate::generated::types::PyCompoun
 #[pyfunction]
 #[pyo3(name = "npv", signature = (rate, cashflows))]
 pub fn pyfn_npv<'py>(py: Python<'py>, rate: f64, cashflows: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::rates::npv(rate, &cashflows)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -100,7 +100,6 @@ pub fn pyfn_npv<'py>(py: Python<'py>, rate: f64, cashflows: Vec<f64>) -> PyResul
 #[pyfunction]
 #[pyo3(name = "irr", signature = (cashflows))]
 pub fn pyfn_irr<'py>(py: Python<'py>, cashflows: Vec<f64>) -> PyResult<Option<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::rates::irr(&cashflows)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -124,7 +123,6 @@ pub fn pyfn_irr<'py>(py: Python<'py>, cashflows: Vec<f64>) -> PyResult<Option<f6
 #[pyfunction]
 #[pyo3(name = "xirr", signature = (times, cashflows))]
 pub fn pyfn_xirr<'py>(py: Python<'py>, times: Vec<f64>, cashflows: Vec<f64>) -> PyResult<Option<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::rates::xirr(&times, &cashflows)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -268,7 +266,6 @@ pub fn pyfn_convexity(face: f64, coupon: f64, ytm: f64, periods: usize) -> PyRes
 #[pyfunction]
 #[pyo3(name = "bootstrap_zero_curve", signature = (bonds))]
 pub fn pyfn_bootstrap_zero_curve<'py>(py: Python<'py>, bonds: Vec<crate::generated::types::PyCurveBondArg>) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let bonds = bonds.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::rates::bootstrap_zero_curve(&bonds)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -347,7 +344,6 @@ pub fn pyfn_nelson_siegel(t: f64, b0: f64, b1: f64, b2: f64, tau: f64) -> PyResu
 #[pyfunction]
 #[pyo3(name = "ns_fit", signature = (maturities, yields))]
 pub fn pyfn_ns_fit<'py>(py: Python<'py>, maturities: Vec<f64>, yields: Vec<f64>) -> PyResult<(f64, f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::rates::ns_fit(&maturities, &yields)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -469,7 +465,6 @@ pub fn pyfn_mortgage_payment(principal: f64, rate: f64, n: usize) -> PyResult<f6
 #[pyfunction]
 #[pyo3(name = "amortization_schedule", signature = (principal, rate, n))]
 pub fn pyfn_amortization_schedule<'py>(py: Python<'py>, principal: f64, rate: f64, n: usize) -> PyResult<Vec<(f64, f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::rates::amortization_schedule(principal, rate, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

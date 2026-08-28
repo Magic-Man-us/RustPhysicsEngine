@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -81,7 +82,6 @@ pub fn pyfn_gev_quantile(p: f64, mu: f64, sigma: f64, xi: f64) -> PyResult<f64> 
 #[pyfunction]
 #[pyo3(name = "gev_fit", signature = (maxima))]
 pub fn pyfn_gev_fit<'py>(py: Python<'py>, maxima: Vec<f64>) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::gev_fit(&maxima)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -103,7 +103,6 @@ pub fn pyfn_gev_fit<'py>(py: Python<'py>, maxima: Vec<f64>) -> PyResult<(f64, f6
 #[pyfunction]
 #[pyo3(name = "gumbel_fit", signature = (maxima))]
 pub fn pyfn_gumbel_fit<'py>(py: Python<'py>, maxima: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::gumbel_fit(&maxima)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -170,7 +169,6 @@ pub fn pyfn_gpd_quantile(p: f64, sigma: f64, xi: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "gpd_fit", signature = (exceedances))]
 pub fn pyfn_gpd_fit<'py>(py: Python<'py>, exceedances: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::gpd_fit(&exceedances)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -194,7 +192,6 @@ pub fn pyfn_gpd_fit<'py>(py: Python<'py>, exceedances: Vec<f64>) -> PyResult<(f6
 #[pyfunction]
 #[pyo3(name = "mean_residual_life", signature = (x, thresholds))]
 pub fn pyfn_mean_residual_life<'py>(py: Python<'py>, x: Vec<f64>, thresholds: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::mean_residual_life(&x, &thresholds)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -218,7 +215,6 @@ pub fn pyfn_mean_residual_life<'py>(py: Python<'py>, x: Vec<f64>, thresholds: Ve
 #[pyfunction]
 #[pyo3(name = "hill_estimator", signature = (x, k))]
 pub fn pyfn_hill_estimator<'py>(py: Python<'py>, x: Vec<f64>, k: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::hill_estimator(&x, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -273,7 +269,6 @@ pub fn pyfn_return_period(mu: f64, sigma: f64, xi: f64, level: f64) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "block_maxima", signature = (x, block))]
 pub fn pyfn_block_maxima<'py>(py: Python<'py>, x: Vec<f64>, block: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::block_maxima(&x, block)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -300,7 +295,6 @@ pub fn pyfn_block_maxima<'py>(py: Python<'py>, x: Vec<f64>, block: usize) -> PyR
 #[pyfunction]
 #[pyo3(name = "extremal_index", signature = (x, threshold))]
 pub fn pyfn_extremal_index<'py>(py: Python<'py>, x: Vec<f64>, threshold: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::extremal_index(&x, threshold)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -322,7 +316,6 @@ pub fn pyfn_extremal_index<'py>(py: Python<'py>, x: Vec<f64>, threshold: f64) ->
 #[pyfunction]
 #[pyo3(name = "kendall_tau", signature = (x, y))]
 pub fn pyfn_kendall_tau<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::kendall_tau(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -341,7 +334,6 @@ pub fn pyfn_kendall_tau<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyRes
 #[pyfunction]
 #[pyo3(name = "spearman_rho", signature = (x, y))]
 pub fn pyfn_spearman_rho<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::spearman_rho(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -495,7 +487,6 @@ pub fn pyfn_copula_tau(family: crate::generated::types::PyCopulaFamily, theta: f
 #[pyfunction]
 #[pyo3(name = "copula_fit_tau", signature = (data, family))]
 pub fn pyfn_copula_fit_tau<'py>(py: Python<'py>, data: Vec<Vec<f64>>, family: crate::generated::types::PyCopulaFamily) -> PyResult<f64> {
-    let _ = py;
     let family = family.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::copula_fit_tau(&data, family)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -519,7 +510,6 @@ pub fn pyfn_copula_fit_tau<'py>(py: Python<'py>, data: Vec<Vec<f64>>, family: cr
 #[pyfunction]
 #[pyo3(name = "empirical_copula", signature = (data))]
 pub fn pyfn_empirical_copula<'py>(py: Python<'py>, data: Vec<Vec<f64>>) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::empirical_copula(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -551,7 +541,6 @@ pub fn pyfn_empirical_copula<'py>(py: Python<'py>, data: Vec<Vec<f64>>) -> PyRes
 #[pyfunction]
 #[pyo3(name = "tail_dependence_coefficient", signature = (data, q))]
 pub fn pyfn_tail_dependence_coefficient<'py>(py: Python<'py>, data: Vec<Vec<f64>>, q: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::tail_dependence_coefficient(&data, q)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -577,7 +566,6 @@ pub fn pyfn_tail_dependence_coefficient<'py>(py: Python<'py>, data: Vec<Vec<f64>
 #[pyfunction]
 #[pyo3(name = "pickands_dependence", signature = (data, t))]
 pub fn pyfn_pickands_dependence<'py>(py: Python<'py>, data: Vec<Vec<f64>>, t: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::extreme::pickands_dependence(&data, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

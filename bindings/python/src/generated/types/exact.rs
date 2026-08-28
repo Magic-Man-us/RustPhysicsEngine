@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -1026,7 +1027,6 @@ impl PyPoly {
     #[pyo3(name = "isolate_real_roots")]
     #[pyo3(signature = ())]
     fn isolate_real_roots<'py>(&self, py: Python<'py>) -> PyResult<Vec<(f64, f64)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.isolate_real_roots()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -1093,7 +1093,6 @@ impl PyPoly {
     #[staticmethod]
     #[pyo3(signature = (coeffs, x))]
     fn chebyshev_eval<'py>(py: Python<'py>, coeffs: Vec<f64>, x: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::polynomial::Poly::chebyshev_eval(&coeffs, x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1110,7 +1109,6 @@ impl PyPoly {
     #[staticmethod]
     #[pyo3(signature = (coeffs, a, b, x))]
     fn chebyshev_eval_on<'py>(py: Python<'py>, coeffs: Vec<f64>, a: f64, b: f64, x: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::polynomial::Poly::chebyshev_eval_on(&coeffs, a, b, x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1137,7 +1135,6 @@ impl PyPoly {
     #[pyo3(name = "to_chebyshev_basis")]
     #[pyo3(signature = ())]
     fn to_chebyshev_basis<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.to_chebyshev_basis()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1717,7 +1714,6 @@ impl PyCompiledExpr {
     #[pyo3(name = "vars")]
     #[pyo3(signature = ())]
     fn vars<'py>(&self, py: Python<'py>) -> PyResult<Vec<String>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.vars()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec().into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -1753,7 +1749,6 @@ impl PyCompiledExpr {
     #[pyo3(name = "eval")]
     #[pyo3(signature = (vals))]
     fn eval<'py>(&self, py: Python<'py>, vals: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.eval(&vals)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1899,7 +1894,6 @@ impl PyExpr {
     #[pyo3(name = "variables")]
     #[pyo3(signature = ())]
     fn variables<'py>(&self, py: Python<'py>) -> PyResult<Vec<String>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.variables()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>())
@@ -1927,7 +1921,6 @@ impl PyExpr {
     #[pyo3(name = "eval")]
     #[pyo3(signature = (vars))]
     fn eval<'py>(&self, py: Python<'py>, vars: Vec<(String, f64)>) -> PyResult<f64> {
-        let _ = py;
         let vars = vars.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
         let vars__b: Vec<(&str, f64)> = vars.iter().map(|__b| ((*__b).0.as_str(), (*__b).1)).collect();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.eval(&vars__b)));

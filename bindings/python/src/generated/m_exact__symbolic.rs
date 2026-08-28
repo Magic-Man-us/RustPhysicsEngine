@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -41,7 +42,6 @@ pub fn pyfn_hessian(e: crate::generated::types::PyExpr, vars: Vec<String>) -> Py
 #[pyfunction]
 #[pyo3(name = "solve_univariate_numeric", signature = (e, var, bracket))]
 pub fn pyfn_solve_univariate_numeric<'py>(py: Python<'py>, e: crate::generated::types::PyExpr, var: String, bracket: (f64, f64)) -> PyResult<Vec<f64>> {
-    let _ = py;
     let e = e.inner;
     let bracket = (bracket.0, bracket.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::symbolic::solve_univariate_numeric(&e, &var, bracket)));
@@ -62,7 +62,6 @@ pub fn pyfn_solve_univariate_numeric<'py>(py: Python<'py>, e: crate::generated::
 #[pyfunction]
 #[pyo3(name = "critical_points", signature = (e, var, range, n))]
 pub fn pyfn_critical_points<'py>(py: Python<'py>, e: crate::generated::types::PyExpr, var: String, range: (f64, f64), n: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let e = e.inner;
     let range = (range.0, range.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::symbolic::critical_points(&e, &var, range, n)));

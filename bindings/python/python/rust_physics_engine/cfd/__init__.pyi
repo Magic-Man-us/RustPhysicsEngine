@@ -59,9 +59,14 @@ from rust_physics_engine.cfd.level_set import WenoOrUpwind as WenoOrUpwind
 from rust_physics_engine.cfd.potential_flow import WingGeometry as WingGeometry
 from rust_physics_engine.cfd.potential_flow import added_mass_cylinder as added_mass_cylinder
 from rust_physics_engine.cfd.potential_flow import added_mass_sphere as added_mass_sphere
+from rust_physics_engine.cfd.advection import advect_bfecc_2d as advect_bfecc_2d
+from rust_physics_engine.cfd.advection import advect_flux_limited_2d as advect_flux_limited_2d
 from rust_physics_engine.cfd.advection import advect_lax_wendroff_1d as advect_lax_wendroff_1d
+from rust_physics_engine.cfd.advection import advect_maccormack_2d as advect_maccormack_2d
 from rust_physics_engine.cfd.advection import advect_muscl_1d as advect_muscl_1d
+from rust_physics_engine.cfd.advection import advect_semi_lagrangian_2d as advect_semi_lagrangian_2d
 from rust_physics_engine.cfd.advection import advect_upwind_1d as advect_upwind_1d
+from rust_physics_engine.cfd.advection import advect_upwind_2d as advect_upwind_2d
 from rust_physics_engine.cfd.advection import advect_velocity_semi_lagrangian as advect_velocity_semi_lagrangian
 from rust_physics_engine.cfd.advection import advect_weno5_1d as advect_weno5_1d
 from rust_physics_engine.cfd.advection import advection_diffusion_1d as advection_diffusion_1d
@@ -93,6 +98,7 @@ from rust_physics_engine.cfd.turbulence import channel_flow_dns_reference as cha
 from rust_physics_engine.cfd.multiphase import chisholm as chisholm
 from rust_physics_engine.cfd.multiphase import coalescence_rate_prince_blanch as coalescence_rate_prince_blanch
 from rust_physics_engine.cfd.multiphase import condensation_nusselt_film as condensation_nusselt_film
+from rust_physics_engine.cfd.potential_flow import conformal_map_flow as conformal_map_flow
 from rust_physics_engine.cfd.riemann import cons_to_prim as cons_to_prim
 from rust_physics_engine.cfd.level_set import contact_angle_young as contact_angle_young
 from rust_physics_engine.cfd.boundary_layer import couette_flow as couette_flow
@@ -208,6 +214,7 @@ from rust_physics_engine.cfd.porous import permeability_kozeny_carman as permeab
 from rust_physics_engine.cfd.shallow_water import pierson_moskowitz as pierson_moskowitz
 from rust_physics_engine.cfd.boundary_layer import pohlhausen_profile as pohlhausen_profile
 from rust_physics_engine.cfd.vortex import point_vortex_hamiltonian as point_vortex_hamiltonian
+from rust_physics_engine.cfd.vortex import point_vortex_step as point_vortex_step
 from rust_physics_engine.cfd.lbm import poiseuille_exact as poiseuille_exact
 from rust_physics_engine.cfd.sph import poiseuille_sph as poiseuille_sph
 from rust_physics_engine.cfd.multiphase import population_balance_1d as population_balance_1d

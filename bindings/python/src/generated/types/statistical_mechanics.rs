@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -253,7 +254,6 @@ impl PyIsing2D {
     #[staticmethod]
     #[pyo3(signature = (correlations, background))]
     fn correlation_length_estimate<'py>(py: Python<'py>, correlations: Vec<f64>, background: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::ising::Ising2D::correlation_length_estimate(&correlations, background)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -765,7 +765,6 @@ impl PyReaction {
     #[pyo3(name = "net_change")]
     #[pyo3(signature = (species))]
     fn net_change<'py>(&self, py: Python<'py>, species: usize) -> PyResult<Vec<i64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.net_change(species)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -891,10 +890,9 @@ impl PyMdSystem {
     /// minimum-image convention cannot represent.
     ///
     /// Rust: `statistical_mechanics::md::MdSystem::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (pos, vel, mass, box_size, periodic, potential, cutoff))]
-    fn new(pos: Vec<crate::generated::types::PyVec3Arg>, vel: Vec<crate::generated::types::PyVec3Arg>, mass: Vec<f64>, box_size: crate::generated::types::PyVec3Arg, periodic: bool, potential: crate::generated::types::PyPotential, cutoff: f64) -> PyResult<crate::generated::types::PyMdSystem> {
+    fn __new__(pos: Vec<crate::generated::types::PyVec3Arg>, vel: Vec<crate::generated::types::PyVec3Arg>, mass: Vec<f64>, box_size: crate::generated::types::PyVec3Arg, periodic: bool, potential: crate::generated::types::PyPotential, cutoff: f64) -> PyResult<crate::generated::types::PyMdSystem> {
         let pos = pos.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let vel = vel.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let box_size = box_size.0;
@@ -1277,7 +1275,6 @@ impl PyMdSystem {
     #[pyo3(name = "rdf")]
     #[pyo3(signature = (bins, r_max))]
     fn rdf<'py>(&self, py: Python<'py>, bins: usize, r_max: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.rdf(bins, r_max)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1304,7 +1301,6 @@ impl PyMdSystem {
     #[pyo3(name = "structure_factor")]
     #[pyo3(signature = (k_values))]
     fn structure_factor<'py>(&self, py: Python<'py>, k_values: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.structure_factor(&k_values)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1353,7 +1349,6 @@ impl PyMdSystem {
     #[pyo3(name = "melting_indicator_lindemann")]
     #[pyo3(signature = (traj))]
     fn melting_indicator_lindemann<'py>(&self, py: Python<'py>, traj: Vec<Vec<crate::generated::types::PyVec3Arg>>) -> PyResult<f64> {
-        let _ = py;
         let traj = traj.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.melting_indicator_lindemann(&traj)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1378,7 +1373,6 @@ impl PyMdSystem {
     #[staticmethod]
     #[pyo3(signature = (traj))]
     fn msd<'py>(py: Python<'py>, traj: Vec<Vec<crate::generated::types::PyVec3Arg>>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let traj = traj.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::MdSystem::msd(&traj)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1401,7 +1395,6 @@ impl PyMdSystem {
     #[staticmethod]
     #[pyo3(signature = (msd, dt))]
     fn diffusion_coefficient<'py>(py: Python<'py>, msd: Vec<f64>, dt: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::MdSystem::diffusion_coefficient(&msd, dt)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1419,7 +1412,6 @@ impl PyMdSystem {
     #[staticmethod]
     #[pyo3(signature = (traj_vel))]
     fn vacf<'py>(py: Python<'py>, traj_vel: Vec<Vec<crate::generated::types::PyVec3Arg>>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let traj_vel = traj_vel.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::MdSystem::vacf(&traj_vel)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1441,7 +1433,6 @@ impl PyMdSystem {
     #[staticmethod]
     #[pyo3(signature = (vacf, dt))]
     fn vdos_from_vacf<'py>(py: Python<'py>, vacf: Vec<f64>, dt: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::MdSystem::vdos_from_vacf(&vacf, dt)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;

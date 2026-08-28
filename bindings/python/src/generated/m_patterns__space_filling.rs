@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -246,6 +247,37 @@ pub fn pyfn_gosper_curve(order: u32) -> PyResult<Vec<crate::generated::types::Py
     Ok(__v.into_iter().map(|__x| crate::generated::types::PyVec2 { inner: __x }).collect::<Vec<_>>())
 }
 
+/// Sorts points by their Hilbert index on a `2^order` grid over the
+/// bounding box.
+///
+/// Panics:
+/// Panics unless `1 <= order <= 31`.
+///
+/// Rust: `patterns::space_filling::sort_by_hilbert`
+#[pyfunction]
+#[pyo3(name = "sort_by_hilbert", signature = (points, order))]
+pub fn pyfn_sort_by_hilbert<'py>(points: pyo3::Bound<'py, pyo3::PyAny>, order: u32) -> PyResult<()> {
+    let mut points__v: Vec<rust_physics_engine::math::Vec2> = points.extract::<Vec<crate::generated::types::PyVec2Arg>>()?.into_iter().map(|__e| __e.0).collect();
+    let __r = crate::runtime::guard(|| rust_physics_engine::patterns::space_filling::sort_by_hilbert(&mut points__v, order));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&points, points__v.into_iter().map(|__e| crate::generated::types::PyVec2 { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
+}
+
+/// Sorts 3-D points by Morton code (21 bits per axis over the
+/// bounding box).
+///
+/// Rust: `patterns::space_filling::sort_by_morton`
+#[pyfunction]
+#[pyo3(name = "sort_by_morton", signature = (points))]
+pub fn pyfn_sort_by_morton<'py>(points: pyo3::Bound<'py, pyo3::PyAny>) -> PyResult<()> {
+    let mut points__v: Vec<rust_physics_engine::math::Vec3> = points.extract::<Vec<crate::generated::types::PyVec3Arg>>()?.into_iter().map(|__e| __e.0).collect();
+    let __r = crate::runtime::guard(|| rust_physics_engine::patterns::space_filling::sort_by_morton(&mut points__v));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&points, points__v.into_iter().map(|__e| crate::generated::types::PyVec3 { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
+}
+
 /// Locality measure of the Hilbert order: mean |index difference|
 /// (normalized by the index range) divided by mean spatial distance
 /// (normalized by the bounding-box diagonal) over all point pairs.
@@ -258,7 +290,6 @@ pub fn pyfn_gosper_curve(order: u32) -> PyResult<Vec<crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "hilbert_locality_ratio", signature = (points, order))]
 pub fn pyfn_hilbert_locality_ratio<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVec2Arg>, order: u32) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::space_filling::hilbert_locality_ratio(&points, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -285,6 +316,8 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_sierpinski_curve, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_moore_curve, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_gosper_curve, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_sort_by_hilbert, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_sort_by_morton, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_hilbert_locality_ratio, m)?)?;
     Ok(())
 }

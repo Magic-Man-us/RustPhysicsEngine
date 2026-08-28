@@ -86,13 +86,15 @@ def test_every_docstring_names_its_rust_origin():
     """So a reader can follow any function back to the source."""
     sampled = 0
     for mod in _all_modules():
-        for name in sorted(dir(mod))[:3]:
-            if name.startswith("_"):
+        seen_here = 0
+        for name in sorted(dir(mod)):
+            if name.startswith("_") or seen_here >= 3:
                 continue
             obj = getattr(mod, name)
             if not inspect.isbuiltin(obj):
                 continue
             assert "Rust: `" in obj.__doc__, f"{mod.__name__}.{name}"
+            seen_here += 1
             sampled += 1
     assert sampled > 200
 

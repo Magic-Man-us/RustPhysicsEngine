@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,7 +24,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "conjugate_gradient", signature = (a, b, x0, tol, max_iter))]
 pub fn pyfn_conjugate_gradient<'py>(py: Python<'py>, a: crate::generated::types::PyCsrMatrix, b: Vec<f64>, x0: Vec<f64>, tol: f64, max_iter: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::sparse::conjugate_gradient(&a, &b, &x0, tol, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -41,7 +41,6 @@ pub fn pyfn_conjugate_gradient<'py>(py: Python<'py>, a: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "pcg_jacobi", signature = (a, b, tol, max_iter))]
 pub fn pyfn_pcg_jacobi<'py>(py: Python<'py>, a: crate::generated::types::PyCsrMatrix, b: Vec<f64>, tol: f64, max_iter: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::sparse::pcg_jacobi(&a, &b, tol, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -82,7 +83,6 @@ pub fn pyfn_machin_pi(precision: usize) -> PyResult<crate::generated::types::PyB
 #[pyfunction]
 #[pyo3(name = "compensated_to_bigfloat_check", signature = (xs))]
 pub fn pyfn_compensated_to_bigfloat_check<'py>(py: Python<'py>, xs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::bigfloat::compensated_to_bigfloat_check(&xs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

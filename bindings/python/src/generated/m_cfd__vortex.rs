@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -123,11 +124,24 @@ pub fn pyfn_vortex_pair_velocity(gamma: f64, d: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "point_vortex_hamiltonian", signature = (pos, gammas))]
 pub fn pyfn_point_vortex_hamiltonian<'py>(py: Python<'py>, pos: Vec<crate::generated::types::PyVec2Arg>, gammas: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let pos = pos.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::vortex::point_vortex_hamiltonian(&pos, &gammas)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
+}
+
+/// One implicit-midpoint step of the point-vortex system (symplectic; the
+/// Hamiltonian error stays bounded over long integrations).
+///
+/// Rust: `cfd::vortex::point_vortex_step`
+#[pyfunction]
+#[pyo3(name = "point_vortex_step", signature = (pos, gammas, dt))]
+pub fn pyfn_point_vortex_step<'py>(pos: pyo3::Bound<'py, pyo3::PyAny>, gammas: Vec<f64>, dt: f64) -> PyResult<()> {
+    let mut pos__v: Vec<rust_physics_engine::math::Vec2> = pos.extract::<Vec<crate::generated::types::PyVec2Arg>>()?.into_iter().map(|__e| __e.0).collect();
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::vortex::point_vortex_step(&mut pos__v, &gammas, dt));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&pos, pos__v.into_iter().map(|__e| crate::generated::types::PyVec2 { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
 }
 
 /// Inviscid Kelvin-Helmholtz growth rate for a velocity jump `delta_u`:
@@ -229,6 +243,7 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_hill_spherical_vortex, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_vortex_pair_velocity, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_point_vortex_hamiltonian, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_point_vortex_step, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_kelvin_helmholtz_growth_exact, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_vortex_shedding_frequency, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_strouhal_from_re, m)?)?;

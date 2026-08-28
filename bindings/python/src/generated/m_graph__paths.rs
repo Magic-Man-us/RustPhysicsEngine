@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -157,7 +158,6 @@ pub fn pyfn_bidirectional_dijkstra(g: crate::generated::types::PyGraph, s: usize
 #[pyfunction]
 #[pyo3(name = "k_shortest_paths_yen", signature = (g, s, t, k))]
 pub fn pyfn_k_shortest_paths_yen<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, s: usize, t: usize, k: usize) -> PyResult<Vec<(f64, Vec<usize>)>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::k_shortest_paths_yen(&g, s, t, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -207,7 +207,6 @@ pub fn pyfn_minimax_path(g: crate::generated::types::PyGraph, s: usize, t: usize
 #[pyfunction]
 #[pyo3(name = "dag_shortest", signature = (g, s))]
 pub fn pyfn_dag_shortest<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, s: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::dag_shortest(&g, s)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -226,7 +225,6 @@ pub fn pyfn_dag_shortest<'py>(py: Python<'py>, g: crate::generated::types::PyGra
 #[pyfunction]
 #[pyo3(name = "dag_longest", signature = (g, s))]
 pub fn pyfn_dag_longest<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, s: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::dag_longest(&g, s)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -259,7 +257,6 @@ pub fn pyfn_count_paths_dag<'py>(py: Python<'py>, g: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "transitive_closure", signature = (g))]
 pub fn pyfn_transitive_closure<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<Vec<bool>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::transitive_closure(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -350,7 +347,6 @@ pub fn pyfn_second_best_mst(g: crate::generated::types::PyGraph) -> PyResult<Opt
 #[pyfunction]
 #[pyo3(name = "steiner_tree_small", signature = (g, terminals))]
 pub fn pyfn_steiner_tree_small<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, terminals: Vec<usize>) -> PyResult<(f64, Vec<(usize, usize)>)> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::steiner_tree_small(&g, &terminals)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -370,7 +366,6 @@ pub fn pyfn_steiner_tree_small<'py>(py: Python<'py>, g: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "traveling_salesman_exact", signature = (dist))]
 pub fn pyfn_traveling_salesman_exact<'py>(py: Python<'py>, dist: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let dist = dist.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::traveling_salesman_exact(&dist)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -390,7 +385,6 @@ pub fn pyfn_traveling_salesman_exact<'py>(py: Python<'py>, dist: crate::generate
 #[pyfunction]
 #[pyo3(name = "tsp_nearest_neighbor", signature = (dist))]
 pub fn pyfn_tsp_nearest_neighbor<'py>(py: Python<'py>, dist: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let dist = dist.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::tsp_nearest_neighbor(&dist)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -403,7 +397,6 @@ pub fn pyfn_tsp_nearest_neighbor<'py>(py: Python<'py>, dist: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "tour_length", signature = (dist, tour))]
 pub fn pyfn_tour_length<'py>(py: Python<'py>, dist: crate::generated::types::PyMatrixArg, tour: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let dist = dist.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::tour_length(&dist, &tour)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -424,7 +417,6 @@ pub fn pyfn_tour_length<'py>(py: Python<'py>, dist: crate::generated::types::PyM
 #[pyfunction]
 #[pyo3(name = "tsp_2opt", signature = (dist, tour))]
 pub fn pyfn_tsp_2opt<'py>(py: Python<'py>, dist: crate::generated::types::PyMatrixArg, tour: Vec<usize>) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let dist = dist.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::tsp_2opt(&dist, &tour)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -444,7 +436,6 @@ pub fn pyfn_tsp_2opt<'py>(py: Python<'py>, dist: crate::generated::types::PyMatr
 #[pyfunction]
 #[pyo3(name = "tsp_or_opt", signature = (dist, tour))]
 pub fn pyfn_tsp_or_opt<'py>(py: Python<'py>, dist: crate::generated::types::PyMatrixArg, tour: Vec<usize>) -> PyResult<(f64, Vec<usize>)> {
-    let _ = py;
     let dist = dist.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::tsp_or_opt(&dist, &tour)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -471,7 +462,6 @@ pub fn pyfn_tsp_or_opt<'py>(py: Python<'py>, dist: crate::generated::types::PyMa
 #[pyfunction]
 #[pyo3(name = "tsp_christofides", signature = (dist))]
 pub fn pyfn_tsp_christofides<'py>(py: Python<'py>, dist: crate::generated::types::PyMatrixArg) -> PyResult<Option<(f64, Vec<usize>)>> {
-    let _ = py;
     let dist = dist.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::paths::tsp_christofides(&dist)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

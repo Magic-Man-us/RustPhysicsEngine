@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -90,6 +91,38 @@ impl PyFftPlan {
         let __r = crate::runtime::guard(|| self.inner.is_empty());
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
+    }
+
+    /// In-place forward FFT of the planned length.
+    ///
+    /// Panics:
+    /// Panics unless `x.len()` equals the planned length.
+    ///
+    /// Rust: `transforms::fft::FftPlan::execute`
+    #[pyo3(name = "execute")]
+    #[pyo3(signature = (x))]
+    fn execute<'py>(&self, x: pyo3::Bound<'py, pyo3::PyAny>) -> PyResult<()> {
+        let mut x__v: Vec<rust_physics_engine::fractals::Complex> = x.extract::<Vec<crate::runtime::coerce::ComplexArg>>()?.into_iter().map(|__e| __e.0).collect();
+        let __r = crate::runtime::guard(|| self.inner.execute(&mut x__v));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        crate::runtime::coerce::write_back_objects(&x, x__v.into_iter().map(|__e| crate::runtime::coerce::Cx(__e)).collect::<Vec<_>>())?;
+        Ok(())
+    }
+
+    /// In-place inverse FFT of the planned length (with 1/n scaling).
+    ///
+    /// Panics:
+    /// Panics unless `x.len()` equals the planned length.
+    ///
+    /// Rust: `transforms::fft::FftPlan::execute_inverse`
+    #[pyo3(name = "execute_inverse")]
+    #[pyo3(signature = (x))]
+    fn execute_inverse<'py>(&self, x: pyo3::Bound<'py, pyo3::PyAny>) -> PyResult<()> {
+        let mut x__v: Vec<rust_physics_engine::fractals::Complex> = x.extract::<Vec<crate::runtime::coerce::ComplexArg>>()?.into_iter().map(|__e| __e.0).collect();
+        let __r = crate::runtime::guard(|| self.inner.execute_inverse(&mut x__v));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        crate::runtime::coerce::write_back_objects(&x, x__v.into_iter().map(|__e| crate::runtime::coerce::Cx(__e)).collect::<Vec<_>>())?;
+        Ok(())
     }
 
     fn __repr__(&self) -> String { "<FftPlan>".to_string() }
@@ -185,7 +218,6 @@ impl PyStft {
     #[pyo3(name = "inverse")]
     #[pyo3(signature = (frames))]
     fn inverse<'py>(&self, py: Python<'py>, frames: Vec<Vec<crate::runtime::coerce::ComplexArg>>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let frames = frames.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.inverse(&frames)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -199,7 +231,6 @@ impl PyStft {
     #[staticmethod]
     #[pyo3(signature = (frames))]
     fn magnitude<'py>(py: Python<'py>, frames: Vec<Vec<crate::runtime::coerce::ComplexArg>>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let frames = frames.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::Stft::magnitude(&frames)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -213,7 +244,6 @@ impl PyStft {
     #[staticmethod]
     #[pyo3(signature = (frames))]
     fn power_db<'py>(py: Python<'py>, frames: Vec<Vec<crate::runtime::coerce::ComplexArg>>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let frames = frames.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::Stft::power_db(&frames)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -226,7 +256,6 @@ impl PyStft {
     #[pyo3(name = "times")]
     #[pyo3(signature = (n_samples, fs))]
     fn times<'py>(&self, py: Python<'py>, n_samples: usize, fs: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.times(n_samples, fs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -238,7 +267,6 @@ impl PyStft {
     #[pyo3(name = "freqs")]
     #[pyo3(signature = (fs))]
     fn freqs<'py>(&self, py: Python<'py>, fs: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.freqs(fs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

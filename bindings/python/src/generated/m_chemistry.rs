@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -64,7 +65,6 @@ pub fn pyfn_concentration_second_order(c0: f64, rate_constant: f64, time: f64) -
 #[pyfunction]
 #[pyo3(name = "reaction_rate", signature = (k, concentrations, orders))]
 pub fn pyfn_reaction_rate<'py>(py: Python<'py>, k: f64, concentrations: Vec<f64>, orders: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::chemistry::reaction_rate(k, &concentrations, &orders)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -109,7 +109,6 @@ pub fn pyfn_vant_hoff(k1: f64, delta_h: f64, t1: f64, t2: f64) -> PyResult<f64> 
 #[pyfunction]
 #[pyo3(name = "hess_law", signature = (enthalpies, coefficients))]
 pub fn pyfn_hess_law<'py>(py: Python<'py>, enthalpies: Vec<f64>, coefficients: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::chemistry::hess_law(&enthalpies, &coefficients)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

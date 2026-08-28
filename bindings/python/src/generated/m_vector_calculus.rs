@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,7 +24,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "gradient_3d", signature = (field, nx, ny, nz, dx, dy, dz))]
 pub fn pyfn_gradient_3d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: usize, nz: usize, dx: f64, dy: f64, dz: f64) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::gradient_3d(&field, nx, ny, nz, dx, dy, dz)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -35,7 +35,6 @@ pub fn pyfn_gradient_3d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: us
 #[pyfunction]
 #[pyo3(name = "laplacian_3d", signature = (field, nx, ny, nz, dx, dy, dz))]
 pub fn pyfn_laplacian_3d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: usize, nz: usize, dx: f64, dy: f64, dz: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::laplacian_3d(&field, nx, ny, nz, dx, dy, dz)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -50,7 +49,6 @@ pub fn pyfn_laplacian_3d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: u
 #[pyfunction]
 #[pyo3(name = "divergence_3d", signature = (fx, fy, fz, nx, ny, nz, dx, dy, dz))]
 pub fn pyfn_divergence_3d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, fz: Vec<f64>, nx: usize, ny: usize, nz: usize, dx: f64, dy: f64, dz: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::divergence_3d(&fx, &fy, &fz, nx, ny, nz, dx, dy, dz)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -64,7 +62,6 @@ pub fn pyfn_divergence_3d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, fz: 
 #[pyfunction]
 #[pyo3(name = "curl_3d", signature = (fx, fy, fz, nx, ny, nz, dx, dy, dz))]
 pub fn pyfn_curl_3d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, fz: Vec<f64>, nx: usize, ny: usize, nz: usize, dx: f64, dy: f64, dz: f64) -> PyResult<(Vec<f64>, Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::curl_3d(&fx, &fy, &fz, nx, ny, nz, dx, dy, dz)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1, __v.2))
@@ -78,7 +75,6 @@ pub fn pyfn_curl_3d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, fz: Vec<f6
 #[pyfunction]
 #[pyo3(name = "gradient_2d", signature = (field, nx, ny, dx, dy))]
 pub fn pyfn_gradient_2d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: usize, dx: f64, dy: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::gradient_2d(&field, nx, ny, dx, dy)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -90,7 +86,6 @@ pub fn pyfn_gradient_2d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: us
 #[pyfunction]
 #[pyo3(name = "laplacian_2d", signature = (field, nx, ny, dx, dy))]
 pub fn pyfn_laplacian_2d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: usize, dx: f64, dy: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::laplacian_2d(&field, nx, ny, dx, dy)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -102,7 +97,6 @@ pub fn pyfn_laplacian_2d<'py>(py: Python<'py>, field: Vec<f64>, nx: usize, ny: u
 #[pyfunction]
 #[pyo3(name = "divergence_2d", signature = (fx, fy, nx, ny, dx, dy))]
 pub fn pyfn_divergence_2d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, nx: usize, ny: usize, dx: f64, dy: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::divergence_2d(&fx, &fy, nx, ny, dx, dy)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -114,7 +108,6 @@ pub fn pyfn_divergence_2d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, nx: 
 #[pyfunction]
 #[pyo3(name = "curl_2d", signature = (fx, fy, nx, ny, dx, dy))]
 pub fn pyfn_curl_2d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, nx: usize, ny: usize, dx: f64, dy: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::curl_2d(&fx, &fy, nx, ny, dx, dy)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -134,7 +127,6 @@ pub fn pyfn_curl_2d<'py>(py: Python<'py>, fx: Vec<f64>, fy: Vec<f64>, nx: usize,
 #[pyfunction]
 #[pyo3(name = "poisson_jacobi_2d", signature = (rhs, nx, ny, dx, dy, max_iter, tol))]
 pub fn pyfn_poisson_jacobi_2d<'py>(py: Python<'py>, rhs: Vec<f64>, nx: usize, ny: usize, dx: f64, dy: f64, max_iter: usize, tol: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::vector_calculus::poisson_jacobi_2d(&rhs, nx, ny, dx, dy, max_iter, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

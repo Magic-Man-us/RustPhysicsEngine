@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -30,7 +31,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "chebyshev_points", signature = (n, a, b))]
 pub fn pyfn_chebyshev_points<'py>(py: Python<'py>, n: usize, a: f64, b: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::spectral_pde::chebyshev_points(n, a, b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -81,7 +81,6 @@ pub fn pyfn_cheb_diff_matrix(n: usize, a: f64, b: f64) -> PyResult<crate::genera
 #[pyfunction]
 #[pyo3(name = "cheb_differentiate", signature = (d, values))]
 pub fn pyfn_cheb_differentiate<'py>(py: Python<'py>, d: crate::generated::types::PyMatrixArg, values: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let d = d.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::spectral_pde::cheb_differentiate(&d, &values)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -157,7 +156,6 @@ pub fn pyfn_chebyshev_collocation_bvp(p: pyo3::Py<pyo3::PyAny>, q: pyo3::Py<pyo3
 #[pyfunction]
 #[pyo3(name = "spectral_poisson_periodic", signature = (f, length))]
 pub fn pyfn_spectral_poisson_periodic<'py>(py: Python<'py>, f: Vec<f64>, length: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::spectral_pde::spectral_poisson_periodic(&f, length)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -176,7 +174,6 @@ pub fn pyfn_spectral_poisson_periodic<'py>(py: Python<'py>, f: Vec<f64>, length:
 #[pyfunction]
 #[pyo3(name = "spectral_second_derivative", signature = (u, length))]
 pub fn pyfn_spectral_second_derivative<'py>(py: Python<'py>, u: Vec<f64>, length: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::spectral_pde::spectral_second_derivative(&u, length)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

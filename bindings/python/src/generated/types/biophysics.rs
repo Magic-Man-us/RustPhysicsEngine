@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -299,14 +300,6 @@ impl PyDistanceMethod {
 pub struct PyPhyloTree { pub inner: rust_physics_engine::biophysics::phylo::PhyloTree }
 #[pymethods]
 impl PyPhyloTree {
-    /// Builds a `PhyloTree` from its fields.
-    #[new]
-    #[pyo3(signature = (parent, branch_length, labels))]
-    fn __new__(parent: Vec<Option<usize>>, branch_length: Vec<f64>, labels: Vec<String>) -> Self {
-
-        Self { inner: rust_physics_engine::biophysics::phylo::PhyloTree { parent: parent, branch_length: branch_length, labels: labels } }
-    }
-
     /// A tree from its arrays, checked for consistency.
     ///
     /// Errors:
@@ -314,10 +307,9 @@ impl PyPhyloTree {
     /// or more than one, a parent index out of range, or a cycle.
     ///
     /// Rust: `biophysics::phylo::PhyloTree::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (parent, branch_length, labels))]
-    fn new(parent: Vec<Option<usize>>, branch_length: Vec<f64>, labels: Vec<String>) -> PyResult<crate::generated::types::PyPhyloTree> {
+    fn __new__(parent: Vec<Option<usize>>, branch_length: Vec<f64>, labels: Vec<String>) -> PyResult<crate::generated::types::PyPhyloTree> {
         let __r = crate::runtime::guard(|| rust_physics_engine::biophysics::phylo::PhyloTree::new(parent, branch_length, labels));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -363,7 +355,6 @@ impl PyPhyloTree {
     #[pyo3(name = "children")]
     #[pyo3(signature = (node))]
     fn children<'py>(&self, py: Python<'py>, node: usize) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.children(node)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -375,7 +366,6 @@ impl PyPhyloTree {
     #[pyo3(name = "leaves")]
     #[pyo3(signature = ())]
     fn leaves<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.leaves()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -402,7 +392,6 @@ impl PyPhyloTree {
     #[pyo3(name = "path_to_root")]
     #[pyo3(signature = (node))]
     fn path_to_root<'py>(&self, py: Python<'py>, node: usize) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.path_to_root(node)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -496,7 +485,6 @@ impl PyPhyloTree {
     #[pyo3(name = "splits")]
     #[pyo3(signature = ())]
     fn splits<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<String>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.splits()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>()).collect::<Vec<_>>())
@@ -519,7 +507,6 @@ impl PyPhyloTree {
     #[pyo3(name = "bipartitions")]
     #[pyo3(signature = ())]
     fn bipartitions<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<String>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.bipartitions()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.into_iter().map(|__x| __x.to_string()).collect::<Vec<_>>()).collect::<Vec<_>>())

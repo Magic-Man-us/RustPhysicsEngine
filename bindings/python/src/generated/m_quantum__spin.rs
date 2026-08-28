@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -79,7 +80,6 @@ pub fn pyfn_spin_coherent_state<'py>(py: Python<'py>, s: f64, theta: f64, phi: f
 #[pyfunction]
 #[pyo3(name = "heisenberg_2site_exact", signature = (j))]
 pub fn pyfn_heisenberg_2site_exact<'py>(py: Python<'py>, j: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::spin::heisenberg_2site_exact(j)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -300,7 +300,6 @@ pub fn pyfn_bloch_equations(m0: (f64, f64, f64), field: pyo3::Py<pyo3::PyAny>, g
 #[pyfunction]
 #[pyo3(name = "nmr_fid", signature = (frequencies, decay_times, samples, rate))]
 pub fn pyfn_nmr_fid<'py>(py: Python<'py>, frequencies: Vec<f64>, decay_times: Vec<f64>, samples: usize, rate: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::spin::nmr_fid(&frequencies, &decay_times, samples, rate)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

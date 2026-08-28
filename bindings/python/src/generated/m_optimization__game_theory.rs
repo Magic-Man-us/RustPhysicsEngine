@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -33,7 +34,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "minimax_value", signature = (payoff))]
 pub fn pyfn_minimax_value<'py>(py: Python<'py>, payoff: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let payoff = payoff.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::minimax_value(&payoff)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -52,7 +52,6 @@ pub fn pyfn_minimax_value<'py>(py: Python<'py>, payoff: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "dominated_strategies", signature = (payoff))]
 pub fn pyfn_dominated_strategies<'py>(py: Python<'py>, payoff: crate::generated::types::PyMatrixArg) -> PyResult<Vec<usize>> {
-    let _ = py;
     let payoff = payoff.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::dominated_strategies(&payoff)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -77,7 +76,6 @@ pub fn pyfn_dominated_strategies<'py>(py: Python<'py>, payoff: crate::generated:
 #[pyfunction]
 #[pyo3(name = "iterated_elimination", signature = (a, b))]
 pub fn pyfn_iterated_elimination<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg) -> PyResult<(Vec<usize>, Vec<usize>)> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::iterated_elimination(&a, &b)));
@@ -103,7 +101,6 @@ pub fn pyfn_iterated_elimination<'py>(py: Python<'py>, a: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "best_response", signature = (payoff, opponent_mixed))]
 pub fn pyfn_best_response<'py>(py: Python<'py>, payoff: crate::generated::types::PyMatrixArg, opponent_mixed: Vec<f64>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let payoff = payoff.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::best_response(&payoff, &opponent_mixed)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -126,7 +123,6 @@ pub fn pyfn_best_response<'py>(py: Python<'py>, payoff: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "nash_deviation_gain", signature = (a, b, p, q))]
 pub fn pyfn_nash_deviation_gain<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, p: Vec<f64>, q: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::nash_deviation_gain(&a, &b, &p, &q)));
@@ -150,7 +146,6 @@ pub fn pyfn_nash_deviation_gain<'py>(py: Python<'py>, a: crate::generated::types
 #[pyfunction]
 #[pyo3(name = "nash_2x2", signature = (a, b))]
 pub fn pyfn_nash_2x2<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg) -> PyResult<Vec<(Vec<f64>, Vec<f64>)>> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::nash_2x2(&a, &b)));
@@ -179,7 +174,6 @@ pub fn pyfn_nash_2x2<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixA
 #[pyfunction]
 #[pyo3(name = "nash_support_enumeration", signature = (a, b, max_support))]
 pub fn pyfn_nash_support_enumeration<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, max_support: usize) -> PyResult<Vec<(Vec<f64>, Vec<f64>)>> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::nash_support_enumeration(&a, &b, max_support)));
@@ -209,7 +203,6 @@ pub fn pyfn_nash_support_enumeration<'py>(py: Python<'py>, a: crate::generated::
 #[pyfunction]
 #[pyo3(name = "nash_bimatrix_lemke_howson", signature = (a, b, initial_label))]
 pub fn pyfn_nash_bimatrix_lemke_howson<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, initial_label: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::nash_bimatrix_lemke_howson(&a, &b, initial_label)));
@@ -260,7 +253,6 @@ pub fn pyfn_correlated_equilibrium_lp(a: crate::generated::types::PyMatrixArg, b
 #[pyfunction]
 #[pyo3(name = "fictitious_play", signature = (a, b, iterations))]
 pub fn pyfn_fictitious_play<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, iterations: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::fictitious_play(&a, &b, iterations)));
@@ -286,7 +278,6 @@ pub fn pyfn_fictitious_play<'py>(py: Python<'py>, a: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "replicator_dynamics", signature = (payoff, x0, t_end, dt))]
 pub fn pyfn_replicator_dynamics<'py>(py: Python<'py>, payoff: crate::generated::types::PyMatrixArg, x0: Vec<f64>, t_end: f64, dt: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let payoff = payoff.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::replicator_dynamics(&payoff, &x0, t_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -314,7 +305,6 @@ pub fn pyfn_replicator_dynamics<'py>(py: Python<'py>, payoff: crate::generated::
 #[pyfunction]
 #[pyo3(name = "evolutionarily_stable_check", signature = (payoff, strategy, tol))]
 pub fn pyfn_evolutionarily_stable_check<'py>(py: Python<'py>, payoff: crate::generated::types::PyMatrixArg, strategy: Vec<f64>, tol: f64) -> PyResult<bool> {
-    let _ = py;
     let payoff = payoff.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::evolutionarily_stable_check(&payoff, &strategy, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -546,7 +536,6 @@ pub fn pyfn_nucleolus_small(v: pyo3::Py<pyo3::PyAny>, n: usize) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "voting_power_weighted", signature = (weights, quota))]
 pub fn pyfn_voting_power_weighted<'py>(py: Python<'py>, weights: Vec<f64>, quota: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::voting_power_weighted(&weights, quota)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -633,7 +622,6 @@ pub fn pyfn_revenue_equivalence_sim(n: usize, trials: usize, rng: pyo3::PyRefMut
 #[pyfunction]
 #[pyo3(name = "vcg_auction", signature = (bids, items))]
 pub fn pyfn_vcg_auction<'py>(py: Python<'py>, bids: Vec<Vec<f64>>, items: usize) -> PyResult<(Vec<Option<usize>>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::vcg_auction(&bids, items)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -686,7 +674,6 @@ pub fn pyfn_cake_cutting_divide_choose(density_a: pyo3::Py<pyo3::PyAny>, density
 #[pyfunction]
 #[pyo3(name = "gale_shapley_optimality_check", signature = (prefs_a, prefs_b))]
 pub fn pyfn_gale_shapley_optimality_check<'py>(py: Python<'py>, prefs_a: Vec<Vec<usize>>, prefs_b: Vec<Vec<usize>>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::gale_shapley_optimality_check(&prefs_a, &prefs_b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -714,7 +701,6 @@ pub fn pyfn_gale_shapley_optimality_check<'py>(py: Python<'py>, prefs_a: Vec<Vec
 #[pyfunction]
 #[pyo3(name = "stackelberg_2x2", signature = (a, b))]
 pub fn pyfn_stackelberg_2x2<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg) -> PyResult<(usize, usize, f64, f64)> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::stackelberg_2x2(&a, &b)));
@@ -740,7 +726,6 @@ pub fn pyfn_stackelberg_2x2<'py>(py: Python<'py>, a: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "cournot_equilibrium", signature = (demand_intercept, demand_slope, costs))]
 pub fn pyfn_cournot_equilibrium<'py>(py: Python<'py>, demand_intercept: f64, demand_slope: f64, costs: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::cournot_equilibrium(demand_intercept, demand_slope, &costs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -762,7 +747,6 @@ pub fn pyfn_cournot_equilibrium<'py>(py: Python<'py>, demand_intercept: f64, dem
 #[pyfunction]
 #[pyo3(name = "bertrand_equilibrium", signature = (costs))]
 pub fn pyfn_bertrand_equilibrium<'py>(py: Python<'py>, costs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::game_theory::bertrand_equilibrium(&costs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -163,7 +164,6 @@ pub fn pyfn_anova_one_way(groups: Vec<Vec<f64>>) -> PyResult<crate::generated::t
 #[pyfunction]
 #[pyo3(name = "confidence_interval_mean", signature = (x, level))]
 pub fn pyfn_confidence_interval_mean<'py>(py: Python<'py>, x: Vec<f64>, level: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::inference::confidence_interval_mean(&x, level)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))

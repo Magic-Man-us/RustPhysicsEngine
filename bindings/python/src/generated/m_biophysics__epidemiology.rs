@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -117,7 +118,6 @@ pub fn pyfn_seirs(beta: f64, sigma: f64, gamma: f64, omega: f64, s0: f64, e0: f6
 #[pyfunction]
 #[pyo3(name = "msir", signature = (beta, gamma, delta, m0, s0, i0, t_end))]
 pub fn pyfn_msir<'py>(py: Python<'py>, beta: f64, gamma: f64, delta: f64, m0: f64, s0: f64, i0: f64, t_end: f64) -> PyResult<Vec<(f64, f64, f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::msir(beta, gamma, delta, m0, s0, i0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -303,7 +303,6 @@ pub fn pyfn_sir_with_demography(beta: f64, gamma: f64, mu: f64, s0: f64, i0: f64
 #[pyfunction]
 #[pyo3(name = "two_strain", signature = (beta1, gamma1, beta2, gamma2, s0, i1, i2, t_end))]
 pub fn pyfn_two_strain<'py>(py: Python<'py>, beta1: f64, gamma1: f64, beta2: f64, gamma2: f64, s0: f64, i1: f64, i2: f64, t_end: f64) -> PyResult<Vec<(f64, f64, f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::two_strain(beta1, gamma1, beta2, gamma2, s0, i1, i2, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -330,7 +329,6 @@ pub fn pyfn_two_strain<'py>(py: Python<'py>, beta1: f64, gamma1: f64, beta2: f64
 #[pyfunction]
 #[pyo3(name = "age_structured", signature = (contact, sizes, gamma, i0, t_end))]
 pub fn pyfn_age_structured<'py>(py: Python<'py>, contact: Vec<Vec<f64>>, sizes: Vec<f64>, gamma: f64, i0: Vec<f64>, t_end: f64) -> PyResult<Vec<(f64, Vec<f64>, Vec<f64>, Vec<f64>)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::age_structured(&contact, &sizes, gamma, &i0, t_end)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -349,7 +347,6 @@ pub fn pyfn_age_structured<'py>(py: Python<'py>, contact: Vec<Vec<f64>>, sizes: 
 #[pyfunction]
 #[pyo3(name = "r0_age_structured", signature = (contact, sizes, gamma))]
 pub fn pyfn_r0_age_structured<'py>(py: Python<'py>, contact: Vec<Vec<f64>>, sizes: Vec<f64>, gamma: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::r0_age_structured(&contact, &sizes, gamma)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -426,7 +423,6 @@ pub fn pyfn_network_sir(g: crate::generated::types::PyGraph, beta: f64, gamma: f
 #[pyfunction]
 #[pyo3(name = "effective_r_estimate", signature = (incidence, serial_interval, window))]
 pub fn pyfn_effective_r_estimate<'py>(py: Python<'py>, incidence: Vec<f64>, serial_interval: Vec<f64>, window: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::effective_r_estimate(&incidence, &serial_interval, window)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -444,7 +440,6 @@ pub fn pyfn_effective_r_estimate<'py>(py: Python<'py>, incidence: Vec<f64>, seri
 #[pyfunction]
 #[pyo3(name = "serial_interval_fit", signature = (intervals))]
 pub fn pyfn_serial_interval_fit<'py>(py: Python<'py>, intervals: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::serial_interval_fit(&intervals)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -476,7 +471,6 @@ pub fn pyfn_serial_interval_fit<'py>(py: Python<'py>, intervals: Vec<f64>) -> Py
 #[pyfunction]
 #[pyo3(name = "seir_fit_to_incidence", signature = (incidence, dt, population, guess))]
 pub fn pyfn_seir_fit_to_incidence<'py>(py: Python<'py>, incidence: Vec<f64>, dt: f64, population: f64, guess: (f64, f64, f64)) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let guess = (guess.0, guess.1, guess.2);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::seir_fit_to_incidence(&incidence, dt, population, guess)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -501,7 +495,6 @@ pub fn pyfn_seir_fit_to_incidence<'py>(py: Python<'py>, incidence: Vec<f64>, dt:
 #[pyfunction]
 #[pyo3(name = "wallinga_teunis", signature = (incidence, serial_interval))]
 pub fn pyfn_wallinga_teunis<'py>(py: Python<'py>, incidence: Vec<f64>, serial_interval: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::epidemiology::wallinga_teunis(&incidence, &serial_interval)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

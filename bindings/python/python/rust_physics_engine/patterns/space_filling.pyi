@@ -191,6 +191,27 @@ Rust: `patterns::space_filling::gosper_curve`
     """
     ...
 
+def sort_by_hilbert(points: MutableSequence[Vec2 | Sequence[float]], order: int) -> None:
+    """
+Sorts points by their Hilbert index on a `2^order` grid over the
+bounding box.
+
+Panics:
+Panics unless `1 <= order <= 31`.
+
+Rust: `patterns::space_filling::sort_by_hilbert`
+    """
+    ...
+
+def sort_by_morton(points: MutableSequence[Vec3 | Sequence[float]]) -> None:
+    """
+Sorts 3-D points by Morton code (21 bits per axis over the
+bounding box).
+
+Rust: `patterns::space_filling::sort_by_morton`
+    """
+    ...
+
 def hilbert_locality_ratio(points: list[Vec2 | Sequence[float]], order: int) -> float:
     """
 Locality measure of the Hilbert order: mean |index difference|

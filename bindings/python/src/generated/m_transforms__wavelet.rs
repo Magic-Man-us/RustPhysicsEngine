@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -37,7 +38,6 @@ pub fn pyfn_wavelet_filters(w: crate::generated::types::PyWavelet) -> PyResult<(
 #[pyfunction]
 #[pyo3(name = "dwt", signature = (x, w, mode))]
 pub fn pyfn_dwt<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::PyWavelet, mode: crate::generated::types::PyPadMode) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let w = w.inner;
     let mode = mode.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::dwt(&x, w, mode)));
@@ -55,7 +55,6 @@ pub fn pyfn_dwt<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::P
 #[pyfunction]
 #[pyo3(name = "idwt", signature = (a, d, w, mode))]
 pub fn pyfn_idwt<'py>(py: Python<'py>, a: Vec<f64>, d: Vec<f64>, w: crate::generated::types::PyWavelet, mode: crate::generated::types::PyPadMode) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let mode = mode.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::idwt(&a, &d, w, mode)));
@@ -69,7 +68,6 @@ pub fn pyfn_idwt<'py>(py: Python<'py>, a: Vec<f64>, d: Vec<f64>, w: crate::gener
 #[pyfunction]
 #[pyo3(name = "wavedec", signature = (x, w, levels, mode))]
 pub fn pyfn_wavedec<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::PyWavelet, levels: usize, mode: crate::generated::types::PyPadMode) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let w = w.inner;
     let mode = mode.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::wavedec(&x, w, levels, mode)));
@@ -83,7 +81,6 @@ pub fn pyfn_wavedec<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "waverec", signature = (coeffs, w, mode))]
 pub fn pyfn_waverec<'py>(py: Python<'py>, coeffs: Vec<Vec<f64>>, w: crate::generated::types::PyWavelet, mode: crate::generated::types::PyPadMode) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let mode = mode.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::waverec(&coeffs, w, mode)));
@@ -103,7 +100,6 @@ pub fn pyfn_waverec<'py>(py: Python<'py>, coeffs: Vec<Vec<f64>>, w: crate::gener
 #[pyfunction]
 #[pyo3(name = "dwt_2d", signature = (img, w, h, wavelet))]
 pub fn pyfn_dwt_2d<'py>(py: Python<'py>, img: Vec<f64>, w: usize, h: usize, wavelet: crate::generated::types::PyWavelet) -> PyResult<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let wavelet = wavelet.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::dwt_2d(&img, w, h, wavelet)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -116,7 +112,6 @@ pub fn pyfn_dwt_2d<'py>(py: Python<'py>, img: Vec<f64>, w: usize, h: usize, wave
 #[pyfunction]
 #[pyo3(name = "idwt_2d", signature = (ll, lh, hl, hh, w, h, wavelet))]
 pub fn pyfn_idwt_2d<'py>(py: Python<'py>, ll: Vec<f64>, lh: Vec<f64>, hl: Vec<f64>, hh: Vec<f64>, w: usize, h: usize, wavelet: crate::generated::types::PyWavelet) -> PyResult<Vec<f64>> {
-    let _ = py;
     let wavelet = wavelet.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::idwt_2d(&ll, &lh, &hl, &hh, w, h, wavelet)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -130,7 +125,6 @@ pub fn pyfn_idwt_2d<'py>(py: Python<'py>, ll: Vec<f64>, lh: Vec<f64>, hl: Vec<f6
 #[pyfunction]
 #[pyo3(name = "wavelet_denoise", signature = (x, w, levels, t))]
 pub fn pyfn_wavelet_denoise<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::PyWavelet, levels: usize, t: crate::generated::types::PyThreshold) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let t = t.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::wavelet_denoise(&x, w, levels, t)));
@@ -145,7 +139,6 @@ pub fn pyfn_wavelet_denoise<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generat
 #[pyfunction]
 #[pyo3(name = "wavelet_compress", signature = (x, w, levels, keep_fraction))]
 pub fn pyfn_wavelet_compress<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::PyWavelet, levels: usize, keep_fraction: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::wavelet_compress(&x, w, levels, keep_fraction)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -172,7 +165,6 @@ pub fn pyfn_cwt<'py>(py: Python<'py>, x: Vec<f64>, scales: Vec<f64>, mother: cra
 #[pyfunction]
 #[pyo3(name = "scalogram", signature = (x, scales, mother, fs))]
 pub fn pyfn_scalogram<'py>(py: Python<'py>, x: Vec<f64>, scales: Vec<f64>, mother: crate::generated::types::PyMother, fs: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let mother = mother.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::scalogram(&x, &scales, mother, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -199,7 +191,6 @@ pub fn pyfn_scale_to_frequency(scale: f64, mother: crate::generated::types::PyMo
 #[pyfunction]
 #[pyo3(name = "wavelet_packet_decompose", signature = (x, w, levels))]
 pub fn pyfn_wavelet_packet_decompose<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::PyWavelet, levels: usize) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::wavelet_packet_decompose(&x, w, levels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -248,7 +239,6 @@ pub fn pyfn_lifting_idwt_53<'py>(x: pyo3::Bound<'py, pyo3::PyAny>) -> PyResult<(
 #[pyfunction]
 #[pyo3(name = "multiresolution_analysis", signature = (x, w, levels))]
 pub fn pyfn_multiresolution_analysis<'py>(py: Python<'py>, x: Vec<f64>, w: crate::generated::types::PyWavelet, levels: usize) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::wavelet::multiresolution_analysis(&x, w, levels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

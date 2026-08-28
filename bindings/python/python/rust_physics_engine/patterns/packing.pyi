@@ -86,6 +86,15 @@ Rust: `patterns::packing::circle_pack_square`
     """
     ...
 
+def circle_pack_relax(circles: MutableSequence[Circle], region: Rect, iterations: int) -> None:
+    """
+Relaxes overlapping circles by symmetric push-apart steps, keeping
+centers at least their radius away from the rectangle boundary.
+
+Rust: `patterns::packing::circle_pack_relax`
+    """
+    ...
+
 def sphere_pack_fcc(region: Aabb, r: float) -> list[Sphere]:
     """
 Face-centered-cubic sphere packing (density π/(3√2) ≈ 0.7405),

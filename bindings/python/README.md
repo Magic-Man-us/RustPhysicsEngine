@@ -1,8 +1,9 @@
 # rust_physics_engine, from Python
 
-Python bindings for [rust_physics_engine][crate] — around 4,000 functions,
-400 classes and 100 constants across 71 domains, from Newtonian mechanics
-to Reed–Solomon codes, with no runtime dependencies on either side.
+Python bindings for [rust_physics_engine][crate] — 4,086 functions, 2,254
+methods, 416 classes and 106 constants across 71 domains, from Newtonian
+mechanics to Reed–Solomon codes, with no runtime dependencies on either
+side.
 
 ```console
 $ pip install ./bindings/python
@@ -16,6 +17,7 @@ $ maturin develop --release -m bindings/python/Cargo.toml
 ```
 
 ```python
+>>> import math
 >>> import rust_physics_engine as rpe
 >>> rpe.classical.projectile_range(speed=20.0, angle_rad=math.pi / 4, g=9.80665)
 40.78864851911713
@@ -27,7 +29,7 @@ If you can read `docs/MODULE_MAP.md`, you can find your way around here.
 
 ## What the bindings add
 
-The Rust API is not changed, but four things are translated so that it
+The Rust API is not changed, but five things are translated so that it
 reads as Python rather than as Rust seen through glass.
 
 **Errors are exceptions.** `Result<T, SolveError>` becomes a return value
@@ -100,6 +102,18 @@ they are translated rather than wrapped, and the round trip loses nothing:
 [(1+0j), (1+0j), (1+0j), (1+0j)]
 ```
 
+**Builders chain.** A Rust method that takes `&mut self` and returns
+`&mut Self` hands the same Python object back, so a circuit reads the way
+it does in Rust:
+
+```python
+>>> c = rpe.quantum.circuit.Circuit(2)
+>>> c.h(0).cx(0, 1)                                  # a Bell pair
+>>> state = c.run(rpe.quantum.circuit.QState.zero(2))
+>>> [round(abs(z) ** 2, 3) for z in state.amps]
+[0.5, 0.0, 0.0, 0.5]
+```
+
 **Functions can be Python functions.** Anywhere the library takes a
 `&dyn Fn`, pass a callable. An exception raised inside it comes back out
 of the call with its own traceback, rather than turning into a NaN:
@@ -107,9 +121,9 @@ of the call with its own traceback, rather than turning into a NaN:
 ```python
 >>> import math
 >>> rpe.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
-2.0000000000010827
+2.0000000000010805
 >>> rpe.numerical.roots.newton_raphson(lambda x: x*x - 2, lambda x: 2*x, 1.0, 1e-12, 50)
-1.4142135623730951
+1.414213562373095
 ```
 
 ## Types, and your editor
@@ -120,11 +134,15 @@ extension.
 
 ## What is not bound
 
-About 2% of the public API: functions generic over a type parameter,
-arguments that are `&dyn Trait` for a trait with no Python equivalent, and
-routines returning a closure. [COVERAGE.md](COVERAGE.md) lists every one
-of them by name with the reason, and is regenerated with the bindings so
-it cannot drift.
+4,086 of the library's 4,149 free functions, 2,254 of its 2,277 methods,
+416 of its 426 types and all 106 of its constants, across 296 modules.
+
+The rest is mostly three things: functions generic over a type parameter,
+which cannot be monomorphised without knowing what to monomorphise to;
+`&dyn Trait` arguments for traits with no Python equivalent; and routines
+returning a closure. [COVERAGE.md](COVERAGE.md) lists every unbound item
+by name with its reason, and is regenerated with the bindings, so it
+cannot drift from them.
 
 ## How this is built
 

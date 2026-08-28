@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -22,7 +23,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "window", signature = (kind, n, periodic))]
 pub fn pyfn_window<'py>(py: Python<'py>, kind: crate::generated::types::PyWindowKind, n: usize, periodic: bool) -> PyResult<Vec<f64>> {
-    let _ = py;
     let kind = kind.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::windows::window(kind, n, periodic)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -59,7 +59,6 @@ pub fn pyfn_kaiser_beta_for_attenuation(db: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "hann_window", signature = (n))]
 pub fn pyfn_hann_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::windows::hann_window(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -71,7 +70,6 @@ pub fn pyfn_hann_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "hamming_window", signature = (n))]
 pub fn pyfn_hamming_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::windows::hamming_window(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -84,7 +82,6 @@ pub fn pyfn_hamming_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>>
 #[pyfunction]
 #[pyo3(name = "blackman_window", signature = (n))]
 pub fn pyfn_blackman_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::windows::blackman_window(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -96,7 +93,6 @@ pub fn pyfn_blackman_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>
 #[pyfunction]
 #[pyo3(name = "rectangular_window", signature = (n))]
 pub fn pyfn_rectangular_window<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::windows::rectangular_window(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

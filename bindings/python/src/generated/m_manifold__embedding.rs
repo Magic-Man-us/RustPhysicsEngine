@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -70,7 +71,6 @@ pub fn pyfn_nonmetric_mds(dist: crate::generated::types::PyMatrixArg, dim: usize
 #[pyfunction]
 #[pyo3(name = "knn_graph", signature = (points, k))]
 pub fn pyfn_knn_graph<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVecNArg>, k: usize) -> PyResult<Vec<Vec<(usize, f64)>>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::knn_graph(&points, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -211,7 +211,6 @@ pub fn pyfn_umap_lite(points: Vec<crate::generated::types::PyVecNArg>, k: usize,
 #[pyfunction]
 #[pyo3(name = "intrinsic_dimension_mle", signature = (points, k))]
 pub fn pyfn_intrinsic_dimension_mle<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVecNArg>, k: usize) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::intrinsic_dimension_mle(&points, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -225,7 +224,6 @@ pub fn pyfn_intrinsic_dimension_mle<'py>(py: Python<'py>, points: Vec<crate::gen
 #[pyfunction]
 #[pyo3(name = "intrinsic_dimension_correlation", signature = (points, r_range))]
 pub fn pyfn_intrinsic_dimension_correlation<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVecNArg>, r_range: (f64, f64)) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let r_range = (r_range.0, r_range.1);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::intrinsic_dimension_correlation(&points, r_range)));
@@ -239,7 +237,6 @@ pub fn pyfn_intrinsic_dimension_correlation<'py>(py: Python<'py>, points: Vec<cr
 #[pyfunction]
 #[pyo3(name = "intrinsic_dimension_two_nn", signature = (points))]
 pub fn pyfn_intrinsic_dimension_two_nn<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVecNArg>) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::intrinsic_dimension_two_nn(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -252,7 +249,6 @@ pub fn pyfn_intrinsic_dimension_two_nn<'py>(py: Python<'py>, points: Vec<crate::
 #[pyfunction]
 #[pyo3(name = "trustworthiness", signature = (high, low, k))]
 pub fn pyfn_trustworthiness<'py>(py: Python<'py>, high: Vec<crate::generated::types::PyVecNArg>, low: Vec<crate::generated::types::PyVecNArg>, k: usize) -> PyResult<f64> {
-    let _ = py;
     let high = high.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let low = low.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::trustworthiness(&high, &low, k)));
@@ -266,7 +262,6 @@ pub fn pyfn_trustworthiness<'py>(py: Python<'py>, high: Vec<crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "continuity", signature = (high, low, k))]
 pub fn pyfn_continuity<'py>(py: Python<'py>, high: Vec<crate::generated::types::PyVecNArg>, low: Vec<crate::generated::types::PyVecNArg>, k: usize) -> PyResult<f64> {
-    let _ = py;
     let high = high.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let low = low.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::continuity(&high, &low, k)));
@@ -280,7 +275,6 @@ pub fn pyfn_continuity<'py>(py: Python<'py>, high: Vec<crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "stress", signature = (dist_high, dist_low))]
 pub fn pyfn_stress<'py>(py: Python<'py>, dist_high: crate::generated::types::PyMatrixArg, dist_low: crate::generated::types::PyMatrixArg) -> PyResult<f64> {
-    let _ = py;
     let dist_high = dist_high.0;
     let dist_low = dist_low.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::stress(&dist_high, &dist_low)));
@@ -294,7 +288,6 @@ pub fn pyfn_stress<'py>(py: Python<'py>, dist_high: crate::generated::types::PyM
 #[pyfunction]
 #[pyo3(name = "neighborhood_preservation", signature = (high, low, k))]
 pub fn pyfn_neighborhood_preservation<'py>(py: Python<'py>, high: Vec<crate::generated::types::PyVecNArg>, low: Vec<crate::generated::types::PyVecNArg>, k: usize) -> PyResult<f64> {
-    let _ = py;
     let high = high.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let low = low.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::neighborhood_preservation(&high, &low, k)));
@@ -445,7 +438,6 @@ pub fn pyfn_tangent_space_estimate(points: Vec<crate::generated::types::PyVecNAr
 #[pyfunction]
 #[pyo3(name = "manifold_curvature_estimate", signature = (points, idx, k))]
 pub fn pyfn_manifold_curvature_estimate<'py>(py: Python<'py>, points: Vec<crate::generated::types::PyVecNArg>, idx: usize, k: usize) -> PyResult<f64> {
-    let _ = py;
     let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::manifold_curvature_estimate(&points, idx, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -459,7 +451,6 @@ pub fn pyfn_manifold_curvature_estimate<'py>(py: Python<'py>, points: Vec<crate:
 #[pyfunction]
 #[pyo3(name = "grassmann_distance", signature = (a, b))]
 pub fn pyfn_grassmann_distance<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg) -> PyResult<f64> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::embedding::grassmann_distance(&a, &b)));
@@ -495,6 +486,20 @@ pub fn pyfn_riemannian_gradient_descent_sphere(f: pyo3::Py<pyo3::PyAny>, grad: p
     crate::runtime::callback::check(&[&__cb_f, &__cb_grad], ())?;
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(crate::generated::types::PyVecN { inner: __v })
+}
+
+/// k-means with distances and means taken in a Riemannian metric (uses the
+/// metric's exp/log maps). Returns (centroids, labels).
+///
+/// Rust: `manifold::embedding::geodesic_kmeans`
+#[pyfunction]
+#[pyo3(name = "geodesic_kmeans", signature = (metric, points, k, iters, rng))]
+pub fn pyfn_geodesic_kmeans(metric: pyo3::PyRef<'_, crate::generated::types::PyMetricMetric>, points: Vec<crate::generated::types::PyVecNArg>, k: usize, iters: usize, rng: pyo3::PyRefMut<'_, crate::generated::types::PyRng>) -> PyResult<(Vec<crate::generated::types::PyVecN>, Vec<usize>)> {
+    let points = points.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
+    let mut rng = rng;
+    let __r = crate::runtime::guard(|| rust_physics_engine::manifold::embedding::geodesic_kmeans(&metric.inner, &points, k, iters, &mut rng.inner));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok((__v.0.into_iter().map(|__x| crate::generated::types::PyVecN { inner: __x }).collect::<Vec<_>>(), __v.1))
 }
 
 /// Radial-basis interpolation of scattered manifold data.
@@ -553,6 +558,7 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_grassmann_distance, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_stiefel_project, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_riemannian_gradient_descent_sphere, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_geodesic_kmeans, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_manifold_interpolation_rbf, m)?)?;
     Ok(())
 }

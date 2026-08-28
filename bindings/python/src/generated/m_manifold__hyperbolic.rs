@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -414,7 +415,6 @@ pub fn pyfn_hyp_voronoi_disk<'py>(py: Python<'py>, sites: Vec<crate::runtime::co
 #[pyfunction]
 #[pyo3(name = "hyp_delaunay_disk", signature = (sites))]
 pub fn pyfn_hyp_delaunay_disk<'py>(py: Python<'py>, sites: Vec<crate::runtime::coerce::ComplexArg>) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let sites = sites.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::hyperbolic::hyp_delaunay_disk(&sites)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

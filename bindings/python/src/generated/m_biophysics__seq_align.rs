@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -30,7 +31,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "needleman_wunsch", signature = (a, b, score))]
 pub fn pyfn_needleman_wunsch<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, score: crate::generated::types::PyScoring) -> PyResult<(i64, String, String)> {
-    let _ = py;
     let score = score.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::needleman_wunsch(&a, &b, &score)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -57,7 +57,6 @@ pub fn pyfn_needleman_wunsch<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, score
 #[pyfunction]
 #[pyo3(name = "smith_waterman", signature = (a, b, score))]
 pub fn pyfn_smith_waterman<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, score: crate::generated::types::PyScoring) -> PyResult<(i64, usize, usize, String, String)> {
-    let _ = py;
     let score = score.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::smith_waterman(&a, &b, &score)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -83,7 +82,6 @@ pub fn pyfn_smith_waterman<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, score: 
 #[pyfunction]
 #[pyo3(name = "gotoh_affine", signature = (a, b, match_score, mismatch, gap_open, gap_extend))]
 pub fn pyfn_gotoh_affine<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, match_score: i64, mismatch: i64, gap_open: i64, gap_extend: i64) -> PyResult<(i64, String, String)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::gotoh_affine(&a, &b, match_score, mismatch, gap_open, gap_extend)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -107,7 +105,6 @@ pub fn pyfn_gotoh_affine<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, match_sco
 #[pyfunction]
 #[pyo3(name = "banded_alignment", signature = (a, b, band, score))]
 pub fn pyfn_banded_alignment<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, band: usize, score: crate::generated::types::PyScoring) -> PyResult<i64> {
-    let _ = py;
     let score = score.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::banded_alignment(&a, &b, band, &score)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -136,7 +133,6 @@ pub fn pyfn_banded_alignment<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, band:
 #[pyfunction]
 #[pyo3(name = "hirschberg", signature = (a, b, score))]
 pub fn pyfn_hirschberg<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>, score: crate::generated::types::PyScoring) -> PyResult<(String, String)> {
-    let _ = py;
     let score = score.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::hirschberg(&a, &b, &score)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -230,7 +226,6 @@ pub fn pyfn_pam250() -> PyResult<crate::generated::types::PySubstitutionMatrix> 
 #[pyfunction]
 #[pyo3(name = "gc_content", signature = (seq))]
 pub fn pyfn_gc_content<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::gc_content(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -247,7 +242,6 @@ pub fn pyfn_gc_content<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "reverse_complement", signature = (seq))]
 pub fn pyfn_reverse_complement<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::reverse_complement(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -259,7 +253,6 @@ pub fn pyfn_reverse_complement<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<V
 #[pyfunction]
 #[pyo3(name = "transcribe", signature = (seq))]
 pub fn pyfn_transcribe<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::transcribe(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -272,7 +265,6 @@ pub fn pyfn_transcribe<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<u8>> 
 #[pyfunction]
 #[pyo3(name = "codon_to_amino", signature = (codon))]
 pub fn pyfn_codon_to_amino<'py>(py: Python<'py>, codon: Vec<u8>) -> PyResult<u8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::codon_to_amino(&codon)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -285,7 +277,6 @@ pub fn pyfn_codon_to_amino<'py>(py: Python<'py>, codon: Vec<u8>) -> PyResult<u8>
 #[pyfunction]
 #[pyo3(name = "translate", signature = (seq))]
 pub fn pyfn_translate<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::translate(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -304,7 +295,6 @@ pub fn pyfn_translate<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<u8>> {
 #[pyfunction]
 #[pyo3(name = "orf_find", signature = (seq, min_len))]
 pub fn pyfn_orf_find<'py>(py: Python<'py>, seq: Vec<u8>, min_len: usize) -> PyResult<Vec<(usize, usize, i8)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::orf_find(&seq, min_len)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -320,7 +310,6 @@ pub fn pyfn_orf_find<'py>(py: Python<'py>, seq: Vec<u8>, min_len: usize) -> PyRe
 #[pyfunction]
 #[pyo3(name = "codon_usage", signature = (seq))]
 pub fn pyfn_codon_usage<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<(String, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::codon_usage(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -342,7 +331,6 @@ pub fn pyfn_codon_usage<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<Vec<(Str
 #[pyfunction]
 #[pyo3(name = "melting_temperature_wallace", signature = (seq))]
 pub fn pyfn_melting_temperature_wallace<'py>(py: Python<'py>, seq: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::melting_temperature_wallace(&seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -365,7 +353,6 @@ pub fn pyfn_melting_temperature_wallace<'py>(py: Python<'py>, seq: Vec<u8>) -> P
 #[pyfunction]
 #[pyo3(name = "tm_nearest_neighbor", signature = (seq, concentration))]
 pub fn pyfn_tm_nearest_neighbor<'py>(py: Python<'py>, seq: Vec<u8>, concentration: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::tm_nearest_neighbor(&seq, concentration)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -378,7 +365,6 @@ pub fn pyfn_tm_nearest_neighbor<'py>(py: Python<'py>, seq: Vec<u8>, concentratio
 #[pyfunction]
 #[pyo3(name = "hamming_seqs", signature = (a, b))]
 pub fn pyfn_hamming_seqs<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<Option<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::hamming_seqs(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -393,7 +379,6 @@ pub fn pyfn_hamming_seqs<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "p_distance", signature = (a, b))]
 pub fn pyfn_p_distance<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::p_distance(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -458,7 +443,6 @@ pub fn pyfn_kimura_2p(transitions: f64, transversions: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "kmer_index", signature = (seq, k))]
 pub fn pyfn_kmer_index<'py>(py: Python<'py>, seq: Vec<u8>, k: usize) -> PyResult<Vec<(Vec<u8>, Vec<usize>)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::kmer_index(&seq, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -482,7 +466,6 @@ pub fn pyfn_kmer_index<'py>(py: Python<'py>, seq: Vec<u8>, k: usize) -> PyResult
 #[pyfunction]
 #[pyo3(name = "minimizers", signature = (seq, k, w))]
 pub fn pyfn_minimizers<'py>(py: Python<'py>, seq: Vec<u8>, k: usize, w: usize) -> PyResult<Vec<(usize, u64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::minimizers(&seq, k, w)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -504,7 +487,6 @@ pub fn pyfn_minimizers<'py>(py: Python<'py>, seq: Vec<u8>, k: usize, w: usize) -
 #[pyfunction]
 #[pyo3(name = "burrows_wheeler_search", signature = (text, pattern))]
 pub fn pyfn_burrows_wheeler_search<'py>(py: Python<'py>, text: Vec<u8>, pattern: Vec<u8>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::burrows_wheeler_search(&text, &pattern)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -528,7 +510,6 @@ pub fn pyfn_burrows_wheeler_search<'py>(py: Python<'py>, text: Vec<u8>, pattern:
 #[pyfunction]
 #[pyo3(name = "msa_center_star", signature = (sequences, score))]
 pub fn pyfn_msa_center_star<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>, score: crate::generated::types::PyScoring) -> PyResult<Vec<String>> {
-    let _ = py;
     let score = score.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::msa_center_star(&sequences, &score)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -546,7 +527,6 @@ pub fn pyfn_msa_center_star<'py>(py: Python<'py>, sequences: Vec<Vec<u8>>, score
 #[pyfunction]
 #[pyo3(name = "profile_from_msa", signature = (msa))]
 pub fn pyfn_profile_from_msa<'py>(py: Python<'py>, msa: Vec<String>) -> PyResult<Vec<(u8, Vec<f64>)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::profile_from_msa(&msa)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -563,7 +543,6 @@ pub fn pyfn_profile_from_msa<'py>(py: Python<'py>, msa: Vec<String>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "consensus", signature = (msa))]
 pub fn pyfn_consensus<'py>(py: Python<'py>, msa: Vec<String>) -> PyResult<String> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::consensus(&msa)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -586,7 +565,6 @@ pub fn pyfn_consensus<'py>(py: Python<'py>, msa: Vec<String>) -> PyResult<String
 #[pyfunction]
 #[pyo3(name = "pssm_score", signature = (profile, seq))]
 pub fn pyfn_pssm_score<'py>(py: Python<'py>, profile: Vec<(u8, Vec<f64>)>, seq: Vec<u8>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let profile = profile.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::pssm_score(&profile, &seq)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -611,7 +589,6 @@ pub fn pyfn_pssm_score<'py>(py: Python<'py>, profile: Vec<(u8, Vec<f64>)>, seq: 
 #[pyfunction]
 #[pyo3(name = "de_bruijn_assembly_lite", signature = (reads, k))]
 pub fn pyfn_de_bruijn_assembly_lite<'py>(py: Python<'py>, reads: Vec<Vec<u8>>, k: usize) -> PyResult<Vec<Vec<u8>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::biophysics::seq_align::de_bruijn_assembly_lite(&reads, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

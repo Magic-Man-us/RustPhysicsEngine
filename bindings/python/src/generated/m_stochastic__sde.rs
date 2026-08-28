@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -278,7 +279,6 @@ pub fn pyfn_srk_order_1_5(mu: pyo3::Py<pyo3::PyAny>, sigma: f64, x0: f64, t_end:
 #[pyfunction]
 #[pyo3(name = "strong_convergence_order", signature = (errors, dts))]
 pub fn pyfn_strong_convergence_order<'py>(py: Python<'py>, errors: Vec<f64>, dts: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::sde::strong_convergence_order(&errors, &dts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -297,7 +297,6 @@ pub fn pyfn_strong_convergence_order<'py>(py: Python<'py>, errors: Vec<f64>, dts
 #[pyfunction]
 #[pyo3(name = "weak_convergence_order", signature = (errors, dts))]
 pub fn pyfn_weak_convergence_order<'py>(py: Python<'py>, errors: Vec<f64>, dts: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::sde::weak_convergence_order(&errors, &dts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -439,7 +438,6 @@ pub fn pyfn_fractional_brownian(h: f64, n: usize, rng: pyo3::PyRefMut<'_, crate:
 #[pyfunction]
 #[pyo3(name = "hurst_exponent_rs", signature = (x))]
 pub fn pyfn_hurst_exponent_rs<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::sde::hurst_exponent_rs(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -468,7 +466,6 @@ pub fn pyfn_hurst_exponent_rs<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<f64
 #[pyfunction]
 #[pyo3(name = "hurst_dfa", signature = (x))]
 pub fn pyfn_hurst_dfa<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::sde::hurst_dfa(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

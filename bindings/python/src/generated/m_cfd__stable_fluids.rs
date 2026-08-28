@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -22,7 +23,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "pressure_poisson_cg", signature = (div, solid, nx, ny, dx, tol, max_iter))]
 pub fn pyfn_pressure_poisson_cg<'py>(py: Python<'py>, div: Vec<f64>, solid: Vec<bool>, nx: usize, ny: usize, dx: f64, tol: f64, max_iter: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::stable_fluids::pressure_poisson_cg(&div, &solid, nx, ny, dx, tol, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -37,7 +37,6 @@ pub fn pyfn_pressure_poisson_cg<'py>(py: Python<'py>, div: Vec<f64>, solid: Vec<
 #[pyfunction]
 #[pyo3(name = "poisson_neumann_cg_rect", signature = (rhs, nx, ny, dx, dy, tol, max_iter))]
 pub fn pyfn_poisson_neumann_cg_rect<'py>(py: Python<'py>, rhs: Vec<f64>, nx: usize, ny: usize, dx: f64, dy: f64, tol: f64, max_iter: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::stable_fluids::poisson_neumann_cg_rect(&rhs, nx, ny, dx, dy, tol, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -53,7 +52,6 @@ pub fn pyfn_poisson_neumann_cg_rect<'py>(py: Python<'py>, rhs: Vec<f64>, nx: usi
 #[pyfunction]
 #[pyo3(name = "multigrid_vcycle", signature = (rhs, levels, pre, post))]
 pub fn pyfn_multigrid_vcycle<'py>(py: Python<'py>, rhs: Vec<f64>, levels: usize, pre: usize, post: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::stable_fluids::multigrid_vcycle(&rhs, levels, pre, post)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

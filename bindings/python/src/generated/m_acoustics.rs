@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -43,7 +44,6 @@ pub fn pyfn_eyring_reverberation(volume: f64, surface_area: f64, avg_absorption_
 #[pyfunction]
 #[pyo3(name = "total_absorption", signature = (surfaces))]
 pub fn pyfn_total_absorption<'py>(py: Python<'py>, surfaces: Vec<(f64, f64)>) -> PyResult<f64> {
-    let _ = py;
     let surfaces = surfaces.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::acoustics::total_absorption(&surfaces)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -101,7 +101,6 @@ pub fn pyfn_add_db(db1: f64, db2: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "add_db_multiple", signature = (levels))]
 pub fn pyfn_add_db_multiple<'py>(py: Python<'py>, levels: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::acoustics::add_db_multiple(&levels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -261,7 +260,6 @@ pub fn pyfn_harmonic_frequency(fundamental: f64, n: u32) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "harmonic_series", signature = (fundamental, max_harmonic))]
 pub fn pyfn_harmonic_series<'py>(py: Python<'py>, fundamental: f64, max_harmonic: u32) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::acoustics::harmonic_series(fundamental, max_harmonic)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -347,7 +345,6 @@ pub fn pyfn_rectangular_plate_fundamental(length: f64, flexural_rigidity: f64, m
 #[pyfunction]
 #[pyo3(name = "total_harmonic_distortion", signature = (fundamental_amplitude, harmonic_amplitudes))]
 pub fn pyfn_total_harmonic_distortion<'py>(py: Python<'py>, fundamental_amplitude: f64, harmonic_amplitudes: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::acoustics::total_harmonic_distortion(fundamental_amplitude, &harmonic_amplitudes)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -361,7 +358,6 @@ pub fn pyfn_total_harmonic_distortion<'py>(py: Python<'py>, fundamental_amplitud
 #[pyfunction]
 #[pyo3(name = "harmonic_synthesis", signature = (fundamental, harmonics, t))]
 pub fn pyfn_harmonic_synthesis<'py>(py: Python<'py>, fundamental: f64, harmonics: Vec<(u32, f64, f64)>, t: f64) -> PyResult<f64> {
-    let _ = py;
     let harmonics = harmonics.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::acoustics::harmonic_synthesis(fundamental, &harmonics, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

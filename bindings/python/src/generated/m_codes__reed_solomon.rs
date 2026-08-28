@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -71,7 +72,6 @@ pub fn pyfn_rs_dvd() -> PyResult<crate::generated::types::PyReedSolomon> {
 #[pyfunction]
 #[pyo3(name = "cyclic_code_generators", signature = (n))]
 pub fn pyfn_cyclic_code_generators<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<Vec<u8>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::reed_solomon::cyclic_code_generators(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

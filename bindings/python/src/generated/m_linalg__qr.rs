@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -38,7 +39,6 @@ pub fn pyfn_qr_householder(a: crate::generated::types::PyMatrixArg) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "least_squares", signature = (a, b))]
 pub fn pyfn_least_squares<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::qr::least_squares(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

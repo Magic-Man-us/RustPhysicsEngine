@@ -56,6 +56,25 @@ Rust: `astrophysics::nbody::compute_acceleration`
     """
     ...
 
+def init_accelerations(bodies: MutableSequence[Body], softening: float) -> None:
+    """
+Initializes acceleration vectors for all bodies by computing pairwise gravitational interactions.
+
+Rust: `astrophysics::nbody::init_accelerations`
+    """
+    ...
+
+def step_verlet(bodies: MutableSequence[Body], dt: float, softening: float) -> None:
+    """
+Performs one velocity Verlet integration step (kick-drift-kick) by
+delegating to the generic symplectic integrator
+`numerical::ode::symplectic::velocity_verlet` over the flattened
+phase-space state.
+
+Rust: `astrophysics::nbody::step_verlet`
+    """
+    ...
+
 def kinetic_energy(bodies: list[Body]) -> float:
     """
 Computes the total kinetic energy of all bodies: KE = Σ ½m_i v_i².

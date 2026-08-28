@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -89,7 +90,6 @@ pub fn pyfn_z_transform_eval<'py>(py: Python<'py>, x: Vec<f64>, z: crate::runtim
 #[pyfunction]
 #[pyo3(name = "impulse_response_from_tf", signature = (num, den, n))]
 pub fn pyfn_impulse_response_from_tf<'py>(py: Python<'py>, num: Vec<f64>, den: Vec<f64>, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::laplace::impulse_response_from_tf(&num, &den, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

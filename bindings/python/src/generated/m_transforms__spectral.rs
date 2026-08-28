@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,7 +24,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "periodogram", signature = (x, fs, window_kind))]
 pub fn pyfn_periodogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, window_kind: crate::generated::types::PyWindowKind) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let window_kind = window_kind.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::periodogram(&x, fs, window_kind)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -40,7 +40,6 @@ pub fn pyfn_periodogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, window_kind:
 #[pyfunction]
 #[pyo3(name = "welch", signature = (x, fs, nperseg, noverlap, window_kind))]
 pub fn pyfn_welch<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, nperseg: usize, noverlap: usize, window_kind: crate::generated::types::PyWindowKind) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let window_kind = window_kind.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::welch(&x, fs, nperseg, noverlap, window_kind)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -59,7 +58,6 @@ pub fn pyfn_welch<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, nperseg: usize, no
 #[pyfunction]
 #[pyo3(name = "dpss", signature = (n, nw, k))]
 pub fn pyfn_dpss<'py>(py: Python<'py>, n: usize, nw: f64, k: usize) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::dpss(n, nw, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -71,7 +69,6 @@ pub fn pyfn_dpss<'py>(py: Python<'py>, n: usize, nw: f64, k: usize) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "multitaper", signature = (x, fs, nw, k))]
 pub fn pyfn_multitaper<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, nw: f64, k: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::multitaper(&x, fs, nw, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -87,7 +84,6 @@ pub fn pyfn_multitaper<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, nw: f64, k: u
 #[pyfunction]
 #[pyo3(name = "burg_ar", signature = (x, order))]
 pub fn pyfn_burg_ar<'py>(py: Python<'py>, x: Vec<f64>, order: usize) -> PyResult<(Vec<f64>, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::burg_ar(&x, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -104,7 +100,6 @@ pub fn pyfn_burg_ar<'py>(py: Python<'py>, x: Vec<f64>, order: usize) -> PyResult
 #[pyfunction]
 #[pyo3(name = "yule_walker_ar", signature = (x, order))]
 pub fn pyfn_yule_walker_ar<'py>(py: Python<'py>, x: Vec<f64>, order: usize) -> PyResult<(Vec<f64>, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::yule_walker_ar(&x, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -117,7 +112,6 @@ pub fn pyfn_yule_walker_ar<'py>(py: Python<'py>, x: Vec<f64>, order: usize) -> P
 #[pyfunction]
 #[pyo3(name = "ar_psd", signature = (coeffs, sigma2, fs, n))]
 pub fn pyfn_ar_psd<'py>(py: Python<'py>, coeffs: Vec<f64>, sigma2: f64, fs: f64, n: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::ar_psd(&coeffs, sigma2, fs, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -134,7 +128,6 @@ pub fn pyfn_ar_psd<'py>(py: Python<'py>, coeffs: Vec<f64>, sigma2: f64, fs: f64,
 #[pyfunction]
 #[pyo3(name = "music", signature = (x, n_sources, order, fs, n))]
 pub fn pyfn_music<'py>(py: Python<'py>, x: Vec<f64>, n_sources: usize, order: usize, fs: f64, n: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::music(&x, n_sources, order, fs, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -161,7 +154,6 @@ pub fn pyfn_cross_spectral_density<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64
 #[pyfunction]
 #[pyo3(name = "coherence", signature = (x, y, fs, nperseg))]
 pub fn pyfn_coherence<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>, fs: f64, nperseg: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::coherence(&x, &y, fs, nperseg)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -184,7 +176,6 @@ pub fn pyfn_transfer_function_estimate<'py>(py: Python<'py>, input: Vec<f64>, ou
 #[pyfunction]
 #[pyo3(name = "cepstrum_real", signature = (x))]
 pub fn pyfn_cepstrum_real<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::cepstrum_real(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -196,7 +187,6 @@ pub fn pyfn_cepstrum_real<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64
 #[pyfunction]
 #[pyo3(name = "cepstrum_power", signature = (x))]
 pub fn pyfn_cepstrum_power<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::cepstrum_power(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -213,7 +203,6 @@ pub fn pyfn_cepstrum_power<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f6
 #[pyfunction]
 #[pyo3(name = "lomb_scargle", signature = (t, y, freqs))]
 pub fn pyfn_lomb_scargle<'py>(py: Python<'py>, t: Vec<f64>, y: Vec<f64>, freqs: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::lomb_scargle(&t, &y, &freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -225,7 +214,6 @@ pub fn pyfn_lomb_scargle<'py>(py: Python<'py>, t: Vec<f64>, y: Vec<f64>, freqs: 
 #[pyfunction]
 #[pyo3(name = "spectral_entropy", signature = (psd))]
 pub fn pyfn_spectral_entropy<'py>(py: Python<'py>, psd: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::spectral_entropy(&psd)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -237,7 +225,6 @@ pub fn pyfn_spectral_entropy<'py>(py: Python<'py>, psd: Vec<f64>) -> PyResult<f6
 #[pyfunction]
 #[pyo3(name = "spectral_flatness", signature = (psd))]
 pub fn pyfn_spectral_flatness<'py>(py: Python<'py>, psd: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::spectral_flatness(&psd)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -252,7 +239,6 @@ pub fn pyfn_spectral_flatness<'py>(py: Python<'py>, psd: Vec<f64>) -> PyResult<f
 #[pyfunction]
 #[pyo3(name = "detrend", signature = (x, order))]
 pub fn pyfn_detrend<'py>(py: Python<'py>, x: Vec<f64>, order: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::detrend(&x, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -265,7 +251,6 @@ pub fn pyfn_detrend<'py>(py: Python<'py>, x: Vec<f64>, order: usize) -> PyResult
 #[pyfunction]
 #[pyo3(name = "power_law_fit", signature = (f, psd, f_min, f_max))]
 pub fn pyfn_power_law_fit<'py>(py: Python<'py>, f: Vec<f64>, psd: Vec<f64>, f_min: f64, f_max: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::spectral::power_law_fit(&f, &psd, f_min, f_max)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))

@@ -87,8 +87,8 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999
 
 ## From Python
 
-The same library, callable from Python, with about 98% of the public API
-bound. The bindings live in [`bindings/python`](bindings/python) and are
+The same library, callable from Python: 4,086 of its 4,149 free functions,
+2,254 of its 2,277 methods, 416 of its 426 types and every constant. The bindings live in [`bindings/python`](bindings/python) and are
 generated from this crate's source, so they cannot fall behind it.
 
 ```console

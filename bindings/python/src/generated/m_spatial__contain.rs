@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -171,7 +172,6 @@ pub fn pyfn_point_in_convex_polygon_2d(p: crate::generated::types::PyVec2Arg, po
 #[pyfunction]
 #[pyo3(name = "point_in_convex_hull_3d", signature = (p, hull_tris))]
 pub fn pyfn_point_in_convex_hull_3d<'py>(py: Python<'py>, p: crate::generated::types::PyVec3Arg, hull_tris: Vec<crate::generated::types::PyTriangle>) -> PyResult<bool> {
-    let _ = py;
     let p = p.0;
     let hull_tris = hull_tris.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::contain::point_in_convex_hull_3d(p, &hull_tris)));
@@ -187,7 +187,6 @@ pub fn pyfn_point_in_convex_hull_3d<'py>(py: Python<'py>, p: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "point_in_mesh", signature = (p, tris))]
 pub fn pyfn_point_in_mesh<'py>(py: Python<'py>, p: crate::generated::types::PyVec3Arg, tris: Vec<crate::generated::types::PyTriangle>) -> PyResult<bool> {
-    let _ = py;
     let p = p.0;
     let tris = tris.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::contain::point_in_mesh(p, &tris)));

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -120,7 +121,6 @@ pub fn pyfn_partitions_odd<'py>(py: Python<'py>, n: u64) -> PyResult<pyo3::Bound
 #[pyfunction]
 #[pyo3(name = "partition_conjugate", signature = (p))]
 pub fn pyfn_partition_conjugate<'py>(py: Python<'py>, p: Vec<u64>) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::partitions::partition_conjugate(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -133,7 +133,6 @@ pub fn pyfn_partition_conjugate<'py>(py: Python<'py>, p: Vec<u64>) -> PyResult<V
 #[pyfunction]
 #[pyo3(name = "young_diagram", signature = (p))]
 pub fn pyfn_young_diagram<'py>(py: Python<'py>, p: Vec<u64>) -> PyResult<Vec<Vec<bool>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::partitions::young_diagram(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -149,7 +148,6 @@ pub fn pyfn_young_diagram<'py>(py: Python<'py>, p: Vec<u64>) -> PyResult<Vec<Vec
 #[pyfunction]
 #[pyo3(name = "hook_lengths", signature = (p))]
 pub fn pyfn_hook_lengths<'py>(py: Python<'py>, p: Vec<u64>) -> PyResult<Vec<Vec<u64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::partitions::hook_lengths(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -187,7 +185,6 @@ pub fn pyfn_standard_tableaux_count<'py>(py: Python<'py>, p: Vec<u64>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "rsk_correspondence", signature = (perm))]
 pub fn pyfn_rsk_correspondence<'py>(py: Python<'py>, perm: Vec<usize>) -> PyResult<(Vec<Vec<usize>>, Vec<Vec<usize>>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::partitions::rsk_correspondence(&perm)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -200,7 +197,6 @@ pub fn pyfn_rsk_correspondence<'py>(py: Python<'py>, perm: Vec<usize>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "durfee_square", signature = (p))]
 pub fn pyfn_durfee_square<'py>(py: Python<'py>, p: Vec<u64>) -> PyResult<u64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::partitions::durfee_square(&p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

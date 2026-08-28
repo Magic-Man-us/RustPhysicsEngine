@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -200,7 +201,6 @@ pub fn pyfn_critical_angle_fiber(n_core: f64, n_clad: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "thin_lens_matrix", signature = (focal_length))]
 pub fn pyfn_thin_lens_matrix<'py>(py: Python<'py>, focal_length: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::photonics::thin_lens_matrix(focal_length)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())
@@ -212,7 +212,6 @@ pub fn pyfn_thin_lens_matrix<'py>(py: Python<'py>, focal_length: f64) -> PyResul
 #[pyfunction]
 #[pyo3(name = "free_space_matrix", signature = (distance))]
 pub fn pyfn_free_space_matrix<'py>(py: Python<'py>, distance: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::photonics::free_space_matrix(distance)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())

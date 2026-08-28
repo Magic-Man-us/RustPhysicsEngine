@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -86,7 +87,6 @@ pub fn pyfn_innermost_stable_circular_orbit(total_mass: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "find_strongest_source", signature = (masses, positions))]
 pub fn pyfn_find_strongest_source<'py>(py: Python<'py>, masses: Vec<f64>, positions: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<Option<(usize, usize, f64)>> {
-    let _ = py;
     let positions = positions.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::astrophysics::gravitational_waves::find_strongest_source(&masses, &positions)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

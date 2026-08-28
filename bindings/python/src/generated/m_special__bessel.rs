@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -149,7 +150,6 @@ pub fn pyfn_bessel_k1(x: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "bessel_j_zeros", signature = (n, count))]
 pub fn pyfn_bessel_j_zeros<'py>(py: Python<'py>, n: u32, count: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::special::bessel::bessel_j_zeros(n, count)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -162,7 +162,6 @@ pub fn pyfn_bessel_j_zeros<'py>(py: Python<'py>, n: u32, count: usize) -> PyResu
 #[pyfunction]
 #[pyo3(name = "bessel_j_zeros_checked", signature = (n, count))]
 pub fn pyfn_bessel_j_zeros_checked<'py>(py: Python<'py>, n: u32, count: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::special::bessel::bessel_j_zeros_checked(n, count)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

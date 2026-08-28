@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -200,7 +201,6 @@ pub fn pyfn_bezier_cubic_3d(t: f64, p0: crate::generated::types::PyVec3Arg, p1: 
 #[pyfunction]
 #[pyo3(name = "bezier_sample", signature = (p0, p1, p2, p3, n))]
 pub fn pyfn_bezier_sample<'py>(py: Python<'py>, p0: (f64, f64), p1: (f64, f64), p2: (f64, f64), p3: (f64, f64), n: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let p0 = (p0.0, p0.1);
     let p1 = (p1.0, p1.1);
     let p2 = (p2.0, p2.1);

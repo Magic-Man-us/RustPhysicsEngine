@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -44,7 +45,6 @@ pub fn pyfn_helmholtz_q(volume: f64, neck_area: f64, neck_length: f64, c: f64) -
 #[pyfunction]
 #[pyo3(name = "string_modes", signature = (length, tension, mu, n))]
 pub fn pyfn_string_modes<'py>(py: Python<'py>, length: f64, tension: f64, mu: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::string_modes(length, tension, mu, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -68,7 +68,6 @@ pub fn pyfn_string_mode_shape(length: f64, n: usize, x: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "stiff_string_modes", signature = (length, tension, mu, young, radius, n))]
 pub fn pyfn_stiff_string_modes<'py>(py: Python<'py>, length: f64, tension: f64, mu: f64, young: f64, radius: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::stiff_string_modes(length, tension, mu, young, radius, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -92,7 +91,6 @@ pub fn pyfn_inharmonicity_coefficient(young: f64, radius: f64, tension: f64, len
 #[pyfunction]
 #[pyo3(name = "tube_modes", signature = (length, c, open_open, n))]
 pub fn pyfn_tube_modes<'py>(py: Python<'py>, length: f64, c: f64, open_open: bool, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::tube_modes(length, c, open_open, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -115,7 +113,6 @@ pub fn pyfn_tube_end_correction(radius: f64, flanged: bool) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "conical_tube_modes", signature = (length, c, n))]
 pub fn pyfn_conical_tube_modes<'py>(py: Python<'py>, length: f64, c: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::conical_tube_modes(length, c, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -128,7 +125,6 @@ pub fn pyfn_conical_tube_modes<'py>(py: Python<'py>, length: f64, c: f64, n: usi
 #[pyfunction]
 #[pyo3(name = "rectangular_membrane_modes", signature = (a, b, tension, sigma, max_m, max_n))]
 pub fn pyfn_rectangular_membrane_modes<'py>(py: Python<'py>, a: f64, b: f64, tension: f64, sigma: f64, max_m: usize, max_n: usize) -> PyResult<Vec<(usize, usize, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::rectangular_membrane_modes(a, b, tension, sigma, max_m, max_n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -141,7 +137,6 @@ pub fn pyfn_rectangular_membrane_modes<'py>(py: Python<'py>, a: f64, b: f64, ten
 #[pyfunction]
 #[pyo3(name = "circular_membrane_modes", signature = (radius, tension, sigma, max_m, max_n))]
 pub fn pyfn_circular_membrane_modes<'py>(py: Python<'py>, radius: f64, tension: f64, sigma: f64, max_m: usize, max_n: usize) -> PyResult<Vec<(usize, usize, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::circular_membrane_modes(radius, tension, sigma, max_m, max_n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -166,7 +161,6 @@ pub fn pyfn_circular_membrane_shape(radius: f64, m: usize, n: usize, r: f64, the
 #[pyfunction]
 #[pyo3(name = "rectangular_plate_modes", signature = (a, b, h, young, nu, rho, bc, max_m, max_n))]
 pub fn pyfn_rectangular_plate_modes<'py>(py: Python<'py>, a: f64, b: f64, h: f64, young: f64, nu: f64, rho: f64, bc: crate::generated::types::PyPlateBc, max_m: usize, max_n: usize) -> PyResult<Vec<(usize, usize, f64)>> {
-    let _ = py;
     let bc = bc.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::rectangular_plate_modes(a, b, h, young, nu, rho, bc, max_m, max_n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -205,7 +199,6 @@ pub fn pyfn_chladni_pattern_mixed(a: f64, b: f64, modes: Vec<(usize, usize, f64)
 #[pyfunction]
 #[pyo3(name = "beam_modes", signature = (length, young, i_area, rho, area, bc, n))]
 pub fn pyfn_beam_modes<'py>(py: Python<'py>, length: f64, young: f64, i_area: f64, rho: f64, area: f64, bc: crate::generated::types::PyBeamBc, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let bc = bc.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::beam_modes(length, young, i_area, rho, area, bc, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -244,7 +237,6 @@ pub fn pyfn_tuning_fork_frequency(length: f64, thickness: f64, young: f64, rho: 
 #[pyfunction]
 #[pyo3(name = "bell_modes_approx", signature = (radius, thickness, young, rho, nu, n))]
 pub fn pyfn_bell_modes_approx<'py>(py: Python<'py>, radius: f64, thickness: f64, young: f64, rho: f64, nu: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::bell_modes_approx(radius, thickness, young, rho, nu, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -257,7 +249,6 @@ pub fn pyfn_bell_modes_approx<'py>(py: Python<'py>, radius: f64, thickness: f64,
 #[pyfunction]
 #[pyo3(name = "room_modes", signature = (lx, ly, lz, c, max_n))]
 pub fn pyfn_room_modes<'py>(py: Python<'py>, lx: f64, ly: f64, lz: f64, c: f64, max_n: usize) -> PyResult<Vec<(usize, usize, usize, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::room_modes(lx, ly, lz, c, max_n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2, __x.3)).collect::<Vec<_>>())
@@ -349,7 +340,6 @@ pub fn pyfn_cavity_photon_lifetime(q: f64, frequency: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "microwave_cavity_modes_rect", signature = (a, b, d, c, max_n))]
 pub fn pyfn_microwave_cavity_modes_rect<'py>(py: Python<'py>, a: f64, b: f64, d: f64, c: f64, max_n: usize) -> PyResult<Vec<(String, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::microwave_cavity_modes_rect(a, b, d, c, max_n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0.to_string(), __x.1)).collect::<Vec<_>>())
@@ -363,7 +353,6 @@ pub fn pyfn_microwave_cavity_modes_rect<'py>(py: Python<'py>, a: f64, b: f64, d:
 #[pyfunction]
 #[pyo3(name = "cylindrical_cavity_modes", signature = (radius, height, c, max_n))]
 pub fn pyfn_cylindrical_cavity_modes<'py>(py: Python<'py>, radius: f64, height: f64, c: f64, max_n: usize) -> PyResult<Vec<(String, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::cavity::cylindrical_cavity_modes(radius, height, c, max_n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0.to_string(), __x.1)).collect::<Vec<_>>())

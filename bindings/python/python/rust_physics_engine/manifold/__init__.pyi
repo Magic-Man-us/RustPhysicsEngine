@@ -74,6 +74,7 @@ from rust_physics_engine.manifold.hyperbolic import fundamental_polygon_genus as
 from rust_physics_engine.manifold.spherical import gauss_legendre_sphere as gauss_legendre_sphere
 from rust_physics_engine.manifold.polytope4 import gaussian_concentration_radius as gaussian_concentration_radius
 from rust_physics_engine.manifold.embedding import geodesic_distance_matrix as geodesic_distance_matrix
+from rust_physics_engine.manifold.embedding import geodesic_kmeans as geodesic_kmeans
 from rust_physics_engine.manifold.geodesic import geodesics_on_mesh_exact as geodesics_on_mesh_exact
 from rust_physics_engine.manifold.spherical import gnomonic as gnomonic
 from rust_physics_engine.manifold.embedding import grassmann_distance as grassmann_distance

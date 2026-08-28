@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -38,7 +39,6 @@ pub fn pyfn_wav_read(bytes: Vec<u8>) -> PyResult<crate::generated::types::PyWavD
 #[pyfunction]
 #[pyo3(name = "wav_write", signature = (data, bits, float))]
 pub fn pyfn_wav_write<'py>(py: Python<'py>, data: crate::generated::types::PyWavData, bits: u16, float: bool) -> PyResult<Vec<u8>> {
-    let _ = py;
     let data = data.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::wav::wav_write(&data, bits, float)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -86,7 +86,6 @@ pub fn pyfn_wav_write_file(path: String, data: crate::generated::types::PyWavDat
 #[pyfunction]
 #[pyo3(name = "wav_info", signature = (bytes))]
 pub fn pyfn_wav_info<'py>(py: Python<'py>, bytes: Vec<u8>) -> PyResult<(u32, u16, u16, usize)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::wav::wav_info(&bytes)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -99,7 +98,6 @@ pub fn pyfn_wav_info<'py>(py: Python<'py>, bytes: Vec<u8>) -> PyResult<(u32, u16
 #[pyfunction]
 #[pyo3(name = "to_mono", signature = (d))]
 pub fn pyfn_to_mono<'py>(py: Python<'py>, d: crate::generated::types::PyWavData) -> PyResult<Vec<f64>> {
-    let _ = py;
     let d = d.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::wav::to_mono(&d)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -112,7 +110,6 @@ pub fn pyfn_to_mono<'py>(py: Python<'py>, d: crate::generated::types::PyWavData)
 #[pyfunction]
 #[pyo3(name = "to_interleaved", signature = (d))]
 pub fn pyfn_to_interleaved<'py>(py: Python<'py>, d: crate::generated::types::PyWavData) -> PyResult<Vec<f64>> {
-    let _ = py;
     let d = d.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::wav::to_interleaved(&d)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -128,7 +125,6 @@ pub fn pyfn_to_interleaved<'py>(py: Python<'py>, d: crate::generated::types::PyW
 #[pyfunction]
 #[pyo3(name = "from_interleaved", signature = (x, channels))]
 pub fn pyfn_from_interleaved<'py>(py: Python<'py>, x: Vec<f64>, channels: u16) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::wav::from_interleaved(&x, channels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

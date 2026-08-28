@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "sieve_eratosthenes", signature = (n))]
 pub fn pyfn_sieve_eratosthenes<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::sieve_eratosthenes(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -35,7 +35,6 @@ pub fn pyfn_sieve_eratosthenes<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<u
 #[pyfunction]
 #[pyo3(name = "sieve_segmented", signature = (lo, hi))]
 pub fn pyfn_sieve_segmented<'py>(py: Python<'py>, lo: u64, hi: u64) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::sieve_segmented(lo, hi)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -213,7 +212,6 @@ pub fn pyfn_fermat_factor(n: u64) -> PyResult<Option<(u64, u64)>> {
 #[pyfunction]
 #[pyo3(name = "factorize", signature = (n))]
 pub fn pyfn_factorize<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<(u64, u32)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::factorize(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -303,7 +301,6 @@ pub fn pyfn_nth_prime(n: usize) -> PyResult<u64> {
 #[pyfunction]
 #[pyo3(name = "prime_gaps", signature = (n))]
 pub fn pyfn_prime_gaps<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::prime_gaps(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -315,7 +312,6 @@ pub fn pyfn_prime_gaps<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<u64>> {
 #[pyfunction]
 #[pyo3(name = "twin_primes", signature = (n))]
 pub fn pyfn_twin_primes<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<(u64, u64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::twin_primes(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -328,7 +324,6 @@ pub fn pyfn_twin_primes<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<(u64, u6
 #[pyfunction]
 #[pyo3(name = "goldbach_partitions", signature = (n))]
 pub fn pyfn_goldbach_partitions<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<(u64, u64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::goldbach_partitions(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -343,7 +338,6 @@ pub fn pyfn_goldbach_partitions<'py>(py: Python<'py>, n: u64) -> PyResult<Vec<(u
 #[pyfunction]
 #[pyo3(name = "primes_in_arithmetic_progression", signature = (a, d, count))]
 pub fn pyfn_primes_in_arithmetic_progression<'py>(py: Python<'py>, a: u64, d: u64, count: usize) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::discrete::primes::primes_in_arithmetic_progression(a, d, count)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

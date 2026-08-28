@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -147,7 +148,6 @@ pub fn pyfn_simulated_annealing(f: pyo3::Py<pyo3::PyAny>, x0: Vec<f64>, temp_ini
 #[pyfunction]
 #[pyo3(name = "linear_regression", signature = (x, y))]
 pub fn pyfn_linear_regression<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::linear_regression(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -164,7 +164,6 @@ pub fn pyfn_linear_regression<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) ->
 #[pyfunction]
 #[pyo3(name = "polynomial_fit", signature = (x, y, degree))]
 pub fn pyfn_polynomial_fit<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>, degree: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::polynomial_fit(&x, &y, degree)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -176,7 +175,6 @@ pub fn pyfn_polynomial_fit<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>, degre
 #[pyfunction]
 #[pyo3(name = "r_squared", signature = (y_actual, y_predicted))]
 pub fn pyfn_r_squared<'py>(py: Python<'py>, y_actual: Vec<f64>, y_predicted: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::r_squared(&y_actual, &y_predicted)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

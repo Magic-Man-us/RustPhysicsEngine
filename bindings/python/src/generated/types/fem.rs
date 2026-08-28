@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -86,7 +87,6 @@ impl PyFdtd1d {
     #[pyo3(name = "energy")]
     #[pyo3(signature = (eps_r, n))]
     fn energy<'py>(&self, py: Python<'py>, eps_r: Vec<f64>, n: usize) -> PyResult<Option<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.energy(&eps_r, n)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.map(|__x| __x))
@@ -194,14 +194,6 @@ impl PyFem1dBc {
 pub struct PyFem1dSolution { pub inner: rust_physics_engine::fem::fem1d::Fem1dSolution }
 #[pymethods]
 impl PyFem1dSolution {
-    /// Builds a `Fem1dSolution` from its fields.
-    #[new]
-    #[pyo3(signature = (a, b, degree, values))]
-    fn __new__(a: f64, b: f64, degree: usize, values: Vec<f64>) -> Self {
-
-        Self { inner: rust_physics_engine::fem::fem1d::Fem1dSolution { a: a, b: b, degree: degree, values: values } }
-    }
-
     /// Wraps nodal values from one of the solvers.
     ///
     /// Errors:
@@ -211,10 +203,9 @@ impl PyFem1dSolution {
     /// some positive `k`.
     ///
     /// Rust: `fem::fem1d::Fem1dSolution::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (a, b, degree, values))]
-    fn new(a: f64, b: f64, degree: usize, values: Vec<f64>) -> PyResult<crate::generated::types::PyFem1dSolution> {
+    fn __new__(a: f64, b: f64, degree: usize, values: Vec<f64>) -> PyResult<crate::generated::types::PyFem1dSolution> {
         let __r = crate::runtime::guard(|| rust_physics_engine::fem::fem1d::Fem1dSolution::new(a, b, degree, values));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -250,7 +241,6 @@ impl PyFem1dSolution {
     #[pyo3(name = "nodes")]
     #[pyo3(signature = ())]
     fn nodes<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.nodes()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -326,15 +316,6 @@ impl PyFem1dSolution {
 pub struct PyFemMesh2 { pub inner: rust_physics_engine::fem::fem2d::FemMesh2 }
 #[pymethods]
 impl PyFemMesh2 {
-    /// Builds a `FemMesh2` from its fields.
-    #[new]
-    #[pyo3(signature = (nodes, tris, boundary))]
-    fn __new__(nodes: Vec<crate::generated::types::PyVec2Arg>, tris: Vec<Vec<usize>>, boundary: Vec<usize>) -> PyResult<Self> {
-        let nodes = nodes.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
-        let tris = tris.into_iter().map(|__e| -> PyResult<[usize; 3]> { Ok(<[usize; 3]>::try_from(__e).map_err(|__v: Vec<usize>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?) }).collect::<PyResult<Vec<_>>>()?;
-        Ok(Self { inner: rust_physics_engine::fem::fem2d::FemMesh2 { nodes: nodes, tris: tris, boundary: boundary } })
-    }
-
     /// Builds a mesh from nodes and triangles, orienting every triangle
     /// counterclockwise and deriving the boundary from the edge counts.
     ///
@@ -352,10 +333,9 @@ impl PyFemMesh2 {
     /// shared by more than two triangles.
     ///
     /// Rust: `fem::fem2d::FemMesh2::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (nodes, tris))]
-    fn new(nodes: Vec<crate::generated::types::PyVec2Arg>, tris: Vec<Vec<usize>>) -> PyResult<crate::generated::types::PyFemMesh2> {
+    fn __new__(nodes: Vec<crate::generated::types::PyVec2Arg>, tris: Vec<Vec<usize>>) -> PyResult<crate::generated::types::PyFemMesh2> {
         let nodes = nodes.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let tris = tris.into_iter().map(|__e| -> PyResult<[usize; 3]> { Ok(<[usize; 3]>::try_from(__e).map_err(|__v: Vec<usize>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?) }).collect::<PyResult<Vec<_>>>()?;
         let __r = crate::runtime::guard(|| rust_physics_engine::fem::fem2d::FemMesh2::new(nodes, tris));

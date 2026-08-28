@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -268,7 +269,6 @@ impl PyGp {
     #[pyo3(name = "predict")]
     #[pyo3(signature = (x_star))]
     fn predict<'py>(&self, py: Python<'py>, x_star: Vec<Vec<f64>>) -> PyResult<(Vec<f64>, Vec<f64>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.predict(&x_star)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -376,7 +376,6 @@ impl PyKernelFn {
     #[pyo3(name = "eval")]
     #[pyo3(signature = (a, b))]
     fn eval<'py>(&self, py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.eval(&a, &b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -401,7 +400,6 @@ impl PyKernelFn {
     #[pyo3(name = "parameters")]
     #[pyo3(signature = ())]
     fn parameters<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.parameters()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -560,16 +558,6 @@ impl PyLoss {
 pub struct PyMlp { pub inner: rust_physics_engine::learn::nn::Mlp }
 #[pymethods]
 impl PyMlp {
-    /// Builds a `Mlp` from its fields.
-    #[new]
-    #[pyo3(signature = (layers, activation, output_activation))]
-    fn __new__(layers: Vec<(crate::generated::types::PyMatrixArg, Vec<f64>)>, activation: crate::generated::types::PyAct, output_activation: crate::generated::types::PyAct) -> Self {
-        let layers = layers.into_iter().map(|__e| (__e.0.0, __e.1)).collect::<Vec<_>>();
-        let activation = activation.to_rust();
-        let output_activation = output_activation.to_rust();
-        Self { inner: rust_physics_engine::learn::nn::Mlp { layers: layers, activation: activation, output_activation: output_activation } }
-    }
-
     /// Builds a network with the given layer sizes, the first being the
     /// input width and the last the output width.
     ///
@@ -583,10 +571,9 @@ impl PyMlp {
     /// zero-width layer.
     ///
     /// Rust: `learn::nn::Mlp::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (sizes, activation, output_activation, rng))]
-    fn new(sizes: Vec<usize>, activation: crate::generated::types::PyAct, output_activation: crate::generated::types::PyAct, rng: pyo3::PyRefMut<'_, crate::generated::types::PyRng>) -> PyResult<crate::generated::types::PyMlp> {
+    fn __new__(sizes: Vec<usize>, activation: crate::generated::types::PyAct, output_activation: crate::generated::types::PyAct, rng: pyo3::PyRefMut<'_, crate::generated::types::PyRng>) -> PyResult<crate::generated::types::PyMlp> {
         let activation = activation.to_rust();
         let output_activation = output_activation.to_rust();
         let mut rng = rng;
@@ -646,7 +633,6 @@ impl PyMlp {
     #[pyo3(name = "preactivations")]
     #[pyo3(signature = (x))]
     fn preactivations<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.preactivations(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -663,7 +649,6 @@ impl PyMlp {
     #[pyo3(name = "forward")]
     #[pyo3(signature = (x))]
     fn forward<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.forward(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -680,7 +665,6 @@ impl PyMlp {
     #[pyo3(name = "predict")]
     #[pyo3(signature = (x))]
     fn predict<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<usize> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.predict(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -699,7 +683,6 @@ impl PyMlp {
     #[pyo3(name = "example_loss")]
     #[pyo3(signature = (x, y, loss))]
     fn example_loss<'py>(&self, py: Python<'py>, x: Vec<f64>, y: Vec<f64>, loss: crate::generated::types::PyLoss) -> PyResult<f64> {
-        let _ = py;
         let loss = loss.to_rust();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.example_loss(&x, &y, loss)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -718,7 +701,6 @@ impl PyMlp {
     #[pyo3(name = "loss")]
     #[pyo3(signature = (data, loss))]
     fn loss<'py>(&self, py: Python<'py>, data: Vec<(Vec<f64>, Vec<f64>)>, loss: crate::generated::types::PyLoss) -> PyResult<f64> {
-        let _ = py;
         let data = data.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
         let loss = loss.to_rust();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.loss(&data, loss)));
@@ -767,7 +749,6 @@ impl PyMlp {
     #[pyo3(name = "numerical_grad_check")]
     #[pyo3(signature = (x, y, loss))]
     fn numerical_grad_check<'py>(&self, py: Python<'py>, x: Vec<f64>, y: Vec<f64>, loss: crate::generated::types::PyLoss) -> PyResult<f64> {
-        let _ = py;
         let loss = loss.to_rust();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.numerical_grad_check(&x, &y, loss)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

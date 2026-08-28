@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -39,7 +40,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "parity", signature = (bits))]
 pub fn pyfn_parity<'py>(py: Python<'py>, bits: Vec<bool>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::parity(&bits)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -69,7 +69,6 @@ pub fn pyfn_parity_u64(x: u64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "checksum_fletcher16", signature = (data))]
 pub fn pyfn_checksum_fletcher16<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u16> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::checksum_fletcher16(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -85,7 +84,6 @@ pub fn pyfn_checksum_fletcher16<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "checksum_fletcher32", signature = (data))]
 pub fn pyfn_checksum_fletcher32<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u32> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::checksum_fletcher32(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -102,7 +100,6 @@ pub fn pyfn_checksum_fletcher32<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "adler32", signature = (data))]
 pub fn pyfn_adler32<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u32> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::adler32(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -132,7 +129,6 @@ pub fn pyfn_adler32<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u32> {
 #[pyfunction]
 #[pyo3(name = "crc", signature = (data, poly, width, init, xor_out, reflect_io))]
 pub fn pyfn_crc<'py>(py: Python<'py>, data: Vec<u8>, poly: u64, width: u32, init: u64, xor_out: u64, reflect_io: bool) -> PyResult<u64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::crc(&data, poly, width, init, xor_out, reflect_io)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -148,7 +144,6 @@ pub fn pyfn_crc<'py>(py: Python<'py>, data: Vec<u8>, poly: u64, width: u32, init
 #[pyfunction]
 #[pyo3(name = "crc32_ieee", signature = (data))]
 pub fn pyfn_crc32_ieee<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u32> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::crc32_ieee(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -166,7 +161,6 @@ pub fn pyfn_crc32_ieee<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u32> {
 #[pyfunction]
 #[pyo3(name = "crc16_ccitt", signature = (data))]
 pub fn pyfn_crc16_ccitt<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u16> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::crc16_ccitt(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -179,7 +173,6 @@ pub fn pyfn_crc16_ccitt<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u16> {
 #[pyfunction]
 #[pyo3(name = "crc8", signature = (data))]
 pub fn pyfn_crc8<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::crc8(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -196,7 +189,6 @@ pub fn pyfn_crc8<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<u8> {
 #[pyfunction]
 #[pyo3(name = "crc_table", signature = (poly))]
 pub fn pyfn_crc_table<'py>(py: Python<'py>, poly: u32) -> PyResult<Vec<u32>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::crc_table(poly)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -211,7 +203,6 @@ pub fn pyfn_crc_table<'py>(py: Python<'py>, poly: u32) -> PyResult<Vec<u32>> {
 #[pyfunction]
 #[pyo3(name = "crc32_with_table", signature = (data, table))]
 pub fn pyfn_crc32_with_table<'py>(py: Python<'py>, data: Vec<u8>, table: Vec<u32>) -> PyResult<u32> {
-    let _ = py;
     let table = <[u32; 256]>::try_from(table).map_err(|__v: Vec<u32>| pyo3::exceptions::PyValueError::new_err(format!("expected 256 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::crc32_with_table(&data, &table)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -234,7 +225,6 @@ pub fn pyfn_crc32_with_table<'py>(py: Python<'py>, data: Vec<u8>, table: Vec<u32
 #[pyfunction]
 #[pyo3(name = "luhn_check", signature = (digits))]
 pub fn pyfn_luhn_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::luhn_check(&digits)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -249,7 +239,6 @@ pub fn pyfn_luhn_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> 
 #[pyfunction]
 #[pyo3(name = "luhn_generate", signature = (payload))]
 pub fn pyfn_luhn_generate<'py>(py: Python<'py>, payload: Vec<u8>) -> PyResult<u8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::luhn_generate(&payload)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -271,7 +260,6 @@ pub fn pyfn_luhn_generate<'py>(py: Python<'py>, payload: Vec<u8>) -> PyResult<u8
 #[pyfunction]
 #[pyo3(name = "isbn10_check", signature = (digits))]
 pub fn pyfn_isbn10_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::isbn10_check(&digits)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -291,7 +279,6 @@ pub fn pyfn_isbn10_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool
 #[pyfunction]
 #[pyo3(name = "isbn13_check", signature = (digits))]
 pub fn pyfn_isbn13_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::isbn13_check(&digits)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -315,7 +302,6 @@ pub fn pyfn_isbn13_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool
 #[pyfunction]
 #[pyo3(name = "verhoeff_check", signature = (digits))]
 pub fn pyfn_verhoeff_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::verhoeff_check(&digits)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -330,7 +316,6 @@ pub fn pyfn_verhoeff_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bo
 #[pyfunction]
 #[pyo3(name = "verhoeff_generate", signature = (payload))]
 pub fn pyfn_verhoeff_generate<'py>(py: Python<'py>, payload: Vec<u8>) -> PyResult<u8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::verhoeff_generate(&payload)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -355,7 +340,6 @@ pub fn pyfn_verhoeff_generate<'py>(py: Python<'py>, payload: Vec<u8>) -> PyResul
 #[pyfunction]
 #[pyo3(name = "damm_check", signature = (digits))]
 pub fn pyfn_damm_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::damm_check(&digits)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -370,7 +354,6 @@ pub fn pyfn_damm_check<'py>(py: Python<'py>, digits: Vec<u8>) -> PyResult<bool> 
 #[pyfunction]
 #[pyo3(name = "damm_generate", signature = (payload))]
 pub fn pyfn_damm_generate<'py>(py: Python<'py>, payload: Vec<u8>) -> PyResult<u8> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::damm_generate(&payload)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -399,7 +382,6 @@ pub fn pyfn_hamming_distance_bits(a: u64, b: u64) -> PyResult<u32> {
 #[pyfunction]
 #[pyo3(name = "hamming_distance_bytes", signature = (a, b))]
 pub fn pyfn_hamming_distance_bytes<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<Option<u32>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::checksum::hamming_distance_bytes(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))

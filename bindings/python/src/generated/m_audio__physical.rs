@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -148,7 +149,6 @@ pub fn pyfn_string_tension_from_freq(freq: f64, length: f64, mu: f64) -> PyResul
 #[pyfunction]
 #[pyo3(name = "inharmonic_partials", signature = (f0, b, n))]
 pub fn pyfn_inharmonic_partials<'py>(py: Python<'py>, f0: f64, b: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::physical::inharmonic_partials(f0, b, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

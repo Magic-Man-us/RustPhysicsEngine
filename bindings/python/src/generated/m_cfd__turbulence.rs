@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -78,7 +79,6 @@ pub fn pyfn_re_lambda(u_rms: f64, nu: f64, dissipation: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "energy_spectrum_1d", signature = (u, dx))]
 pub fn pyfn_energy_spectrum_1d<'py>(py: Python<'py>, u: Vec<f64>, dx: f64) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::energy_spectrum_1d(&u, dx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -92,7 +92,6 @@ pub fn pyfn_energy_spectrum_1d<'py>(py: Python<'py>, u: Vec<f64>, dx: f64) -> Py
 #[pyfunction]
 #[pyo3(name = "energy_spectrum_2d", signature = (u, v, n, dx))]
 pub fn pyfn_energy_spectrum_2d<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>, n: usize, dx: f64) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::energy_spectrum_2d(&u, &v, n, dx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -105,7 +104,6 @@ pub fn pyfn_energy_spectrum_2d<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>, n
 #[pyfunction]
 #[pyo3(name = "energy_spectrum_3d", signature = (u, v, w, n, dx))]
 pub fn pyfn_energy_spectrum_3d<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>, w: Vec<f64>, n: usize, dx: f64) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::energy_spectrum_3d(&u, &v, &w, n, dx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -118,7 +116,6 @@ pub fn pyfn_energy_spectrum_3d<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>, w
 #[pyfunction]
 #[pyo3(name = "dissipation_rate_from_spectrum", signature = (k, e, nu))]
 pub fn pyfn_dissipation_rate_from_spectrum<'py>(py: Python<'py>, k: Vec<f64>, e: Vec<f64>, nu: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::dissipation_rate_from_spectrum(&k, &e, nu)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -131,7 +128,6 @@ pub fn pyfn_dissipation_rate_from_spectrum<'py>(py: Python<'py>, k: Vec<f64>, e:
 #[pyfunction]
 #[pyo3(name = "structure_function", signature = (u, sep, order))]
 pub fn pyfn_structure_function<'py>(py: Python<'py>, u: Vec<f64>, sep: usize, order: i32) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::structure_function(&u, sep, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -144,7 +140,6 @@ pub fn pyfn_structure_function<'py>(py: Python<'py>, u: Vec<f64>, sep: usize, or
 #[pyfunction]
 #[pyo3(name = "two_point_correlation", signature = (u, sep))]
 pub fn pyfn_two_point_correlation<'py>(py: Python<'py>, u: Vec<f64>, sep: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::two_point_correlation(&u, sep)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -273,7 +268,6 @@ pub fn pyfn_delta_criterion(g: crate::generated::types::PyMat3) -> PyResult<f64>
 #[pyfunction]
 #[pyo3(name = "vortex_identify_q", signature = (u, v, n, dx, threshold))]
 pub fn pyfn_vortex_identify_q<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>, n: usize, dx: f64, threshold: f64) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::vortex_identify_q(&u, &v, n, dx, threshold)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -285,7 +279,6 @@ pub fn pyfn_vortex_identify_q<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>, n:
 #[pyfunction]
 #[pyo3(name = "turbulence_intensity", signature = (u))]
 pub fn pyfn_turbulence_intensity<'py>(py: Python<'py>, u: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::turbulence_intensity(&u)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -297,7 +290,6 @@ pub fn pyfn_turbulence_intensity<'py>(py: Python<'py>, u: Vec<f64>) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "reynolds_stress", signature = (u, v))]
 pub fn pyfn_reynolds_stress<'py>(py: Python<'py>, u: Vec<f64>, v: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::reynolds_stress(&u, &v)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -325,7 +317,6 @@ pub fn pyfn_synthetic_turbulence_kraichnan(n: usize, l: f64, n_modes: usize, k_p
 #[pyfunction]
 #[pyo3(name = "synthetic_eddy_method", signature = (n_pts, l, n_eddies, eddy_size, u_rms, seed))]
 pub fn pyfn_synthetic_eddy_method<'py>(py: Python<'py>, n_pts: usize, l: f64, n_eddies: usize, eddy_size: f64, u_rms: f64, seed: u64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::synthetic_eddy_method(n_pts, l, n_eddies, eddy_size, u_rms, seed)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -365,7 +356,6 @@ pub fn pyfn_pao_spectrum(k: f64, dissipation: f64, nu: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "log_law_fit", signature = (y, u, nu))]
 pub fn pyfn_log_law_fit<'py>(py: Python<'py>, y: Vec<f64>, u: Vec<f64>, nu: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::log_law_fit(&y, &u, nu)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -391,7 +381,6 @@ pub fn pyfn_channel_flow_dns_reference(re_tau: f64, n: usize) -> PyResult<(Vec<f
 #[pyfunction]
 #[pyo3(name = "inertial_range_exponent", signature = (k, e, k_lo, k_hi))]
 pub fn pyfn_inertial_range_exponent<'py>(py: Python<'py>, k: Vec<f64>, e: Vec<f64>, k_lo: f64, k_hi: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::turbulence::inertial_range_exponent(&k, &e, k_lo, k_hi)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

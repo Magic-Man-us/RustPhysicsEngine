@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -218,7 +219,6 @@ pub fn pyfn_squeezed_state<'py>(py: Python<'py>, r: f64, phi: f64, n_max: usize)
 #[pyfunction]
 #[pyo3(name = "wigner_function", signature = (psi, dx, x0, x, p, hbar))]
 pub fn pyfn_wigner_function<'py>(py: Python<'py>, psi: Vec<crate::runtime::coerce::ComplexArg>, dx: f64, x0: f64, x: f64, p: f64, hbar: f64) -> PyResult<f64> {
-    let _ = py;
     let psi = psi.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::wavefunction::wigner_function(&psi, dx, x0, x, p, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -242,7 +242,6 @@ pub fn pyfn_wigner_function<'py>(py: Python<'py>, psi: Vec<crate::runtime::coerc
 #[pyfunction]
 #[pyo3(name = "husimi_q", signature = (psi, dx, x0, x, p, sigma, hbar))]
 pub fn pyfn_husimi_q<'py>(py: Python<'py>, psi: Vec<crate::runtime::coerce::ComplexArg>, dx: f64, x0: f64, x: f64, p: f64, sigma: f64, hbar: f64) -> PyResult<f64> {
-    let _ = py;
     let psi = psi.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::wavefunction::husimi_q(&psi, dx, x0, x, p, sigma, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

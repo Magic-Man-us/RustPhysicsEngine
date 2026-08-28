@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,7 +22,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "advect_upwind_1d", signature = (q, u, dx, dt))]
 pub fn pyfn_advect_upwind_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx: f64, dt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::advect_upwind_1d(&q, u, dx, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -33,7 +33,6 @@ pub fn pyfn_advect_upwind_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx: f64,
 #[pyfunction]
 #[pyo3(name = "advect_lax_wendroff_1d", signature = (q, u, dx, dt))]
 pub fn pyfn_advect_lax_wendroff_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx: f64, dt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::advect_lax_wendroff_1d(&q, u, dx, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -45,7 +44,6 @@ pub fn pyfn_advect_lax_wendroff_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx
 #[pyfunction]
 #[pyo3(name = "advect_muscl_1d", signature = (q, u, dx, dt, limiter))]
 pub fn pyfn_advect_muscl_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx: f64, dt: f64, limiter: crate::generated::types::PyAdvectionLimiter) -> PyResult<Vec<f64>> {
-    let _ = py;
     let limiter = limiter.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::advect_muscl_1d(&q, u, dx, dt, limiter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -59,7 +57,6 @@ pub fn pyfn_advect_muscl_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx: f64, 
 #[pyfunction]
 #[pyo3(name = "weno5_reconstruct", signature = (q))]
 pub fn pyfn_weno5_reconstruct<'py>(py: Python<'py>, q: Vec<f64>) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::weno5_reconstruct(&q)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -71,10 +68,59 @@ pub fn pyfn_weno5_reconstruct<'py>(py: Python<'py>, q: Vec<f64>) -> PyResult<(Ve
 #[pyfunction]
 #[pyo3(name = "advect_weno5_1d", signature = (q, u, dx, dt))]
 pub fn pyfn_advect_weno5_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, dx: f64, dt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::advect_weno5_1d(&q, u, dx, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
+}
+
+/// Semi-Lagrangian advection of a cell field through a MAC velocity
+/// field (RK2 backtrace, bilinear sampling). Unconditionally stable.
+///
+/// Rust: `cfd::advection::advect_semi_lagrangian_2d`
+#[pyfunction]
+#[pyo3(name = "advect_semi_lagrangian_2d", signature = (q, grid, dt))]
+pub fn pyfn_advect_semi_lagrangian_2d(q: crate::generated::types::PyCellField2, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64) -> PyResult<crate::generated::types::PyCellField2> {
+    let q = q.inner;
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::advection::advect_semi_lagrangian_2d(&q, &grid.inner, dt));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(crate::generated::types::PyCellField2 { inner: __v })
+}
+
+/// Back-and-forth error compensation and correction (BFECC): second
+/// order, limited to the local min/max to avoid new extrema.
+///
+/// Rust: `cfd::advection::advect_bfecc_2d`
+#[pyfunction]
+#[pyo3(name = "advect_bfecc_2d", signature = (q, grid, dt))]
+pub fn pyfn_advect_bfecc_2d(q: crate::generated::types::PyCellField2, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64) -> PyResult<crate::generated::types::PyCellField2> {
+    let q = q.inner;
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::advection::advect_bfecc_2d(&q, &grid.inner, dt));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(crate::generated::types::PyCellField2 { inner: __v })
+}
+
+/// Unsplit MacCormack advection with min/max limiting.
+///
+/// Rust: `cfd::advection::advect_maccormack_2d`
+#[pyfunction]
+#[pyo3(name = "advect_maccormack_2d", signature = (q, grid, dt))]
+pub fn pyfn_advect_maccormack_2d(q: crate::generated::types::PyCellField2, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64) -> PyResult<crate::generated::types::PyCellField2> {
+    let q = q.inner;
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::advection::advect_maccormack_2d(&q, &grid.inner, dt));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(crate::generated::types::PyCellField2 { inner: __v })
+}
+
+/// First-order upwind advection on the 2D grid using face velocities.
+///
+/// Rust: `cfd::advection::advect_upwind_2d`
+#[pyfunction]
+#[pyo3(name = "advect_upwind_2d", signature = (q, grid, dt))]
+pub fn pyfn_advect_upwind_2d(q: crate::generated::types::PyCellField2, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64) -> PyResult<crate::generated::types::PyCellField2> {
+    let q = q.inner;
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::advection::advect_upwind_2d(&q, &grid.inner, dt));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(crate::generated::types::PyCellField2 { inner: __v })
 }
 
 /// Advect the MAC velocity field itself semi-Lagrangianly (each face
@@ -88,6 +134,19 @@ pub fn pyfn_advect_velocity_semi_lagrangian(grid: pyo3::PyRefMut<'_, crate::gene
     let __r = crate::runtime::guard(|| rust_physics_engine::cfd::advection::advect_velocity_semi_lagrangian(&mut grid.inner, dt));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(())
+}
+
+/// Dimensionally split flux-limited (MUSCL) advection on the 2D grid.
+///
+/// Rust: `cfd::advection::advect_flux_limited_2d`
+#[pyfunction]
+#[pyo3(name = "advect_flux_limited_2d", signature = (q, grid, dt, limiter))]
+pub fn pyfn_advect_flux_limited_2d(q: crate::generated::types::PyCellField2, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64, limiter: crate::generated::types::PyAdvectionLimiter) -> PyResult<crate::generated::types::PyCellField2> {
+    let q = q.inner;
+    let limiter = limiter.to_rust();
+    let __r = crate::runtime::guard(|| rust_physics_engine::cfd::advection::advect_flux_limited_2d(&q, &grid.inner, dt, limiter));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(crate::generated::types::PyCellField2 { inner: __v })
 }
 
 /// Strong-stability-preserving third-order Runge-Kutta step for
@@ -112,7 +171,6 @@ pub fn pyfn_rk3_ssp(q: Vec<f64>, rhs: pyo3::Py<pyo3::PyAny>, dt: f64) -> PyResul
 #[pyfunction]
 #[pyo3(name = "burgers_step", signature = (u, dx, dt, nu, scheme))]
 pub fn pyfn_burgers_step<'py>(py: Python<'py>, u: Vec<f64>, dx: f64, dt: f64, nu: f64, scheme: crate::generated::types::PyScheme) -> PyResult<Vec<f64>> {
-    let _ = py;
     let scheme = scheme.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::burgers_step(&u, dx, dt, nu, scheme)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -141,7 +199,6 @@ pub fn pyfn_burgers_exact_cole_hopf(x: f64, t: f64, nu: f64, u0: pyo3::Py<pyo3::
 #[pyfunction]
 #[pyo3(name = "advection_diffusion_1d", signature = (q, u, d, dx, dt, scheme))]
 pub fn pyfn_advection_diffusion_1d<'py>(py: Python<'py>, q: Vec<f64>, u: f64, d: f64, dx: f64, dt: f64, scheme: crate::generated::types::PyScheme) -> PyResult<Vec<f64>> {
-    let _ = py;
     let scheme = scheme.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::advection_diffusion_1d(&q, u, d, dx, dt, scheme)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -165,7 +222,6 @@ pub fn pyfn_peclet_cell(u: f64, dx: f64, d: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "total_variation", signature = (q))]
 pub fn pyfn_total_variation<'py>(py: Python<'py>, q: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::advection::total_variation(&q)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -179,7 +235,12 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_advect_muscl_1d, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_weno5_reconstruct, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_advect_weno5_1d, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_advect_semi_lagrangian_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_advect_bfecc_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_advect_maccormack_2d, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_advect_upwind_2d, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_advect_velocity_semi_lagrangian, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_advect_flux_limited_2d, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_rk3_ssp, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_burgers_step, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_burgers_exact_cole_hopf, m)?)?;

@@ -59,6 +59,14 @@ Rust: `sim::rigid_body::RigidBodySystem`
     @property
     def time(self) -> float: ...
 
+def sphere_sphere_collision(a: RigidBody, radius_a: float, b: RigidBody, radius_b: float) -> Optional[tuple[Vec3, float]]:
+    """
+Detect sphere-sphere overlap, returning (contact_normal, penetration_depth) or None.
+
+Rust: `sim::rigid_body::sphere_sphere_collision`
+    """
+    ...
+
 def resolve_collision(a: RigidBody, b: RigidBody, normal: Vec3 | Sequence[float], restitution: float) -> None:
     """
 Resolve a collision between two rigid bodies using impulse-based response.

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -36,7 +37,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "branch_and_bound", signature = (p, integer_vars, node_limit))]
 pub fn pyfn_branch_and_bound<'py>(py: Python<'py>, p: crate::generated::types::PyLpProblem, integer_vars: Vec<usize>, node_limit: usize) -> PyResult<Option<(Vec<f64>, f64)>> {
-    let _ = py;
     let p = p.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::branch_and_bound(&p, &integer_vars, node_limit)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -92,7 +92,6 @@ pub fn pyfn_gomory_cuts(p: crate::generated::types::PyLpProblem, integer_vars: V
 #[pyfunction]
 #[pyo3(name = "knapsack_01", signature = (values, weights, capacity))]
 pub fn pyfn_knapsack_01<'py>(py: Python<'py>, values: Vec<u64>, weights: Vec<u64>, capacity: u64) -> PyResult<(u64, Vec<bool>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::knapsack_01(&values, &weights, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -110,7 +109,6 @@ pub fn pyfn_knapsack_01<'py>(py: Python<'py>, values: Vec<u64>, weights: Vec<u64
 #[pyfunction]
 #[pyo3(name = "knapsack_unbounded", signature = (values, weights, capacity))]
 pub fn pyfn_knapsack_unbounded<'py>(py: Python<'py>, values: Vec<u64>, weights: Vec<u64>, capacity: u64) -> PyResult<(u64, Vec<u64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::knapsack_unbounded(&values, &weights, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -130,7 +128,6 @@ pub fn pyfn_knapsack_unbounded<'py>(py: Python<'py>, values: Vec<u64>, weights: 
 #[pyfunction]
 #[pyo3(name = "knapsack_bounded", signature = (values, weights, limits, capacity))]
 pub fn pyfn_knapsack_bounded<'py>(py: Python<'py>, values: Vec<u64>, weights: Vec<u64>, limits: Vec<u64>, capacity: u64) -> PyResult<(u64, Vec<u64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::knapsack_bounded(&values, &weights, &limits, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -150,7 +147,6 @@ pub fn pyfn_knapsack_bounded<'py>(py: Python<'py>, values: Vec<u64>, weights: Ve
 #[pyfunction]
 #[pyo3(name = "knapsack_multiple", signature = (values, weights, capacities))]
 pub fn pyfn_knapsack_multiple<'py>(py: Python<'py>, values: Vec<u64>, weights: Vec<u64>, capacities: Vec<u64>) -> PyResult<(u64, Vec<Option<usize>>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::knapsack_multiple(&values, &weights, &capacities)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1.into_iter().map(|__x| __x.map(|__x| __x)).collect::<Vec<_>>()))
@@ -173,7 +169,6 @@ pub fn pyfn_knapsack_multiple<'py>(py: Python<'py>, values: Vec<u64>, weights: V
 #[pyfunction]
 #[pyo3(name = "knapsack_branch_bound", signature = (values, weights, capacity))]
 pub fn pyfn_knapsack_branch_bound<'py>(py: Python<'py>, values: Vec<u64>, weights: Vec<u64>, capacity: u64) -> PyResult<(u64, Vec<bool>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::knapsack_branch_bound(&values, &weights, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -188,7 +183,6 @@ pub fn pyfn_knapsack_branch_bound<'py>(py: Python<'py>, values: Vec<u64>, weight
 #[pyfunction]
 #[pyo3(name = "subset_sum", signature = (xs, target))]
 pub fn pyfn_subset_sum<'py>(py: Python<'py>, xs: Vec<u64>, target: u64) -> PyResult<Option<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::subset_sum(&xs, target)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -219,7 +213,6 @@ pub fn pyfn_subset_sum_count<'py>(py: Python<'py>, xs: Vec<u64>, target: u64) ->
 #[pyfunction]
 #[pyo3(name = "partition_min_diff", signature = (xs))]
 pub fn pyfn_partition_min_diff<'py>(py: Python<'py>, xs: Vec<u64>) -> PyResult<(u64, Vec<bool>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::partition_min_diff(&xs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -241,7 +234,6 @@ pub fn pyfn_partition_min_diff<'py>(py: Python<'py>, xs: Vec<u64>) -> PyResult<(
 #[pyfunction]
 #[pyo3(name = "bin_packing_ffd", signature = (sizes, capacity))]
 pub fn pyfn_bin_packing_ffd<'py>(py: Python<'py>, sizes: Vec<f64>, capacity: f64) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::bin_packing_ffd(&sizes, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -259,7 +251,6 @@ pub fn pyfn_bin_packing_ffd<'py>(py: Python<'py>, sizes: Vec<f64>, capacity: f64
 #[pyfunction]
 #[pyo3(name = "bin_packing_lower_bound", signature = (sizes, capacity))]
 pub fn pyfn_bin_packing_lower_bound<'py>(py: Python<'py>, sizes: Vec<f64>, capacity: f64) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::bin_packing_lower_bound(&sizes, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -277,7 +268,6 @@ pub fn pyfn_bin_packing_lower_bound<'py>(py: Python<'py>, sizes: Vec<f64>, capac
 #[pyfunction]
 #[pyo3(name = "bin_packing_exact_small", signature = (sizes, capacity))]
 pub fn pyfn_bin_packing_exact_small<'py>(py: Python<'py>, sizes: Vec<f64>, capacity: f64) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::bin_packing_exact_small(&sizes, capacity)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -296,7 +286,6 @@ pub fn pyfn_bin_packing_exact_small<'py>(py: Python<'py>, sizes: Vec<f64>, capac
 #[pyfunction]
 #[pyo3(name = "set_cover_greedy", signature = (universe_n, sets))]
 pub fn pyfn_set_cover_greedy<'py>(py: Python<'py>, universe_n: usize, sets: Vec<Vec<usize>>) -> PyResult<Option<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::set_cover_greedy(universe_n, &sets)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -315,7 +304,6 @@ pub fn pyfn_set_cover_greedy<'py>(py: Python<'py>, universe_n: usize, sets: Vec<
 #[pyfunction]
 #[pyo3(name = "set_cover_exact_small", signature = (universe_n, sets))]
 pub fn pyfn_set_cover_exact_small<'py>(py: Python<'py>, universe_n: usize, sets: Vec<Vec<usize>>) -> PyResult<Option<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::set_cover_exact_small(universe_n, &sets)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -337,7 +325,6 @@ pub fn pyfn_set_cover_exact_small<'py>(py: Python<'py>, universe_n: usize, sets:
 #[pyfunction]
 #[pyo3(name = "facility_location_greedy", signature = (open_costs, serve_costs))]
 pub fn pyfn_facility_location_greedy<'py>(py: Python<'py>, open_costs: Vec<f64>, serve_costs: crate::generated::types::PyMatrixArg) -> PyResult<(f64, Vec<bool>)> {
-    let _ = py;
     let serve_costs = serve_costs.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::facility_location_greedy(&open_costs, &serve_costs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -365,7 +352,6 @@ pub fn pyfn_facility_location_greedy<'py>(py: Python<'py>, open_costs: Vec<f64>,
 #[pyfunction]
 #[pyo3(name = "cutting_stock_column_generation", signature = (demand, lengths, stock_length, max_rounds))]
 pub fn pyfn_cutting_stock_column_generation<'py>(py: Python<'py>, demand: Vec<u64>, lengths: Vec<u64>, stock_length: u64, max_rounds: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::cutting_stock_column_generation(&demand, &lengths, stock_length, max_rounds)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -382,7 +368,6 @@ pub fn pyfn_cutting_stock_column_generation<'py>(py: Python<'py>, demand: Vec<u6
 #[pyfunction]
 #[pyo3(name = "coin_change_min", signature = (coins, amount))]
 pub fn pyfn_coin_change_min<'py>(py: Python<'py>, coins: Vec<u64>, amount: u64) -> PyResult<Option<Vec<u64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::coin_change_min(&coins, amount)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -414,7 +399,6 @@ pub fn pyfn_coin_change_count<'py>(py: Python<'py>, coins: Vec<u64>, amount: u64
 #[pyfunction]
 #[pyo3(name = "longest_increasing_subsequence", signature = (x))]
 pub fn pyfn_longest_increasing_subsequence<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::longest_increasing_subsequence(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -432,7 +416,6 @@ pub fn pyfn_longest_increasing_subsequence<'py>(py: Python<'py>, x: Vec<f64>) ->
 #[pyfunction]
 #[pyo3(name = "edit_distance", signature = (a, b))]
 pub fn pyfn_edit_distance<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::edit_distance(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -458,7 +441,6 @@ pub fn pyfn_edit_distance_ops(a: Vec<u8>, b: Vec<u8>) -> PyResult<Vec<crate::gen
 #[pyfunction]
 #[pyo3(name = "longest_common_subsequence", signature = (a, b))]
 pub fn pyfn_longest_common_subsequence<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::longest_common_subsequence(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -481,7 +463,6 @@ pub fn pyfn_longest_common_subsequence<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<
 #[pyfunction]
 #[pyo3(name = "matrix_chain_order", signature = (dims))]
 pub fn pyfn_matrix_chain_order<'py>(py: Python<'py>, dims: Vec<usize>) -> PyResult<(u64, String)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::matrix_chain_order(&dims)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1.to_string()))
@@ -496,7 +477,6 @@ pub fn pyfn_matrix_chain_order<'py>(py: Python<'py>, dims: Vec<usize>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "rod_cutting", signature = (prices, n))]
 pub fn pyfn_rod_cutting<'py>(py: Python<'py>, prices: Vec<u64>, n: usize) -> PyResult<(u64, Vec<usize>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::rod_cutting(&prices, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -529,7 +509,6 @@ pub fn pyfn_egg_drop(eggs: usize, floors: usize) -> PyResult<u64> {
 #[pyfunction]
 #[pyo3(name = "optimal_bst", signature = (frequencies))]
 pub fn pyfn_optimal_bst<'py>(py: Python<'py>, frequencies: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::optimal_bst(&frequencies)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -551,7 +530,6 @@ pub fn pyfn_optimal_bst<'py>(py: Python<'py>, frequencies: Vec<f64>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "viterbi_generic", signature = (transition, emission))]
 pub fn pyfn_viterbi_generic<'py>(py: Python<'py>, transition: crate::generated::types::PyMatrixArg, emission: crate::generated::types::PyMatrixArg) -> PyResult<Vec<usize>> {
-    let _ = py;
     let transition = transition.0;
     let emission = emission.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::viterbi_generic(&transition, &emission)));
@@ -579,7 +557,6 @@ pub fn pyfn_viterbi_generic<'py>(py: Python<'py>, transition: crate::generated::
 #[pyfunction]
 #[pyo3(name = "exact_cover_dlx", signature = (matrix))]
 pub fn pyfn_exact_cover_dlx<'py>(py: Python<'py>, matrix: Vec<Vec<bool>>) -> PyResult<Option<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::exact_cover_dlx(&matrix)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -597,7 +574,6 @@ pub fn pyfn_exact_cover_dlx<'py>(py: Python<'py>, matrix: Vec<Vec<bool>>) -> PyR
 #[pyfunction]
 #[pyo3(name = "n_queens", signature = (n))]
 pub fn pyfn_n_queens<'py>(py: Python<'py>, n: usize) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::n_queens(n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -638,7 +614,6 @@ pub fn pyfn_n_queens_count(n: usize) -> PyResult<u64> {
 #[pyfunction]
 #[pyo3(name = "constraint_propagation_ac3", signature = (domains, constraints))]
 pub fn pyfn_constraint_propagation_ac3<'py>(py: Python<'py>, domains: Vec<u64>, constraints: Vec<(usize, usize)>) -> PyResult<Option<Vec<u64>>> {
-    let _ = py;
     let constraints = constraints.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::integer::constraint_propagation_ac3(&domains, &constraints)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

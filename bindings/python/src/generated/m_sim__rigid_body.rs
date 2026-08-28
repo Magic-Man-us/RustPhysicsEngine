@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -13,6 +14,17 @@
 use pyo3::prelude::*;
 use pyo3::types::PyModule;
 
+
+/// Detect sphere-sphere overlap, returning (contact_normal, penetration_depth) or None.
+///
+/// Rust: `sim::rigid_body::sphere_sphere_collision`
+#[pyfunction]
+#[pyo3(name = "sphere_sphere_collision", signature = (a, radius_a, b, radius_b))]
+pub fn pyfn_sphere_sphere_collision(a: pyo3::PyRef<'_, crate::generated::types::PyRigidBody>, radius_a: f64, b: pyo3::PyRef<'_, crate::generated::types::PyRigidBody>, radius_b: f64) -> PyResult<Option<(crate::generated::types::PyVec3, f64)>> {
+    let __r = crate::runtime::guard(|| rust_physics_engine::sim::rigid_body::sphere_sphere_collision(&a.inner, radius_a, &b.inner, radius_b));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    Ok(__v.map(|__x| (crate::generated::types::PyVec3 { inner: __x.0 }, __x.1)))
+}
 
 /// Resolve a collision between two rigid bodies using impulse-based response.
 ///
@@ -31,6 +43,7 @@ pub fn pyfn_resolve_collision(a: pyo3::PyRefMut<'_, crate::generated::types::PyR
 /// Registers this module's contents.
 pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     let _ = (py, m);
+    m.add_function(wrap_pyfunction!(pyfn_sphere_sphere_collision, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_resolve_collision, m)?)?;
     m.add_class::<crate::generated::types::PyRigidBody>()?;
     m.add_class::<crate::generated::types::PyRigidBodySystem>()?;

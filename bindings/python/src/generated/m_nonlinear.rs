@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -45,7 +46,6 @@ pub fn pyfn_logistic_map(r: f64, x: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "logistic_map_iterate", signature = (r, x0, n))]
 pub fn pyfn_logistic_map_iterate<'py>(py: Python<'py>, r: f64, x0: f64, n: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::logistic_map_iterate(r, x0, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -57,7 +57,6 @@ pub fn pyfn_logistic_map_iterate<'py>(py: Python<'py>, r: f64, x0: f64, n: usize
 #[pyfunction]
 #[pyo3(name = "logistic_map_converge", signature = (r, x0, transient, samples))]
 pub fn pyfn_logistic_map_converge<'py>(py: Python<'py>, r: f64, x0: f64, transient: usize, samples: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::logistic_map_converge(r, x0, transient, samples)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -96,7 +95,6 @@ pub fn pyfn_lyapunov_exponent_1d(f: pyo3::Py<pyo3::PyAny>, df: pyo3::Py<pyo3::Py
 #[pyfunction]
 #[pyo3(name = "lorenz_derivatives", signature = (state, sigma, rho, beta))]
 pub fn pyfn_lorenz_derivatives<'py>(py: Python<'py>, state: Vec<f64>, sigma: f64, rho: f64, beta: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let state = <[f64; 3]>::try_from(state).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::lorenz_derivatives(&state, sigma, rho, beta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -109,7 +107,6 @@ pub fn pyfn_lorenz_derivatives<'py>(py: Python<'py>, state: Vec<f64>, sigma: f64
 #[pyfunction]
 #[pyo3(name = "rossler_derivatives", signature = (state, a, b, c))]
 pub fn pyfn_rossler_derivatives<'py>(py: Python<'py>, state: Vec<f64>, a: f64, b: f64, c: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let state = <[f64; 3]>::try_from(state).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::rossler_derivatives(&state, a, b, c)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -133,7 +130,6 @@ pub fn pyfn_henon_map(x: f64, y: f64, a: f64, b: f64) -> PyResult<(f64, f64)> {
 #[pyfunction]
 #[pyo3(name = "henon_iterate", signature = (x0, y0, a, b, n))]
 pub fn pyfn_henon_iterate<'py>(py: Python<'py>, x0: f64, y0: f64, a: f64, b: f64, n: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::henon_iterate(x0, y0, a, b, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -145,7 +141,6 @@ pub fn pyfn_henon_iterate<'py>(py: Python<'py>, x0: f64, y0: f64, a: f64, b: f64
 #[pyfunction]
 #[pyo3(name = "correlation_dimension_estimate", signature = (distances, r))]
 pub fn pyfn_correlation_dimension_estimate<'py>(py: Python<'py>, distances: Vec<f64>, r: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::correlation_dimension_estimate(&distances, r)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -157,7 +152,6 @@ pub fn pyfn_correlation_dimension_estimate<'py>(py: Python<'py>, distances: Vec<
 #[pyfunction]
 #[pyo3(name = "box_counting_dimension", signature = (occupied_boxes, grid_sizes))]
 pub fn pyfn_box_counting_dimension<'py>(py: Python<'py>, occupied_boxes: Vec<(usize, usize)>, grid_sizes: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let occupied_boxes = occupied_boxes.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::nonlinear::box_counting_dimension(&occupied_boxes, &grid_sizes)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

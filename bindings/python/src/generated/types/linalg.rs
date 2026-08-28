@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -260,7 +261,6 @@ impl PyLinalgMat4 {
     #[pyo3(name = "mul_vec4")]
     #[pyo3(signature = (v))]
     fn mul_vec4<'py>(&self, py: Python<'py>, v: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let v = <[f64; 4]>::try_from(v).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 4 values, got {}", __v.len())))?;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.mul_vec4(v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -412,7 +412,6 @@ impl PyLu {
     #[pyo3(name = "solve")]
     #[pyo3(signature = (b))]
     fn solve<'py>(&self, py: Python<'py>, b: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.solve(&b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -614,7 +613,6 @@ impl PyMatrix {
     #[pyo3(name = "row")]
     #[pyo3(signature = (r))]
     fn row<'py>(&self, py: Python<'py>, r: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.row(r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.to_vec())
@@ -652,7 +650,6 @@ impl PyMatrix {
     #[pyo3(name = "mul_vec")]
     #[pyo3(signature = (v))]
     fn mul_vec<'py>(&self, py: Python<'py>, v: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.mul_vec(&v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -881,7 +878,6 @@ impl PyCsrMatrix {
     #[pyo3(name = "mul_vec")]
     #[pyo3(signature = (v))]
     fn mul_vec<'py>(&self, py: Python<'py>, v: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.mul_vec(&v)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

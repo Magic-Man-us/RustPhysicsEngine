@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -34,7 +35,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "shannon_entropy", signature = (probabilities))]
 pub fn pyfn_shannon_entropy<'py>(py: Python<'py>, probabilities: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::shannon_entropy(&probabilities)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -46,7 +46,6 @@ pub fn pyfn_shannon_entropy<'py>(py: Python<'py>, probabilities: Vec<f64>) -> Py
 #[pyfunction]
 #[pyo3(name = "shannon_entropy_nats", signature = (probabilities))]
 pub fn pyfn_shannon_entropy_nats<'py>(py: Python<'py>, probabilities: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::shannon_entropy_nats(&probabilities)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -81,7 +80,6 @@ pub fn pyfn_entropy_rate(conditional_entropy: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "kl_divergence", signature = (p, q))]
 pub fn pyfn_kl_divergence<'py>(py: Python<'py>, p: Vec<f64>, q: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::kl_divergence(&p, &q)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -94,7 +92,6 @@ pub fn pyfn_kl_divergence<'py>(py: Python<'py>, p: Vec<f64>, q: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "js_divergence", signature = (p, q))]
 pub fn pyfn_js_divergence<'py>(py: Python<'py>, p: Vec<f64>, q: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::js_divergence(&p, &q)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -106,7 +103,6 @@ pub fn pyfn_js_divergence<'py>(py: Python<'py>, p: Vec<f64>, q: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "cross_entropy", signature = (p, q))]
 pub fn pyfn_cross_entropy<'py>(py: Python<'py>, p: Vec<f64>, q: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::cross_entropy(&p, &q)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -119,7 +115,6 @@ pub fn pyfn_cross_entropy<'py>(py: Python<'py>, p: Vec<f64>, q: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "mutual_information", signature = (joint, marginal_x, marginal_y, nx, ny))]
 pub fn pyfn_mutual_information<'py>(py: Python<'py>, joint: Vec<f64>, marginal_x: Vec<f64>, marginal_y: Vec<f64>, nx: usize, ny: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::mutual_information(&joint, &marginal_x, &marginal_y, nx, ny)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -133,7 +128,6 @@ pub fn pyfn_mutual_information<'py>(py: Python<'py>, joint: Vec<f64>, marginal_x
 #[pyfunction]
 #[pyo3(name = "conditional_entropy", signature = (joint, marginal_condition, nx, ny))]
 pub fn pyfn_conditional_entropy<'py>(py: Python<'py>, joint: Vec<f64>, marginal_condition: Vec<f64>, nx: usize, ny: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::information_theory::conditional_entropy(&joint, &marginal_condition, nx, ny)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

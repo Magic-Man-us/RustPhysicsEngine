@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -24,7 +25,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "fit_exponential_decay", signature = (t, y))]
 pub fn pyfn_fit_exponential_decay<'py>(py: Python<'py>, t: Vec<f64>, y: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::least_squares::fit_exponential_decay(&t, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -38,7 +38,6 @@ pub fn pyfn_fit_exponential_decay<'py>(py: Python<'py>, t: Vec<f64>, y: Vec<f64>
 #[pyfunction]
 #[pyo3(name = "fit_gaussian_peak", signature = (x, y))]
 pub fn pyfn_fit_gaussian_peak<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::least_squares::fit_gaussian_peak(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

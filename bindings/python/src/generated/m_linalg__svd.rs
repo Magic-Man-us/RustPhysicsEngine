@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -48,7 +49,6 @@ pub fn pyfn_pseudoinverse(a: crate::generated::types::PyMatrixArg, rcond: f64) -
 #[pyfunction]
 #[pyo3(name = "rank", signature = (a, tol))]
 pub fn pyfn_rank<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, tol: f64) -> PyResult<usize> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::svd::rank(&a, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

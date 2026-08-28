@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -105,14 +106,6 @@ impl PyFilterStep {
 pub struct PyGaussianHmm { pub inner: rust_physics_engine::stochastic::hmm::GaussianHmm }
 #[pymethods]
 impl PyGaussianHmm {
-    /// Builds a `GaussianHmm` from its fields.
-    #[new]
-    #[pyo3(signature = (a, means, vars, pi))]
-    fn __new__(a: crate::generated::types::PyMatrixArg, means: Vec<f64>, vars: Vec<f64>, pi: Vec<f64>) -> Self {
-        let a = a.0;
-        Self { inner: rust_physics_engine::stochastic::hmm::GaussianHmm { a: a, means: means, vars: vars, pi: pi } }
-    }
-
     /// The model with the given parameters.
     ///
     /// Errors:
@@ -120,10 +113,9 @@ impl PyGaussianHmm {
     /// and the rows are distributions.
     ///
     /// Rust: `stochastic::hmm::GaussianHmm::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (a, means, vars, pi))]
-    fn new(a: crate::generated::types::PyMatrixArg, means: Vec<f64>, vars: Vec<f64>, pi: Vec<f64>) -> PyResult<crate::generated::types::PyGaussianHmm> {
+    fn __new__(a: crate::generated::types::PyMatrixArg, means: Vec<f64>, vars: Vec<f64>, pi: Vec<f64>) -> PyResult<crate::generated::types::PyGaussianHmm> {
         let a = a.0;
         let __r = crate::runtime::guard(|| rust_physics_engine::stochastic::hmm::GaussianHmm::new(a, means, vars, pi));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -181,7 +173,6 @@ impl PyGaussianHmm {
     #[pyo3(name = "viterbi")]
     #[pyo3(signature = (obs))]
     fn viterbi<'py>(&self, py: Python<'py>, obs: Vec<f64>) -> PyResult<(f64, Vec<usize>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.viterbi(&obs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -198,7 +189,6 @@ impl PyGaussianHmm {
     #[pyo3(name = "baum_welch")]
     #[pyo3(signature = (obs, iters, tol))]
     fn baum_welch<'py>(&mut self, py: Python<'py>, obs: Vec<f64>, iters: usize, tol: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.baum_welch(&obs, iters, tol)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -248,15 +238,6 @@ impl PyGaussianHmm {
 pub struct PyHmm { pub inner: rust_physics_engine::stochastic::hmm::Hmm }
 #[pymethods]
 impl PyHmm {
-    /// Builds a `Hmm` from its fields.
-    #[new]
-    #[pyo3(signature = (a, b, pi))]
-    fn __new__(a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, pi: Vec<f64>) -> Self {
-        let a = a.0;
-        let b = b.0;
-        Self { inner: rust_physics_engine::stochastic::hmm::Hmm { a: a, b: b, pi: pi } }
-    }
-
     /// The model with the given parameters.
     ///
     /// Errors:
@@ -264,10 +245,9 @@ impl PyHmm {
     /// and the initial distribution, sums to one over non-negative entries.
     ///
     /// Rust: `stochastic::hmm::Hmm::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (a, b, pi))]
-    fn new(a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, pi: Vec<f64>) -> PyResult<crate::generated::types::PyHmm> {
+    fn __new__(a: crate::generated::types::PyMatrixArg, b: crate::generated::types::PyMatrixArg, pi: Vec<f64>) -> PyResult<crate::generated::types::PyHmm> {
         let a = a.0;
         let b = b.0;
         let __r = crate::runtime::guard(|| rust_physics_engine::stochastic::hmm::Hmm::new(a, b, pi));
@@ -362,7 +342,6 @@ impl PyHmm {
     #[pyo3(name = "log_likelihood")]
     #[pyo3(signature = (obs))]
     fn log_likelihood<'py>(&self, py: Python<'py>, obs: Vec<usize>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.log_likelihood(&obs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -383,7 +362,6 @@ impl PyHmm {
     #[pyo3(name = "viterbi")]
     #[pyo3(signature = (obs))]
     fn viterbi<'py>(&self, py: Python<'py>, obs: Vec<usize>) -> PyResult<(f64, Vec<usize>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.viterbi(&obs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -419,7 +397,6 @@ impl PyHmm {
     #[pyo3(name = "posterior_decode")]
     #[pyo3(signature = (obs))]
     fn posterior_decode<'py>(&self, py: Python<'py>, obs: Vec<usize>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.posterior_decode(&obs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -443,7 +420,6 @@ impl PyHmm {
     #[pyo3(name = "baum_welch")]
     #[pyo3(signature = (sequences, iters, tol))]
     fn baum_welch<'py>(&mut self, py: Python<'py>, sequences: Vec<Vec<usize>>, iters: usize, tol: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.baum_welch(&sequences, iters, tol)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -541,7 +517,6 @@ impl PyParticleFilter {
     #[pyo3(name = "estimate")]
     #[pyo3(signature = ())]
     fn estimate<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.estimate()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -587,14 +562,6 @@ impl PyParticleFilter {
 pub struct PyMarkovChain { pub inner: rust_physics_engine::stochastic::markov::MarkovChain }
 #[pymethods]
 impl PyMarkovChain {
-    /// Builds a `MarkovChain` from its fields.
-    #[new]
-    #[pyo3(signature = (p))]
-    fn __new__(p: crate::generated::types::PyMatrixArg) -> Self {
-        let p = p.0;
-        Self { inner: rust_physics_engine::stochastic::markov::MarkovChain { p: p } }
-    }
-
     /// The chain with the given transition matrix.
     ///
     /// Errors:
@@ -602,10 +569,9 @@ impl PyMarkovChain {
     /// negative entries, and every row sums to one.
     ///
     /// Rust: `stochastic::markov::MarkovChain::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (p))]
-    fn new(p: crate::generated::types::PyMatrixArg) -> PyResult<crate::generated::types::PyMarkovChain> {
+    fn __new__(p: crate::generated::types::PyMatrixArg) -> PyResult<crate::generated::types::PyMarkovChain> {
         let p = p.0;
         let __r = crate::runtime::guard(|| rust_physics_engine::stochastic::markov::MarkovChain::new(p));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -672,7 +638,6 @@ impl PyMarkovChain {
     #[pyo3(name = "step_dist")]
     #[pyo3(signature = (dist))]
     fn step_dist<'py>(&self, py: Python<'py>, dist: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.step_dist(&dist)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -705,7 +670,6 @@ impl PyMarkovChain {
     #[pyo3(name = "stationary")]
     #[pyo3(signature = ())]
     fn stationary<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.stationary()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -830,7 +794,6 @@ impl PyMarkovChain {
     #[pyo3(name = "expected_steps_to_absorption")]
     #[pyo3(signature = ())]
     fn expected_steps_to_absorption<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.expected_steps_to_absorption()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -849,7 +812,6 @@ impl PyMarkovChain {
     #[pyo3(name = "hitting_time")]
     #[pyo3(signature = (from_, target))]
     fn hitting_time<'py>(&self, py: Python<'py>, from_: usize, target: Vec<usize>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.hitting_time(from_, &target)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -864,7 +826,6 @@ impl PyMarkovChain {
     #[pyo3(name = "hitting_probability")]
     #[pyo3(signature = (from_, target))]
     fn hitting_probability<'py>(&self, py: Python<'py>, from_: usize, target: Vec<usize>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.hitting_probability(from_, &target)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -920,7 +881,6 @@ impl PyMarkovChain {
     #[staticmethod]
     #[pyo3(signature = (a, b))]
     fn total_variation_distance<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::markov::MarkovChain::total_variation_distance(&a, &b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -976,7 +936,6 @@ impl PyMarkovChain {
     #[pyo3(name = "reversible_check")]
     #[pyo3(signature = (pi, tol))]
     fn reversible_check<'py>(&self, py: Python<'py>, pi: Vec<f64>, tol: f64) -> PyResult<bool> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.reversible_check(&pi, tol)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1262,7 +1221,6 @@ impl PyMcmc {
     #[staticmethod]
     #[pyo3(signature = (chain))]
     fn autocorrelation_time<'py>(py: Python<'py>, chain: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::markov::Mcmc::autocorrelation_time(&chain)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1281,7 +1239,6 @@ impl PyMcmc {
     #[staticmethod]
     #[pyo3(signature = (chain))]
     fn effective_sample_size<'py>(py: Python<'py>, chain: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::markov::Mcmc::effective_sample_size(&chain)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1305,7 +1262,6 @@ impl PyMcmc {
     #[staticmethod]
     #[pyo3(signature = (chains))]
     fn gelman_rubin<'py>(py: Python<'py>, chains: Vec<Vec<f64>>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::markov::Mcmc::gelman_rubin(&chains)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1397,14 +1353,6 @@ impl PyStateClass {
 pub struct PyCtmc { pub inner: rust_physics_engine::stochastic::queueing::Ctmc }
 #[pymethods]
 impl PyCtmc {
-    /// Builds a `Ctmc` from its fields.
-    #[new]
-    #[pyo3(signature = (q))]
-    fn __new__(q: crate::generated::types::PyMatrixArg) -> Self {
-        let q = q.0;
-        Self { inner: rust_physics_engine::stochastic::queueing::Ctmc { q: q } }
-    }
-
     /// Wraps a generator after checking its shape.
     ///
     /// Errors:
@@ -1413,10 +1361,9 @@ impl PyCtmc {
     /// zero within `1e-9`.
     ///
     /// Rust: `stochastic::queueing::Ctmc::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (q))]
-    fn new(q: crate::generated::types::PyMatrixArg) -> PyResult<crate::generated::types::PyCtmc> {
+    fn __new__(q: crate::generated::types::PyMatrixArg) -> PyResult<crate::generated::types::PyCtmc> {
         let q = q.0;
         let __r = crate::runtime::guard(|| rust_physics_engine::stochastic::queueing::Ctmc::new(q));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1443,7 +1390,6 @@ impl PyCtmc {
     #[pyo3(name = "mean_holding_times")]
     #[pyo3(signature = ())]
     fn mean_holding_times<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.mean_holding_times()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1481,7 +1427,6 @@ impl PyCtmc {
     #[pyo3(name = "stationary")]
     #[pyo3(signature = ())]
     fn stationary<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.stationary()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1955,7 +1900,6 @@ impl PyArma {
     #[pyo3(name = "residuals")]
     #[pyo3(signature = (x))]
     fn residuals<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.residuals(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2041,7 +1985,6 @@ impl PyArma {
     #[pyo3(name = "impulse_response")]
     #[pyo3(signature = (n))]
     fn impulse_response<'py>(&self, py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.impulse_response(n)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2058,7 +2001,6 @@ impl PyArma {
     #[pyo3(name = "spectral_density")]
     #[pyo3(signature = (freqs))]
     fn spectral_density<'py>(&self, py: Python<'py>, freqs: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.spectral_density(&freqs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2092,7 +2034,6 @@ impl PyArma {
     #[pyo3(name = "log_likelihood")]
     #[pyo3(signature = (x))]
     fn log_likelihood<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.log_likelihood(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2116,7 +2057,6 @@ impl PyArma {
     #[pyo3(name = "aic")]
     #[pyo3(signature = (x))]
     fn aic<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.aic(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2130,7 +2070,6 @@ impl PyArma {
     #[pyo3(name = "bic")]
     #[pyo3(signature = (x))]
     fn bic<'py>(&self, py: Python<'py>, x: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.bic(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2152,7 +2091,6 @@ impl PyArma {
     #[pyo3(name = "forecast")]
     #[pyo3(signature = (x, h))]
     fn forecast<'py>(&self, py: Python<'py>, x: Vec<f64>, h: usize) -> PyResult<(Vec<f64>, Vec<f64>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.forecast(&x, h)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -2249,7 +2187,6 @@ impl PyGarch11 {
     #[pyo3(name = "conditional_variance")]
     #[pyo3(signature = (returns))]
     fn conditional_variance<'py>(&self, py: Python<'py>, returns: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.conditional_variance(&returns)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2306,7 +2243,6 @@ impl PyGarch11 {
     #[pyo3(name = "forecast_variance")]
     #[pyo3(signature = (returns, h))]
     fn forecast_variance<'py>(&self, py: Python<'py>, returns: Vec<f64>, h: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.forecast_variance(&returns, h)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2386,7 +2322,6 @@ impl PyHwState {
     #[pyo3(name = "forecast")]
     #[pyo3(signature = (h))]
     fn forecast<'py>(&self, py: Python<'py>, h: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.forecast(h)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2474,7 +2409,6 @@ impl PySarima {
     #[pyo3(name = "forecast")]
     #[pyo3(signature = (h))]
     fn forecast<'py>(&self, py: Python<'py>, h: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.forecast(h)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2578,7 +2512,6 @@ impl PyVar {
     #[pyo3(name = "forecast")]
     #[pyo3(signature = (data, h))]
     fn forecast<'py>(&self, py: Python<'py>, data: Vec<Vec<f64>>, h: usize) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.forecast(&data, h)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;

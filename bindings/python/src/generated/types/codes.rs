@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -121,7 +122,6 @@ impl PyGf2Matrix {
     #[pyo3(name = "row")]
     #[pyo3(signature = (r))]
     fn row<'py>(&self, py: Python<'py>, r: usize) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.row(r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -133,7 +133,6 @@ impl PyGf2Matrix {
     #[pyo3(name = "to_rows")]
     #[pyo3(signature = ())]
     fn to_rows<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<bool>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.to_rows()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -201,7 +200,6 @@ impl PyGf2Matrix {
     #[pyo3(name = "mul_vec")]
     #[pyo3(signature = (x))]
     fn mul_vec<'py>(&self, py: Python<'py>, x: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.mul_vec(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -216,7 +214,6 @@ impl PyGf2Matrix {
     #[pyo3(name = "vec_mul")]
     #[pyo3(signature = (x))]
     fn vec_mul<'py>(&self, py: Python<'py>, x: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.vec_mul(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -234,7 +231,6 @@ impl PyGf2Matrix {
     #[pyo3(name = "solve")]
     #[pyo3(signature = (b))]
     fn solve<'py>(&self, py: Python<'py>, b: Vec<bool>) -> PyResult<Option<Vec<bool>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.solve(&b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.map(|__x| __x))
@@ -251,7 +247,6 @@ impl PyGf2Matrix {
     #[pyo3(name = "kernel_basis")]
     #[pyo3(signature = ())]
     fn kernel_basis<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<bool>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.kernel_basis()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -337,7 +332,6 @@ impl PyLinearCode {
     #[pyo3(name = "codewords")]
     #[pyo3(signature = ())]
     fn codewords<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<bool>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.codewords()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -352,7 +346,6 @@ impl PyLinearCode {
     #[pyo3(name = "encode")]
     #[pyo3(signature = (msg))]
     fn encode<'py>(&self, py: Python<'py>, msg: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode(&msg)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -367,7 +360,6 @@ impl PyLinearCode {
     #[pyo3(name = "syndrome")]
     #[pyo3(signature = (recv))]
     fn syndrome<'py>(&self, py: Python<'py>, recv: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.syndrome(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -382,7 +374,6 @@ impl PyLinearCode {
     #[pyo3(name = "contains")]
     #[pyo3(signature = (x))]
     fn contains<'py>(&self, py: Python<'py>, x: Vec<bool>) -> PyResult<bool> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.contains(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -470,7 +461,6 @@ impl PyLinearCode {
     #[pyo3(name = "decode_syndrome")]
     #[pyo3(signature = (recv))]
     fn decode_syndrome<'py>(&self, py: Python<'py>, recv: Vec<bool>) -> PyResult<(Vec<bool>, usize)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.decode_syndrome(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -491,7 +481,6 @@ impl PyLinearCode {
     #[pyo3(name = "standard_array_decode_small")]
     #[pyo3(signature = (recv))]
     fn standard_array_decode_small<'py>(&self, py: Python<'py>, recv: Vec<bool>) -> PyResult<(Vec<bool>, usize)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.standard_array_decode_small(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -736,7 +725,6 @@ impl PyBitWriter {
     #[pyo3(name = "finish")]
     #[pyo3(signature = ())]
     fn finish<'py>(&self, py: Python<'py>) -> PyResult<Vec<u8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.clone().finish()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -897,7 +885,6 @@ impl PyConvolutionalCode {
     #[pyo3(name = "encode")]
     #[pyo3(signature = (bits))]
     fn encode<'py>(&self, py: Python<'py>, bits: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode(&bits)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -914,7 +901,6 @@ impl PyConvolutionalCode {
     #[pyo3(name = "viterbi_decode")]
     #[pyo3(signature = (recv_hard))]
     fn viterbi_decode<'py>(&self, py: Python<'py>, recv_hard: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.viterbi_decode(&recv_hard)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -936,7 +922,6 @@ impl PyConvolutionalCode {
     #[pyo3(name = "viterbi_soft")]
     #[pyo3(signature = (llr))]
     fn viterbi_soft<'py>(&self, py: Python<'py>, llr: Vec<f64>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.viterbi_soft(&llr)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -975,7 +960,6 @@ impl PyConvolutionalCode {
     #[pyo3(name = "puncture")]
     #[pyo3(signature = (encoded, pattern))]
     fn puncture<'py>(&self, py: Python<'py>, encoded: Vec<bool>, pattern: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.puncture(&encoded, &pattern)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -992,7 +976,6 @@ impl PyConvolutionalCode {
     #[pyo3(name = "depuncture_llr")]
     #[pyo3(signature = (punctured, pattern, full_len))]
     fn depuncture_llr<'py>(&self, py: Python<'py>, punctured: Vec<f64>, pattern: Vec<bool>, full_len: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.depuncture_llr(&punctured, &pattern, full_len)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1115,7 +1098,6 @@ impl PyRscCode {
     #[pyo3(name = "encode")]
     #[pyo3(signature = (bits))]
     fn encode<'py>(&self, py: Python<'py>, bits: Vec<bool>) -> PyResult<(Vec<bool>, usize)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode(&bits)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -1129,7 +1111,6 @@ impl PyRscCode {
     #[pyo3(name = "encode_terminated")]
     #[pyo3(signature = (bits))]
     fn encode_terminated<'py>(&self, py: Python<'py>, bits: Vec<bool>) -> PyResult<(Vec<bool>, Vec<bool>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode_terminated(&bits)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1))
@@ -1155,7 +1136,6 @@ impl PyRscCode {
     #[pyo3(name = "bcjr_extrinsic")]
     #[pyo3(signature = (ys, yp, la))]
     fn bcjr_extrinsic<'py>(&self, py: Python<'py>, ys: Vec<f64>, yp: Vec<f64>, la: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.bcjr_extrinsic(&ys, &yp, &la)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1168,7 +1148,6 @@ impl PyRscCode {
     #[pyo3(name = "ends_at_zero")]
     #[pyo3(signature = (bits))]
     fn ends_at_zero<'py>(&self, py: Python<'py>, bits: Vec<bool>) -> PyResult<bool> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.ends_at_zero(&bits)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1266,7 +1245,6 @@ impl PyTurboCode {
     #[pyo3(name = "encode")]
     #[pyo3(signature = (msg))]
     fn encode<'py>(&self, py: Python<'py>, msg: Vec<bool>) -> PyResult<(Vec<bool>, Vec<bool>, Vec<bool>)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode(&msg)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok((__v.0, __v.1, __v.2))
@@ -1288,7 +1266,6 @@ impl PyTurboCode {
     #[pyo3(name = "decode_bcjr")]
     #[pyo3(signature = (ys, yp1, yp2, iters))]
     fn decode_bcjr<'py>(&self, py: Python<'py>, ys: Vec<f64>, yp1: Vec<f64>, yp2: Vec<f64>, iters: usize) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.decode_bcjr(&ys, &yp1, &yp2, iters)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1611,7 +1588,6 @@ impl PyBchCode {
     #[pyo3(name = "encode")]
     #[pyo3(signature = (msg))]
     fn encode<'py>(&self, py: Python<'py>, msg: Vec<bool>) -> PyResult<Vec<bool>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode(&msg)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1631,7 +1607,6 @@ impl PyBchCode {
     #[pyo3(name = "decode")]
     #[pyo3(signature = (recv))]
     fn decode<'py>(&self, py: Python<'py>, recv: Vec<bool>) -> PyResult<(Vec<bool>, usize)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.decode(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::errors::map_display)?;
@@ -1794,7 +1769,6 @@ impl PyGf256 {
     #[pyo3(name = "poly_eval")]
     #[pyo3(signature = (poly, x))]
     fn poly_eval<'py>(&self, py: Python<'py>, poly: Vec<u8>, x: u8) -> PyResult<u8> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.poly_eval(&poly, x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1806,7 +1780,6 @@ impl PyGf256 {
     #[pyo3(name = "poly_mul")]
     #[pyo3(signature = (a, b))]
     fn poly_mul<'py>(&self, py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<Vec<u8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.poly_mul(&a, &b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1822,7 +1795,6 @@ impl PyGf256 {
     #[pyo3(name = "poly_rem")]
     #[pyo3(signature = (a, b))]
     fn poly_rem<'py>(&self, py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<Vec<u8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.poly_rem(&a, &b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1961,7 +1933,6 @@ impl PyGf2m {
     #[pyo3(name = "all_elements")]
     #[pyo3(signature = ())]
     fn all_elements<'py>(&self, py: Python<'py>) -> PyResult<Vec<u64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.all_elements()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1979,7 +1950,6 @@ impl PyGf2m {
     #[pyo3(name = "minimal_polynomial")]
     #[pyo3(signature = (e))]
     fn minimal_polynomial<'py>(&self, py: Python<'py>, e: u64) -> PyResult<Vec<u64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.minimal_polynomial(e)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2168,7 +2138,6 @@ impl PyReedSolomon {
     #[pyo3(name = "encode")]
     #[pyo3(signature = (msg))]
     fn encode<'py>(&self, py: Python<'py>, msg: Vec<u8>) -> PyResult<Vec<u8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.encode(&msg)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2184,7 +2153,6 @@ impl PyReedSolomon {
     #[pyo3(name = "syndromes")]
     #[pyo3(signature = (recv))]
     fn syndromes<'py>(&self, py: Python<'py>, recv: Vec<u8>) -> PyResult<Vec<u8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.syndromes(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2211,7 +2179,6 @@ impl PyReedSolomon {
     #[pyo3(name = "decode")]
     #[pyo3(signature = (recv))]
     fn decode<'py>(&self, py: Python<'py>, recv: Vec<u8>) -> PyResult<(Vec<u8>, usize)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.decode(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::errors::map_display)?;
@@ -2230,7 +2197,6 @@ impl PyReedSolomon {
     #[pyo3(name = "correct")]
     #[pyo3(signature = (recv))]
     fn correct<'py>(&self, py: Python<'py>, recv: Vec<u8>) -> PyResult<(Vec<u8>, usize)> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.correct(&recv)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::errors::map_display)?;
@@ -2256,7 +2222,6 @@ impl PyReedSolomon {
     #[pyo3(name = "decode_erasures")]
     #[pyo3(signature = (recv, erasure_pos))]
     fn decode_erasures<'py>(&self, py: Python<'py>, recv: Vec<u8>, erasure_pos: Vec<usize>) -> PyResult<Vec<u8>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.decode_erasures(&recv, &erasure_pos)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::errors::map_display)?;

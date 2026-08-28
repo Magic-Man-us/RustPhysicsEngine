@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,7 +22,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "rule_table", signature = (rule))]
 pub fn pyfn_rule_table<'py>(py: Python<'py>, rule: u8) -> PyResult<Vec<bool>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::rule_table(rule)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -81,7 +81,6 @@ pub fn pyfn_sandpile_abelian<'py>(grid: pyo3::Bound<'py, pyo3::PyAny>, w: usize,
 #[pyfunction]
 #[pyo3(name = "sandpile_identity", signature = (w, h))]
 pub fn pyfn_sandpile_identity<'py>(py: Python<'py>, w: usize, h: usize) -> PyResult<Vec<u32>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::sandpile_identity(w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -263,7 +262,6 @@ pub fn pyfn_invasion_percolation(w: usize, h: usize, rng: pyo3::PyRefMut<'_, cra
 #[pyfunction]
 #[pyo3(name = "percolation_cluster", signature = (grid, w, h))]
 pub fn pyfn_percolation_cluster<'py>(py: Python<'py>, grid: Vec<bool>, w: usize, h: usize) -> PyResult<(Vec<u32>, bool)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::percolation_cluster(&grid, w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -301,7 +299,6 @@ pub fn pyfn_percolation_threshold_estimate(w: usize, h: usize, trials: usize, rn
 #[pyfunction]
 #[pyo3(name = "dla_fractal_dimension", signature = (cluster, w, h))]
 pub fn pyfn_dla_fractal_dimension<'py>(py: Python<'py>, cluster: Vec<bool>, w: usize, h: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::automata::dla_fractal_dimension(&cluster, w, h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

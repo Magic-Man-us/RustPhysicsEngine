@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -60,7 +61,6 @@ impl PyBvh {
     #[pyo3(name = "query_ray")]
     #[pyo3(signature = (r, max_t))]
     fn query_ray<'py>(&self, py: Python<'py>, r: crate::generated::types::PyRay, max_t: f64) -> PyResult<Vec<usize>> {
-        let _ = py;
         let r = r.inner;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.query_ray(&r, max_t)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -73,7 +73,6 @@ impl PyBvh {
     #[pyo3(name = "query_aabb")]
     #[pyo3(signature = (b))]
     fn query_aabb<'py>(&self, py: Python<'py>, b: crate::generated::types::PyAabb) -> PyResult<Vec<usize>> {
-        let _ = py;
         let b = b.inner;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.query_aabb(&b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -86,7 +85,6 @@ impl PyBvh {
     #[pyo3(name = "query_sphere")]
     #[pyo3(signature = (s))]
     fn query_sphere<'py>(&self, py: Python<'py>, s: crate::generated::types::PySphere) -> PyResult<Vec<usize>> {
-        let _ = py;
         let s = s.inner;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.query_sphere(&s)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -126,7 +124,6 @@ impl PyBvh {
     #[pyo3(name = "self_overlaps")]
     #[pyo3(signature = ())]
     fn self_overlaps<'py>(&self, py: Python<'py>) -> PyResult<Vec<(usize, usize)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.self_overlaps()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -142,7 +139,6 @@ impl PyBvh {
     #[pyo3(name = "refit")]
     #[pyo3(signature = (bounds))]
     fn refit<'py>(&mut self, py: Python<'py>, bounds: Vec<crate::generated::types::PyAabb>) -> PyResult<()> {
-        let _ = py;
         let bounds = bounds.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.refit(&bounds)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -458,7 +454,6 @@ impl PyKdTree {
     #[pyo3(name = "k_nearest")]
     #[pyo3(signature = (p, k))]
     fn k_nearest<'py>(&self, py: Python<'py>, p: crate::generated::types::PyVec3Arg, k: usize) -> PyResult<Vec<(usize, f64)>> {
-        let _ = py;
         let p = p.0;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.k_nearest(p, k)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -471,7 +466,6 @@ impl PyKdTree {
     #[pyo3(name = "within_radius")]
     #[pyo3(signature = (p, r))]
     fn within_radius<'py>(&self, py: Python<'py>, p: crate::generated::types::PyVec3Arg, r: f64) -> PyResult<Vec<(usize, f64)>> {
-        let _ = py;
         let p = p.0;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.within_radius(p, r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -484,7 +478,6 @@ impl PyKdTree {
     #[pyo3(name = "all_pairs_within")]
     #[pyo3(signature = (r))]
     fn all_pairs_within<'py>(&self, py: Python<'py>, r: f64) -> PyResult<Vec<(usize, usize)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.all_pairs_within(r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -537,7 +530,6 @@ impl PyKdTree2 {
     #[pyo3(name = "k_nearest")]
     #[pyo3(signature = (p, k))]
     fn k_nearest<'py>(&self, py: Python<'py>, p: crate::generated::types::PyVec2Arg, k: usize) -> PyResult<Vec<(usize, f64)>> {
-        let _ = py;
         let p = p.0;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.k_nearest(p, k)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -550,7 +542,6 @@ impl PyKdTree2 {
     #[pyo3(name = "within_radius")]
     #[pyo3(signature = (p, r))]
     fn within_radius<'py>(&self, py: Python<'py>, p: crate::generated::types::PyVec2Arg, r: f64) -> PyResult<Vec<(usize, f64)>> {
-        let _ = py;
         let p = p.0;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.within_radius(p, r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -563,7 +554,6 @@ impl PyKdTree2 {
     #[pyo3(name = "all_pairs_within")]
     #[pyo3(signature = (r))]
     fn all_pairs_within<'py>(&self, py: Python<'py>, r: f64) -> PyResult<Vec<(usize, usize)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.all_pairs_within(r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -616,7 +606,6 @@ impl PyKdtreeSpatialHash {
     #[pyo3(name = "query_sphere")]
     #[pyo3(signature = (p, r))]
     fn query_sphere<'py>(&self, py: Python<'py>, p: crate::generated::types::PyVec3Arg, r: f64) -> PyResult<Vec<usize>> {
-        let _ = py;
         let p = p.0;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.query_sphere(p, r)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -847,7 +836,6 @@ impl PyMat4Mat4 {
     #[pyo3(name = "transform_homogeneous")]
     #[pyo3(signature = (p))]
     fn transform_homogeneous<'py>(&self, py: Python<'py>, p: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let p = <[f64; 4]>::try_from(p).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 4 values, got {}", __v.len())))?;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.transform_homogeneous(p)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

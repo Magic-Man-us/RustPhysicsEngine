@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -387,7 +388,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "mode_shape")]
     #[pyo3(signature = (i))]
     fn mode_shape<'py>(&self, py: Python<'py>, i: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.mode_shape(i)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -399,7 +399,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "modal_participation")]
     #[pyo3(signature = (x0))]
     fn modal_participation<'py>(&self, py: Python<'py>, x0: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.modal_participation(&x0)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -412,7 +411,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "modal_damping_ratios")]
     #[pyo3(signature = ())]
     fn modal_damping_ratios<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.modal_damping_ratios()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -427,7 +425,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "response")]
     #[pyo3(signature = (x0, v0, t))]
     fn response<'py>(&self, py: Python<'py>, x0: Vec<f64>, v0: Vec<f64>, t: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.response(&x0, &v0, t)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -509,7 +506,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "simulate")]
     #[pyo3(signature = (x0, v0, t_end, dt))]
     fn simulate<'py>(&self, py: Python<'py>, x0: Vec<f64>, v0: Vec<f64>, t_end: f64, dt: f64) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.simulate(&x0, &v0, t_end, dt)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -536,7 +532,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "rayleigh_quotient")]
     #[pyo3(signature = (shape))]
     fn rayleigh_quotient<'py>(&self, py: Python<'py>, shape: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.rayleigh_quotient(&shape)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -550,7 +545,6 @@ impl PyCoupledOscillators {
     #[pyo3(name = "anti_resonance_frequencies")]
     #[pyo3(signature = (i, j))]
     fn anti_resonance_frequencies<'py>(&self, py: Python<'py>, i: usize, j: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.anti_resonance_frequencies(i, j)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1025,7 +1019,6 @@ impl PyModalModel {
     #[pyo3(name = "modal_damping_ratios")]
     #[pyo3(signature = ())]
     fn modal_damping_ratios<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.modal_damping_ratios()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1125,7 +1118,6 @@ impl PyModalModel {
     #[pyo3(name = "response_spectrum")]
     #[pyo3(signature = (ground_accel, dt, zeta))]
     fn response_spectrum<'py>(&self, py: Python<'py>, ground_accel: Vec<f64>, dt: f64, zeta: f64) -> PyResult<Vec<(f64, f64)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.response_spectrum(&ground_accel, dt, zeta)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -1138,7 +1130,6 @@ impl PyModalModel {
     #[staticmethod]
     #[pyo3(signature = (phi1, phi2))]
     fn mac<'py>(py: Python<'py>, phi1: Vec<f64>, phi2: Vec<f64>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::structural::ModalModel::mac(&phi1, &phi2)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1152,7 +1143,6 @@ impl PyModalModel {
     #[pyo3(name = "campbell_diagram")]
     #[pyo3(signature = (rpm_range, n, orders))]
     fn campbell_diagram<'py>(&self, py: Python<'py>, rpm_range: (f64, f64), n: usize, orders: Vec<f64>) -> PyResult<Vec<(f64, Vec<f64>)>> {
-        let _ = py;
         let rpm_range = (rpm_range.0, rpm_range.1);
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.campbell_diagram(rpm_range, n, &orders)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1166,7 +1156,6 @@ impl PyModalModel {
     #[pyo3(name = "critical_speeds")]
     #[pyo3(signature = (orders))]
     fn critical_speeds<'py>(&self, py: Python<'py>, orders: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.critical_speeds(&orders)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1179,7 +1168,6 @@ impl PyModalModel {
     #[pyo3(name = "resonance_margins")]
     #[pyo3(signature = (excitation_freqs))]
     fn resonance_margins<'py>(&self, py: Python<'py>, excitation_freqs: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.resonance_margins(&excitation_freqs)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

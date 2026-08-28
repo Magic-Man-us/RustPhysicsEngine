@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,7 +22,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "mean", signature = (data))]
 pub fn pyfn_mean<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::mean(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -34,7 +34,6 @@ pub fn pyfn_mean<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "variance", signature = (data))]
 pub fn pyfn_variance<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::variance(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -46,7 +45,6 @@ pub fn pyfn_variance<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "std_deviation", signature = (data))]
 pub fn pyfn_std_deviation<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::std_deviation(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -58,7 +56,6 @@ pub fn pyfn_std_deviation<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64>
 #[pyfunction]
 #[pyo3(name = "sample_variance", signature = (data))]
 pub fn pyfn_sample_variance<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::sample_variance(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -70,7 +67,6 @@ pub fn pyfn_sample_variance<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f6
 #[pyfunction]
 #[pyo3(name = "sample_std_deviation", signature = (data))]
 pub fn pyfn_sample_std_deviation<'py>(py: Python<'py>, data: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::sample_std_deviation(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -95,7 +91,6 @@ pub fn pyfn_median<'py>(data: pyo3::Bound<'py, pyo3::PyAny>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "covariance", signature = (x, y))]
 pub fn pyfn_covariance<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::covariance(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -107,7 +102,6 @@ pub fn pyfn_covariance<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "correlation", signature = (x, y))]
 pub fn pyfn_correlation<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::correlation(&x, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -119,7 +113,6 @@ pub fn pyfn_correlation<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>) -> PyRes
 #[pyfunction]
 #[pyo3(name = "error_propagation_sum", signature = (errors))]
 pub fn pyfn_error_propagation_sum<'py>(py: Python<'py>, errors: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::error_propagation_sum(&errors)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -131,7 +124,6 @@ pub fn pyfn_error_propagation_sum<'py>(py: Python<'py>, errors: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "error_propagation_product", signature = (values, relative_errors))]
 pub fn pyfn_error_propagation_product<'py>(py: Python<'py>, values: Vec<f64>, relative_errors: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::error_propagation_product(&values, &relative_errors)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -143,7 +135,6 @@ pub fn pyfn_error_propagation_product<'py>(py: Python<'py>, values: Vec<f64>, re
 #[pyfunction]
 #[pyo3(name = "weighted_mean", signature = (values, weights))]
 pub fn pyfn_weighted_mean<'py>(py: Python<'py>, values: Vec<f64>, weights: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::weighted_mean(&values, &weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -155,7 +146,6 @@ pub fn pyfn_weighted_mean<'py>(py: Python<'py>, values: Vec<f64>, weights: Vec<f
 #[pyfunction]
 #[pyo3(name = "weighted_mean_error", signature = (weights))]
 pub fn pyfn_weighted_mean_error<'py>(py: Python<'py>, weights: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistics::descriptive::weighted_mean_error(&weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

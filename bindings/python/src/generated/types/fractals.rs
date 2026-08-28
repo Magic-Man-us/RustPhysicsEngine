@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -40,8 +41,7 @@ impl PyAttractor2Map {
     /// Rust: `fractals::attractors::Attractor2Map::density_map`
     #[pyo3(name = "density_map")]
     #[pyo3(signature = (x0, n, res, bounds))]
-    fn density_map<'py>(&self, py: Python<'py>, x0: crate::generated::types::PyVec2Arg, n: usize, res: (usize, usize), bounds: crate::generated::types::PyRect) -> PyResult<Vec<u32>> {
-        let _ = py;
+    fn density_map(&self, x0: crate::generated::types::PyVec2Arg, n: usize, res: (usize, usize), bounds: crate::generated::types::PyRect) -> PyResult<Vec<u32>> {
         let x0 = x0.0;
         let res = (res.0, res.1);
         let bounds = bounds.inner;
@@ -102,8 +102,7 @@ impl PyAttractor3 {
     /// Rust: `fractals::attractors::Attractor3::lyapunov_spectrum`
     #[pyo3(name = "lyapunov_spectrum")]
     #[pyo3(signature = (x0, n, dt))]
-    fn lyapunov_spectrum<'py>(&self, py: Python<'py>, x0: crate::generated::types::PyVec3Arg, n: usize, dt: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
+    fn lyapunov_spectrum(&self, x0: crate::generated::types::PyVec3Arg, n: usize, dt: f64) -> PyResult<Vec<f64>> {
         let x0 = x0.0;
         let __r = crate::runtime::guard(|| self.inner.lyapunov_spectrum(x0, n, dt));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -134,8 +133,7 @@ impl PyAttractor3 {
     /// Rust: `fractals::attractors::Attractor3::density_map`
     #[pyo3(name = "density_map")]
     #[pyo3(signature = (x0, n, res, bounds))]
-    fn density_map<'py>(&self, py: Python<'py>, x0: crate::generated::types::PyVec3Arg, n: usize, res: (usize, usize), bounds: crate::generated::types::PyRect) -> PyResult<Vec<u32>> {
-        let _ = py;
+    fn density_map(&self, x0: crate::generated::types::PyVec3Arg, n: usize, res: (usize, usize), bounds: crate::generated::types::PyRect) -> PyResult<Vec<u32>> {
         let x0 = x0.0;
         let res = (res.0, res.1);
         let bounds = bounds.inner;
@@ -536,7 +534,6 @@ impl PyCa1D {
     #[pyo3(name = "run")]
     #[pyo3(signature = (steps))]
     fn run<'py>(&mut self, py: Python<'py>, steps: usize) -> PyResult<Vec<Vec<bool>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.run(steps)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1144,7 +1141,7 @@ impl PyLangtonsAnt {
 
     #[getter]
     #[pyo3(name = "rule")]
-    fn py_get_rule(&self) -> PyResult<String> { Ok(self.inner.rule.clone().to_string()) }
+    fn py_get_rule(&self) -> PyResult<String> { Ok(self.inner.rule.to_string()) }
 
     fn __repr__(&self) -> String { format!("{:?}", self.inner).replacen("LangtonsAnt", "LangtonsAnt", 1) }
 
@@ -1337,7 +1334,6 @@ impl PyLifeLike {
     #[pyo3(name = "place")]
     #[pyo3(signature = (x, y, pattern))]
     fn place<'py>(&mut self, py: Python<'py>, x: usize, y: usize, pattern: Vec<String>) -> PyResult<()> {
-        let _ = py;
         let pattern__b: Vec<&str> = pattern.iter().map(|__b| (*__b).as_str()).collect();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.place(x, y, &pattern__b)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -2275,7 +2271,6 @@ impl PyIfs {
     #[pyo3(name = "collage_error")]
     #[pyo3(signature = (target))]
     fn collage_error<'py>(&self, py: Python<'py>, target: Vec<crate::generated::types::PyVec2Arg>) -> PyResult<f64> {
-        let _ = py;
         let target = target.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.collage_error(&target)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -2544,7 +2539,7 @@ impl PyLSystem {
 
     #[getter]
     #[pyo3(name = "axiom")]
-    fn py_get_axiom(&self) -> PyResult<String> { Ok(self.inner.axiom.clone().to_string()) }
+    fn py_get_axiom(&self) -> PyResult<String> { Ok(self.inner.axiom.to_string()) }
 
     #[getter]
     #[pyo3(name = "rules")]

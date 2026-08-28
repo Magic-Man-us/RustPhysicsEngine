@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "spectrogram", signature = (x, fs, n_fft, hop, window_kind))]
 pub fn pyfn_spectrogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, n_fft: usize, hop: usize, window_kind: crate::generated::types::PyWindowKind) -> PyResult<(Vec<f64>, Vec<f64>, Vec<Vec<f64>>)> {
-    let _ = py;
     let window_kind = window_kind.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::spectrogram(&x, fs, n_fft, hop, window_kind)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -36,7 +36,6 @@ pub fn pyfn_spectrogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, n_fft: usize
 #[pyfunction]
 #[pyo3(name = "mel_filterbank", signature = (n_fft, fs, n_mels, fmin, fmax))]
 pub fn pyfn_mel_filterbank<'py>(py: Python<'py>, n_fft: usize, fs: f64, n_mels: usize, fmin: f64, fmax: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::mel_filterbank(n_fft, fs, n_mels, fmin, fmax)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -49,7 +48,6 @@ pub fn pyfn_mel_filterbank<'py>(py: Python<'py>, n_fft: usize, fs: f64, n_mels: 
 #[pyfunction]
 #[pyo3(name = "mel_spectrogram", signature = (x, fs, n_fft, hop, n_mels, fmin, fmax))]
 pub fn pyfn_mel_spectrogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, n_fft: usize, hop: usize, n_mels: usize, fmin: f64, fmax: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::mel_spectrogram(&x, fs, n_fft, hop, n_mels, fmin, fmax)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -62,7 +60,6 @@ pub fn pyfn_mel_spectrogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, n_fft: u
 #[pyfunction]
 #[pyo3(name = "goertzel", signature = (x, target_freq, fs))]
 pub fn pyfn_goertzel<'py>(py: Python<'py>, x: Vec<f64>, target_freq: f64, fs: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::goertzel(&x, target_freq, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -74,7 +71,6 @@ pub fn pyfn_goertzel<'py>(py: Python<'py>, x: Vec<f64>, target_freq: f64, fs: f6
 #[pyfunction]
 #[pyo3(name = "goertzel_bank", signature = (x, freqs, fs))]
 pub fn pyfn_goertzel_bank<'py>(py: Python<'py>, x: Vec<f64>, freqs: Vec<f64>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::goertzel_bank(&x, &freqs, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -87,7 +83,6 @@ pub fn pyfn_goertzel_bank<'py>(py: Python<'py>, x: Vec<f64>, freqs: Vec<f64>, fs
 #[pyfunction]
 #[pyo3(name = "dtmf_decode", signature = (x, fs))]
 pub fn pyfn_dtmf_decode<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyResult<Option<char>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::dtmf_decode(&x, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.map(|__x| __x))
@@ -127,7 +122,6 @@ pub fn pyfn_zoom_fft<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, f_lo: f64, f_hi
 #[pyfunction]
 #[pyo3(name = "reassigned_spectrogram", signature = (x, fs, n_fft, hop))]
 pub fn pyfn_reassigned_spectrogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, n_fft: usize, hop: usize) -> PyResult<Vec<(f64, f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::reassigned_spectrogram(&x, fs, n_fft, hop)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -142,7 +136,6 @@ pub fn pyfn_reassigned_spectrogram<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, n
 #[pyfunction]
 #[pyo3(name = "constant_q_transform", signature = (x, fs, fmin, bins_per_octave, n_bins))]
 pub fn pyfn_constant_q_transform<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, fmin: f64, bins_per_octave: usize, n_bins: usize) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::stft::constant_q_transform(&x, fs, fmin, bins_per_octave, n_bins)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

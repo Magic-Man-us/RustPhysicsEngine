@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -28,7 +29,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "gini", signature = (counts))]
 pub fn pyfn_gini<'py>(py: Python<'py>, counts: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::gini(&counts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -44,7 +44,6 @@ pub fn pyfn_gini<'py>(py: Python<'py>, counts: Vec<usize>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "entropy", signature = (counts))]
 pub fn pyfn_entropy<'py>(py: Python<'py>, counts: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::entropy(&counts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -94,7 +93,6 @@ pub fn pyfn_regression_tree_fit(x: Vec<Vec<f64>>, y: Vec<f64>, max_depth: usize,
 #[pyfunction]
 #[pyo3(name = "tree_predict", signature = (tree, x))]
 pub fn pyfn_tree_predict<'py>(py: Python<'py>, tree: crate::generated::types::PyTree, x: Vec<f64>) -> PyResult<usize> {
-    let _ = py;
     let tree = tree.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::tree_predict(&tree, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -112,7 +110,6 @@ pub fn pyfn_tree_predict<'py>(py: Python<'py>, tree: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "tree_predict_value", signature = (tree, x))]
 pub fn pyfn_tree_predict_value<'py>(py: Python<'py>, tree: crate::generated::types::PyTree, x: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let tree = tree.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::tree_predict_value(&tree, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -133,7 +130,6 @@ pub fn pyfn_tree_predict_value<'py>(py: Python<'py>, tree: crate::generated::typ
 #[pyfunction]
 #[pyo3(name = "feature_importance", signature = (tree))]
 pub fn pyfn_feature_importance<'py>(py: Python<'py>, tree: crate::generated::types::PyTree) -> PyResult<Vec<f64>> {
-    let _ = py;
     let tree = tree.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::feature_importance(&tree)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -180,7 +176,6 @@ pub fn pyfn_random_forest_fit(x: Vec<Vec<f64>>, y: Vec<usize>, n_trees: usize, m
 #[pyfunction]
 #[pyo3(name = "forest_predict", signature = (forest, x))]
 pub fn pyfn_forest_predict<'py>(py: Python<'py>, forest: crate::generated::types::PyForest, x: Vec<f64>) -> PyResult<usize> {
-    let _ = py;
     let forest = forest.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::forest_predict(&forest, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -226,7 +221,6 @@ pub fn pyfn_gradient_boosting_lite(x: Vec<Vec<f64>>, y: Vec<f64>, n_rounds: usiz
 #[pyfunction]
 #[pyo3(name = "gbm_predict", signature = (model, x))]
 pub fn pyfn_gbm_predict<'py>(py: Python<'py>, model: crate::generated::types::PyGbm, x: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let model = model.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::tree::gbm_predict(&model, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

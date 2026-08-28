@@ -162,6 +162,15 @@ Rust: `cfd::vortex::point_vortex_hamiltonian`
     """
     ...
 
+def point_vortex_step(pos: MutableSequence[Vec2 | Sequence[float]], gammas: list[float], dt: float) -> None:
+    """
+One implicit-midpoint step of the point-vortex system (symplectic; the
+Hamiltonian error stays bounded over long integrations).
+
+Rust: `cfd::vortex::point_vortex_step`
+    """
+    ...
+
 def kelvin_helmholtz_growth_exact(k: float, delta_u: float) -> float:
     """
 Inviscid Kelvin-Helmholtz growth rate for a velocity jump `delta_u`:

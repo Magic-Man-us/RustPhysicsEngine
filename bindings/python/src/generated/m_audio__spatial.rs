@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -55,7 +56,6 @@ pub fn pyfn_pan_minus_4_5_db(x: f64, pos: f64) -> PyResult<(f64, f64)> {
 #[pyfunction]
 #[pyo3(name = "pan_vbap_2d", signature = (angle, speaker_angles))]
 pub fn pyfn_pan_vbap_2d<'py>(py: Python<'py>, angle: f64, speaker_angles: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::pan_vbap_2d(angle, &speaker_angles)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -68,7 +68,6 @@ pub fn pyfn_pan_vbap_2d<'py>(py: Python<'py>, angle: f64, speaker_angles: Vec<f6
 #[pyfunction]
 #[pyo3(name = "pan_vbap_3d", signature = (dir, speakers))]
 pub fn pyfn_pan_vbap_3d<'py>(py: Python<'py>, dir: crate::generated::types::PyVec3Arg, speakers: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let dir = dir.0;
     let speakers = speakers.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::pan_vbap_3d(dir, &speakers)));
@@ -82,7 +81,6 @@ pub fn pyfn_pan_vbap_3d<'py>(py: Python<'py>, dir: crate::generated::types::PyVe
 #[pyfunction]
 #[pyo3(name = "ambisonics_encode_1st", signature = (x, azimuth, elevation))]
 pub fn pyfn_ambisonics_encode_1st<'py>(py: Python<'py>, x: f64, azimuth: f64, elevation: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::ambisonics_encode_1st(x, azimuth, elevation)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.to_vec())
@@ -95,7 +93,6 @@ pub fn pyfn_ambisonics_encode_1st<'py>(py: Python<'py>, x: f64, azimuth: f64, el
 #[pyfunction]
 #[pyo3(name = "ambisonics_encode", signature = (x, az, el, order))]
 pub fn pyfn_ambisonics_encode<'py>(py: Python<'py>, x: f64, az: f64, el: f64, order: u32) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::ambisonics_encode(x, az, el, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -108,7 +105,6 @@ pub fn pyfn_ambisonics_encode<'py>(py: Python<'py>, x: f64, az: f64, el: f64, or
 #[pyfunction]
 #[pyo3(name = "ambisonics_decode", signature = (b, speakers, order))]
 pub fn pyfn_ambisonics_decode<'py>(py: Python<'py>, b: Vec<f64>, speakers: Vec<(f64, f64)>, order: u32) -> PyResult<Vec<f64>> {
-    let _ = py;
     let speakers = speakers.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::ambisonics_decode(&b, &speakers, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -123,7 +119,6 @@ pub fn pyfn_ambisonics_decode<'py>(py: Python<'py>, b: Vec<f64>, speakers: Vec<(
 #[pyfunction]
 #[pyo3(name = "ambisonics_rotate", signature = (b, yaw, pitch, roll, order))]
 pub fn pyfn_ambisonics_rotate<'py>(py: Python<'py>, b: Vec<f64>, yaw: f64, pitch: f64, roll: f64, order: u32) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::ambisonics_rotate(&b, yaw, pitch, roll, order)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -172,7 +167,6 @@ pub fn pyfn_ild_spherical_head(azimuth: f64, freq: f64, head_radius: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "binaural_simple", signature = (x, azimuth, elevation, fs))]
 pub fn pyfn_binaural_simple<'py>(py: Python<'py>, x: Vec<f64>, azimuth: f64, elevation: f64, fs: f64) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::binaural_simple(&x, azimuth, elevation, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -227,7 +221,6 @@ pub fn pyfn_air_absorption_filter(d: f64, humidity: f64, temp: f64, fs: f64) -> 
 #[pyfunction]
 #[pyo3(name = "image_source_ir", signature = (room, source, listener, absorption, max_order, fs, c))]
 pub fn pyfn_image_source_ir<'py>(py: Python<'py>, room: crate::generated::types::PyVec3Arg, source: crate::generated::types::PyVec3Arg, listener: crate::generated::types::PyVec3Arg, absorption: Vec<f64>, max_order: usize, fs: f64, c: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let room = room.0;
     let source = source.0;
     let listener = listener.0;
@@ -276,7 +269,6 @@ pub fn pyfn_early_reflections(room: crate::generated::types::PyVec3Arg, source: 
 #[pyfunction]
 #[pyo3(name = "beamforming_delay_sum", signature = (mics, signals, steer, fs, c))]
 pub fn pyfn_beamforming_delay_sum<'py>(py: Python<'py>, mics: Vec<crate::generated::types::PyVec3Arg>, signals: Vec<Vec<f64>>, steer: crate::generated::types::PyVec3Arg, fs: f64, c: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let mics = mics.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let steer = steer.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::beamforming_delay_sum(&mics, &signals, steer, fs, c)));
@@ -291,7 +283,6 @@ pub fn pyfn_beamforming_delay_sum<'py>(py: Python<'py>, mics: Vec<crate::generat
 #[pyfunction]
 #[pyo3(name = "beamforming_mvdr", signature = (mics, signals, steer, freq, fs, c, diagonal_loading))]
 pub fn pyfn_beamforming_mvdr<'py>(py: Python<'py>, mics: Vec<crate::generated::types::PyVec3Arg>, signals: Vec<Vec<f64>>, steer: crate::generated::types::PyVec3Arg, freq: f64, fs: f64, c: f64, diagonal_loading: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let mics = mics.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let steer = steer.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::beamforming_mvdr(&mics, &signals, steer, freq, fs, c, diagonal_loading)));
@@ -306,7 +297,6 @@ pub fn pyfn_beamforming_mvdr<'py>(py: Python<'py>, mics: Vec<crate::generated::t
 #[pyfunction]
 #[pyo3(name = "tdoa_gcc_phat", signature = (a, b, fs))]
 pub fn pyfn_tdoa_gcc_phat<'py>(py: Python<'py>, a: Vec<f64>, b: Vec<f64>, fs: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::spatial::tdoa_gcc_phat(&a, &b, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

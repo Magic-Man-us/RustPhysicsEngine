@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -25,7 +26,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "triangulate_ear_clipping", signature = (poly))]
 pub fn pyfn_triangulate_ear_clipping<'py>(py: Python<'py>, poly: crate::generated::types::PyPolygon2) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let poly = poly.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::polygon_ops::triangulate_ear_clipping(&poly)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -183,7 +184,6 @@ pub fn pyfn_mp_edges(ratio: f64, sigma2: f64) -> PyResult<(f64, f64)> {
 #[pyfunction]
 #[pyo3(name = "eigenvalue_spacing_distribution", signature = (eigs))]
 pub fn pyfn_eigenvalue_spacing_distribution<'py>(py: Python<'py>, eigs: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::rmt::eigenvalue_spacing_distribution(&eigs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -258,7 +258,6 @@ pub fn pyfn_poisson_spacing(s: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "spectral_rigidity", signature = (eigs, l))]
 pub fn pyfn_spectral_rigidity<'py>(py: Python<'py>, eigs: Vec<f64>, l: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::rmt::spectral_rigidity(&eigs, l)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -302,7 +301,6 @@ pub fn pyfn_tracy_widom_beta1_approx(x: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "participation_ratio", signature = (vec))]
 pub fn pyfn_participation_ratio<'py>(py: Python<'py>, vec: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::rmt::participation_ratio(&vec)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -323,7 +321,6 @@ pub fn pyfn_participation_ratio<'py>(py: Python<'py>, vec: Vec<f64>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "level_spacing_ratio", signature = (eigs))]
 pub fn pyfn_level_spacing_ratio<'py>(py: Python<'py>, eigs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::rmt::level_spacing_ratio(&eigs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -369,7 +366,6 @@ pub fn pyfn_correlation_matrix_denoise_mp(corr: crate::generated::types::PyMatri
 #[pyfunction]
 #[pyo3(name = "symmetric_spectrum", signature = (a))]
 pub fn pyfn_symmetric_spectrum<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::rmt::symmetric_spectrum(&a)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -392,7 +388,6 @@ pub fn pyfn_symmetric_spectrum<'py>(py: Python<'py>, a: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "hermitian_spectrum", signature = (re, im))]
 pub fn pyfn_hermitian_spectrum<'py>(py: Python<'py>, re: crate::generated::types::PyMatrixArg, im: crate::generated::types::PyMatrixArg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let re = re.0;
     let im = im.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::rmt::hermitian_spectrum(&re, &im)));

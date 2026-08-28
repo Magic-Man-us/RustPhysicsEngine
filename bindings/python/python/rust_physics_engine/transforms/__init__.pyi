@@ -56,6 +56,7 @@ from rust_physics_engine.transforms.fft import fft_freqs as fft_freqs
 from rust_physics_engine.transforms.fft import fft_integrate as fft_integrate
 from rust_physics_engine.transforms.fft import fft_interpolate as fft_interpolate
 from rust_physics_engine.transforms.fft import fft_poisson_2d as fft_poisson_2d
+from rust_physics_engine.transforms.fft import fft_shift as fft_shift
 from rust_physics_engine.transforms.hilbert import fm_demodulate as fm_demodulate
 from rust_physics_engine.transforms.laplace import fractional_fourier as fractional_fourier
 from rust_physics_engine.transforms.stft import goertzel as goertzel

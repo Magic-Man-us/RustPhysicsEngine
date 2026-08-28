@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -189,7 +190,6 @@ pub fn pyfn_electrical_power_from_current(current: f64, resistance: f64) -> PyRe
 #[pyfunction]
 #[pyo3(name = "resistors_series", signature = (resistances))]
 pub fn pyfn_resistors_series<'py>(py: Python<'py>, resistances: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::electromagnetism::resistors_series(&resistances)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -201,7 +201,6 @@ pub fn pyfn_resistors_series<'py>(py: Python<'py>, resistances: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "resistors_parallel", signature = (resistances))]
 pub fn pyfn_resistors_parallel<'py>(py: Python<'py>, resistances: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::electromagnetism::resistors_parallel(&resistances)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -213,7 +212,6 @@ pub fn pyfn_resistors_parallel<'py>(py: Python<'py>, resistances: Vec<f64>) -> P
 #[pyfunction]
 #[pyo3(name = "capacitors_series", signature = (capacitances))]
 pub fn pyfn_capacitors_series<'py>(py: Python<'py>, capacitances: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::electromagnetism::capacitors_series(&capacitances)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -225,7 +223,6 @@ pub fn pyfn_capacitors_series<'py>(py: Python<'py>, capacitances: Vec<f64>) -> P
 #[pyfunction]
 #[pyo3(name = "capacitors_parallel", signature = (capacitances))]
 pub fn pyfn_capacitors_parallel<'py>(py: Python<'py>, capacitances: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::electromagnetism::capacitors_parallel(&capacitances)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

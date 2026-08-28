@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -277,7 +278,6 @@ pub fn pyfn_priority_queue_simulate(lambdas: Vec<f64>, mus: Vec<f64>, c: usize, 
 #[pyfunction]
 #[pyo3(name = "uniformization", signature = (q_matrix, p0, t, eps))]
 pub fn pyfn_uniformization<'py>(py: Python<'py>, q_matrix: crate::generated::types::PyMatrixArg, p0: Vec<f64>, t: f64, eps: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let q_matrix = q_matrix.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::queueing::uniformization(&q_matrix, &p0, t, eps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -299,7 +299,6 @@ pub fn pyfn_uniformization<'py>(py: Python<'py>, q_matrix: crate::generated::typ
 #[pyfunction]
 #[pyo3(name = "queue_transient_mm1", signature = (lambda_, mu, n0, t))]
 pub fn pyfn_queue_transient_mm1<'py>(py: Python<'py>, lambda_: f64, mu: f64, n0: usize, t: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::queueing::queue_transient_mm1(lambda_, mu, n0, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

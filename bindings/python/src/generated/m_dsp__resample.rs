@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -25,7 +26,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "upsample", signature = (x, factor))]
 pub fn pyfn_upsample<'py>(py: Python<'py>, x: Vec<f64>, factor: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::upsample(&x, factor)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -41,7 +41,6 @@ pub fn pyfn_upsample<'py>(py: Python<'py>, x: Vec<f64>, factor: usize) -> PyResu
 #[pyfunction]
 #[pyo3(name = "decimate", signature = (x, factor))]
 pub fn pyfn_decimate<'py>(py: Python<'py>, x: Vec<f64>, factor: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::decimate(&x, factor)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -57,7 +56,6 @@ pub fn pyfn_decimate<'py>(py: Python<'py>, x: Vec<f64>, factor: usize) -> PyResu
 #[pyfunction]
 #[pyo3(name = "resample_rational", signature = (x, up, down))]
 pub fn pyfn_resample_rational<'py>(py: Python<'py>, x: Vec<f64>, up: usize, down: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::resample_rational(&x, up, down)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -74,7 +72,6 @@ pub fn pyfn_resample_rational<'py>(py: Python<'py>, x: Vec<f64>, up: usize, down
 #[pyfunction]
 #[pyo3(name = "resample_to_rate", signature = (x, fs_in, fs_out))]
 pub fn pyfn_resample_to_rate<'py>(py: Python<'py>, x: Vec<f64>, fs_in: f64, fs_out: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::resample_to_rate(&x, fs_in, fs_out)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -87,7 +84,6 @@ pub fn pyfn_resample_to_rate<'py>(py: Python<'py>, x: Vec<f64>, fs_in: f64, fs_o
 #[pyfunction]
 #[pyo3(name = "sinc_interpolate", signature = (x, t, half_width))]
 pub fn pyfn_sinc_interpolate<'py>(py: Python<'py>, x: Vec<f64>, t: f64, half_width: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::sinc_interpolate(&x, t, half_width)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -103,7 +99,6 @@ pub fn pyfn_sinc_interpolate<'py>(py: Python<'py>, x: Vec<f64>, t: f64, half_wid
 #[pyfunction]
 #[pyo3(name = "resample_sinc", signature = (x, ratio, half_width))]
 pub fn pyfn_resample_sinc<'py>(py: Python<'py>, x: Vec<f64>, ratio: f64, half_width: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::resample_sinc(&x, ratio, half_width)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -118,7 +113,6 @@ pub fn pyfn_resample_sinc<'py>(py: Python<'py>, x: Vec<f64>, ratio: f64, half_wi
 #[pyfunction]
 #[pyo3(name = "resample_linear", signature = (x, ratio))]
 pub fn pyfn_resample_linear<'py>(py: Python<'py>, x: Vec<f64>, ratio: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::resample_linear(&x, ratio)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -133,7 +127,6 @@ pub fn pyfn_resample_linear<'py>(py: Python<'py>, x: Vec<f64>, ratio: f64) -> Py
 #[pyfunction]
 #[pyo3(name = "resample_cubic", signature = (x, ratio))]
 pub fn pyfn_resample_cubic<'py>(py: Python<'py>, x: Vec<f64>, ratio: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::resample_cubic(&x, ratio)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -150,7 +143,6 @@ pub fn pyfn_resample_cubic<'py>(py: Python<'py>, x: Vec<f64>, ratio: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "cic_decimate", signature = (x, factor, stages))]
 pub fn pyfn_cic_decimate<'py>(py: Python<'py>, x: Vec<f64>, factor: usize, stages: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::cic_decimate(&x, factor, stages)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -166,7 +158,6 @@ pub fn pyfn_cic_decimate<'py>(py: Python<'py>, x: Vec<f64>, factor: usize, stage
 #[pyfunction]
 #[pyo3(name = "half_band_filter", signature = (n_taps))]
 pub fn pyfn_half_band_filter<'py>(py: Python<'py>, n_taps: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::resample::half_band_filter(n_taps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

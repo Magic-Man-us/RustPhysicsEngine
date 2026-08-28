@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -38,7 +39,6 @@ pub fn pyfn_cholesky(a: crate::generated::types::PyMatrixArg) -> PyResult<crate:
 #[pyfunction]
 #[pyo3(name = "cholesky_solve", signature = (l, b))]
 pub fn pyfn_cholesky_solve<'py>(py: Python<'py>, l: crate::generated::types::PyMatrixArg, b: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let l = l.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::linalg::cholesky::cholesky_solve(&l, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

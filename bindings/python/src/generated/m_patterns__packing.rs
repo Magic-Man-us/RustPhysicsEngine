@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -108,6 +109,21 @@ pub fn pyfn_circle_pack_square(region: crate::generated::types::PyRect, r: f64) 
     Ok(__v.into_iter().map(|__x| crate::generated::types::PyCircle { inner: __x }).collect::<Vec<_>>())
 }
 
+/// Relaxes overlapping circles by symmetric push-apart steps, keeping
+/// centers at least their radius away from the rectangle boundary.
+///
+/// Rust: `patterns::packing::circle_pack_relax`
+#[pyfunction]
+#[pyo3(name = "circle_pack_relax", signature = (circles, region, iterations))]
+pub fn pyfn_circle_pack_relax<'py>(circles: pyo3::Bound<'py, pyo3::PyAny>, region: crate::generated::types::PyRect, iterations: usize) -> PyResult<()> {
+    let mut circles__v: Vec<rust_physics_engine::spatial::primitives::Circle> = circles.extract::<Vec<crate::generated::types::PyCircle>>()?.into_iter().map(|__e| __e.inner).collect();
+    let region = region.inner;
+    let __r = crate::runtime::guard(|| rust_physics_engine::patterns::packing::circle_pack_relax(&mut circles__v, &region, iterations));
+    let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+    crate::runtime::coerce::write_back_objects(&circles, circles__v.into_iter().map(|__e| crate::generated::types::PyCircle { inner: __e }).collect::<Vec<_>>())?;
+    Ok(())
+}
+
 /// Face-centered-cubic sphere packing (density π/(3√2) ≈ 0.7405),
 /// centers in the half-open box.
 ///
@@ -181,7 +197,6 @@ pub fn pyfn_sphere_pack_random_sequential(region: crate::generated::types::PyAab
 #[pyfunction]
 #[pyo3(name = "packing_density_2d", signature = (circles, region))]
 pub fn pyfn_packing_density_2d<'py>(py: Python<'py>, circles: Vec<crate::generated::types::PyCircle>, region: crate::generated::types::PyRect) -> PyResult<f64> {
-    let _ = py;
     let circles = circles.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let region = region.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::packing::packing_density_2d(&circles, &region)));
@@ -196,7 +211,6 @@ pub fn pyfn_packing_density_2d<'py>(py: Python<'py>, circles: Vec<crate::generat
 #[pyfunction]
 #[pyo3(name = "packing_density_3d", signature = (spheres, region))]
 pub fn pyfn_packing_density_3d<'py>(py: Python<'py>, spheres: Vec<crate::generated::types::PySphere>, region: crate::generated::types::PyAabb) -> PyResult<f64> {
-    let _ = py;
     let spheres = spheres.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let region = region.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::patterns::packing::packing_density_3d(&spheres, &region)));
@@ -283,6 +297,7 @@ pub fn register(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(pyfn_circle_pack_greedy, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_circle_pack_hex, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_circle_pack_square, m)?)?;
+    m.add_function(wrap_pyfunction!(pyfn_circle_pack_relax, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_sphere_pack_fcc, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_sphere_pack_hcp, m)?)?;
     m.add_function(wrap_pyfunction!(pyfn_sphere_pack_bcc, m)?)?;

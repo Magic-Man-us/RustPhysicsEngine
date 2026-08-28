@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -142,7 +143,6 @@ impl PyQuaternion {
     #[pyo3(name = "to_rotation_matrix")]
     #[pyo3(signature = ())]
     fn to_rotation_matrix<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<f64>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.to_rotation_matrix()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.to_vec()).collect::<Vec<_>>())

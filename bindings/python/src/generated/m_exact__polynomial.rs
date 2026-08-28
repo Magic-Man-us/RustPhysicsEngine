@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -57,7 +58,6 @@ pub fn pyfn_bernstein_basis(n: usize, i: usize, t: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "to_bernstein", signature = (p, a, b))]
 pub fn pyfn_to_bernstein<'py>(py: Python<'py>, p: crate::generated::types::PyPolyArg, a: f64, b: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let p = p.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::polynomial::to_bernstein(&p, a, b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -74,7 +74,6 @@ pub fn pyfn_to_bernstein<'py>(py: Python<'py>, p: crate::generated::types::PyPol
 #[pyfunction]
 #[pyo3(name = "newton_identities", signature = (power_sums))]
 pub fn pyfn_newton_identities<'py>(py: Python<'py>, power_sums: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::exact::polynomial::newton_identities(&power_sums)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

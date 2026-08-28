@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -65,7 +66,6 @@ pub fn pyfn_lorentzian(omega: f64, omega0: f64, gamma: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "lorentzian_fit", signature = (omega, y))]
 pub fn pyfn_lorentzian_fit<'py>(py: Python<'py>, omega: Vec<f64>, y: Vec<f64>) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::oscillator::lorentzian_fit(&omega, &y)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1, __v.2))
@@ -82,7 +82,6 @@ pub fn pyfn_lorentzian_fit<'py>(py: Python<'py>, omega: Vec<f64>, y: Vec<f64>) -
 #[pyfunction]
 #[pyo3(name = "q_from_ringdown", signature = (x, fs))]
 pub fn pyfn_q_from_ringdown<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::oscillator::q_from_ringdown(&x, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -98,7 +97,6 @@ pub fn pyfn_q_from_ringdown<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyRes
 #[pyfunction]
 #[pyo3(name = "q_from_spectrum", signature = (f, psd))]
 pub fn pyfn_q_from_spectrum<'py>(py: Python<'py>, f: Vec<f64>, psd: Vec<f64>) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::oscillator::q_from_spectrum(&f, &psd)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -110,7 +108,6 @@ pub fn pyfn_q_from_spectrum<'py>(py: Python<'py>, f: Vec<f64>, psd: Vec<f64>) ->
 #[pyfunction]
 #[pyo3(name = "resonance_curve", signature = (osc, omega))]
 pub fn pyfn_resonance_curve<'py>(py: Python<'py>, osc: crate::generated::types::PyDampedOscillatorArg, omega: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let osc = osc.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::oscillator::resonance_curve(&osc, &omega)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -136,7 +133,6 @@ pub fn pyfn_transmissibility(omega_ratio: f64, zeta: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "quality_factor_combined", signature = (qs))]
 pub fn pyfn_quality_factor_combined<'py>(py: Python<'py>, qs: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::resonance::oscillator::quality_factor_combined(&qs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -148,7 +149,6 @@ pub fn pyfn_element_gradient(mesh: crate::generated::types::PyFemMesh2, values: 
 #[pyfunction]
 #[pyo3(name = "dirichlet_energy", signature = (mesh, values))]
 pub fn pyfn_dirichlet_energy<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, values: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let mesh = mesh.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::dirichlet_energy(&mesh, &values)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -168,7 +168,6 @@ pub fn pyfn_dirichlet_energy<'py>(py: Python<'py>, mesh: crate::generated::types
 #[pyfunction]
 #[pyo3(name = "interpolate", signature = (mesh, values, p))]
 pub fn pyfn_interpolate<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, values: Vec<f64>, p: crate::generated::types::PyVec2Arg) -> PyResult<Option<f64>> {
-    let _ = py;
     let mesh = mesh.inner;
     let p = p.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::interpolate(&mesh, &values, p)));
@@ -245,7 +244,6 @@ pub fn pyfn_fem_2d_helmholtz(mesh: crate::generated::types::PyFemMesh2, k: f64, 
 #[pyfunction]
 #[pyo3(name = "fem_eigenvalues_drum", signature = (mesh, count))]
 pub fn pyfn_fem_eigenvalues_drum<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, count: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let mesh = mesh.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::fem_eigenvalues_drum(&mesh, count)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -331,7 +329,6 @@ pub fn pyfn_fem_2d_elasticity_plane_stress(mesh: crate::generated::types::PyFemM
 #[pyfunction]
 #[pyo3(name = "element_strain", signature = (mesh, u, tri))]
 pub fn pyfn_element_strain<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, u: Vec<crate::generated::types::PyVec2Arg>, tri: usize) -> PyResult<Option<Vec<f64>>> {
-    let _ = py;
     let mesh = mesh.inner;
     let u = u.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::element_strain(&mesh, &u, tri)));
@@ -348,7 +345,6 @@ pub fn pyfn_element_strain<'py>(py: Python<'py>, mesh: crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "element_stress", signature = (mesh, u, e, nu, tri))]
 pub fn pyfn_element_stress<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, u: Vec<crate::generated::types::PyVec2Arg>, e: f64, nu: f64, tri: usize) -> PyResult<Option<Vec<f64>>> {
-    let _ = py;
     let mesh = mesh.inner;
     let u = u.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::element_stress(&mesh, &u, e, nu, tri)));
@@ -371,7 +367,6 @@ pub fn pyfn_element_stress<'py>(py: Python<'py>, mesh: crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "strain_energy", signature = (mesh, u, e, nu))]
 pub fn pyfn_strain_energy<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, u: Vec<crate::generated::types::PyVec2Arg>, e: f64, nu: f64) -> PyResult<f64> {
-    let _ = py;
     let mesh = mesh.inner;
     let u = u.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::strain_energy(&mesh, &u, e, nu)));
@@ -409,7 +404,6 @@ pub fn pyfn_strain_energy<'py>(py: Python<'py>, mesh: crate::generated::types::P
 #[pyfunction]
 #[pyo3(name = "von_mises_stress", signature = (mesh, u, e, nu))]
 pub fn pyfn_von_mises_stress<'py>(py: Python<'py>, mesh: crate::generated::types::PyFemMesh2, u: Vec<crate::generated::types::PyVec2Arg>, e: f64, nu: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let mesh = mesh.inner;
     let u = u.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fem::fem2d::von_mises_stress(&mesh, &u, e, nu)));

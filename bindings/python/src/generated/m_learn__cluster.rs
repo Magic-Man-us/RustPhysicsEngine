@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -135,7 +136,6 @@ pub fn pyfn_elbow_data(data: Vec<Vec<f64>>, k_range: Vec<usize>, iters: usize, r
 #[pyfunction]
 #[pyo3(name = "dbscan", signature = (data, eps, min_pts))]
 pub fn pyfn_dbscan<'py>(py: Python<'py>, data: Vec<Vec<f64>>, eps: f64, min_pts: usize) -> PyResult<Vec<i32>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::dbscan(&data, eps, min_pts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -158,7 +158,6 @@ pub fn pyfn_dbscan<'py>(py: Python<'py>, data: Vec<Vec<f64>>, eps: f64, min_pts:
 #[pyfunction]
 #[pyo3(name = "hierarchical_agglomerative", signature = (data, linkage))]
 pub fn pyfn_hierarchical_agglomerative<'py>(py: Python<'py>, data: Vec<Vec<f64>>, linkage: crate::generated::types::PyLinkage) -> PyResult<Vec<(usize, usize, f64)>> {
-    let _ = py;
     let linkage = linkage.to_rust();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::hierarchical_agglomerative(&data, linkage)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -178,7 +177,6 @@ pub fn pyfn_hierarchical_agglomerative<'py>(py: Python<'py>, data: Vec<Vec<f64>>
 #[pyfunction]
 #[pyo3(name = "dendrogram_cut", signature = (merges, n, k))]
 pub fn pyfn_dendrogram_cut<'py>(py: Python<'py>, merges: Vec<(usize, usize, f64)>, n: usize, k: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let merges = merges.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::dendrogram_cut(&merges, n, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -229,7 +227,6 @@ pub fn pyfn_gaussian_mixture_em(data: Vec<Vec<f64>>, k: usize, iters: usize, rng
 #[pyfunction]
 #[pyo3(name = "silhouette_score", signature = (data, labels))]
 pub fn pyfn_silhouette_score<'py>(py: Python<'py>, data: Vec<Vec<f64>>, labels: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::silhouette_score(&data, &labels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -261,7 +258,6 @@ pub fn pyfn_silhouette_score<'py>(py: Python<'py>, data: Vec<Vec<f64>>, labels: 
 #[pyfunction]
 #[pyo3(name = "adjusted_rand_index", signature = (a, b))]
 pub fn pyfn_adjusted_rand_index<'py>(py: Python<'py>, a: Vec<usize>, b: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::adjusted_rand_index(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -283,7 +279,6 @@ pub fn pyfn_adjusted_rand_index<'py>(py: Python<'py>, a: Vec<usize>, b: Vec<usiz
 #[pyfunction]
 #[pyo3(name = "davies_bouldin", signature = (data, labels))]
 pub fn pyfn_davies_bouldin<'py>(py: Python<'py>, data: Vec<Vec<f64>>, labels: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::davies_bouldin(&data, &labels)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -307,7 +302,6 @@ pub fn pyfn_davies_bouldin<'py>(py: Python<'py>, data: Vec<Vec<f64>>, labels: Ve
 #[pyfunction]
 #[pyo3(name = "knn_classify", signature = (train, labels, x, k))]
 pub fn pyfn_knn_classify<'py>(py: Python<'py>, train: Vec<Vec<f64>>, labels: Vec<usize>, x: Vec<f64>, k: usize) -> PyResult<usize> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::knn_classify(&train, &labels, &x, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;
@@ -325,7 +319,6 @@ pub fn pyfn_knn_classify<'py>(py: Python<'py>, train: Vec<Vec<f64>>, labels: Vec
 #[pyfunction]
 #[pyo3(name = "knn_regress", signature = (train, targets, x, k))]
 pub fn pyfn_knn_regress<'py>(py: Python<'py>, train: Vec<Vec<f64>>, targets: Vec<f64>, x: Vec<f64>, k: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::cluster::knn_regress(&train, &targets, &x, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_solve)?;

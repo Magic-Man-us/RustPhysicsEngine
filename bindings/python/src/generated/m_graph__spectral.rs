@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -39,7 +40,6 @@ pub fn pyfn_laplacian_matrix(g: crate::generated::types::PyGraph) -> PyResult<cr
 #[pyfunction]
 #[pyo3(name = "weighted_degrees", signature = (g))]
 pub fn pyfn_weighted_degrees<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::weighted_degrees(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -75,7 +75,6 @@ pub fn pyfn_normalized_laplacian(g: crate::generated::types::PyGraph) -> PyResul
 #[pyfunction]
 #[pyo3(name = "adjacency_spectrum", signature = (g))]
 pub fn pyfn_adjacency_spectrum<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::adjacency_spectrum(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -91,7 +90,6 @@ pub fn pyfn_adjacency_spectrum<'py>(py: Python<'py>, g: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "laplacian_spectrum", signature = (g))]
 pub fn pyfn_laplacian_spectrum<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::laplacian_spectrum(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -107,7 +105,6 @@ pub fn pyfn_laplacian_spectrum<'py>(py: Python<'py>, g: crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "normalized_laplacian_spectrum", signature = (g))]
 pub fn pyfn_normalized_laplacian_spectrum<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::normalized_laplacian_spectrum(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -148,7 +145,6 @@ pub fn pyfn_algebraic_connectivity(g: crate::generated::types::PyGraph) -> PyRes
 #[pyfunction]
 #[pyo3(name = "fiedler_vector", signature = (g))]
 pub fn pyfn_fiedler_vector<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::fiedler_vector(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -164,7 +160,6 @@ pub fn pyfn_fiedler_vector<'py>(py: Python<'py>, g: crate::generated::types::PyG
 #[pyfunction]
 #[pyo3(name = "spectral_bisection", signature = (g))]
 pub fn pyfn_spectral_bisection<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<bool>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::spectral_bisection(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -250,7 +245,6 @@ pub fn pyfn_number_spanning_trees_exact<'py>(py: Python<'py>, g: crate::generate
 #[pyfunction]
 #[pyo3(name = "pagerank", signature = (g, damping, tol))]
 pub fn pyfn_pagerank<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, damping: f64, tol: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::pagerank(&g, damping, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -289,7 +283,6 @@ pub fn pyfn_hits(g: crate::generated::types::PyGraph, tol: f64) -> PyResult<(Vec
 #[pyfunction]
 #[pyo3(name = "eigenvector_centrality", signature = (g, tol))]
 pub fn pyfn_eigenvector_centrality<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, tol: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::eigenvector_centrality(&g, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -310,7 +303,6 @@ pub fn pyfn_eigenvector_centrality<'py>(py: Python<'py>, g: crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "katz_centrality", signature = (g, alpha))]
 pub fn pyfn_katz_centrality<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, alpha: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::katz_centrality(&g, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -332,7 +324,6 @@ pub fn pyfn_katz_centrality<'py>(py: Python<'py>, g: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "betweenness_centrality", signature = (g))]
 pub fn pyfn_betweenness_centrality<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::betweenness_centrality(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -350,7 +341,6 @@ pub fn pyfn_betweenness_centrality<'py>(py: Python<'py>, g: crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "closeness_centrality", signature = (g))]
 pub fn pyfn_closeness_centrality<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::closeness_centrality(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -367,7 +357,6 @@ pub fn pyfn_closeness_centrality<'py>(py: Python<'py>, g: crate::generated::type
 #[pyfunction]
 #[pyo3(name = "harmonic_centrality", signature = (g))]
 pub fn pyfn_harmonic_centrality<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::harmonic_centrality(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -440,7 +429,6 @@ pub fn pyfn_commute_time(g: crate::generated::types::PyGraph, u: usize, v: usize
 #[pyfunction]
 #[pyo3(name = "random_walk_stationary", signature = (g))]
 pub fn pyfn_random_walk_stationary<'py>(py: Python<'py>, g: crate::generated::types::PyGraph) -> PyResult<Vec<f64>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::random_walk_stationary(&g)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -572,7 +560,6 @@ pub fn pyfn_isospectral_check(g: crate::generated::types::PyGraph, h: crate::gen
 #[pyfunction]
 #[pyo3(name = "modularity", signature = (g, communities))]
 pub fn pyfn_modularity<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, communities: Vec<usize>) -> PyResult<f64> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::spectral::modularity(&g, &communities)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

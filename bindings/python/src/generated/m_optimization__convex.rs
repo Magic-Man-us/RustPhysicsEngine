@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -302,7 +303,6 @@ pub fn pyfn_conjugate_gradient_nonlinear(f: pyo3::Py<pyo3::PyAny>, grad: pyo3::P
 #[pyfunction]
 #[pyo3(name = "prox_l1", signature = (v, t))]
 pub fn pyfn_prox_l1<'py>(py: Python<'py>, v: Vec<f64>, t: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::prox_l1(&v, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -319,7 +319,6 @@ pub fn pyfn_prox_l1<'py>(py: Python<'py>, v: Vec<f64>, t: f64) -> PyResult<Vec<f
 #[pyfunction]
 #[pyo3(name = "prox_l2", signature = (v, t))]
 pub fn pyfn_prox_l2<'py>(py: Python<'py>, v: Vec<f64>, t: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::prox_l2(&v, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -334,7 +333,6 @@ pub fn pyfn_prox_l2<'py>(py: Python<'py>, v: Vec<f64>, t: f64) -> PyResult<Vec<f
 #[pyfunction]
 #[pyo3(name = "prox_box", signature = (v, lo, hi))]
 pub fn pyfn_prox_box<'py>(py: Python<'py>, v: Vec<f64>, lo: f64, hi: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::prox_box(&v, lo, hi)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -354,7 +352,6 @@ pub fn pyfn_prox_box<'py>(py: Python<'py>, v: Vec<f64>, lo: f64, hi: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "prox_simplex", signature = (v))]
 pub fn pyfn_prox_simplex<'py>(py: Python<'py>, v: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::prox_simplex(&v)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -501,7 +498,6 @@ pub fn pyfn_mirror_descent_simplex(grad: pyo3::Py<pyo3::PyAny>, x0: Vec<f64>, st
 #[pyfunction]
 #[pyo3(name = "ridge_closed_form", signature = (a, b, lambda_))]
 pub fn pyfn_ridge_closed_form<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, lambda_: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::ridge_closed_form(&a, &b, lambda_)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -527,7 +523,6 @@ pub fn pyfn_ridge_closed_form<'py>(py: Python<'py>, a: crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "lasso_coordinate_descent", signature = (a, b, lambda_, iterations))]
 pub fn pyfn_lasso_coordinate_descent<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, lambda_: f64, iterations: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::lasso_coordinate_descent(&a, &b, lambda_, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -554,7 +549,6 @@ pub fn pyfn_lasso_coordinate_descent<'py>(py: Python<'py>, a: crate::generated::
 #[pyfunction]
 #[pyo3(name = "admm_lasso", signature = (a, b, lambda_, rho, iterations))]
 pub fn pyfn_admm_lasso<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, lambda_: f64, rho: f64, iterations: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::admm_lasso(&a, &b, lambda_, rho, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -601,7 +595,6 @@ pub fn pyfn_admm_generic(prox_f: pyo3::Py<pyo3::PyAny>, prox_g: pyo3::Py<pyo3::P
 #[pyfunction]
 #[pyo3(name = "elastic_net", signature = (a, b, l1, l2, iterations))]
 pub fn pyfn_elastic_net<'py>(py: Python<'py>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>, l1: f64, l2: f64, iterations: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::elastic_net(&a, &b, l1, l2, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -629,7 +622,6 @@ pub fn pyfn_elastic_net<'py>(py: Python<'py>, a: crate::generated::types::PyMatr
 #[pyfunction]
 #[pyo3(name = "logistic_regression_fit", signature = (x, y, lambda_, iterations))]
 pub fn pyfn_logistic_regression_fit<'py>(py: Python<'py>, x: crate::generated::types::PyMatrixArg, y: Vec<f64>, lambda_: f64, iterations: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let x = x.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::logistic_regression_fit(&x, &y, lambda_, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -653,7 +645,6 @@ pub fn pyfn_logistic_regression_fit<'py>(py: Python<'py>, x: crate::generated::t
 #[pyfunction]
 #[pyo3(name = "quadratic_program_active_set", signature = (q, c, a, b))]
 pub fn pyfn_quadratic_program_active_set<'py>(py: Python<'py>, q: crate::generated::types::PyMatrixArg, c: Vec<f64>, a: crate::generated::types::PyMatrixArg, b: Vec<f64>) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let q = q.0;
     let a = a.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::quadratic_program_active_set(&q, &c, &a, &b)));
@@ -674,7 +665,6 @@ pub fn pyfn_quadratic_program_active_set<'py>(py: Python<'py>, q: crate::generat
 #[pyfunction]
 #[pyo3(name = "kkt_residual", signature = (objective_gradient, constraint_values, constraint_gradients, multipliers))]
 pub fn pyfn_kkt_residual<'py>(py: Python<'py>, objective_gradient: Vec<f64>, constraint_values: Vec<f64>, constraint_gradients: Vec<Vec<f64>>, multipliers: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::optimization::convex::kkt_residual(&objective_gradient, &constraint_values, &constraint_gradients, &multipliers)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

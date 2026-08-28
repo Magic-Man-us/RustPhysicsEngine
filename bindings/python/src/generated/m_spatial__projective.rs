@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "point_h", signature = (p))]
 pub fn pyfn_point_h<'py>(py: Python<'py>, p: crate::generated::types::PyVec2Arg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let p = p.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::projective::point_h(p)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -46,7 +46,6 @@ pub fn pyfn_dehomogenize(h: Vec<f64>) -> PyResult<Option<crate::generated::types
 #[pyfunction]
 #[pyo3(name = "line_through", signature = (a, b))]
 pub fn pyfn_line_through<'py>(py: Python<'py>, a: crate::generated::types::PyVec2Arg, b: crate::generated::types::PyVec2Arg) -> PyResult<Vec<f64>> {
-    let _ = py;
     let a = a.0;
     let b = b.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::projective::line_through(a, b)));
@@ -61,7 +60,6 @@ pub fn pyfn_line_through<'py>(py: Python<'py>, a: crate::generated::types::PyVec
 #[pyfunction]
 #[pyo3(name = "lines_intersect", signature = (l1, l2))]
 pub fn pyfn_lines_intersect<'py>(py: Python<'py>, l1: Vec<f64>, l2: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let l1 = <[f64; 3]>::try_from(l1).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let l2 = <[f64; 3]>::try_from(l2).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::projective::lines_intersect(l1, l2)));
@@ -75,7 +73,6 @@ pub fn pyfn_lines_intersect<'py>(py: Python<'py>, l1: Vec<f64>, l2: Vec<f64>) ->
 #[pyfunction]
 #[pyo3(name = "point_on_line", signature = (p, l, tol))]
 pub fn pyfn_point_on_line<'py>(py: Python<'py>, p: Vec<f64>, l: Vec<f64>, tol: f64) -> PyResult<bool> {
-    let _ = py;
     let p = <[f64; 3]>::try_from(p).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let l = <[f64; 3]>::try_from(l).map_err(|__v: Vec<f64>| pyo3::exceptions::PyValueError::new_err(format!("expected 3 values, got {}", __v.len())))?;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::spatial::projective::point_on_line(p, l, tol)));

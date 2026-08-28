@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -20,7 +21,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "cayley_table", signature = (p, q, r))]
 pub fn pyfn_cayley_table<'py>(py: Python<'py>, p: usize, q: usize, r: usize) -> PyResult<Vec<Vec<(f64, usize)>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::clifford::cayley_table(p, q, r)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| __x.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>()).collect::<Vec<_>>())

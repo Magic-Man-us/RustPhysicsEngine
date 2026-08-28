@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -200,7 +201,6 @@ pub fn pyfn_grover(marked: Vec<u64>, n: usize, iterations: Option<usize>, rng: p
 #[pyfunction]
 #[pyo3(name = "quantum_counting", signature = (marked, n, precision))]
 pub fn pyfn_quantum_counting<'py>(py: Python<'py>, marked: Vec<u64>, n: usize, precision: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::algorithms::quantum_counting(&marked, n, precision)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -282,7 +282,6 @@ pub fn pyfn_shor_classical_post(a: u64, r: u64, modulus: u64) -> PyResult<Option
 #[pyfunction]
 #[pyo3(name = "pauli_sum_expectation", signature = (terms, state))]
 pub fn pyfn_pauli_sum_expectation<'py>(py: Python<'py>, terms: Vec<(String, f64)>, state: crate::generated::types::PyQState) -> PyResult<f64> {
-    let _ = py;
     let terms = terms.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let state = state.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::algorithms::pauli_sum_expectation(&terms, &state)));
@@ -317,7 +316,6 @@ pub fn pyfn_pauli_sum_expectation<'py>(py: Python<'py>, terms: Vec<(String, f64)
 #[pyfunction]
 #[pyo3(name = "h2_model_hamiltonian", signature = (bond_length))]
 pub fn pyfn_h2_model_hamiltonian<'py>(py: Python<'py>, bond_length: f64) -> PyResult<Vec<(String, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::algorithms::h2_model_hamiltonian(bond_length)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -355,7 +353,6 @@ pub fn pyfn_h2_ground_energy_model(bond_length: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "pauli_sum_ground_energy", signature = (terms, n))]
 pub fn pyfn_pauli_sum_ground_energy<'py>(py: Python<'py>, terms: Vec<(String, f64)>, n: usize) -> PyResult<f64> {
-    let _ = py;
     let terms = terms.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::algorithms::pauli_sum_ground_energy(&terms, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -378,7 +375,6 @@ pub fn pyfn_pauli_sum_ground_energy<'py>(py: Python<'py>, terms: Vec<(String, f6
 #[pyfunction]
 #[pyo3(name = "qaoa_maxcut", signature = (vertices, edges, layers))]
 pub fn pyfn_qaoa_maxcut<'py>(py: Python<'py>, vertices: usize, edges: Vec<(usize, usize)>, layers: usize) -> PyResult<(f64, Vec<f64>, u64)> {
-    let _ = py;
     let edges = edges.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::algorithms::qaoa_maxcut(vertices, &edges, layers)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -422,7 +418,6 @@ pub fn pyfn_trotter_evolution(terms: Vec<(String, f64)>, t: f64, steps: usize, n
 #[pyfunction]
 #[pyo3(name = "quantum_walk_line", signature = (steps, coin))]
 pub fn pyfn_quantum_walk_line<'py>(py: Python<'py>, steps: usize, coin: crate::generated::types::PyGate) -> PyResult<Vec<f64>> {
-    let _ = py;
     let coin = coin.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::algorithms::quantum_walk_line(steps, &coin)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

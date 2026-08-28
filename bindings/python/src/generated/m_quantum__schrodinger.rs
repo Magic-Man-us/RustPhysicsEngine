@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -36,7 +37,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "tise_solve_fd", signature = (v, dx, mass, hbar, n_states))]
 pub fn pyfn_tise_solve_fd<'py>(py: Python<'py>, v: Vec<f64>, dx: f64, mass: f64, hbar: f64, n_states: usize) -> PyResult<(Vec<f64>, Vec<Vec<f64>>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::tise_solve_fd(&v, dx, mass, hbar, n_states)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -183,7 +183,6 @@ pub fn pyfn_tdse_crank_nicolson(psi: pyo3::PyRefMut<'_, crate::generated::types:
 #[pyfunction]
 #[pyo3(name = "absorbing_boundary_cap", signature = (n, width, strength))]
 pub fn pyfn_absorbing_boundary_cap<'py>(py: Python<'py>, n: usize, width: usize, strength: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::absorbing_boundary_cap(n, width, strength)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -229,7 +228,6 @@ pub fn pyfn_apply_absorber(psi: pyo3::PyRefMut<'_, crate::generated::types::PyWa
 #[pyfunction]
 #[pyo3(name = "transmission_coefficient", signature = (v, dx, energy, mass, hbar))]
 pub fn pyfn_transmission_coefficient<'py>(py: Python<'py>, v: Vec<f64>, dx: f64, energy: f64, mass: f64, hbar: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::transmission_coefficient(&v, dx, energy, mass, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -348,7 +346,6 @@ pub fn pyfn_reflection_step_potential(v0: f64, energy: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "double_well_splitting", signature = (v, dx, mass, hbar))]
 pub fn pyfn_double_well_splitting<'py>(py: Python<'py>, v: Vec<f64>, dx: f64, mass: f64, hbar: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::double_well_splitting(&v, dx, mass, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -371,7 +368,6 @@ pub fn pyfn_double_well_splitting<'py>(py: Python<'py>, v: Vec<f64>, dx: f64, ma
 #[pyfunction]
 #[pyo3(name = "perturbation_theory_1st", signature = (states, perturbation, dx))]
 pub fn pyfn_perturbation_theory_1st<'py>(py: Python<'py>, states: Vec<Vec<f64>>, perturbation: Vec<f64>, dx: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::perturbation_theory_1st(&states, &perturbation, dx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -394,7 +390,6 @@ pub fn pyfn_perturbation_theory_1st<'py>(py: Python<'py>, states: Vec<Vec<f64>>,
 #[pyfunction]
 #[pyo3(name = "perturbation_theory_2nd", signature = (states, energies, perturbation, dx))]
 pub fn pyfn_perturbation_theory_2nd<'py>(py: Python<'py>, states: Vec<Vec<f64>>, energies: Vec<f64>, perturbation: Vec<f64>, dx: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::perturbation_theory_2nd(&states, &energies, &perturbation, dx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -470,7 +465,6 @@ pub fn pyfn_variational_ground_state(v: Vec<f64>, dx: f64, x0: f64, trial: pyo3:
 #[pyfunction]
 #[pyo3(name = "imaginary_time_propagation", signature = (v, dx, dtau, steps, mass, hbar))]
 pub fn pyfn_imaginary_time_propagation<'py>(py: Python<'py>, v: Vec<f64>, dx: f64, dtau: f64, steps: usize, mass: f64, hbar: f64) -> PyResult<(f64, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::imaginary_time_propagation(&v, dx, dtau, steps, mass, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -493,7 +487,6 @@ pub fn pyfn_imaginary_time_propagation<'py>(py: Python<'py>, v: Vec<f64>, dx: f6
 #[pyfunction]
 #[pyo3(name = "ehrenfest_check", signature = (snapshots, v, dt, hbar, mass))]
 pub fn pyfn_ehrenfest_check<'py>(py: Python<'py>, snapshots: Vec<crate::generated::types::PyWavefunction1D>, v: Vec<f64>, dt: f64, hbar: f64, mass: f64) -> PyResult<f64> {
-    let _ = py;
     let snapshots = snapshots.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::ehrenfest_check(&snapshots, &v, dt, hbar, mass)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -517,7 +510,6 @@ pub fn pyfn_ehrenfest_check<'py>(py: Python<'py>, snapshots: Vec<crate::generate
 #[pyfunction]
 #[pyo3(name = "wavepacket_scattering", signature = (v, dx, x0, barrier_centre, k0, sigma, start, dt, steps, mass, hbar))]
 pub fn pyfn_wavepacket_scattering<'py>(py: Python<'py>, v: Vec<f64>, dx: f64, x0: f64, barrier_centre: f64, k0: f64, sigma: f64, start: f64, dt: f64, steps: usize, mass: f64, hbar: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::wavepacket_scattering(&v, dx, x0, barrier_centre, k0, sigma, start, dt, steps, mass, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -601,7 +593,6 @@ pub fn pyfn_revival_time(length: f64, mass: f64, hbar: f64) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "quantum_carpet", signature = (length, coefficients, times, points, mass, hbar))]
 pub fn pyfn_quantum_carpet<'py>(py: Python<'py>, length: f64, coefficients: Vec<crate::runtime::coerce::ComplexArg>, times: Vec<f64>, points: usize, mass: f64, hbar: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let coefficients = coefficients.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::quantum::schrodinger::quantum_carpet(length, &coefficients, &times, points, mass, hbar)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -35,7 +36,6 @@ pub fn pyfn_wedge(a: crate::generated::types::PyTensorN, b: crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "determinant_n", signature = (m))]
 pub fn pyfn_determinant_n<'py>(py: Python<'py>, m: crate::generated::types::PyMatrixArg) -> PyResult<f64> {
-    let _ = py;
     let m = m.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::vecn::determinant_n(&m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

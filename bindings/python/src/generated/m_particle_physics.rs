@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -202,7 +203,6 @@ pub fn pyfn_luminosity_to_event_rate(luminosity: f64, cross_section: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "is_charge_conserved", signature = (charges_in, charges_out))]
 pub fn pyfn_is_charge_conserved<'py>(py: Python<'py>, charges_in: Vec<f64>, charges_out: Vec<f64>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::particle_physics::is_charge_conserved(&charges_in, &charges_out)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -214,7 +214,6 @@ pub fn pyfn_is_charge_conserved<'py>(py: Python<'py>, charges_in: Vec<f64>, char
 #[pyfunction]
 #[pyo3(name = "is_lepton_number_conserved", signature = (leptons_in, leptons_out))]
 pub fn pyfn_is_lepton_number_conserved<'py>(py: Python<'py>, leptons_in: Vec<i32>, leptons_out: Vec<i32>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::particle_physics::is_lepton_number_conserved(&leptons_in, &leptons_out)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -226,7 +225,6 @@ pub fn pyfn_is_lepton_number_conserved<'py>(py: Python<'py>, leptons_in: Vec<i32
 #[pyfunction]
 #[pyo3(name = "is_baryon_number_conserved", signature = (baryons_in, baryons_out))]
 pub fn pyfn_is_baryon_number_conserved<'py>(py: Python<'py>, baryons_in: Vec<i32>, baryons_out: Vec<i32>) -> PyResult<bool> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::particle_physics::is_baryon_number_conserved(&baryons_in, &baryons_out)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

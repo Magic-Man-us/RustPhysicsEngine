@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -130,7 +131,6 @@ impl PyDisjointSet {
     #[pyo3(name = "sets")]
     #[pyo3(signature = ())]
     fn sets<'py>(&mut self, py: Python<'py>) -> PyResult<Vec<Vec<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.sets()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -145,7 +145,6 @@ impl PyDisjointSet {
     #[pyo3(name = "labels")]
     #[pyo3(signature = ())]
     fn labels<'py>(&mut self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.labels()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

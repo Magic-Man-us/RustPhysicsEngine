@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -36,7 +37,6 @@ pub fn pyfn_great_circle_check(r: f64) -> PyResult<bool> {
 #[pyfunction]
 #[pyo3(name = "schwarzschild_orbit", signature = (m, r0, l, e, phi_end, dt))]
 pub fn pyfn_schwarzschild_orbit<'py>(py: Python<'py>, m: f64, r0: f64, l: f64, e: f64, phi_end: f64, dt: f64) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::geodesic::schwarzschild_orbit(m, r0, l, e, phi_end, dt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -110,7 +110,6 @@ pub fn pyfn_geodesics_on_mesh_exact(mesh: crate::generated::types::PyGeometryMes
 #[pyfunction]
 #[pyo3(name = "heat_method_geodesic", signature = (mesh, source, t))]
 pub fn pyfn_heat_method_geodesic<'py>(py: Python<'py>, mesh: crate::generated::types::PyGeometryMeshMesh, source: usize, t: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let mesh = mesh.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::manifold::geodesic::heat_method_geodesic(&mesh, source, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

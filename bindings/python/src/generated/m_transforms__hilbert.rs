@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -33,7 +34,6 @@ pub fn pyfn_analytic_signal<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<p
 #[pyfunction]
 #[pyo3(name = "hilbert", signature = (x))]
 pub fn pyfn_hilbert<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::hilbert(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -45,7 +45,6 @@ pub fn pyfn_hilbert<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "envelope", signature = (x))]
 pub fn pyfn_envelope<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::envelope(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -57,7 +56,6 @@ pub fn pyfn_envelope<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
 #[pyfunction]
 #[pyo3(name = "instantaneous_phase", signature = (x))]
 pub fn pyfn_instantaneous_phase<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::instantaneous_phase(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -70,7 +68,6 @@ pub fn pyfn_instantaneous_phase<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<V
 #[pyfunction]
 #[pyo3(name = "instantaneous_frequency", signature = (x, fs))]
 pub fn pyfn_instantaneous_frequency<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::instantaneous_frequency(&x, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -85,7 +82,6 @@ pub fn pyfn_instantaneous_frequency<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) 
 #[pyfunction]
 #[pyo3(name = "hilbert_fir", signature = (n_taps))]
 pub fn pyfn_hilbert_fir<'py>(py: Python<'py>, n_taps: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::hilbert_fir(n_taps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -98,7 +94,6 @@ pub fn pyfn_hilbert_fir<'py>(py: Python<'py>, n_taps: usize) -> PyResult<Vec<f64
 #[pyfunction]
 #[pyo3(name = "ssb_modulate", signature = (x, fc, fs, upper))]
 pub fn pyfn_ssb_modulate<'py>(py: Python<'py>, x: Vec<f64>, fc: f64, fs: f64, upper: bool) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::ssb_modulate(&x, fc, fs, upper)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -111,7 +106,6 @@ pub fn pyfn_ssb_modulate<'py>(py: Python<'py>, x: Vec<f64>, fc: f64, fs: f64, up
 #[pyfunction]
 #[pyo3(name = "am_demodulate", signature = (x))]
 pub fn pyfn_am_demodulate<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::am_demodulate(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -123,7 +117,6 @@ pub fn pyfn_am_demodulate<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64
 #[pyfunction]
 #[pyo3(name = "fm_demodulate", signature = (x, fs))]
 pub fn pyfn_fm_demodulate<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::fm_demodulate(&x, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -136,7 +129,6 @@ pub fn pyfn_fm_demodulate<'py>(py: Python<'py>, x: Vec<f64>, fs: f64) -> PyResul
 #[pyfunction]
 #[pyo3(name = "empirical_mode_decomposition", signature = (x, max_imfs, sift_tol))]
 pub fn pyfn_empirical_mode_decomposition<'py>(py: Python<'py>, x: Vec<f64>, max_imfs: usize, sift_tol: f64) -> PyResult<Vec<Vec<f64>>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::empirical_mode_decomposition(&x, max_imfs, sift_tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -149,7 +141,6 @@ pub fn pyfn_empirical_mode_decomposition<'py>(py: Python<'py>, x: Vec<f64>, max_
 #[pyfunction]
 #[pyo3(name = "hilbert_huang_spectrum", signature = (x, fs, max_imfs))]
 pub fn pyfn_hilbert_huang_spectrum<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, max_imfs: usize) -> PyResult<Vec<(Vec<f64>, Vec<f64>)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::hilbert_huang_spectrum(&x, fs, max_imfs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -166,7 +157,6 @@ pub fn pyfn_hilbert_huang_spectrum<'py>(py: Python<'py>, x: Vec<f64>, fs: f64, m
 #[pyfunction]
 #[pyo3(name = "kramers_kronig", signature = (im, omega))]
 pub fn pyfn_kramers_kronig<'py>(py: Python<'py>, im: Vec<f64>, omega: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::transforms::hilbert::kramers_kronig(&im, &omega)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -294,7 +295,6 @@ impl PyMacGrid2 {
     #[pyo3(name = "divergence")]
     #[pyo3(signature = ())]
     fn divergence<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.divergence()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -307,7 +307,6 @@ impl PyMacGrid2 {
     #[pyo3(name = "curl")]
     #[pyo3(signature = ())]
     fn curl<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.curl()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -504,7 +503,6 @@ impl PyMacGrid3 {
     #[pyo3(name = "divergence")]
     #[pyo3(signature = ())]
     fn divergence<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.divergence()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -650,7 +648,6 @@ impl PyLbmD2Q9 {
     #[pyo3(name = "density")]
     #[pyo3(signature = ())]
     fn density<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.density()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -784,7 +781,6 @@ impl PyLbmD2Q9 {
     #[pyo3(name = "vorticity")]
     #[pyo3(signature = ())]
     fn vorticity<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.vorticity()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -961,7 +957,6 @@ impl PyLbmD3Q27 {
     #[staticmethod]
     #[pyo3(signature = ())]
     fn velocities<'py>(py: Python<'py>) -> PyResult<Vec<(i64, i64, i64)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::cfd::lbm::LbmD3Q27::velocities()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1, __x.2)).collect::<Vec<_>>())
@@ -1135,6 +1130,18 @@ impl PyLevelSet2 {
         Ok(crate::generated::types::PyLevelSet2 { inner: __v })
     }
 
+    /// Advect through a MAC velocity field for one step.
+    ///
+    /// Rust: `cfd::level_set::LevelSet2::advect`
+    #[pyo3(name = "advect")]
+    #[pyo3(signature = (grid, dt, scheme))]
+    fn advect(&mut self, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64, scheme: crate::generated::types::PyWenoOrUpwind) -> PyResult<()> {
+        let scheme = scheme.to_rust();
+        let __r = crate::runtime::guard(|| self.inner.advect(&grid.inner, dt, scheme));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(())
+    }
+
     /// Sussman PDE reinitialization toward |∇φ| = 1.
     ///
     /// Rust: `cfd::level_set::LevelSet2::reinitialize`
@@ -1234,6 +1241,39 @@ impl PyLevelSet2 {
         let __r = crate::runtime::guard(|| self.inner.delta(eps));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(crate::generated::types::PyCellField2 { inner: __v })
+    }
+
+    /// CSG union (min).
+    ///
+    /// Rust: `cfd::level_set::LevelSet2::union`
+    #[pyo3(name = "union")]
+    #[pyo3(signature = (other))]
+    fn union(&mut self, other: pyo3::PyRef<'_, crate::generated::types::PyLevelSet2>) -> PyResult<()> {
+        let __r = crate::runtime::guard(|| self.inner.union(&other.inner));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(())
+    }
+
+    /// CSG intersection (max).
+    ///
+    /// Rust: `cfd::level_set::LevelSet2::intersect`
+    #[pyo3(name = "intersect")]
+    #[pyo3(signature = (other))]
+    fn intersect(&mut self, other: pyo3::PyRef<'_, crate::generated::types::PyLevelSet2>) -> PyResult<()> {
+        let __r = crate::runtime::guard(|| self.inner.intersect(&other.inner));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(())
+    }
+
+    /// CSG subtraction (max with −other).
+    ///
+    /// Rust: `cfd::level_set::LevelSet2::subtract`
+    #[pyo3(name = "subtract")]
+    #[pyo3(signature = (other))]
+    fn subtract(&mut self, other: pyo3::PyRef<'_, crate::generated::types::PyLevelSet2>) -> PyResult<()> {
+        let __r = crate::runtime::guard(|| self.inner.subtract(&other.inner));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(())
     }
 
     /// Extend a scalar field off the interface along normals (upwind
@@ -1425,6 +1465,18 @@ impl PyVof2 {
         Ok(__v.into_iter().map(|__x| crate::generated::types::PyVec2 { inner: __x }).collect::<Vec<_>>())
     }
 
+    /// Directional-split geometric advection using PLIC subsampling of
+    /// donor regions.
+    ///
+    /// Rust: `cfd::level_set::Vof2::advect_plic`
+    #[pyo3(name = "advect_plic")]
+    #[pyo3(signature = (grid, dt))]
+    fn advect_plic(&mut self, grid: pyo3::PyRef<'_, crate::generated::types::PyMacGrid2>, dt: f64) -> PyResult<()> {
+        let __r = crate::runtime::guard(|| self.inner.advect_plic(&grid.inner, dt));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(())
+    }
+
     /// PLIC interface segments.
     ///
     /// Rust: `cfd::level_set::Vof2::interface_segments`
@@ -1454,7 +1506,6 @@ impl PyVof2 {
     #[pyo3(name = "curvature_height_function")]
     #[pyo3(signature = ())]
     fn curvature_height_function<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.curvature_height_function()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1898,7 +1949,6 @@ impl PyPanelMethod {
     #[pyo3(name = "cp_distribution")]
     #[pyo3(signature = ())]
     fn cp_distribution<'py>(&self, py: Python<'py>) -> PyResult<Vec<(f64, f64)>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.cp_distribution()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -2523,7 +2573,6 @@ impl PyEuler2D {
     #[pyo3(name = "schlieren")]
     #[pyo3(signature = ())]
     fn schlieren<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.schlieren()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2889,7 +2938,6 @@ impl PyShallowWater2D {
     #[pyo3(name = "froude_field")]
     #[pyo3(signature = ())]
     fn froude_field<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.froude_field()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -3142,7 +3190,6 @@ impl PySphSpatialHash {
     #[pyo3(name = "rebuild")]
     #[pyo3(signature = (positions))]
     fn rebuild<'py>(&mut self, py: Python<'py>, positions: Vec<crate::generated::types::PyVec3Arg>) -> PyResult<()> {
-        let _ = py;
         let positions = positions.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.rebuild(&positions)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -3368,7 +3415,6 @@ impl PySph {
     #[pyo3(name = "surface_particles")]
     #[pyo3(signature = ())]
     fn surface_particles<'py>(&self, py: Python<'py>) -> PyResult<Vec<usize>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.surface_particles()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -3702,6 +3748,19 @@ impl PyStableFluid2 {
         let __r = crate::runtime::guard(|| self.inner.streamlines(&seeds, steps, dt));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v.into_iter().map(|__x| __x.into_iter().map(|__x| crate::generated::types::PyVec2 { inner: __x }).collect::<Vec<_>>()).collect::<Vec<_>>())
+    }
+
+    /// Advect passive tracer particles one step (RK2).
+    ///
+    /// Rust: `cfd::stable_fluids::StableFluid2::particles_advect`
+    #[pyo3(name = "particles_advect")]
+    #[pyo3(signature = (pts, dt))]
+    fn particles_advect<'py>(&self, pts: pyo3::Bound<'py, pyo3::PyAny>, dt: f64) -> PyResult<()> {
+        let mut pts__v: Vec<rust_physics_engine::math::Vec2> = pts.extract::<Vec<crate::generated::types::PyVec2Arg>>()?.into_iter().map(|__e| __e.0).collect();
+        let __r = crate::runtime::guard(|| self.inner.particles_advect(&mut pts__v, dt));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        crate::runtime::coerce::write_back_objects(&pts, pts__v.into_iter().map(|__e| crate::generated::types::PyVec2 { inner: __e }).collect::<Vec<_>>())?;
+        Ok(())
     }
 
     /// Pressure force on the solid cells (unit density): F = Σ p n dx,

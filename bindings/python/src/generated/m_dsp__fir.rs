@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -23,7 +24,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "fir_lowpass", signature = (n_taps, cutoff, w))]
 pub fn pyfn_fir_lowpass<'py>(py: Python<'py>, n_taps: usize, cutoff: f64, w: crate::generated::types::PyWindowKind) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_lowpass(n_taps, cutoff, w)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -40,7 +40,6 @@ pub fn pyfn_fir_lowpass<'py>(py: Python<'py>, n_taps: usize, cutoff: f64, w: cra
 #[pyfunction]
 #[pyo3(name = "fir_highpass", signature = (n_taps, cutoff, w))]
 pub fn pyfn_fir_highpass<'py>(py: Python<'py>, n_taps: usize, cutoff: f64, w: crate::generated::types::PyWindowKind) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_highpass(n_taps, cutoff, w)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -57,7 +56,6 @@ pub fn pyfn_fir_highpass<'py>(py: Python<'py>, n_taps: usize, cutoff: f64, w: cr
 #[pyfunction]
 #[pyo3(name = "fir_bandpass", signature = (n_taps, lo, hi, w))]
 pub fn pyfn_fir_bandpass<'py>(py: Python<'py>, n_taps: usize, lo: f64, hi: f64, w: crate::generated::types::PyWindowKind) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_bandpass(n_taps, lo, hi, w)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -73,7 +71,6 @@ pub fn pyfn_fir_bandpass<'py>(py: Python<'py>, n_taps: usize, lo: f64, hi: f64, 
 #[pyfunction]
 #[pyo3(name = "fir_bandstop", signature = (n_taps, lo, hi, w))]
 pub fn pyfn_fir_bandstop<'py>(py: Python<'py>, n_taps: usize, lo: f64, hi: f64, w: crate::generated::types::PyWindowKind) -> PyResult<Vec<f64>> {
-    let _ = py;
     let w = w.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_bandstop(n_taps, lo, hi, w)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -92,7 +89,6 @@ pub fn pyfn_fir_bandstop<'py>(py: Python<'py>, n_taps: usize, lo: f64, hi: f64, 
 #[pyfunction]
 #[pyo3(name = "fir_kaiser_design", signature = (pass_, stop, ripple_db, atten_db))]
 pub fn pyfn_fir_kaiser_design<'py>(py: Python<'py>, pass_: f64, stop: f64, ripple_db: f64, atten_db: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_kaiser_design(pass_, stop, ripple_db, atten_db)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -113,7 +109,6 @@ pub fn pyfn_fir_kaiser_design<'py>(py: Python<'py>, pass_: f64, stop: f64, rippl
 #[pyfunction]
 #[pyo3(name = "fir_parks_mcclellan", signature = (n_taps, bands, desired, weights))]
 pub fn pyfn_fir_parks_mcclellan<'py>(py: Python<'py>, n_taps: usize, bands: Vec<(f64, f64)>, desired: Vec<f64>, weights: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let bands = bands.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_parks_mcclellan(n_taps, &bands, &desired, &weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -131,7 +126,6 @@ pub fn pyfn_fir_parks_mcclellan<'py>(py: Python<'py>, n_taps: usize, bands: Vec<
 #[pyfunction]
 #[pyo3(name = "fir_least_squares", signature = (n_taps, bands, desired))]
 pub fn pyfn_fir_least_squares<'py>(py: Python<'py>, n_taps: usize, bands: Vec<(f64, f64)>, desired: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let bands = bands.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_least_squares(n_taps, &bands, &desired)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -149,7 +143,6 @@ pub fn pyfn_fir_least_squares<'py>(py: Python<'py>, n_taps: usize, bands: Vec<(f
 #[pyfunction]
 #[pyo3(name = "fir_differentiator", signature = (n_taps))]
 pub fn pyfn_fir_differentiator<'py>(py: Python<'py>, n_taps: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_differentiator(n_taps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -165,7 +158,6 @@ pub fn pyfn_fir_differentiator<'py>(py: Python<'py>, n_taps: usize) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "fir_hilbert", signature = (n_taps))]
 pub fn pyfn_fir_hilbert<'py>(py: Python<'py>, n_taps: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_hilbert(n_taps)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -182,7 +174,6 @@ pub fn pyfn_fir_hilbert<'py>(py: Python<'py>, n_taps: usize) -> PyResult<Vec<f64
 #[pyfunction]
 #[pyo3(name = "fir_raised_cosine", signature = (span, sps, beta))]
 pub fn pyfn_fir_raised_cosine<'py>(py: Python<'py>, span: usize, sps: usize, beta: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_raised_cosine(span, sps, beta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -199,7 +190,6 @@ pub fn pyfn_fir_raised_cosine<'py>(py: Python<'py>, span: usize, sps: usize, bet
 #[pyfunction]
 #[pyo3(name = "fir_root_raised_cosine", signature = (span, sps, beta))]
 pub fn pyfn_fir_root_raised_cosine<'py>(py: Python<'py>, span: usize, sps: usize, beta: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_root_raised_cosine(span, sps, beta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -215,7 +205,6 @@ pub fn pyfn_fir_root_raised_cosine<'py>(py: Python<'py>, span: usize, sps: usize
 #[pyfunction]
 #[pyo3(name = "fir_gaussian", signature = (n_taps, bt))]
 pub fn pyfn_fir_gaussian<'py>(py: Python<'py>, n_taps: usize, bt: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_gaussian(n_taps, bt)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -233,7 +222,6 @@ pub fn pyfn_fir_gaussian<'py>(py: Python<'py>, n_taps: usize, bt: f64) -> PyResu
 #[pyfunction]
 #[pyo3(name = "fir_savitzky_golay", signature = (window, order, deriv))]
 pub fn pyfn_fir_savitzky_golay<'py>(py: Python<'py>, window: usize, order: usize, deriv: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_savitzky_golay(window, order, deriv)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -246,7 +234,6 @@ pub fn pyfn_fir_savitzky_golay<'py>(py: Python<'py>, window: usize, order: usize
 #[pyfunction]
 #[pyo3(name = "fir_apply", signature = (h, x))]
 pub fn pyfn_fir_apply<'py>(py: Python<'py>, h: Vec<f64>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_apply(&h, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -259,7 +246,6 @@ pub fn pyfn_fir_apply<'py>(py: Python<'py>, h: Vec<f64>, x: Vec<f64>) -> PyResul
 #[pyfunction]
 #[pyo3(name = "fir_apply_fft", signature = (h, x))]
 pub fn pyfn_fir_apply_fft<'py>(py: Python<'py>, h: Vec<f64>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_apply_fft(&h, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -272,7 +258,6 @@ pub fn pyfn_fir_apply_fft<'py>(py: Python<'py>, h: Vec<f64>, x: Vec<f64>) -> PyR
 #[pyfunction]
 #[pyo3(name = "filtfilt_fir", signature = (h, x))]
 pub fn pyfn_filtfilt_fir<'py>(py: Python<'py>, h: Vec<f64>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::filtfilt_fir(&h, &x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -300,7 +285,6 @@ pub fn pyfn_fir_freq_response<'py>(py: Python<'py>, h: Vec<f64>, n: usize) -> Py
 #[pyfunction]
 #[pyo3(name = "fir_group_delay", signature = (h))]
 pub fn pyfn_fir_group_delay<'py>(py: Python<'py>, h: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::dsp::fir::fir_group_delay(&h)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

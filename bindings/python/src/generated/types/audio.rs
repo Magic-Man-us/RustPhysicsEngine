@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -978,7 +979,6 @@ impl PyPartitionedConvolver {
     #[pyo3(name = "process_block")]
     #[pyo3(signature = (x))]
     fn process_block<'py>(&mut self, py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.process_block(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1720,7 +1720,6 @@ impl PyOscillator {
     #[pyo3(name = "block")]
     #[pyo3(signature = (n))]
     fn block<'py>(&mut self, py: Python<'py>, n: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.block(n)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1963,7 +1962,6 @@ impl PyKellyLochbaum {
     #[pyo3(name = "set_areas")]
     #[pyo3(signature = (area_function))]
     fn set_areas<'py>(&mut self, py: Python<'py>, area_function: Vec<f64>) -> PyResult<()> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.set_areas(&area_function)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(())
@@ -2207,7 +2205,6 @@ impl PyModalSynth {
     #[pyo3(name = "excite")]
     #[pyo3(signature = (impulse))]
     fn excite<'py>(&mut self, py: Python<'py>, impulse: Vec<f64>) -> PyResult<()> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.excite(&impulse)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(())
@@ -2543,7 +2540,6 @@ impl PyFmSynth {
     #[staticmethod]
     #[pyo3(signature = (n))]
     fn dx7_algorithm<'py>(py: Python<'py>, n: u8) -> PyResult<Vec<Vec<usize>>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::synthesis::FmSynth::dx7_algorithm(n)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2588,7 +2584,6 @@ impl PyFmSynth {
     #[pyo3(name = "render")]
     #[pyo3(signature = (freq, duration))]
     fn render<'py>(&mut self, py: Python<'py>, freq: f64, duration: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.render(freq, duration)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2848,7 +2843,6 @@ impl PyPhaseVocoder {
     #[pyo3(name = "time_stretch")]
     #[pyo3(signature = (x, ratio))]
     fn time_stretch<'py>(&mut self, py: Python<'py>, x: Vec<f64>, ratio: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.time_stretch(&x, ratio)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2861,7 +2855,6 @@ impl PyPhaseVocoder {
     #[pyo3(name = "pitch_shift")]
     #[pyo3(signature = (x, semitones))]
     fn pitch_shift<'py>(&mut self, py: Python<'py>, x: Vec<f64>, semitones: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.pitch_shift(&x, semitones)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2874,7 +2867,6 @@ impl PyPhaseVocoder {
     #[pyo3(name = "pitch_shift_formant_preserving")]
     #[pyo3(signature = (x, semitones))]
     fn pitch_shift_formant_preserving<'py>(&mut self, py: Python<'py>, x: Vec<f64>, semitones: f64) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.pitch_shift_formant_preserving(&x, semitones)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2886,7 +2878,6 @@ impl PyPhaseVocoder {
     #[pyo3(name = "freeze")]
     #[pyo3(signature = (x, at_sample, duration))]
     fn freeze<'py>(&mut self, py: Python<'py>, x: Vec<f64>, at_sample: usize, duration: usize) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.freeze(&x, at_sample, duration)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2898,7 +2889,6 @@ impl PyPhaseVocoder {
     #[pyo3(name = "robotize")]
     #[pyo3(signature = (x))]
     fn robotize<'py>(&mut self, py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.robotize(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -2910,7 +2900,6 @@ impl PyPhaseVocoder {
     #[pyo3(name = "whisperize")]
     #[pyo3(signature = (x))]
     fn whisperize<'py>(&mut self, py: Python<'py>, x: Vec<f64>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.whisperize(&x)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -88,7 +89,6 @@ pub fn pyfn_percolation_threshold_binary_search(n: usize, trials: usize, rng: py
 #[pyfunction]
 #[pyo3(name = "cluster_size_distribution", signature = (grid, n))]
 pub fn pyfn_cluster_size_distribution<'py>(py: Python<'py>, grid: Vec<bool>, n: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::cluster_size_distribution(&grid, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -163,7 +163,6 @@ pub fn pyfn_saw_sample_rosenbluth(n: usize, rng: pyo3::PyRefMut<'_, crate::gener
 #[pyfunction]
 #[pyo3(name = "connective_constant_estimate", signature = (counts))]
 pub fn pyfn_connective_constant_estimate<'py>(py: Python<'py>, counts: Vec<u64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::connective_constant_estimate(&counts)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -215,7 +214,6 @@ pub fn pyfn_return_probability(dimensions: usize) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "polymer_end_to_end", signature = (samples))]
 pub fn pyfn_polymer_end_to_end<'py>(py: Python<'py>, samples: Vec<(Vec<(i64, i64)>, f64)>) -> PyResult<f64> {
-    let _ = py;
     let samples = samples.into_iter().map(|__e| (__e.0.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>(), __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::polymer_end_to_end(&samples)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -236,7 +234,6 @@ pub fn pyfn_polymer_end_to_end<'py>(py: Python<'py>, samples: Vec<(Vec<(i64, i64
 #[pyfunction]
 #[pyo3(name = "flory_exponent_estimate", signature = (lengths, squared))]
 pub fn pyfn_flory_exponent_estimate<'py>(py: Python<'py>, lengths: Vec<usize>, squared: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::flory_exponent_estimate(&lengths, &squared)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -299,7 +296,6 @@ pub fn pyfn_kpz_growth_ballistic(width: usize, depositions: usize, rng: pyo3::Py
 #[pyfunction]
 #[pyo3(name = "interface_width", signature = (heights))]
 pub fn pyfn_interface_width<'py>(py: Python<'py>, heights: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::interface_width(&heights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -321,7 +317,6 @@ pub fn pyfn_interface_width<'py>(py: Python<'py>, heights: Vec<f64>) -> PyResult
 #[pyfunction]
 #[pyo3(name = "growth_exponent_estimate", signature = (times, widths))]
 pub fn pyfn_growth_exponent_estimate<'py>(py: Python<'py>, times: Vec<f64>, widths: Vec<f64>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::growth_exponent_estimate(&times, &widths)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -368,7 +363,6 @@ pub fn pyfn_sandpile_avalanche_distribution(n: usize, drops: usize, rng: pyo3::P
 #[pyfunction]
 #[pyo3(name = "power_law_fit_clauset", signature = (data, x_min))]
 pub fn pyfn_power_law_fit_clauset<'py>(py: Python<'py>, data: Vec<f64>, x_min: f64) -> PyResult<(f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::lattice_models::power_law_fit_clauset(&data, x_min)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

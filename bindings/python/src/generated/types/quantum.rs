@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -21,28 +22,201 @@ use pyo3::prelude::*;
 pub struct PyCircuit { pub inner: rust_physics_engine::quantum::circuit::Circuit }
 #[pymethods]
 impl PyCircuit {
-    /// Builds a `Circuit` from its fields.
-    #[new]
-    #[pyo3(signature = (n, ops))]
-    fn __new__(n: usize, ops: Vec<crate::generated::types::PyOp>) -> Self {
-        let ops = ops.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
-        Self { inner: rust_physics_engine::quantum::circuit::Circuit { n: n, ops: ops } }
-    }
-
     /// An empty circuit.
     ///
     /// Errors:
     /// Returns an error for a bad qubit count.
     ///
     /// Rust: `quantum::circuit::Circuit::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (n))]
-    fn new(n: usize) -> PyResult<crate::generated::types::PyCircuit> {
+    fn __new__(n: usize) -> PyResult<crate::generated::types::PyCircuit> {
         let __r = crate::runtime::guard(|| rust_physics_engine::quantum::circuit::Circuit::new(n));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
         Ok(crate::generated::types::PyCircuit { inner: __v })
+    }
+
+    /// Appends a one-qubit gate.
+    ///
+    /// Rust: `quantum::circuit::Circuit::gate`
+    #[pyo3(name = "gate")]
+    #[pyo3(signature = (q, gate))]
+    fn gate<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize, gate: crate::generated::types::PyGate) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let gate = gate.inner;
+        let __r = crate::runtime::guard(|| { slf.inner.gate(q, gate); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends an X.
+    ///
+    /// Rust: `quantum::circuit::Circuit::x`
+    #[pyo3(name = "x")]
+    #[pyo3(signature = (q))]
+    fn x<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.x(q); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a Y.
+    ///
+    /// Rust: `quantum::circuit::Circuit::y`
+    #[pyo3(name = "y")]
+    #[pyo3(signature = (q))]
+    fn y<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.y(q); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a Z.
+    ///
+    /// Rust: `quantum::circuit::Circuit::z`
+    #[pyo3(name = "z")]
+    #[pyo3(signature = (q))]
+    fn z<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.z(q); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a Hadamard.
+    ///
+    /// Rust: `quantum::circuit::Circuit::h`
+    #[pyo3(name = "h")]
+    #[pyo3(signature = (q))]
+    fn h<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.h(q); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends an X rotation.
+    ///
+    /// Rust: `quantum::circuit::Circuit::rx`
+    #[pyo3(name = "rx")]
+    #[pyo3(signature = (q, theta))]
+    fn rx<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize, theta: f64) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.rx(q, theta); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a Y rotation.
+    ///
+    /// Rust: `quantum::circuit::Circuit::ry`
+    #[pyo3(name = "ry")]
+    #[pyo3(signature = (q, theta))]
+    fn ry<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize, theta: f64) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.ry(q, theta); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a Z rotation.
+    ///
+    /// Rust: `quantum::circuit::Circuit::rz`
+    #[pyo3(name = "rz")]
+    #[pyo3(signature = (q, theta))]
+    fn rz<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize, theta: f64) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.rz(q, theta); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a phase.
+    ///
+    /// Rust: `quantum::circuit::Circuit::phase`
+    #[pyo3(name = "phase")]
+    #[pyo3(signature = (q, phi))]
+    fn phase<'py>(mut slf: pyo3::PyRefMut<'py, Self>, q: usize, phi: f64) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.phase(q, phi); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a controlled NOT.
+    ///
+    /// Rust: `quantum::circuit::Circuit::cx`
+    #[pyo3(name = "cx")]
+    #[pyo3(signature = (control, target))]
+    fn cx<'py>(mut slf: pyo3::PyRefMut<'py, Self>, control: usize, target: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.cx(control, target); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a controlled Z.
+    ///
+    /// Rust: `quantum::circuit::Circuit::cz`
+    #[pyo3(name = "cz")]
+    #[pyo3(signature = (control, target))]
+    fn cz<'py>(mut slf: pyo3::PyRefMut<'py, Self>, control: usize, target: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.cz(control, target); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a controlled phase.
+    ///
+    /// Rust: `quantum::circuit::Circuit::cphase`
+    #[pyo3(name = "cphase")]
+    #[pyo3(signature = (control, target, phi))]
+    fn cphase<'py>(mut slf: pyo3::PyRefMut<'py, Self>, control: usize, target: usize, phi: f64) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.cphase(control, target, phi); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a Toffoli.
+    ///
+    /// Rust: `quantum::circuit::Circuit::ccx`
+    #[pyo3(name = "ccx")]
+    #[pyo3(signature = (a, b, target))]
+    fn ccx<'py>(mut slf: pyo3::PyRefMut<'py, Self>, a: usize, b: usize, target: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.ccx(a, b, target); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a swap.
+    ///
+    /// Rust: `quantum::circuit::Circuit::swap`
+    #[pyo3(name = "swap")]
+    #[pyo3(signature = (a, b))]
+    fn swap<'py>(mut slf: pyo3::PyRefMut<'py, Self>, a: usize, b: usize) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.swap(a, b); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends a barrier.
+    ///
+    /// Rust: `quantum::circuit::Circuit::barrier`
+    #[pyo3(name = "barrier")]
+    #[pyo3(signature = ())]
+    fn barrier<'py>(mut slf: pyo3::PyRefMut<'py, Self>) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let __r = crate::runtime::guard(|| { slf.inner.barrier(); });
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        Ok(slf)
+    }
+
+    /// Appends another circuit's operations.
+    ///
+    /// Errors:
+    /// Returns an error if the widths disagree.
+    ///
+    /// Rust: `quantum::circuit::Circuit::append`
+    #[pyo3(name = "append")]
+    #[pyo3(signature = (other))]
+    fn append<'py>(mut slf: pyo3::PyRefMut<'py, Self>, other: crate::generated::types::PyCircuit) -> PyResult<pyo3::PyRefMut<'py, Self>> {
+        let other = other.inner;
+        let __r = crate::runtime::guard(|| slf.inner.append(&other).map(|_| ()));
+        let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
+        let __v = __v.map_err(crate::runtime::map_geom)?;
+        Ok(slf)
     }
 
     /// The inverse circuit: every gate adjointed, in reverse order.
@@ -316,7 +490,6 @@ impl PyDensityMatrix {
     #[pyo3(name = "apply_channel")]
     #[pyo3(signature = (kraus))]
     fn apply_channel<'py>(&mut self, py: Python<'py>, kraus: Vec<Vec<Vec<crate::runtime::coerce::ComplexArg>>>) -> PyResult<()> {
-        let _ = py;
         let kraus = kraus.into_iter().map(|__e| __e.into_iter().map(|__e| __e.into_iter().map(|__e| __e.0).collect::<Vec<_>>()).collect::<Vec<_>>()).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.apply_channel(&kraus)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -744,7 +917,6 @@ impl PyQState {
     #[pyo3(name = "probabilities")]
     #[pyo3(signature = ())]
     fn probabilities<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.probabilities()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -951,7 +1123,6 @@ impl PyQState {
     #[pyo3(name = "schmidt_coefficients")]
     #[pyo3(signature = (partition))]
     fn schmidt_coefficients<'py>(&self, py: Python<'py>, partition: Vec<usize>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.schmidt_coefficients(&partition)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -973,7 +1144,6 @@ impl PyQState {
     #[pyo3(name = "entanglement_entropy")]
     #[pyo3(signature = (partition))]
     fn entanglement_entropy<'py>(&self, py: Python<'py>, partition: Vec<usize>) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.entanglement_entropy(&partition)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1050,24 +1220,15 @@ impl PyBasis {
 pub struct PySpinChain { pub inner: rust_physics_engine::quantum::spin::SpinChain }
 #[pymethods]
 impl PySpinChain {
-    /// Builds a `SpinChain` from its fields.
-    #[new]
-    #[pyo3(signature = (n, j, jz, h_field, periodic))]
-    fn __new__(n: usize, j: f64, jz: f64, h_field: f64, periodic: bool) -> Self {
-
-        Self { inner: rust_physics_engine::quantum::spin::SpinChain { n: n, j: j, jz: jz, h_field: h_field, periodic: periodic } }
-    }
-
     /// A chain, checking the site count.
     ///
     /// Errors:
     /// Returns an error for fewer than two sites or more than sixteen.
     ///
     /// Rust: `quantum::spin::SpinChain::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (n, j, jz, h_field, periodic))]
-    fn new(n: usize, j: f64, jz: f64, h_field: f64, periodic: bool) -> PyResult<crate::generated::types::PySpinChain> {
+    fn __new__(n: usize, j: f64, jz: f64, h_field: f64, periodic: bool) -> PyResult<crate::generated::types::PySpinChain> {
         let __r = crate::runtime::guard(|| rust_physics_engine::quantum::spin::SpinChain::new(n, j, jz, h_field, periodic));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1125,7 +1286,6 @@ impl PySpinChain {
     #[pyo3(name = "spectrum_small")]
     #[pyo3(signature = ())]
     fn spectrum_small<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.spectrum_small()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -1157,7 +1317,6 @@ impl PySpinChain {
     #[pyo3(name = "magnetization")]
     #[pyo3(signature = (state))]
     fn magnetization<'py>(&self, py: Python<'py>, state: Vec<crate::runtime::coerce::ComplexArg>) -> PyResult<f64> {
-        let _ = py;
         let state = state.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.magnetization(&state)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1174,7 +1333,6 @@ impl PySpinChain {
     #[pyo3(name = "correlation")]
     #[pyo3(signature = (state, i, j))]
     fn correlation<'py>(&self, py: Python<'py>, state: Vec<crate::runtime::coerce::ComplexArg>, i: usize, j: usize) -> PyResult<f64> {
-        let _ = py;
         let state = state.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.correlation(&state, i, j)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1195,7 +1353,6 @@ impl PySpinChain {
     #[pyo3(name = "structure_factor")]
     #[pyo3(signature = (state, k))]
     fn structure_factor<'py>(&self, py: Python<'py>, state: Vec<crate::runtime::coerce::ComplexArg>, k: f64) -> PyResult<f64> {
-        let _ = py;
         let state = state.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.structure_factor(&state, k)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1212,7 +1369,6 @@ impl PySpinChain {
     #[pyo3(name = "entanglement_entropy_cut")]
     #[pyo3(signature = (state, cut))]
     fn entanglement_entropy_cut<'py>(&self, py: Python<'py>, state: Vec<crate::runtime::coerce::ComplexArg>, cut: usize) -> PyResult<f64> {
-        let _ = py;
         let state = state.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.entanglement_entropy_cut(&state, cut)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1302,24 +1458,15 @@ impl PySpinChain {
 pub struct PyWavefunction1D { pub inner: rust_physics_engine::quantum::wavefunction::Wavefunction1D }
 #[pymethods]
 impl PyWavefunction1D {
-    /// Builds a `Wavefunction1D` from its fields.
-    #[new]
-    #[pyo3(signature = (psi, dx, x0))]
-    fn __new__(psi: Vec<crate::runtime::coerce::ComplexArg>, dx: f64, x0: f64) -> Self {
-        let psi = psi.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
-        Self { inner: rust_physics_engine::quantum::wavefunction::Wavefunction1D { psi: psi, dx: dx, x0: x0 } }
-    }
-
     /// A wavefunction from explicit samples.
     ///
     /// Errors:
     /// Returns an error for an empty sample vector or a non-positive spacing.
     ///
     /// Rust: `quantum::wavefunction::Wavefunction1D::new`
-    #[pyo3(name = "new")]
-    #[staticmethod]
+    #[new]
     #[pyo3(signature = (psi, dx, x0))]
-    fn new(psi: Vec<crate::runtime::coerce::ComplexArg>, dx: f64, x0: f64) -> PyResult<crate::generated::types::PyWavefunction1D> {
+    fn __new__(psi: Vec<crate::runtime::coerce::ComplexArg>, dx: f64, x0: f64) -> PyResult<crate::generated::types::PyWavefunction1D> {
         let psi = psi.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
         let __r = crate::runtime::guard(|| rust_physics_engine::quantum::wavefunction::Wavefunction1D::new(psi, dx, x0));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -1429,7 +1576,6 @@ impl PyWavefunction1D {
     #[pyo3(name = "probability_density")]
     #[pyo3(signature = ())]
     fn probability_density<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.probability_density()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1468,7 +1614,6 @@ impl PyWavefunction1D {
     #[pyo3(name = "wavenumbers")]
     #[pyo3(signature = ())]
     fn wavenumbers<'py>(&self, py: Python<'py>) -> PyResult<Vec<f64>> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.wavenumbers()));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         Ok(__v)
@@ -1568,7 +1713,6 @@ impl PyWavefunction1D {
     #[pyo3(name = "energy")]
     #[pyo3(signature = (v, hbar, mass))]
     fn energy<'py>(&self, py: Python<'py>, v: Vec<f64>, hbar: f64, mass: f64) -> PyResult<f64> {
-        let _ = py;
         let __r = py.detach(move || crate::runtime::guard(move || self.inner.energy(&v, hbar, mass)));
         let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
         let __v = __v.map_err(crate::runtime::map_geom)?;

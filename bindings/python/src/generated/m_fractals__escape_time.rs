@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -161,7 +162,6 @@ pub fn pyfn_phoenix(z: crate::runtime::coerce::ComplexArg, c: crate::runtime::co
 #[pyfunction]
 #[pyo3(name = "newton_fractal", signature = (z, poly, params))]
 pub fn pyfn_newton_fractal<'py>(py: Python<'py>, z: crate::runtime::coerce::ComplexArg, poly: Vec<crate::runtime::coerce::ComplexArg>, params: crate::generated::types::PyEscapeParams) -> PyResult<(usize, u32)> {
-    let _ = py;
     let z = z.0;
     let poly = poly.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let params = params.inner;

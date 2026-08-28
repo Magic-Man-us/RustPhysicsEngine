@@ -3,6 +3,7 @@
 // Regenerate with:  python3 bindings/python/generate.py
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -2694,9 +2695,14 @@ pub fn register<'py>(py: Python<'py>, root: &Bound<'py, PyModule>) -> PyResult<(
     { let v = mods["cfd::potential_flow"].getattr("WingGeometry")?; mods["cfd"].add("WingGeometry", v)?; }
     { let v = mods["cfd::potential_flow"].getattr("added_mass_cylinder")?; mods["cfd"].add("added_mass_cylinder", v)?; }
     { let v = mods["cfd::potential_flow"].getattr("added_mass_sphere")?; mods["cfd"].add("added_mass_sphere", v)?; }
+    { let v = mods["cfd::advection"].getattr("advect_bfecc_2d")?; mods["cfd"].add("advect_bfecc_2d", v)?; }
+    { let v = mods["cfd::advection"].getattr("advect_flux_limited_2d")?; mods["cfd"].add("advect_flux_limited_2d", v)?; }
     { let v = mods["cfd::advection"].getattr("advect_lax_wendroff_1d")?; mods["cfd"].add("advect_lax_wendroff_1d", v)?; }
+    { let v = mods["cfd::advection"].getattr("advect_maccormack_2d")?; mods["cfd"].add("advect_maccormack_2d", v)?; }
     { let v = mods["cfd::advection"].getattr("advect_muscl_1d")?; mods["cfd"].add("advect_muscl_1d", v)?; }
+    { let v = mods["cfd::advection"].getattr("advect_semi_lagrangian_2d")?; mods["cfd"].add("advect_semi_lagrangian_2d", v)?; }
     { let v = mods["cfd::advection"].getattr("advect_upwind_1d")?; mods["cfd"].add("advect_upwind_1d", v)?; }
+    { let v = mods["cfd::advection"].getattr("advect_upwind_2d")?; mods["cfd"].add("advect_upwind_2d", v)?; }
     { let v = mods["cfd::advection"].getattr("advect_velocity_semi_lagrangian")?; mods["cfd"].add("advect_velocity_semi_lagrangian", v)?; }
     { let v = mods["cfd::advection"].getattr("advect_weno5_1d")?; mods["cfd"].add("advect_weno5_1d", v)?; }
     { let v = mods["cfd::advection"].getattr("advection_diffusion_1d")?; mods["cfd"].add("advection_diffusion_1d", v)?; }
@@ -2728,6 +2734,7 @@ pub fn register<'py>(py: Python<'py>, root: &Bound<'py, PyModule>) -> PyResult<(
     { let v = mods["cfd::multiphase"].getattr("chisholm")?; mods["cfd"].add("chisholm", v)?; }
     { let v = mods["cfd::multiphase"].getattr("coalescence_rate_prince_blanch")?; mods["cfd"].add("coalescence_rate_prince_blanch", v)?; }
     { let v = mods["cfd::multiphase"].getattr("condensation_nusselt_film")?; mods["cfd"].add("condensation_nusselt_film", v)?; }
+    { let v = mods["cfd::potential_flow"].getattr("conformal_map_flow")?; mods["cfd"].add("conformal_map_flow", v)?; }
     { let v = mods["cfd::riemann"].getattr("cons_to_prim")?; mods["cfd"].add("cons_to_prim", v)?; }
     { let v = mods["cfd::level_set"].getattr("contact_angle_young")?; mods["cfd"].add("contact_angle_young", v)?; }
     { let v = mods["cfd::boundary_layer"].getattr("couette_flow")?; mods["cfd"].add("couette_flow", v)?; }
@@ -2843,6 +2850,7 @@ pub fn register<'py>(py: Python<'py>, root: &Bound<'py, PyModule>) -> PyResult<(
     { let v = mods["cfd::shallow_water"].getattr("pierson_moskowitz")?; mods["cfd"].add("pierson_moskowitz", v)?; }
     { let v = mods["cfd::boundary_layer"].getattr("pohlhausen_profile")?; mods["cfd"].add("pohlhausen_profile", v)?; }
     { let v = mods["cfd::vortex"].getattr("point_vortex_hamiltonian")?; mods["cfd"].add("point_vortex_hamiltonian", v)?; }
+    { let v = mods["cfd::vortex"].getattr("point_vortex_step")?; mods["cfd"].add("point_vortex_step", v)?; }
     { let v = mods["cfd::lbm"].getattr("poiseuille_exact")?; mods["cfd"].add("poiseuille_exact", v)?; }
     { let v = mods["cfd::sph"].getattr("poiseuille_sph")?; mods["cfd"].add("poiseuille_sph", v)?; }
     { let v = mods["cfd::multiphase"].getattr("population_balance_1d")?; mods["cfd"].add("population_balance_1d", v)?; }
@@ -3116,6 +3124,7 @@ pub fn register<'py>(py: Python<'py>, root: &Bound<'py, PyModule>) -> PyResult<(
     { let v = mods["manifold::spherical"].getattr("gauss_legendre_sphere")?; mods["manifold"].add("gauss_legendre_sphere", v)?; }
     { let v = mods["manifold::polytope4"].getattr("gaussian_concentration_radius")?; mods["manifold"].add("gaussian_concentration_radius", v)?; }
     { let v = mods["manifold::embedding"].getattr("geodesic_distance_matrix")?; mods["manifold"].add("geodesic_distance_matrix", v)?; }
+    { let v = mods["manifold::embedding"].getattr("geodesic_kmeans")?; mods["manifold"].add("geodesic_kmeans", v)?; }
     { let v = mods["manifold::geodesic"].getattr("geodesics_on_mesh_exact")?; mods["manifold"].add("geodesics_on_mesh_exact", v)?; }
     { let v = mods["manifold::spherical"].getattr("gnomonic")?; mods["manifold"].add("gnomonic", v)?; }
     { let v = mods["manifold::embedding"].getattr("grassmann_distance")?; mods["manifold"].add("grassmann_distance", v)?; }
@@ -3605,6 +3614,7 @@ pub fn register<'py>(py: Python<'py>, root: &Bound<'py, PyModule>) -> PyResult<(
     { let v = mods["transforms::fft"].getattr("fft_integrate")?; mods["transforms"].add("fft_integrate", v)?; }
     { let v = mods["transforms::fft"].getattr("fft_interpolate")?; mods["transforms"].add("fft_interpolate", v)?; }
     { let v = mods["transforms::fft"].getattr("fft_poisson_2d")?; mods["transforms"].add("fft_poisson_2d", v)?; }
+    { let v = mods["transforms::fft"].getattr("fft_shift")?; mods["transforms"].add("fft_shift", v)?; }
     { let v = mods["transforms::hilbert"].getattr("fm_demodulate")?; mods["transforms"].add("fm_demodulate", v)?; }
     { let v = mods["transforms::laplace"].getattr("fractional_fourier")?; mods["transforms"].add("fractional_fourier", v)?; }
     { let v = mods["transforms::stft"].getattr("goertzel")?; mods["transforms"].add("goertzel", v)?; }

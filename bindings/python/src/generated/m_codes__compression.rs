@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -35,7 +36,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "huffman_build", signature = (freqs))]
 pub fn pyfn_huffman_build<'py>(py: Python<'py>, freqs: Vec<u64>) -> PyResult<Vec<(u64, u8)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::huffman_build(&freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -57,7 +57,6 @@ pub fn pyfn_huffman_build<'py>(py: Python<'py>, freqs: Vec<u64>) -> PyResult<Vec
 #[pyfunction]
 #[pyo3(name = "canonical_huffman", signature = (lengths))]
 pub fn pyfn_canonical_huffman<'py>(py: Python<'py>, lengths: Vec<u8>) -> PyResult<Vec<u64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::canonical_huffman(&lengths)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -73,7 +72,6 @@ pub fn pyfn_canonical_huffman<'py>(py: Python<'py>, lengths: Vec<u8>) -> PyResul
 #[pyfunction]
 #[pyo3(name = "kraft_sum", signature = (lengths))]
 pub fn pyfn_kraft_sum<'py>(py: Python<'py>, lengths: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::kraft_sum(&lengths)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -86,7 +84,6 @@ pub fn pyfn_kraft_sum<'py>(py: Python<'py>, lengths: Vec<u8>) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "huffman_encode", signature = (data))]
 pub fn pyfn_huffman_encode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<(Vec<u8>, Vec<(u64, u8)>, usize)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::huffman_encode(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>(), __v.2))
@@ -101,7 +98,6 @@ pub fn pyfn_huffman_encode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<(Vec
 #[pyfunction]
 #[pyo3(name = "huffman_decode", signature = (bits, table, n))]
 pub fn pyfn_huffman_decode<'py>(py: Python<'py>, bits: Vec<u8>, table: Vec<(u64, u8)>, n: usize) -> PyResult<Vec<u8>> {
-    let _ = py;
     let table = table.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::huffman_decode(&bits, &table, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -123,7 +119,6 @@ pub fn pyfn_huffman_decode<'py>(py: Python<'py>, bits: Vec<u8>, table: Vec<(u64,
 #[pyfunction]
 #[pyo3(name = "shannon_fano", signature = (freqs))]
 pub fn pyfn_shannon_fano<'py>(py: Python<'py>, freqs: Vec<u64>) -> PyResult<Vec<(u64, u8)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::shannon_fano(&freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -136,7 +131,6 @@ pub fn pyfn_shannon_fano<'py>(py: Python<'py>, freqs: Vec<u64>) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "average_code_length", signature = (table, freqs))]
 pub fn pyfn_average_code_length<'py>(py: Python<'py>, table: Vec<(u64, u8)>, freqs: Vec<u64>) -> PyResult<f64> {
-    let _ = py;
     let table = table.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::average_code_length(&table, &freqs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -161,7 +155,6 @@ pub fn pyfn_average_code_length<'py>(py: Python<'py>, table: Vec<(u64, u8)>, fre
 #[pyfunction]
 #[pyo3(name = "arithmetic_encode", signature = (data, model))]
 pub fn pyfn_arithmetic_encode<'py>(py: Python<'py>, data: Vec<u8>, model: Vec<u64>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::arithmetic_encode(&data, &model)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -176,7 +169,6 @@ pub fn pyfn_arithmetic_encode<'py>(py: Python<'py>, data: Vec<u8>, model: Vec<u6
 #[pyfunction]
 #[pyo3(name = "arithmetic_decode", signature = (bits, model, n))]
 pub fn pyfn_arithmetic_decode<'py>(py: Python<'py>, bits: Vec<u8>, model: Vec<u64>, n: usize) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::arithmetic_decode(&bits, &model, n)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -212,7 +204,6 @@ pub fn pyfn_lz77_compress(data: Vec<u8>, window: usize, lookahead: usize) -> PyR
 #[pyfunction]
 #[pyo3(name = "lz77_decompress", signature = (tokens))]
 pub fn pyfn_lz77_decompress<'py>(py: Python<'py>, tokens: Vec<crate::generated::types::PyLz77Token>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let tokens = tokens.into_iter().map(|__e| __e.inner).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::lz77_decompress(&tokens)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -230,7 +221,6 @@ pub fn pyfn_lz77_decompress<'py>(py: Python<'py>, tokens: Vec<crate::generated::
 #[pyfunction]
 #[pyo3(name = "lzw_compress", signature = (data))]
 pub fn pyfn_lzw_compress<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u16>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::lzw_compress(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -245,7 +235,6 @@ pub fn pyfn_lzw_compress<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u1
 #[pyfunction]
 #[pyo3(name = "lzw_decompress", signature = (codes))]
 pub fn pyfn_lzw_decompress<'py>(py: Python<'py>, codes: Vec<u16>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::lzw_decompress(&codes)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -262,7 +251,6 @@ pub fn pyfn_lzw_decompress<'py>(py: Python<'py>, codes: Vec<u16>) -> PyResult<Ve
 #[pyfunction]
 #[pyo3(name = "rle_compress", signature = (data))]
 pub fn pyfn_rle_compress<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::rle_compress(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -277,7 +265,6 @@ pub fn pyfn_rle_compress<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8
 #[pyfunction]
 #[pyo3(name = "rle_decompress", signature = (data))]
 pub fn pyfn_rle_decompress<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::rle_decompress(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -296,7 +283,6 @@ pub fn pyfn_rle_decompress<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "suffix_array", signature = (data))]
 pub fn pyfn_suffix_array<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::suffix_array(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -318,7 +304,6 @@ pub fn pyfn_suffix_array<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<us
 #[pyfunction]
 #[pyo3(name = "lcp_array", signature = (data, sa))]
 pub fn pyfn_lcp_array<'py>(py: Python<'py>, data: Vec<u8>, sa: Vec<usize>) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::lcp_array(&data, &sa)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -335,7 +320,6 @@ pub fn pyfn_lcp_array<'py>(py: Python<'py>, data: Vec<u8>, sa: Vec<usize>) -> Py
 #[pyfunction]
 #[pyo3(name = "longest_repeated_substring", signature = (data))]
 pub fn pyfn_longest_repeated_substring<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<(usize, usize)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::longest_repeated_substring(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -354,7 +338,6 @@ pub fn pyfn_longest_repeated_substring<'py>(py: Python<'py>, data: Vec<u8>) -> P
 #[pyfunction]
 #[pyo3(name = "bwt", signature = (data))]
 pub fn pyfn_bwt<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<(Vec<u8>, usize)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::bwt(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -374,7 +357,6 @@ pub fn pyfn_bwt<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<(Vec<u8>, usize
 #[pyfunction]
 #[pyo3(name = "ibwt", signature = (data, idx))]
 pub fn pyfn_ibwt<'py>(py: Python<'py>, data: Vec<u8>, idx: usize) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::ibwt(&data, idx)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -393,7 +375,6 @@ pub fn pyfn_ibwt<'py>(py: Python<'py>, data: Vec<u8>, idx: usize) -> PyResult<Ve
 #[pyfunction]
 #[pyo3(name = "mtf_encode", signature = (data))]
 pub fn pyfn_mtf_encode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::mtf_encode(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -405,7 +386,6 @@ pub fn pyfn_mtf_encode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>>
 #[pyfunction]
 #[pyo3(name = "mtf_decode", signature = (data))]
 pub fn pyfn_mtf_decode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::mtf_decode(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -421,7 +401,6 @@ pub fn pyfn_mtf_decode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>>
 #[pyfunction]
 #[pyo3(name = "delta_encode", signature = (data))]
 pub fn pyfn_delta_encode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::delta_encode(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -433,7 +412,6 @@ pub fn pyfn_delta_encode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8
 #[pyfunction]
 #[pyo3(name = "delta_decode", signature = (data))]
 pub fn pyfn_delta_decode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::delta_decode(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -451,7 +429,6 @@ pub fn pyfn_delta_decode<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<Vec<u8
 #[pyfunction]
 #[pyo3(name = "entropy_bytes", signature = (data))]
 pub fn pyfn_entropy_bytes<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::entropy_bytes(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -464,7 +441,6 @@ pub fn pyfn_entropy_bytes<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<f64> 
 #[pyfunction]
 #[pyo3(name = "compression_bound", signature = (data))]
 pub fn pyfn_compression_bound<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::compression_bound(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -483,7 +459,6 @@ pub fn pyfn_compression_bound<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<f
 #[pyfunction]
 #[pyo3(name = "kolmogorov_estimate_by_compressors", signature = (data))]
 pub fn pyfn_kolmogorov_estimate_by_compressors<'py>(py: Python<'py>, data: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::kolmogorov_estimate_by_compressors(&data)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -500,7 +475,6 @@ pub fn pyfn_kolmogorov_estimate_by_compressors<'py>(py: Python<'py>, data: Vec<u
 #[pyfunction]
 #[pyo3(name = "normalized_compression_distance", signature = (a, b))]
 pub fn pyfn_normalized_compression_distance<'py>(py: Python<'py>, a: Vec<u8>, b: Vec<u8>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::codes::compression::normalized_compression_distance(&a, &b)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

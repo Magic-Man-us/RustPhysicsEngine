@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -42,7 +43,6 @@ pub fn pyfn_mandelbrot_smooth(c_re: f64, c_im: f64, max_iter: u32) -> PyResult<f
 #[pyfunction]
 #[pyo3(name = "mandelbrot_grid", signature = (x_min, x_max, y_min, y_max, width, height, max_iter))]
 pub fn pyfn_mandelbrot_grid<'py>(py: Python<'py>, x_min: f64, x_max: f64, y_min: f64, y_max: f64, width: usize, height: usize, max_iter: u32) -> PyResult<Vec<u32>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::mandelbrot_grid(x_min, x_max, y_min, y_max, width, height, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -65,7 +65,6 @@ pub fn pyfn_julia_iterations(z_re: f64, z_im: f64, c_re: f64, c_im: f64, max_ite
 #[pyfunction]
 #[pyo3(name = "julia_grid", signature = (c_re, c_im, x_min, x_max, y_min, y_max, width, height, max_iter))]
 pub fn pyfn_julia_grid<'py>(py: Python<'py>, c_re: f64, c_im: f64, x_min: f64, x_max: f64, y_min: f64, y_max: f64, width: usize, height: usize, max_iter: u32) -> PyResult<Vec<u32>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::julia_grid(c_re, c_im, x_min, x_max, y_min, y_max, width, height, max_iter)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -99,7 +98,6 @@ pub fn pyfn_newton_fractal_iterations(z_re: f64, z_im: f64, max_iter: u32, toler
 #[pyfunction]
 #[pyo3(name = "sierpinski_point", signature = (x, y, iterations))]
 pub fn pyfn_sierpinski_point<'py>(py: Python<'py>, x: f64, y: f64, iterations: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::sierpinski_point(x, y, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -111,7 +109,6 @@ pub fn pyfn_sierpinski_point<'py>(py: Python<'py>, x: f64, y: f64, iterations: u
 #[pyfunction]
 #[pyo3(name = "barnsley_fern_point", signature = (x, y, iterations))]
 pub fn pyfn_barnsley_fern_point<'py>(py: Python<'py>, x: f64, y: f64, iterations: usize) -> PyResult<Vec<(f64, f64)>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::barnsley_fern_point(x, y, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v.into_iter().map(|__x| (__x.0, __x.1)).collect::<Vec<_>>())
@@ -123,7 +120,6 @@ pub fn pyfn_barnsley_fern_point<'py>(py: Python<'py>, x: f64, y: f64, iterations
 #[pyfunction]
 #[pyo3(name = "box_count_2d", signature = (points, grid_size, bounds))]
 pub fn pyfn_box_count_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>, grid_size: usize, bounds: (f64, f64, f64, f64)) -> PyResult<usize> {
-    let _ = py;
     let points = points.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let bounds = (bounds.0, bounds.1, bounds.2, bounds.3);
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::fractals::box_count_2d(&points, grid_size, bounds)));

@@ -317,6 +317,15 @@ Rust: `manifold::embedding::riemannian_gradient_descent_sphere`
     """
     ...
 
+def geodesic_kmeans(metric: Metric, points: list[VecN | Sequence[float]], k: int, iters: int, rng: Rng) -> tuple[list[VecN], list[int]]:
+    """
+k-means with distances and means taken in a Riemannian metric (uses the
+metric's exp/log maps). Returns (centroids, labels).
+
+Rust: `manifold::embedding::geodesic_kmeans`
+    """
+    ...
+
 def manifold_interpolation_rbf(points: list[VecN | Sequence[float]], values: list[float], query: VecN | Sequence[float], kernel: Callable[[float], float]) -> float:
     """
 Radial-basis interpolation of scattered manifold data.

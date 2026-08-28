@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -87,7 +88,6 @@ pub fn pyfn_additive_triangle(phase: f64, n_harmonics: usize) -> PyResult<f64> {
 #[pyfunction]
 #[pyo3(name = "chirp_linear", signature = (f0, f1, duration, fs))]
 pub fn pyfn_chirp_linear<'py>(py: Python<'py>, f0: f64, f1: f64, duration: f64, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::chirp_linear(f0, f1, duration, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -99,7 +99,6 @@ pub fn pyfn_chirp_linear<'py>(py: Python<'py>, f0: f64, f1: f64, duration: f64, 
 #[pyfunction]
 #[pyo3(name = "chirp_exponential", signature = (f0, f1, duration, fs))]
 pub fn pyfn_chirp_exponential<'py>(py: Python<'py>, f0: f64, f1: f64, duration: f64, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::chirp_exponential(f0, f1, duration, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -111,7 +110,6 @@ pub fn pyfn_chirp_exponential<'py>(py: Python<'py>, f0: f64, f1: f64, duration: 
 #[pyfunction]
 #[pyo3(name = "chirp_hyperbolic", signature = (f0, f1, duration, fs))]
 pub fn pyfn_chirp_hyperbolic<'py>(py: Python<'py>, f0: f64, f1: f64, duration: f64, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::chirp_hyperbolic(f0, f1, duration, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -136,7 +134,6 @@ pub fn pyfn_sine_sweep_with_inverse(f0: f64, f1: f64, duration: f64, fs: f64) ->
 #[pyfunction]
 #[pyo3(name = "impulse", signature = (n, pos))]
 pub fn pyfn_impulse<'py>(py: Python<'py>, n: usize, pos: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::impulse(n, pos)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -148,7 +145,6 @@ pub fn pyfn_impulse<'py>(py: Python<'py>, n: usize, pos: usize) -> PyResult<Vec<
 #[pyfunction]
 #[pyo3(name = "dc", signature = (n, level))]
 pub fn pyfn_dc<'py>(py: Python<'py>, n: usize, level: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::dc(n, level)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -163,7 +159,6 @@ pub fn pyfn_dc<'py>(py: Python<'py>, n: usize, level: f64) -> PyResult<Vec<f64>>
 #[pyfunction]
 #[pyo3(name = "multisine", signature = (freqs, amps, phases, n, fs))]
 pub fn pyfn_multisine<'py>(py: Python<'py>, freqs: Vec<f64>, amps: Vec<f64>, phases: Vec<f64>, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::multisine(&freqs, &amps, &phases, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -176,7 +171,6 @@ pub fn pyfn_multisine<'py>(py: Python<'py>, freqs: Vec<f64>, amps: Vec<f64>, pha
 #[pyfunction]
 #[pyo3(name = "schroeder_phase_multisine", signature = (n_tones, n, fs))]
 pub fn pyfn_schroeder_phase_multisine<'py>(py: Python<'py>, n_tones: usize, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::schroeder_phase_multisine(n_tones, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -188,7 +182,6 @@ pub fn pyfn_schroeder_phase_multisine<'py>(py: Python<'py>, n_tones: usize, n: u
 #[pyfunction]
 #[pyo3(name = "pulse_train", signature = (freq, width, n, fs))]
 pub fn pyfn_pulse_train<'py>(py: Python<'py>, freq: f64, width: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::pulse_train(freq, width, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -201,7 +194,6 @@ pub fn pyfn_pulse_train<'py>(py: Python<'py>, freq: f64, width: f64, n: usize, f
 #[pyfunction]
 #[pyo3(name = "band_limited_impulse_train", signature = (freq, n, fs))]
 pub fn pyfn_band_limited_impulse_train<'py>(py: Python<'py>, freq: f64, n: usize, fs: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::audio::oscillators::band_limited_impulse_train(freq, n, fs)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)

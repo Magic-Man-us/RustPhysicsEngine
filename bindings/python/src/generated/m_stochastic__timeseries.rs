@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -32,7 +33,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "acf", signature = (x, max_lag))]
 pub fn pyfn_acf<'py>(py: Python<'py>, x: Vec<f64>, max_lag: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::acf(&x, max_lag)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -56,7 +56,6 @@ pub fn pyfn_acf<'py>(py: Python<'py>, x: Vec<f64>, max_lag: usize) -> PyResult<V
 #[pyfunction]
 #[pyo3(name = "pacf", signature = (x, max_lag))]
 pub fn pyfn_pacf<'py>(py: Python<'py>, x: Vec<f64>, max_lag: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::pacf(&x, max_lag)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -75,7 +74,6 @@ pub fn pyfn_pacf<'py>(py: Python<'py>, x: Vec<f64>, max_lag: usize) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "cross_correlation_lags", signature = (x, y, max_lag))]
 pub fn pyfn_cross_correlation_lags<'py>(py: Python<'py>, x: Vec<f64>, y: Vec<f64>, max_lag: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::cross_correlation_lags(&x, &y, max_lag)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -109,7 +107,6 @@ pub fn pyfn_ljung_box(x: Vec<f64>, lags: usize) -> PyResult<crate::generated::ty
 #[pyfunction]
 #[pyo3(name = "difference", signature = (x, d))]
 pub fn pyfn_difference<'py>(py: Python<'py>, x: Vec<f64>, d: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::difference(&x, d)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -124,7 +121,6 @@ pub fn pyfn_difference<'py>(py: Python<'py>, x: Vec<f64>, d: usize) -> PyResult<
 #[pyfunction]
 #[pyo3(name = "seasonal_difference", signature = (x, s))]
 pub fn pyfn_seasonal_difference<'py>(py: Python<'py>, x: Vec<f64>, s: usize) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::seasonal_difference(&x, s)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -144,7 +140,6 @@ pub fn pyfn_seasonal_difference<'py>(py: Python<'py>, x: Vec<f64>, s: usize) -> 
 #[pyfunction]
 #[pyo3(name = "undifference", signature = (diffed, initial))]
 pub fn pyfn_undifference<'py>(py: Python<'py>, diffed: Vec<f64>, initial: Vec<f64>) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::undifference(&diffed, &initial)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -234,7 +229,6 @@ pub fn pyfn_auto_arima(x: Vec<f64>, max_p: usize, max_d: usize, max_q: usize) ->
 #[pyfunction]
 #[pyo3(name = "exponential_smoothing", signature = (x, alpha))]
 pub fn pyfn_exponential_smoothing<'py>(py: Python<'py>, x: Vec<f64>, alpha: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::exponential_smoothing(&x, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -262,7 +256,6 @@ pub fn pyfn_exponential_smoothing<'py>(py: Python<'py>, x: Vec<f64>, alpha: f64)
 #[pyfunction]
 #[pyo3(name = "double_exponential", signature = (x, alpha, beta))]
 pub fn pyfn_double_exponential<'py>(py: Python<'py>, x: Vec<f64>, alpha: f64, beta: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::double_exponential(&x, alpha, beta)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -306,7 +299,6 @@ pub fn pyfn_holt_winters(x: Vec<f64>, alpha: f64, beta: f64, gamma: f64, season_
 #[pyfunction]
 #[pyo3(name = "holt_winters_optimize", signature = (x, season_len))]
 pub fn pyfn_holt_winters_optimize<'py>(py: Python<'py>, x: Vec<f64>, season_len: usize) -> PyResult<(f64, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::holt_winters_optimize(&x, season_len)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1, __v.2))
@@ -325,7 +317,6 @@ pub fn pyfn_holt_winters_optimize<'py>(py: Python<'py>, x: Vec<f64>, season_len:
 #[pyfunction]
 #[pyo3(name = "ewma_variance", signature = (returns, lambda_))]
 pub fn pyfn_ewma_variance<'py>(py: Python<'py>, returns: Vec<f64>, lambda_: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::ewma_variance(&returns, lambda_)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -417,7 +408,6 @@ pub fn pyfn_cointegration_engle_granger(x: Vec<f64>, y: Vec<f64>) -> PyResult<cr
 #[pyfunction]
 #[pyo3(name = "seasonal_decompose_stl_lite", signature = (x, period))]
 pub fn pyfn_seasonal_decompose_stl_lite<'py>(py: Python<'py>, x: Vec<f64>, period: usize) -> PyResult<(Vec<f64>, Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::seasonal_decompose_stl_lite(&x, period)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1, __v.2))
@@ -441,7 +431,6 @@ pub fn pyfn_seasonal_decompose_stl_lite<'py>(py: Python<'py>, x: Vec<f64>, perio
 #[pyfunction]
 #[pyo3(name = "changepoint_pelt", signature = (x, penalty))]
 pub fn pyfn_changepoint_pelt<'py>(py: Python<'py>, x: Vec<f64>, penalty: f64) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::changepoint_pelt(&x, penalty)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -460,7 +449,6 @@ pub fn pyfn_changepoint_pelt<'py>(py: Python<'py>, x: Vec<f64>, penalty: f64) ->
 #[pyfunction]
 #[pyo3(name = "changepoint_binary_segmentation", signature = (x, max_k))]
 pub fn pyfn_changepoint_binary_segmentation<'py>(py: Python<'py>, x: Vec<f64>, max_k: usize) -> PyResult<Vec<usize>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::changepoint_binary_segmentation(&x, max_k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -481,7 +469,6 @@ pub fn pyfn_changepoint_binary_segmentation<'py>(py: Python<'py>, x: Vec<f64>, m
 #[pyfunction]
 #[pyo3(name = "cusum", signature = (x, target, k))]
 pub fn pyfn_cusum<'py>(py: Python<'py>, x: Vec<f64>, target: f64, k: f64) -> PyResult<(Vec<f64>, Vec<f64>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::cusum(&x, target, k)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -506,7 +493,6 @@ pub fn pyfn_cusum<'py>(py: Python<'py>, x: Vec<f64>, target: f64, k: f64) -> PyR
 #[pyfunction]
 #[pyo3(name = "matrix_profile_lite", signature = (x, m))]
 pub fn pyfn_matrix_profile_lite<'py>(py: Python<'py>, x: Vec<f64>, m: usize) -> PyResult<(Vec<f64>, Vec<usize>)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::matrix_profile_lite(&x, m)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok((__v.0, __v.1))
@@ -531,7 +517,6 @@ pub fn pyfn_matrix_profile_lite<'py>(py: Python<'py>, x: Vec<f64>, m: usize) -> 
 #[pyfunction]
 #[pyo3(name = "sample_entropy", signature = (x, m, tol))]
 pub fn pyfn_sample_entropy<'py>(py: Python<'py>, x: Vec<f64>, m: usize, tol: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::sample_entropy(&x, m, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -550,7 +535,6 @@ pub fn pyfn_sample_entropy<'py>(py: Python<'py>, x: Vec<f64>, m: usize, tol: f64
 #[pyfunction]
 #[pyo3(name = "approximate_entropy", signature = (x, m, tol))]
 pub fn pyfn_approximate_entropy<'py>(py: Python<'py>, x: Vec<f64>, m: usize, tol: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::approximate_entropy(&x, m, tol)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -572,7 +556,6 @@ pub fn pyfn_approximate_entropy<'py>(py: Python<'py>, x: Vec<f64>, m: usize, tol
 #[pyfunction]
 #[pyo3(name = "permutation_entropy", signature = (x, order, delay))]
 pub fn pyfn_permutation_entropy<'py>(py: Python<'py>, x: Vec<f64>, order: usize, delay: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::permutation_entropy(&x, order, delay)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -627,7 +610,6 @@ pub fn pyfn_surrogate_test_iaaft(x: Vec<f64>, statistic: pyo3::Py<pyo3::PyAny>, 
 #[pyfunction]
 #[pyo3(name = "state_space_local_level", signature = (x))]
 pub fn pyfn_state_space_local_level<'py>(py: Python<'py>, x: Vec<f64>) -> PyResult<(Vec<f64>, f64, f64)> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::stochastic::timeseries::state_space_local_level(&x)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

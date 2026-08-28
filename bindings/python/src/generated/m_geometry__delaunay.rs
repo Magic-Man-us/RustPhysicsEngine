@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -47,7 +48,6 @@ pub fn pyfn_circumcircle(a: (f64, f64), b: (f64, f64), c: (f64, f64)) -> PyResul
 #[pyfunction]
 #[pyo3(name = "delaunay_2d", signature = (points))]
 pub fn pyfn_delaunay_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>) -> PyResult<Vec<Vec<usize>>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::geometry::delaunay::delaunay_2d(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -66,7 +66,6 @@ pub fn pyfn_delaunay_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>) -> PyResu
 #[pyfunction]
 #[pyo3(name = "voronoi_cells_2d", signature = (points))]
 pub fn pyfn_voronoi_cells_2d<'py>(py: Python<'py>, points: Vec<(f64, f64)>) -> PyResult<Vec<Vec<(f64, f64)>>> {
-    let _ = py;
     let points = points.into_iter().map(|__e| (__e.0, __e.1)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::geometry::delaunay::voronoi_cells_2d(&points)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -35,7 +36,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "conv2d_forward", signature = (input, w, h, kernels, stride, pad))]
 pub fn pyfn_conv2d_forward<'py>(py: Python<'py>, input: Vec<f64>, w: usize, h: usize, kernels: Vec<(Vec<f64>, usize, usize)>, stride: usize, pad: usize) -> PyResult<(Vec<Vec<f64>>, usize, usize)> {
-    let _ = py;
     let kernels = kernels.into_iter().map(|__e| (__e.0, __e.1, __e.2)).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::nn::conv2d_forward(&input, w, h, &kernels, stride, pad)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -66,7 +66,6 @@ pub fn pyfn_conv2d_forward<'py>(py: Python<'py>, input: Vec<f64>, w: usize, h: u
 #[pyfunction]
 #[pyo3(name = "linear_regression_gd_check", signature = (x, y, iterations))]
 pub fn pyfn_linear_regression_gd_check<'py>(py: Python<'py>, x: crate::generated::types::PyMatrixArg, y: Vec<f64>, iterations: usize) -> PyResult<f64> {
-    let _ = py;
     let x = x.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::learn::nn::linear_regression_gd_check(&x, &y, iterations)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -120,7 +121,6 @@ pub fn pyfn_global_min_cut_stoer_wagner(g: crate::generated::types::PyGraph) -> 
 #[pyfunction]
 #[pyo3(name = "min_cost_max_flow", signature = (g, costs, s, t))]
 pub fn pyfn_min_cost_max_flow<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, costs: Vec<f64>, s: usize, t: usize) -> PyResult<(f64, f64)> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::flow::min_cost_max_flow(&g, &costs, s, t)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -146,7 +146,6 @@ pub fn pyfn_min_cost_max_flow<'py>(py: Python<'py>, g: crate::generated::types::
 #[pyfunction]
 #[pyo3(name = "circulation_with_demands", signature = (g, demand, lower))]
 pub fn pyfn_circulation_with_demands<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, demand: Vec<f64>, lower: Vec<f64>) -> PyResult<Option<Vec<f64>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::flow::circulation_with_demands(&g, &demand, &lower)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -169,7 +168,6 @@ pub fn pyfn_circulation_with_demands<'py>(py: Python<'py>, g: crate::generated::
 #[pyfunction]
 #[pyo3(name = "max_bipartite_matching_via_flow", signature = (g, left))]
 pub fn pyfn_max_bipartite_matching_via_flow<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, left: Vec<usize>) -> PyResult<Vec<Option<usize>>> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::flow::max_bipartite_matching_via_flow(&g, &left)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -251,7 +249,6 @@ pub fn pyfn_gomory_hu_tree(g: crate::generated::types::PyGraph) -> PyResult<crat
 #[pyfunction]
 #[pyo3(name = "closure_problem", signature = (g, weights))]
 pub fn pyfn_closure_problem<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, weights: Vec<f64>) -> PyResult<(f64, Vec<bool>)> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::flow::closure_problem(&g, &weights)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -276,7 +273,6 @@ pub fn pyfn_closure_problem<'py>(py: Python<'py>, g: crate::generated::types::Py
 #[pyfunction]
 #[pyo3(name = "project_selection", signature = (project_revenue, machine_cost, requires))]
 pub fn pyfn_project_selection<'py>(py: Python<'py>, project_revenue: Vec<f64>, machine_cost: Vec<f64>, requires: Vec<Vec<usize>>) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::flow::project_selection(&project_revenue, &machine_cost, &requires)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     Ok(__v)
@@ -312,7 +308,6 @@ pub fn pyfn_max_flow(g: crate::generated::types::PyGraph, s: usize, t: usize) ->
 #[pyfunction]
 #[pyo3(name = "cut_capacity", signature = (g, side))]
 pub fn pyfn_cut_capacity<'py>(py: Python<'py>, g: crate::generated::types::PyGraph, side: Vec<bool>) -> PyResult<f64> {
-    let _ = py;
     let g = g.inner;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::graph::flow::cut_capacity(&g, &side)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;

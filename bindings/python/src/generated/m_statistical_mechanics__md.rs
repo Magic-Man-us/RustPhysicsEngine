@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -31,7 +32,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "energy_drift", signature = (samples))]
 pub fn pyfn_energy_drift<'py>(py: Python<'py>, samples: Vec<crate::generated::types::PyMdSampleArg>) -> PyResult<f64> {
-    let _ = py;
     let samples = samples.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::energy_drift(&samples)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -84,7 +84,6 @@ pub fn pyfn_lj_phase_point(t_star: f64, rho_star: f64) -> PyResult<String> {
 #[pyfunction]
 #[pyo3(name = "ewald_sum_energy_lite", signature = (charges, pos, box_l, alpha, k_max))]
 pub fn pyfn_ewald_sum_energy_lite<'py>(py: Python<'py>, charges: Vec<f64>, pos: Vec<crate::generated::types::PyVec3Arg>, box_l: f64, alpha: f64, k_max: usize) -> PyResult<f64> {
-    let _ = py;
     let pos = pos.into_iter().map(|__e| __e.0).collect::<Vec<_>>();
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::ewald_sum_energy_lite(&charges, &pos, box_l, alpha, k_max)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
@@ -110,7 +109,6 @@ pub fn pyfn_ewald_sum_energy_lite<'py>(py: Python<'py>, charges: Vec<f64>, pos: 
 #[pyfunction]
 #[pyo3(name = "harmonic_crystal_heat_capacity_check", signature = (energies, temperature, particles))]
 pub fn pyfn_harmonic_crystal_heat_capacity_check<'py>(py: Python<'py>, energies: Vec<f64>, temperature: f64, particles: usize) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::harmonic_crystal_heat_capacity_check(&energies, temperature, particles)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -205,7 +203,6 @@ pub fn pyfn_collision_rate(density: f64, sigma: f64, mean_speed: f64) -> PyResul
 #[pyfunction]
 #[pyo3(name = "green_kubo_viscosity_lite", signature = (stress_xy, dt, volume, temperature))]
 pub fn pyfn_green_kubo_viscosity_lite<'py>(py: Python<'py>, stress_xy: Vec<f64>, dt: f64, volume: f64, temperature: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::green_kubo_viscosity_lite(&stress_xy, dt, volume, temperature)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -232,7 +229,6 @@ pub fn pyfn_green_kubo_viscosity_lite<'py>(py: Python<'py>, stress_xy: Vec<f64>,
 #[pyfunction]
 #[pyo3(name = "umbrella_sampling_pmf", signature = (histograms, centers, k, bin_lo, bin_width, temperature))]
 pub fn pyfn_umbrella_sampling_pmf<'py>(py: Python<'py>, histograms: Vec<Vec<f64>>, centers: Vec<f64>, k: f64, bin_lo: f64, bin_width: f64, temperature: f64) -> PyResult<Vec<f64>> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::umbrella_sampling_pmf(&histograms, &centers, k, bin_lo, bin_width, temperature)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -278,7 +274,6 @@ pub fn pyfn_steered_pull(force_along: pyo3::Py<pyo3::PyAny>, start: f64, speed: 
 #[pyfunction]
 #[pyo3(name = "jarzynski_free_energy", signature = (work, temperature))]
 pub fn pyfn_jarzynski_free_energy<'py>(py: Python<'py>, work: Vec<f64>, temperature: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::statistical_mechanics::md::jarzynski_free_energy(&work, temperature)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;

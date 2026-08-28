@@ -4,6 +4,7 @@
 
 
 #![allow(clippy::all)]
+#![allow(dead_code)]
 #![allow(deprecated)]
 #![allow(rustdoc::all)]
 #![allow(unused_imports)]
@@ -31,7 +32,6 @@ use pyo3::types::PyModule;
 #[pyfunction]
 #[pyo3(name = "var_historical", signature = (returns, alpha))]
 pub fn pyfn_var_historical<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::risk::var_historical(&returns, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -56,7 +56,6 @@ pub fn pyfn_var_historical<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64) 
 #[pyfunction]
 #[pyo3(name = "var_parametric", signature = (returns, alpha))]
 pub fn pyfn_var_parametric<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::risk::var_parametric(&returns, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -82,7 +81,6 @@ pub fn pyfn_var_parametric<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64) 
 #[pyfunction]
 #[pyo3(name = "cvar_historical", signature = (returns, alpha))]
 pub fn pyfn_cvar_historical<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::risk::cvar_historical(&returns, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -127,7 +125,6 @@ pub fn pyfn_cvar_historical<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64)
 #[pyfunction]
 #[pyo3(name = "var_cornish_fisher", signature = (returns, alpha))]
 pub fn pyfn_var_cornish_fisher<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f64) -> PyResult<f64> {
-    let _ = py;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::risk::var_cornish_fisher(&returns, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
     let __v = __v.map_err(crate::runtime::map_geom)?;
@@ -159,7 +156,6 @@ pub fn pyfn_var_cornish_fisher<'py>(py: Python<'py>, returns: Vec<f64>, alpha: f
 #[pyfunction]
 #[pyo3(name = "garch_var_forecast", signature = (model, returns, alpha))]
 pub fn pyfn_garch_var_forecast<'py>(py: Python<'py>, model: crate::generated::types::PyGarch11Arg, returns: Vec<f64>, alpha: f64) -> PyResult<f64> {
-    let _ = py;
     let model = model.0;
     let __r = py.detach(move || crate::runtime::guard(move || rust_physics_engine::finance::risk::garch_var_forecast(&model, &returns, alpha)));
     let __v = __r.map_err(crate::runtime::errors::InvalidArgumentError::new_err)?;
