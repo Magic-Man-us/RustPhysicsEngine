@@ -235,8 +235,3 @@ pub fn guard<T>(f: impl FnOnce() -> T) -> Result<T, String> {
             .unwrap_or_else(|| "the underlying Rust routine panicked".to_string())),
     }
 }
-
-/// [`guard`], with the panic already turned into a `PyErr`.
-pub fn guarded<T>(f: impl FnOnce() -> T) -> PyResult<T> {
-    guard(f).map_err(InvalidArgumentError::new_err)
-}
