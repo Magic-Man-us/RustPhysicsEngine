@@ -85,6 +85,37 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999
 
 ---
 
+## From Python
+
+The same library, callable from Python, with about 98% of the public API
+bound. The bindings live in [`bindings/python`](bindings/python) and are
+generated from this crate's source, so they cannot fall behind it.
+
+```console
+$ pip install ./bindings/python
+```
+
+```python
+import math
+import rust_physics_engine as rpe
+
+rpe.classical.projectile_range(50.0, math.pi / 4, 9.81)   # 254.841997961...
+rpe.linalg.lu.solve([[2, 1], [1, 3]], [5, 10])            # [1.0, 3.0]
+rpe.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
+rpe.exact.bigint.factorial(100)                           # a Python int
+```
+
+Every Python module mirrors a Rust module of the same name. `Result` errors
+become exceptions under one `PhysicsError` root; a `Vec3` argument accepts
+`(x, y, z)`; `Complex`, `BigInt` and `Rational` cross over as Python's own
+`complex`, `int` and `fractions.Fraction`; and anywhere the library takes a
+`&dyn Fn`, a Python callable will do. See
+[`bindings/python/README.md`](bindings/python/README.md), and
+[`bindings/python/COVERAGE.md`](bindings/python/COVERAGE.md) for the list of
+what is not bound and why.
+
+---
+
 # What's in it
 
 Equations below are the ones the code actually implements, not a

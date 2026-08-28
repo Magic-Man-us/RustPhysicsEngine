@@ -1,0 +1,31 @@
+# A workspace of its own. The parent crate is deliberately dependency-free
+# -- its Cargo.lock holds exactly one package, itself -- and making these
+# bindings a member of it would put PyO3 and its tree into that lock file
+# and into every `cargo build` at the repository root. Detaching keeps the
+# library's build exactly as it was; this crate is built by maturin.
+[workspace]
+
+[package]
+name = "rust_physics_engine_py"
+version = "0.1.0"
+edition = "2021"
+description = "Python bindings for rust_physics_engine"
+license = "MIT"
+repository = "https://github.com/Magic-Man-us/RustPhysicsEngine"
+publish = false
+
+[lib]
+name = "_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+rust_physics_engine = { path = "../.." }
+pyo3 = { version = "0.29", features = ["extension-module", "abi3-py39"] }
+
+[profile.release]
+# The generated code is ~6,000 small `#[pyfunction]` wrappers. Sixteen
+# codegen units keeps the compile parallel; `opt-level = 2` is as fast as
+# 3 here because the real work happens in the library, which is compiled
+# separately.
+opt-level = 2
+codegen-units = 16

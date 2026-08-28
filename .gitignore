@@ -1,2 +1,5 @@
 /target
 *.profraw
+/bindings/python/target
+/bindings/python/**/__pycache__
+*.so
