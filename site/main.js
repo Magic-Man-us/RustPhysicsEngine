@@ -1,4 +1,4 @@
-/* rust_physics_engine — site behaviour.
+/* rust_physics_engine site behaviour.
    No framework and no build step. Five independent pieces, each of which
    no-ops when the elements it wants are not on the page. */
 
@@ -195,7 +195,7 @@
         return (m.name + ' ' + m.area + ' ' + m.summary).toLowerCase().indexOf(query) >= 0;
       });
       grid.innerHTML = shown.length ? shown.map(card).join('') :
-        '<p class="empty">No module matches that. Try a subject — ' +
+        '<p class="empty">No module matches that. Try a subject: ' +
         '<code>wavelet</code>, <code>orbit</code>, <code>prime</code>.</p>';
       if (counter) {
         counter.textContent = shown.length === window.MODULES.length
