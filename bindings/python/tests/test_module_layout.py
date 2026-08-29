@@ -28,7 +28,7 @@ def test_every_top_level_rust_module_is_an_attribute():
         "transforms", "geometry", "spatial", "exact", "units", "math",
         "optimization", "graph", "audio", "fem", "manifold", "codes",
     ):
-        assert hasattr(rpe, name), name
+        assert hasattr(nm, name), name
 
 
 def test_submodules_are_importable_by_name():

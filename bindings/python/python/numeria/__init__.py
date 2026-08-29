@@ -40,7 +40,7 @@ def _install() -> list[str]:
     """Make every submodule importable by name.
 
     PyO3 builds the module tree as attributes of the extension module,
-    which is enough for ``rpe.linalg.lu``. It is not enough for ``import
+    which is enough for ``numeria.linalg.lu``. It is not enough for ``import
     numeria.linalg.lu``, or for ``from numeria.linalg import lu``:
     both go through ``sys.modules``, and nothing has put the submodules
     there. This does, once, at import.
