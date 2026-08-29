@@ -1,0 +1,94 @@
+name: Crates.io release
+
+# Publishes the library crate to crates.io. Its sibling python-release.yml
+# publishes the bindings to PyPI, and both answer to `push: tags: v*`, so one
+# tag ships both registries.
+#
+# A file of its own rather than a job in python-release.yml, for the same
+# reason that file gives for existing: a trusted publisher is registered
+# against a workflow *filename*. One file per registry means either
+# publisher can be reconfigured without disturbing the other, and a failure
+# on one registry does not strand the other mid-run.
+#
+# ── How the upload is authorised ─────────────────────────────────────
+#
+# crates.io Trusted Publishing, the same OIDC exchange PyPI uses, so there
+# is no registry token in this repository's secrets. The publisher
+# registered on crates.io for `rust_physics_engine` names:
+#
+#     repository   Magic-Man-us/RustPhysicsEngine
+#     workflow     crates-release.yml   <- this file's name
+#     environment  crates-io            <- the job's environment, below
+#
+# crates-io-auth-action trades the workflow's OIDC token for a crates.io
+# token scoped to this run, and revokes it in its post step. Renaming this
+# file or changing that environment breaks the release until crates.io is
+# told.
+#
+# ── Why workflow_dispatch ────────────────────────────────────────────
+#
+# v0.2.0 was tagged before this file existed, so no tag push can ever fire
+# it for that version. Dispatch runs from the default branch and checks out
+# whichever existing tag it is given, which is the only way to publish a
+# version whose tag predates this workflow. From v0.3.0 on the tag push is
+# enough and this input should go unused.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "An existing tag to publish, e.g. v0.2.0"
+        required: true
+        type: string
+
+permissions: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: "Publish to crates.io"
+    runs-on: ubuntu-latest
+    # Named so crates.io can be told to trust exactly this job, and so a
+    # required reviewer on the environment gates the one step here that
+    # cannot be undone: a published version can be yanked, never removed.
+    environment:
+      name: crates-io
+      url: "https://crates.io/crates/rust_physics_engine"
+    permissions:
+      contents: read
+      # The OIDC token Trusted Publishing exchanges for an upload. The only
+      # elevated permission in the file, scoped to this job.
+      id-token: write
+    steps:
+      # A tag push carries the tag in ref_name; a dispatch carries it in the
+      # input. Both paths continue as one value from here.
+      - name: The tag being published
+        id: ref
+        run: 'echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"'
+
+      - uses: actions/checkout@v4
+        with:
+          ref: "${{ steps.ref.outputs.tag }}"
+          persist-credentials: false
+
+      # The same gate python-release.yml runs, and the reason a malformed or
+      # mismatched tag stops here: check_version.py rejects anything that is
+      # not vX.Y.Z, and refuses a tag whose version disagrees with the
+      # manifests. crates.io will not re-use a version number either.
+      - name: The tag, the crate and the bindings agree
+        run: "python3 bindings/python/check_version.py '${{ steps.ref.outputs.tag }}'"
+
+      - uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+
+      # Verification is left on: the crate is dependency-free and builds in
+      # seconds, so the packaged artifact is compiled before upload rather
+      # than trusted.
+      - name: Publish
+        run: "cargo publish"
+        env:
+          CARGO_REGISTRY_TOKEN: "${{ steps.auth.outputs.token }}"
