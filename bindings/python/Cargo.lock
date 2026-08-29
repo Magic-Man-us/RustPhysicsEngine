@@ -103,11 +103,11 @@ dependencies = [
 
 [[package]]
 name = "rust_physics_engine"
-version = "0.1.0"
+version = "0.2.0"
 
 [[package]]
 name = "rust_physics_engine_py"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "pyo3",
  "rust_physics_engine",
