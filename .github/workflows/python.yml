@@ -1,0 +1,77 @@
+name: Python
+
+# The Python bindings under bindings/python. They are a separate Cargo
+# workspace -- the library's own Cargo.lock stays a single package -- so
+# they need a job of their own; ci.yml never builds them.
+#
+# One job, on ubuntu-latest. There is deliberately no wheel-building
+# matrix: macOS runners bill at ten times the ubuntu rate and Windows at
+# twice, and building the same crate on three platforms establishes
+# nothing this job has not. When there is a release to cut, build the
+# wheels then -- locally, or in a workflow added for that purpose.
+#
+# Every `run:` is quoted, for the reason given in verify.yml: an unquoted
+# value containing a colon followed by a space parses as a nested mapping
+# and invalidates the file.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  bindings:
+    name: "Bindings"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "bindings/python"
+
+      # 3.9 is the floor the abi3 wheel targets, and abi3 means one binary
+      # serves every version above it -- so a matrix here would compile
+      # the same crate twice to learn nothing.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install the build and test tools
+        run: "python -m pip install --upgrade pip maturin pytest"
+
+      # The bindings are generated from the library's source. If a commit
+      # changes the library and does not re-run the generator, what is
+      # committed here describes a library that no longer exists -- and
+      # nothing else would notice, because stale bindings still compile.
+      # This is the check that notices.
+      - name: The committed bindings match the source
+        run: "python3 bindings/python/generate.py --check"
+
+      # Checked here as well as at release time, because a mismatch
+      # introduced now is cheapest to fix now. At release time the same
+      # check is the last thing standing between a wrong version number
+      # and a PyPI upload that cannot be taken back.
+      - name: The crate and the bindings claim one version
+        run: "python3 bindings/python/check_version.py"
+
+      # `pip install` rather than `maturin develop`: develop wants a
+      # virtualenv to install into, and setup-python does not make one.
+      - name: Build and install
+        run: "python -m pip install --no-build-isolation ./bindings/python"
+
+      - name: Test
+        run: "python -m pytest bindings/python/tests -q"
+
+      # The stubs are generated too, and a stub that disagrees with the
+      # module it describes is worse than no stub: it type-checks code
+      # that will fail at run time.
+      - name: Stubs describe the module that was built
+        run: "python3 bindings/python/check_stubs.py"
+

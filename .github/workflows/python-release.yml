@@ -1,0 +1,169 @@
+name: Python release
+
+# Publishes the Python bindings to PyPI: a source distribution, and a
+# wheel for Linux, macOS and Windows.
+#
+# This is a file of its own rather than jobs in python.yml, and that is
+# the point. python.yml runs on every push and every pull request; this
+# one has a single trigger, `push: tags`, with no `branches` key and no
+# `pull_request` key at all. A branch push cannot reach a macOS runner
+# from here -- not because a condition forbids it and could be edited
+# away, but because no event is wired to it. macOS bills at ten times the
+# ubuntu rate and Windows at twice, so once per release is a fair price
+# and once per pull request is not.
+#
+# The `if:` on each job is redundant with that trigger, deliberately: it
+# is there so that anyone who later adds a second event to this file has
+# to walk past it before these runners start answering to it.
+#
+# ── How the upload is authorised ─────────────────────────────────────
+#
+# PyPI Trusted Publishing, so there is no API token in this repository's
+# secrets and nothing to leak or rotate. The publisher registered on PyPI
+# for `numeria` names three things, and all three have to keep matching or
+# the upload is refused:
+#
+#     repository   Magic-Man-us/RustPhysicsEngine
+#     workflow     python-release.yml   <- this file's name
+#     environment  pypi                 <- the publish job's environment
+#
+# So renaming this file, moving the publish step into another one, or
+# changing that environment name breaks the release until PyPI is told.
+#
+# The environment is worth having for its own sake as well: a required
+# reviewer on it, set in the repository's settings, makes every publish
+# wait for a human. A version can never be re-uploaded to PyPI, even after
+# deleting it, so the one irreversible step in this file is the one worth
+# putting a person in front of.
+#
+# Every `run:` is quoted, for the reason given in verify.yml: an unquoted
+# value containing a colon followed by a space parses as a nested mapping
+# and invalidates the file.
+
+on:
+  push:
+    tags: ["v*"]
+
+# Nothing here needs write access to the repository. The publish job adds
+# the one permission it does need, and nothing else inherits it.
+permissions: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Cheap, and first: if the tag and Cargo.toml disagree, say so before
+  # spending three platforms' worth of runner minutes finding out.
+  version:
+    name: "Version matches the tag"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: The tag, the crate and the bindings agree
+        run: "python3 bindings/python/check_version.py '${{ github.ref }}'"
+
+  sdist:
+    name: "Source distribution"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The bindings depend on the library by path, so the archive has to
+      # carry the library too. maturin vendors it: the sdist contains the
+      # whole crate, and `pip install` of it builds against that copy.
+      # This is what makes the package installable on a platform none of
+      # the wheels below covers.
+      - uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: "--out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-sdist
+          path: dist
+
+  linux:
+    name: "Wheel (Linux x86_64)"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # `manylinux: auto` builds inside a manylinux container, so the
+      # wheel is not pinned to whatever glibc this runner happens to
+      # carry. Plain `maturin build` here produces a manylinux_2_35 tag
+      # that will not install on an older distribution.
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          manylinux: auto
+          args: "--release --out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-linux-x86_64
+          path: dist
+
+  macos:
+    name: "Wheel (macOS universal2)"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: version
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      # One universal2 wheel covers both Apple Silicon and Intel, so this
+      # is a single mac runner rather than two. At ten times the ubuntu
+      # rate that halving is the whole reason for the target choice.
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: universal2-apple-darwin
+          args: "--release --out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-macos-universal2
+          path: dist
+
+  windows:
+    name: "Wheel (Windows x64)"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: version
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: "--release --out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-windows-x64
+          path: dist
+
+  publish:
+    name: "Publish to PyPI"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    needs: [sdist, linux, macos, windows]
+    runs-on: ubuntu-latest
+    # Named so PyPI can be told to trust exactly this job, and so that a
+    # required reviewer on the environment gates the one step here that
+    # cannot be undone.
+    environment:
+      name: pypi
+      url: "https://pypi.org/p/numeria"
+    permissions:
+      # The OIDC token Trusted Publishing exchanges for an upload. This is
+      # the only elevated permission in the file, and it is scoped to this
+      # job.
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: dist-*
+          path: dist
+          merge-multiple: true
+      - name: What is about to be published
+        run: "ls -l dist"
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
