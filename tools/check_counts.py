@@ -1,21 +1,9 @@
 #!/usr/bin/env python3
-"""Check the counts quoted in prose against the two generated files.
+"""Check counts quoted in prose against the files that derive them.
 
-Nothing here derives a count itself. Two files already do, and CI already
-keeps both honest:
-
-    docs/MODULE_MAP.md          gen_module_map.py, a syntactic scan of src/
-    bindings/python/COVERAGE.md generate.py, written beside the bindings
-
-They disagree, correctly. The module map counts a macro-generated item
-once, because it appears once in the source; the binding generator counts
-what it actually emitted, so `unit_ctor!` shows up as its thirty
-constructors. A count is only meaningful against the file that owns it,
-which is why each claim below names its source rather than sharing one
-number.
-
-Prose is not rewritten, only checked -- the surrounding sentence usually
-has to change with the figure, and a machine cannot write that sentence.
+MODULE_MAP.md and COVERAGE.md disagree by design -- the map counts a
+macro-generated item once, the generator counts what it emitted -- so each
+claim names which of them owns it.
 """
 
 from __future__ import annotations
@@ -75,11 +63,8 @@ def coverage_facts() -> dict[str, int]:
     return out
 
 
-# (file, regex capturing one number, the fact it must equal). Anchored on
-# surrounding words, because a bare number would match the wrong one the
-# first time a sentence is reordered. A literal space in a pattern means
-# "any whitespace" -- see `compile_claim` -- since these sentences are hard
-# wrapped and a reflow must not read as a missing claim.
+# A literal space in a pattern means any whitespace: these sentences are
+# hard wrapped and a reflow must not read as a missing claim.
 CLAIMS: list[tuple[str, str, str]] = [
     ("Cargo.toml", r"([\d,]+) public functions", "map_functions"),
     ("Cargo.toml", r"public functions across ([\d,]+) modules", "modules"),
