@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>rust_physics_engine — checkable physics, mathematics and engineering in Rust</title>
-<meta name="description" content="A zero-dependency Rust library for physics, mathematics and engineering computation. 6,365 public functions across 71 modules, every one written so that something about it can be checked.">
+<title>rust_physics_engine</title>
+<meta name="description" content="A zero-dependency Rust library for physics, mathematics and engineering computation. 6,365 public functions and methods across 71 modules.">
 <link rel="canonical" href="https://rust-physics-engine.mimsec.com/">
 <meta property="og:title" content="rust_physics_engine">
-<meta property="og:description" content="A zero-dependency Rust library for physics, mathematics and engineering computation — 6,365 public functions across 71 modules, each written so that something about it can be checked.">
+<meta property="og:description" content="A zero-dependency Rust library for physics, mathematics and engineering computation. 6,365 public functions and methods across 71 modules.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://rust-physics-engine.mimsec.com/">
 <meta property="og:image" content="https://rust-physics-engine.mimsec.com/assets/banner.svg">
@@ -49,15 +49,17 @@ try { var t = localStorage.getItem('rpe-theme');
 <!-- ------------------------------------------------------------- hero -->
 <section class="hero">
   <div class="inner">
-    <p class="eyebrow">Zero dependencies · Rust 2021 · MIT</p>
-    <h1>Physics and mathematics that<br><span class="grad">check their own answers</span></h1>
+    <p class="eyebrow">Zero dependencies &middot; Rust 2021 &middot; MIT</p>
+    <h1 class="lede-h1">A zero-dependency Rust library for physics,
+      mathematics and engineering computation</h1>
     <p class="lede">
-      <strong data-total="fns">6,365</strong> public functions and methods across
-      <strong data-total="modules">71</strong> modules, and not one of them ships on
-      the strength of having run without panicking. Every routine here is written so
-      that something about it can be <em>checked</em> — against a closed form, a
-      conservation law, an independent implementation, or an exact identity over
-      integers.
+      The aim is not breadth for its own sake. Every routine here is written so that
+      something about it can be <em>checked</em> &mdash; against a closed form, against a
+      conservation law, against an independent implementation of the same quantity, or
+      against an exact identity over integers. A test that only asserts a function ran
+      is not evidence, and the test suite is built around that distinction. Where a
+      result is approximate the error has a stated bound; where it is exact the
+      assertion uses <code>==</code>.
     </p>
 
     <div class="cta">
@@ -68,80 +70,53 @@ try { var t = localStorage.getItem('rpe-theme');
 
     <div class="stats">
       <div class="stat rust">
-        <b data-total="fns">6,365</b><span>public functions &amp; methods</span>
+        <b data-total="fns">6,365</b><span>public functions and methods</span>
       </div>
       <div class="stat blue">
         <b data-total="modules">71</b><span>top-level modules</span>
       </div>
-      <div class="stat green"><b>4,770</b><span>tests passing</span></div>
+      <div class="stat green"><b>4,193</b><span>unit tests</span></div>
       <div class="stat green"><b>97.89%</b><span>line coverage</span></div>
-      <div class="stat violet"><b>20</b><span>Kani proof harnesses</span></div>
+      <div class="stat violet"><b>20</b><span>Kani harnesses</span></div>
       <div class="stat rust"><b>0</b><span>dependencies</span></div>
     </div>
   </div>
 </section>
 
-<!-- ------------------------------------------------------- the premise -->
+<!-- -------------------------------------------------------- at a glance -->
 <section>
   <div class="inner">
     <div class="section-head">
-      <h2>A test that only asserts a function ran is not evidence</h2>
-      <p>
-        The aim is not breadth for its own sake. Breadth is what you get when the
-        thing you actually insist on — that every result has something to be
-        measured against — turns out to be possible in one field after another.
-      </p>
+      <h2>At a glance</h2>
     </div>
 
-    <div class="cols cols-3">
-      <div class="card">
-        <h3>Stated error bounds</h3>
-        <p>
-          Where a result is approximate the tolerance comes from the method's own
-          error term, not from a number tuned until the test went green. Where it is
-          exact the assertion uses <code>==</code>.
-        </p>
-      </div>
-      <div class="card">
-        <h3>Failure you can tell apart</h3>
-        <p>
-          Solvers return <code>Result</code> rather than panicking on
-          non-convergence, so a caller can distinguish “did not converge” from
-          “converged, to this”.
-        </p>
-      </div>
-      <div class="card">
-        <h3>NaN is rejected, not ignored</h3>
-        <p>
-          Argument guards are written <code>!(x &gt; 0.0)</code> rather than
-          <code>x &lt;= 0.0</code>, so a NaN fails the check instead of sliding
-          through it.
-        </p>
-      </div>
-      <div class="card">
-        <h3>One table per constant</h3>
-        <p>
-          Physical constants come from <code>math::constants</code>; anything
-          elsewhere is a re-export, and a test enforces the agreement. The values
-          fixed by the 2019 SI redefinition are exact.
-        </p>
-      </div>
-      <div class="card">
-        <h3>Dimensions in the type</h3>
-        <p>
-          <code>units::quantity</code> carries dimensions alongside the number, so
-          adding a velocity to a time is a compile-time-shaped error rather than a
-          plausible-looking float.
-        </p>
-      </div>
-      <div class="card">
-        <h3>Exactness where it matters</h3>
-        <p>
-          <code>f64</code> throughout, except where it would be wrong to be:
-          <code>exact</code> works over arbitrary-precision integers and rationals,
-          and dimensional null spaces are computed over <code>Rational</code>.
-        </p>
-      </div>
+    <div class="table-wrap">
+      <table>
+        <tbody>
+          <tr><th>Public functions and methods</th>
+              <td>6,365 (4,124 free functions, 2,241 methods)</td></tr>
+          <tr><th>Public types</th>
+              <td>431 structs, enums and traits</td></tr>
+          <tr><th>Top-level modules</th>
+              <td>71 public, across 296 source files &mdash; see the
+                  <a href="module-map.html">module map</a></td></tr>
+          <tr><th>Source</th><td>266,122 lines of Rust</td></tr>
+          <tr><th>Unit tests</th><td>4,193</td></tr>
+          <tr><th>Property tests</th><td>577, across 49 files</td></tr>
+          <tr><th>Line coverage</th><td>97.89% (174,685 lines, 3,681 uncovered)</td></tr>
+          <tr><th>Function coverage</th><td>99.33% (20,200 functions, 136 uncovered)</td></tr>
+          <tr><th>Formal verification</th>
+              <td>20 Kani harnesses (13 in CI, 7 behind <code>kani-slow</code>)</td></tr>
+          <tr><th>Undefined behaviour</th>
+              <td>Miri-clean; the crate contains no <code>unsafe</code></td></tr>
+          <tr><th>API documentation</th>
+              <td>every module carries a <code>//!</code> summary; <code>cargo doc</code> is
+                  warning-free, and CI denies rustdoc warnings</td></tr>
+          <tr><th>Dependencies</th>
+              <td>none &mdash; <code>Cargo.lock</code> holds exactly one package</td></tr>
+          <tr><th>Edition</th><td>2021, <code>f64</code> throughout</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -150,11 +125,7 @@ try { var t = localStorage.getItem('rpe-theme');
 <section class="alt">
   <div class="inner">
     <div class="section-head">
-      <h2>Install and run something</h2>
-      <p>
-        The Rust snippet below is <code>examples/readme_quickstart.rs</code>,
-        compiled and run by CI on every push, so it cannot drift out of date.
-      </p>
+      <h2>Install</h2>
     </div>
 
     <div class="cols cols-2">
@@ -181,14 +152,12 @@ rust_physics_engine = { git = "https://github.com/Magic-Man-us/RustPhysicsEngine
           </div>
         </div>
 
-        <div class="note">
-          <h3>Nothing else comes with it</h3>
-          <p>
-            <code>Cargo.lock</code> holds exactly one package: this crate. No
-            transitive tree to audit, no version resolution to lose an afternoon to,
-            and no build script.
-          </p>
-        </div>
+        <h3 class="sub">Quick start</h3>
+        <p class="prose-p">
+          This snippet is
+          <a href="https://github.com/Magic-Man-us/RustPhysicsEngine/blob/main/examples/readme_quickstart.rs"><code>examples/readme_quickstart.rs</code></a>,
+          compiled and run by CI, so it cannot drift out of date.
+        </p>
       </div>
 
       <div class="code">
@@ -209,7 +178,7 @@ let r_s = 2.0 * G * solar_mass / (C * C);        // about 2.95 km
 // Quantities carry their dimensions, and addition checks them.
 let v = Quantity::new(3.0, Dim::new(1, 0, -1, 0, 0, 0, 0)); // m/s
 let t = Quantity::new(2.0, Dim::TIME);
-let d = v.mul(&amp;t).unwrap();                      // 6 m — a length, exactly
+let d = v.mul(&amp;t).unwrap();                      // 6 m, a length, exactly
 assert!(v.add(&amp;t).is_err());                     // a velocity is not a time
 
 // Exact rational arithmetic over arbitrary-precision integers.
@@ -227,17 +196,17 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
     <div class="section-head">
       <h2>What's in it</h2>
       <p>
-        <span data-total="modules">71</span> public modules across
-        <span data-total="files">296</span> source files. Search by name or by
-        subject — the summaries are the first line of each module's own
-        documentation, and the figures are parsed from the sources rather than
-        written down. Press <code>/</code> to jump to the filter.
+        <span data-total="modules">71</span> top-level modules, across
+        <span data-total="files">296</span> source files. Summaries are the first
+        sentence of each module's <code>//!</code> documentation and the figures are
+        parsed from the sources, so nothing here is transcribed. Press <code>/</code>
+        to filter.
       </p>
     </div>
 
     <div class="filters">
       <input class="search" id="module-search" type="search" autocomplete="off"
-             placeholder="Filter modules — wavelet, orbit, prime, tensor…"
+             placeholder="Filter modules &mdash; wavelet, orbit, prime, tensor&hellip;"
              aria-label="Filter modules">
       <span class="count" id="module-count"></span>
     </div>
@@ -245,7 +214,7 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
 
     <div class="grid-modules" id="module-grid">
       <p class="empty">
-        Module data is generated at build time — see
+        Module data is generated at build time &mdash; see
         <a href="module-map.html">the module map</a>.
       </p>
     </div>
@@ -265,58 +234,61 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
         <h3>Unit tests <span class="tag">4,193</span></h3>
         <p>
           Every one asserts something checkable: a closed form, a conservation law, a
-          known reference value, or an exact identity — with a tolerance derived from
-          the method's error term.
+          known reference value, or an exact identity. Approximate results carry a
+          stated tolerance derived from the method's error term, not one tuned until
+          the test passed.
         </p>
       </div>
       <div class="card">
         <h3>Property tests <span class="tag">577</span></h3>
         <p>
-          Randomised tests over invariants that must hold for <em>every</em> input:
-          transform round-trips, algebraic laws, leapfrog FDTD energy conservation,
-          and agreement between two independent implementations.
+          Randomized tests over invariants that must hold for <em>every</em> input, not
+          for a chosen example. They are what catch the cases nobody thought to write
+          down: round-trips, algebraic laws, conservation, and agreement between two
+          independent implementations of the same quantity.
         </p>
       </div>
       <div class="card">
-        <h3>Kani <span class="tag">20 harnesses</span></h3>
+        <h3>Formal verification <span class="tag">20 harnesses</span></h3>
         <p>
-          Model checking with CBMC: over a bounded input domain it <em>proves</em>
-          absence of panics, overflow and division by zero rather than sampling for
-          them. Thirteen run in CI; seven slower ones sit behind a feature flag.
+          Kani model-checks with CBMC: for a bounded input domain it proves absence of
+          panics, overflow and division by zero, rather than sampling. Thirteen run in
+          CI; seven that CBMC cannot decide in a CI-sized budget sit behind the
+          <code>kani-slow</code> feature.
         </p>
       </div>
       <div class="card">
-        <h3>Miri <span class="tag">strict provenance</span></h3>
+        <h3>Miri <span class="tag">no unsafe</span></h3>
         <p>
-          The crate contains no <code>unsafe</code>, so Miri is a backstop rather
-          than the primary check. It runs against <code>core::</code>, where index
-          and slice reasoning is densest.
+          The crate contains no <code>unsafe</code>, so Miri is a backstop rather than
+          the primary check. It runs against <code>core::</code> &mdash; the interval and
+          dual-number arithmetic, where index and slice reasoning is densest &mdash; under
+          <code>-Zmiri-strict-provenance</code>.
         </p>
       </div>
     </div>
 
     <div class="note">
-      <h3>Why 97.89% coverage is not the point</h3>
+      <h3>Why the coverage number is not the point</h3>
       <p>
         Coverage says a line ran, not that anything checked what it did. Some of the
         worst gaps this project has found were in lines with full coverage:
       </p>
       <ul class="checklist">
         <li><span class="dot"></span><span>
-          <b>The strong Lucas test</b> — the second half of Baillie–PSW — was replaced
-          wholesale with <code>return true</code> and the entire suite stayed green.
-          Composites are rejected by Miller–Rabin first, so the Lucas branch is
-          essentially never reached. It is now tested directly against the strong
-          Lucas pseudoprimes below 20,000, computed independently rather than read
-          off the implementation.
+          <b>The strong Lucas test</b> &mdash; the second half of Baillie&ndash;PSW &mdash;
+          was replaced wholesale with <code>return true</code>, and the entire suite
+          stayed green. Composites are rejected by Miller&ndash;Rabin first, so the Lucas
+          branch is essentially never reached in practice. It is now tested directly
+          against the strong Lucas pseudoprimes below 20,000 (5459, 5777, 10877, 16109,
+          18971), computed independently rather than read off the implementation.
         </span></li>
         <li><span class="dot"></span><span>
-          <b>Knuth's add-back correction</b> in <code>BigInt</code> division, taken
-          for roughly two divisions in a billion.
+          <b>Knuth's add-back correction</b> in <code>BigInt</code> division, taken for
+          roughly two divisions in a billion.
         </span></li>
         <li><span class="dot"></span><span>
-          <b>The Lentz convergence threshold</b> in the continued-fraction
-          evaluators.
+          <b>The Lentz convergence threshold</b> in the continued-fraction evaluators.
         </span></li>
       </ul>
       <p style="margin-top:14px">
@@ -326,16 +298,55 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
   </div>
 </section>
 
+<!-- ------------------------------------------------------------- design -->
+<section>
+  <div class="inner">
+    <div class="section-head">
+      <h2>Design</h2>
+    </div>
+    <ul class="checklist wide">
+      <li><span class="dot"></span><span>
+        <b>Zero dependencies.</b> <code>Cargo.lock</code> holds exactly one package:
+        this crate.
+      </span></li>
+      <li><span class="dot"></span><span>
+        <b><code>f64</code> throughout</b>, except where exactness is the point &mdash;
+        <code>exact</code> works over arbitrary-precision integers and rationals, and
+        <code>units::dimensional</code> computes null spaces over <code>Rational</code>
+        because a group is exactly dimensionless or it is not.
+      </span></li>
+      <li><span class="dot"></span><span>
+        <b>Input validation.</b> Public functions validate their inputs: positive mass,
+        non-zero denominators, physical bounds. Solvers return <code>Result</code>
+        rather than panicking on non-convergence. The guards are written
+        <code>!(x &gt; 0.0)</code> rather than <code>x &lt;= 0.0</code> so that NaN is
+        rejected too.
+      </span></li>
+      <li><span class="dot"></span><span>
+        <b>One table per constant.</b> Physical constants come from
+        <code>math::constants</code>; duplicates elsewhere are re-exports, and a test
+        enforces the agreement. The values fixed by the 2019 SI redefinition are exact.
+      </span></li>
+      <li><span class="dot"></span><span>
+        <b>Documented specification choices.</b> Where a definition is genuinely
+        ambiguous &mdash; the Frobenius number with a unit coin, Stern&ndash;Brocot
+        indexing, which parenthesization a unit string means &mdash; the reading is
+        stated in the doc comment rather than left implicit.
+      </span></li>
+    </ul>
+  </div>
+</section>
+
 <!-- -------------------------------------------------------------- python -->
-<section id="python">
+<section class="alt" id="python">
   <div class="inner">
     <div class="section-head">
       <h2>From Python</h2>
       <p>
-        Published to PyPI as <strong>numeria</strong>: 4,086 of the crate's 4,149
-        free functions, 2,254 of its 2,277 methods, 416 of its 426 types and every
-        constant. The bindings are generated from this crate's source, so they cannot
-        fall behind it.
+        Published to PyPI as <strong>numeria</strong>: 4,086 of this crate's 4,149 free
+        functions, 2,254 of its 2,277 methods, 416 of its 426 types and every constant.
+        The bindings are generated from this crate's source, so they cannot fall behind
+        it.
       </p>
     </div>
 
@@ -357,57 +368,58 @@ nm.exact.bigint.factorial(100)                          # a Python int</code></p
           <b>numeria</b>.
         </span></li>
         <li><span class="dot"></span><span>
-          <code>Result</code> errors become exceptions under one
-          <b>PhysicsError</b> root.
+          <code>Result</code> errors become exceptions under one <b>PhysicsError</b>
+          root.
         </span></li>
         <li><span class="dot"></span><span>
-          A <code>Vec3</code> argument accepts a plain <code>(x, y, z)</code> tuple.
+          A <code>Vec3</code> argument accepts <code>(x, y, z)</code>.
         </span></li>
         <li><span class="dot"></span><span>
-          <code>Complex</code>, <code>BigInt</code> and <code>Rational</code> cross
-          over as Python's own <code>complex</code>, <code>int</code> and
+          <code>Complex</code>, <code>BigInt</code> and <code>Rational</code> cross over
+          as Python's own <code>complex</code>, <code>int</code> and
           <code>fractions.Fraction</code>.
         </span></li>
         <li><span class="dot"></span><span>
-          Anywhere the library takes a <code>&amp;dyn Fn</code>, a Python callable
-          will do.
+          Anywhere the library takes a <code>&amp;dyn Fn</code>, a Python callable will
+          do.
         </span></li>
       </ul>
     </div>
   </div>
 </section>
 
-<!-- --------------------------------------------------------------- next -->
-<section class="alt">
+<!-- ----------------------------------------------------- further reading -->
+<section>
   <div class="inner">
     <div class="section-head">
-      <h2>Where to go next</h2>
-      <p>Three doors, depending on what you came for.</p>
+      <h2>Further reading</h2>
     </div>
     <div class="cols cols-3">
       <a class="card" href="guide.html">
-        <h3>The guide →</h3>
+        <h3>The guide</h3>
         <p>
-          A walk through the library by doing things with it: putting a spacecraft in
-          orbit, pulling a tone out of noise, solving a differential equation and
-          proving the answer converges at the predicted rate. Every code block is a
-          file CI compiles and runs.
+          <b>Start here.</b> A walk through the library by doing things with it: putting
+          a spacecraft in orbit, pulling a tone out of noise, solving a differential
+          equation and proving the answer converges at the predicted rate, and the tools
+          for not being wrong. Every code block is a file in <code>examples/</code> that
+          CI compiles and runs, and the output shown is what it actually prints.
         </p>
       </a>
       <a class="card" href="module-map.html">
-        <h3>The module map →</h3>
+        <h3>The module map</h3>
         <p>
-          A generated map of all <span data-total="modules">71</span> public modules
-          and every file beneath them, with line counts, public-item counts and
-          summaries. Produced from the sources; CI fails if it is out of date.
+          A generated map of every one of the 295 modules: a size-annotated tree, tables
+          by subject area, and a row per module with its line count, public item counts
+          and summary. Produced from the sources, so nothing in it is transcribed; CI
+          fails if it is out of date.
         </p>
       </a>
       <a class="card" href="api/rust_physics_engine/index.html">
-        <h3>The API →</h3>
+        <h3>The API documentation</h3>
         <p>
-          Full rustdoc, built from this commit. Every module carries a summary, and
-          CI builds the documentation with <code>-D warnings</code>, so a broken
-          intra-doc link fails the build rather than shipping.
+          The crate root carries an orientation page and every module has a summary.
+          Built here from the current commit with <code>-D warnings</code>, the same
+          flag CI uses, so a broken intra-doc link fails the build rather than shipping.
         </p>
       </a>
     </div>

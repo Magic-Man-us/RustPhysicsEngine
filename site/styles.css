@@ -182,6 +182,10 @@ h1 .grad {
   font-size: 1.13rem; color: var(--fg-muted); max-width: 62ch; margin: 0 0 32px;
 }
 .lede strong { color: var(--fg); font-weight: 600; }
+.lede code {
+  font-family: var(--mono); font-size: .87em; color: var(--fg);
+  background: var(--panel-2); padding: .08em .35em; border-radius: 4px;
+}
 
 .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 40px; }
 .btn {
@@ -446,3 +450,32 @@ td code, th code { white-space: nowrap; }
 .site-footer nav { display: flex; flex-wrap: wrap; gap: 20px; font-size: .87rem; align-items: flex-start; }
 .site-footer nav a { color: var(--fg-muted); }
 .site-footer nav a:hover { color: var(--fg); }
+
+
+/* The front page's h1 is the crate's one-line description rather than a
+   slogan, so it needs a smaller step than a headline would. */
+.lede-h1 { font-size: clamp(1.75rem, 3.8vw, 2.75rem); line-height: 1.14; }
+
+/* A subheading and a paragraph inside a column that is not .prose. */
+h3.sub { font-size: 1rem; font-weight: 620; margin: 26px 0 8px; }
+.prose-p { margin: 0; color: var(--fg-muted); font-size: .93rem; }
+.prose-p code { font-family: var(--mono); font-size: .87em; }
+
+/* The At a glance table is a two-column definition list, so its row headers
+   sit in the first column rather than along the top. */
+.inner > .table-wrap th {
+  width: 1%; white-space: nowrap; vertical-align: top;
+  font-weight: 600; color: var(--fg);
+}
+.inner > .table-wrap td { color: var(--fg-muted); }
+.inner > .table-wrap code {
+  font-family: var(--mono); font-size: .87em;
+  background: var(--panel-2); padding: .08em .35em; border-radius: 4px;
+}
+
+/* One column of running text rather than a card grid. */
+.checklist.wide li { max-width: 82ch; }
+.checklist code {
+  font-family: var(--mono); font-size: .87em;
+  background: var(--panel-2); padding: .08em .35em; border-radius: 4px;
+}
