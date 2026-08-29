@@ -18,7 +18,7 @@ use pyo3::prelude::*;
 /// upper bound on its error, and the number of function evaluations.
 ///
 /// Rust: `numerical::integrate::QuadResult`
-#[pyclass(name = "QuadResult", module = "rust_physics_engine.numerical.integrate", from_py_object, eq)]
+#[pyclass(name = "QuadResult", module = "numeria.numerical.integrate", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQuadResult { pub inner: rust_physics_engine::numerical::integrate::QuadResult }
 #[pymethods]
@@ -67,7 +67,7 @@ impl PyQuadResult {
 /// (de Boor, *A Practical Guide to Splines*).
 ///
 /// Rust: `numerical::interpolate::BSpline`
-#[pyclass(name = "BSpline", module = "rust_physics_engine.numerical.interpolate", from_py_object, eq)]
+#[pyclass(name = "BSpline", module = "numeria.numerical.interpolate", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBSpline { pub inner: rust_physics_engine::numerical::interpolate::BSpline }
 #[pymethods]
@@ -161,7 +161,7 @@ impl PyBSpline {
 /// §3.5). Built with the Thomas tridiagonal solve; C² across knots.
 ///
 /// Rust: `numerical::interpolate::CubicSpline`
-#[pyclass(name = "CubicSpline", module = "rust_physics_engine.numerical.interpolate", from_py_object, eq)]
+#[pyclass(name = "CubicSpline", module = "numeria.numerical.interpolate", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCubicSpline { pub inner: rust_physics_engine::numerical::interpolate::CubicSpline }
 #[pymethods]
@@ -240,7 +240,7 @@ impl PyCubicSpline {
 /// the number of rejected trial steps.
 ///
 /// Rust: `numerical::ode::adaptive::AdaptiveResult`
-#[pyclass(name = "AdaptiveResult", module = "rust_physics_engine.numerical.ode.adaptive", from_py_object, eq)]
+#[pyclass(name = "AdaptiveResult", module = "numeria.numerical.ode.adaptive", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyAdaptiveResult { pub inner: rust_physics_engine::numerical::ode::adaptive::AdaptiveResult }
 #[pymethods]

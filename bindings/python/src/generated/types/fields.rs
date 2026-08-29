@@ -24,7 +24,7 @@ use pyo3::prelude::*;
 /// (i·dx, j·dx)).
 ///
 /// Rust: `fields::ScalarField2`
-#[pyclass(name = "ScalarField2", module = "rust_physics_engine.fields", from_py_object, eq)]
+#[pyclass(name = "ScalarField2", module = "numeria.fields", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFieldsScalarField2 { pub inner: rust_physics_engine::fields::ScalarField2 }
 #[pymethods]
@@ -139,7 +139,7 @@ impl PyFieldsScalarField2 {
 /// (index = (k·ny + j)·nx + i).
 ///
 /// Rust: `fields::ScalarField3`
-#[pyclass(name = "ScalarField3", module = "rust_physics_engine.fields", from_py_object, eq)]
+#[pyclass(name = "ScalarField3", module = "numeria.fields", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFieldsScalarField3 { pub inner: rust_physics_engine::fields::ScalarField3 }
 #[pymethods]

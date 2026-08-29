@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Beta distribution on [0, 1] with shape parameters (a, b).
 ///
 /// Rust: `statistics::distributions::Beta`
-#[pyclass(name = "Beta", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Beta", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBeta { pub inner: rust_physics_engine::statistics::distributions::Beta }
 #[pymethods]
@@ -78,7 +78,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyBetaArg {
 /// probability p; CDF via the regularized incomplete beta.
 ///
 /// Rust: `statistics::distributions::Binomial`
-#[pyclass(name = "Binomial", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Binomial", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBinomial { pub inner: rust_physics_engine::statistics::distributions::Binomial }
 #[pymethods]
@@ -133,7 +133,7 @@ impl PyBinomial {
 /// Chi-squared distribution with k degrees of freedom; CDF via P(k/2, x/2).
 ///
 /// Rust: `statistics::distributions::ChiSquared`
-#[pyclass(name = "ChiSquared", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "ChiSquared", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyChiSquared { pub inner: rust_physics_engine::statistics::distributions::ChiSquared }
 #[pymethods]
@@ -186,7 +186,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyChiSquaredArg {
 /// the module's free `exponential_pdf`/`exponential_cdf`.
 ///
 /// Rust: `statistics::distributions::Exponential`
-#[pyclass(name = "Exponential", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Exponential", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyExponential { pub inner: rust_physics_engine::statistics::distributions::Exponential }
 #[pymethods]
@@ -238,7 +238,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyExponentialArg {
 /// Fisher-Snedecor F distribution with (d1, d2) degrees of freedom.
 ///
 /// Rust: `statistics::distributions::FDist`
-#[pyclass(name = "FDist", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "FDist", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFDist { pub inner: rust_physics_engine::statistics::distributions::FDist }
 #[pymethods]
@@ -298,7 +298,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyFDistArg {
 /// Gamma distribution with shape α and rate β (mean α/β).
 ///
 /// Rust: `statistics::distributions::Gamma`
-#[pyclass(name = "Gamma", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Gamma", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGamma { pub inner: rust_physics_engine::statistics::distributions::Gamma }
 #[pymethods]
@@ -358,7 +358,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyGammaArg {
 /// Log-normal distribution: ln X ~ N(μ, σ²).
 ///
 /// Rust: `statistics::distributions::LogNormal`
-#[pyclass(name = "LogNormal", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "LogNormal", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLogNormal { pub inner: rust_physics_engine::statistics::distributions::LogNormal }
 #[pymethods]
@@ -418,7 +418,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyLogNormalArg {
 /// Normal distribution N(μ, σ²); quantile via `erfinv`.
 ///
 /// Rust: `statistics::distributions::Normal`
-#[pyclass(name = "Normal", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Normal", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyNormal { pub inner: rust_physics_engine::statistics::distributions::Normal }
 #[pymethods]
@@ -479,7 +479,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyNormalArg {
 /// `cdf` uses P(X ≤ k) = Q(k+1, λ).
 ///
 /// Rust: `statistics::distributions::Poisson`
-#[pyclass(name = "Poisson", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Poisson", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPoisson { pub inner: rust_physics_engine::statistics::distributions::Poisson }
 #[pymethods]
@@ -543,7 +543,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyPoissonArg {
 /// regularized incomplete beta function.
 ///
 /// Rust: `statistics::distributions::StudentT`
-#[pyclass(name = "StudentT", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "StudentT", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyStudentT { pub inner: rust_physics_engine::statistics::distributions::StudentT }
 #[pymethods]
@@ -595,7 +595,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyStudentTArg {
 /// Weibull distribution with shape k and scale λ.
 ///
 /// Rust: `statistics::distributions::Weibull`
-#[pyclass(name = "Weibull", module = "rust_physics_engine.statistics.distributions", from_py_object, eq)]
+#[pyclass(name = "Weibull", module = "numeria.statistics.distributions", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyWeibull { pub inner: rust_physics_engine::statistics::distributions::Weibull }
 #[pymethods]
@@ -657,7 +657,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyWeibullArg {
 /// the p-value always accounts for the full parameterization.
 ///
 /// Rust: `statistics::inference::TestResult`
-#[pyclass(name = "TestResult", module = "rust_physics_engine.statistics.inference", from_py_object, eq)]
+#[pyclass(name = "TestResult", module = "numeria.statistics.inference", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTestResult { pub inner: rust_physics_engine::statistics::inference::TestResult }
 #[pymethods]
@@ -722,7 +722,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyTestResultArg {
 /// standard error, and the confidence interval bounds.
 ///
 /// Rust: `statistics::resampling::BootstrapResult`
-#[pyclass(name = "BootstrapResult", module = "rust_physics_engine.statistics.resampling", from_py_object, eq)]
+#[pyclass(name = "BootstrapResult", module = "numeria.statistics.resampling", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBootstrapResult { pub inner: rust_physics_engine::statistics::resampling::BootstrapResult }
 #[pymethods]

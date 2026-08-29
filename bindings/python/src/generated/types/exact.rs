@@ -23,7 +23,7 @@ use pyo3::prelude::*;
 /// even when their `precision` fields differ.
 ///
 /// Rust: `exact::bigfloat::BigFloat`
-#[pyclass(name = "BigFloat", module = "rust_physics_engine.exact.bigfloat", from_py_object)]
+#[pyclass(name = "BigFloat", module = "numeria.exact.bigfloat", from_py_object)]
 #[derive(Clone)]
 pub struct PyBigFloat { pub inner: rust_physics_engine::exact::bigfloat::BigFloat }
 #[pymethods]
@@ -646,7 +646,7 @@ impl PyBigFloat {
 /// A polynomial with `f64` coefficients, ordered from the constant term up.
 ///
 /// Rust: `exact::polynomial::Poly`
-#[pyclass(name = "Poly", module = "rust_physics_engine.exact.polynomial", from_py_object, eq)]
+#[pyclass(name = "Poly", module = "numeria.exact.polynomial", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPoly { pub inner: rust_physics_engine::exact::polynomial::Poly }
 #[pymethods]
@@ -1258,7 +1258,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyPolyArg {
 /// term up.
 ///
 /// Rust: `exact::polynomial::PolyQ`
-#[pyclass(name = "PolyQ", module = "rust_physics_engine.exact.polynomial", from_py_object, eq)]
+#[pyclass(name = "PolyQ", module = "numeria.exact.polynomial", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPolyQ { pub inner: rust_physics_engine::exact::polynomial::PolyQ }
 #[pymethods]
@@ -1703,7 +1703,7 @@ impl PyPolyQ {
 /// An expression flattened to a stack program.
 ///
 /// Rust: `exact::symbolic::CompiledExpr`
-#[pyclass(name = "CompiledExpr", module = "rust_physics_engine.exact.symbolic", from_py_object)]
+#[pyclass(name = "CompiledExpr", module = "numeria.exact.symbolic", from_py_object)]
 #[derive(Clone)]
 pub struct PyCompiledExpr { pub inner: rust_physics_engine::exact::symbolic::CompiledExpr }
 #[pymethods]
@@ -1765,7 +1765,7 @@ impl PyCompiledExpr {
 /// A symbolic expression.
 ///
 /// Rust: `exact::symbolic::Expr`
-#[pyclass(name = "Expr", module = "rust_physics_engine.exact.symbolic", from_py_object, eq)]
+#[pyclass(name = "Expr", module = "numeria.exact.symbolic", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyExpr { pub inner: rust_physics_engine::exact::symbolic::Expr }
 #[pymethods]
@@ -2123,7 +2123,7 @@ impl PyExpr {
 /// Which side a one-sided limit approaches from.
 ///
 /// Rust: `exact::symbolic::Side`
-#[pyclass(name = "Side", module = "rust_physics_engine.exact.symbolic", from_py_object, eq, eq_int)]
+#[pyclass(name = "Side", module = "numeria.exact.symbolic", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PySide {
     Left,

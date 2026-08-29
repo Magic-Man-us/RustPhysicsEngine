@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Beam boundary conditions.
 ///
 /// Rust: `resonance::cavity::BeamBc`
-#[pyclass(name = "BeamBc", module = "rust_physics_engine.resonance.cavity", from_py_object, eq, eq_int)]
+#[pyclass(name = "BeamBc", module = "numeria.resonance.cavity", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyBeamBc {
     ClampedFree,
@@ -59,7 +59,7 @@ impl PyBeamBc {
 /// Plate boundary conditions for `rectangular_plate_modes`.
 ///
 /// Rust: `resonance::cavity::PlateBc`
-#[pyclass(name = "PlateBc", module = "rust_physics_engine.resonance.cavity", from_py_object, eq, eq_int)]
+#[pyclass(name = "PlateBc", module = "numeria.resonance.cavity", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyPlateBc {
     SimplySupported,
@@ -93,7 +93,7 @@ impl PyPlateBc {
 /// Series/parallel RLC resonator.
 ///
 /// Rust: `resonance::cavity::Rlc`
-#[pyclass(name = "Rlc", module = "rust_physics_engine.resonance.cavity", from_py_object, eq)]
+#[pyclass(name = "Rlc", module = "numeria.resonance.cavity", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyRlc { pub inner: rust_physics_engine::resonance::cavity::Rlc }
 #[pymethods]
@@ -300,7 +300,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyRlcArg {
 /// N-degree-of-freedom system M·x″ + C·x′ + K·x = F.
 ///
 /// Rust: `resonance::coupled::CoupledOscillators`
-#[pyclass(name = "CoupledOscillators", module = "rust_physics_engine.resonance.coupled", from_py_object)]
+#[pyclass(name = "CoupledOscillators", module = "numeria.resonance.coupled", from_py_object)]
 #[derive(Clone)]
 pub struct PyCoupledOscillators { pub inner: rust_physics_engine::resonance::coupled::CoupledOscillators }
 #[pymethods]
@@ -573,7 +573,7 @@ impl PyCoupledOscillators {
 /// Mass-damper-spring oscillator m·x″ + c·x′ + k·x = F.
 ///
 /// Rust: `resonance::oscillator::DampedOscillator`
-#[pyclass(name = "DampedOscillator", module = "rust_physics_engine.resonance.oscillator", from_py_object, eq)]
+#[pyclass(name = "DampedOscillator", module = "numeria.resonance.oscillator", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyDampedOscillator { pub inner: rust_physics_engine::resonance::oscillator::DampedOscillator }
 #[pymethods]
@@ -862,7 +862,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyDampedOscillatorArg {
 /// Damping regime classification.
 ///
 /// Rust: `resonance::oscillator::Damping`
-#[pyclass(name = "Damping", module = "rust_physics_engine.resonance.oscillator", from_py_object, eq, eq_int)]
+#[pyclass(name = "Damping", module = "numeria.resonance.oscillator", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyDamping {
     Under,
@@ -900,7 +900,7 @@ impl PyDamping {
 /// Structural model M·x″ + C·x′ + K·x = F(t) with full matrices.
 ///
 /// Rust: `resonance::structural::ModalModel`
-#[pyclass(name = "ModalModel", module = "rust_physics_engine.resonance.structural", from_py_object)]
+#[pyclass(name = "ModalModel", module = "numeria.resonance.structural", from_py_object)]
 #[derive(Clone)]
 pub struct PyModalModel { pub inner: rust_physics_engine::resonance::structural::ModalModel }
 #[pymethods]

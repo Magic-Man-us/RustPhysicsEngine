@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Reference ellipsoid: semi-major axis a (m) and flattening f.
 ///
 /// Rust: `geometry::geodesy::Ellipsoid`
-#[pyclass(name = "Ellipsoid", module = "rust_physics_engine.geometry.geodesy", from_py_object, eq)]
+#[pyclass(name = "Ellipsoid", module = "numeria.geometry.geodesy", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyEllipsoid { pub inner: rust_physics_engine::geometry::geodesy::Ellipsoid }
 #[pymethods]
@@ -100,7 +100,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyEllipsoidArg {
 /// (into caller-owned tables such as absorption coefficients).
 ///
 /// Rust: `geometry::mesh::Mesh`
-#[pyclass(name = "Mesh", module = "rust_physics_engine.geometry.mesh", from_py_object)]
+#[pyclass(name = "Mesh", module = "numeria.geometry.mesh", from_py_object)]
 #[derive(Clone)]
 pub struct PyGeometryMeshMesh { pub inner: rust_physics_engine::geometry::mesh::Mesh }
 #[pymethods]
@@ -192,7 +192,7 @@ impl PyGeometryMeshMesh {
 /// A ray/mesh intersection.
 ///
 /// Rust: `geometry::mesh::RayHit`
-#[pyclass(name = "RayHit", module = "rust_physics_engine.geometry.mesh", from_py_object)]
+#[pyclass(name = "RayHit", module = "numeria.geometry.mesh", from_py_object)]
 #[derive(Clone)]
 pub struct PyMeshRayHit { pub inner: rust_physics_engine::geometry::mesh::RayHit }
 #[pymethods]

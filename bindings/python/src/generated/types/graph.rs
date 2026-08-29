@@ -22,7 +22,7 @@ use pyo3::prelude::*;
 /// part, so these are the standard heuristics for choosing one.
 ///
 /// Rust: `graph::coloring::Order`
-#[pyclass(name = "Order", module = "rust_physics_engine.graph.coloring", from_py_object, eq, eq_int)]
+#[pyclass(name = "Order", module = "numeria.graph.coloring", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyOrder {
     Natural,
@@ -64,7 +64,7 @@ impl PyOrder {
 /// A weighted graph over the vertices `0..n`.
 ///
 /// Rust: `graph::core::Graph`
-#[pyclass(name = "Graph", module = "rust_physics_engine.graph.core", from_py_object, eq)]
+#[pyclass(name = "Graph", module = "numeria.graph.core", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGraph { pub inner: rust_physics_engine::graph::core::Graph }
 #[pymethods]

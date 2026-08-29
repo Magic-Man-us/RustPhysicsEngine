@@ -14,7 +14,7 @@ import threading
 
 import pytest
 
-import rust_physics_engine as rpe
+import numeria as nm
 
 
 def test_an_in_place_argument_is_written_back():
@@ -27,7 +27,7 @@ def test_an_in_place_argument_is_written_back():
     dt = 0.01
     x = [1.0]
     v = [0.0]
-    rpe.numerical.ode.symplectic.velocity_verlet(lambda pos: [-p for p in pos], x, v, dt)
+    nm.numerical.ode.symplectic.velocity_verlet(lambda pos: [-p for p in pos], x, v, dt)
 
     # v½ = -dt/2; x₁ = x + v½·dt; v₁ = v½ - (dt/2)·x₁.
     half = -0.5 * dt
@@ -42,7 +42,7 @@ def test_stepping_repeatedly_traces_the_oscillator():
     x, v = [1.0], [0.0]
     dt = 0.001
     for _ in range(1000):
-        rpe.numerical.ode.symplectic.velocity_verlet(
+        nm.numerical.ode.symplectic.velocity_verlet(
             lambda pos: [-p for p in pos], x, v, dt
         )
     # One radian of a unit-frequency oscillator: x = cos(1), v = -sin(1).
@@ -52,7 +52,7 @@ def test_stepping_repeatedly_traces_the_oscillator():
 
 def test_an_in_place_argument_must_be_something_that_can_receive_the_result():
     with pytest.raises(TypeError) as excinfo:
-        rpe.numerical.ode.symplectic.velocity_verlet(
+        nm.numerical.ode.symplectic.velocity_verlet(
             lambda pos: [-p for p in pos], (1.0,), [0.0], 0.01
         )
     assert "in place" in str(excinfo.value)
@@ -61,14 +61,14 @@ def test_an_in_place_argument_must_be_something_that_can_receive_the_result():
 def test_results_are_right_under_concurrency():
     """Array calls release the GIL. Doing that wrong corrupts results."""
     data = [math.sin(i / 7.0) for i in range(20_000)]
-    expected = rpe.statistics.descriptive.mean(data)
+    expected = nm.statistics.descriptive.mean(data)
     results = []
     errors = []
 
     def work():
         try:
             for _ in range(20):
-                results.append(rpe.statistics.descriptive.mean(data))
+                results.append(nm.statistics.descriptive.mean(data))
         except Exception as exc:  # pragma: no cover - a failure is the point
             errors.append(exc)
 
@@ -89,7 +89,7 @@ def test_a_callback_from_several_threads_stays_correct():
     lock = threading.Lock()
 
     def work(k):
-        got = rpe.numerical.integrate.simpson(lambda x: x**k, 0.0, 1.0, 2000)
+        got = nm.numerical.integrate.simpson(lambda x: x**k, 0.0, 1.0, 2000)
         with lock:
             outcomes[k] = got
 
@@ -111,13 +111,13 @@ def test_an_exception_on_one_thread_does_not_disturb_another():
 
     def good():
         for _ in range(200):
-            ok.append(rpe.classical.acceleration(10.0, 2.0))
+            ok.append(nm.classical.acceleration(10.0, 2.0))
 
     def bad():
         for _ in range(200):
             try:
-                rpe.classical.acceleration(10.0, -1.0)
-            except rpe.InvalidArgumentError:
+                nm.classical.acceleration(10.0, -1.0)
+            except nm.InvalidArgumentError:
                 caught.append(1)
 
     threads = [threading.Thread(target=good), threading.Thread(target=bad)]

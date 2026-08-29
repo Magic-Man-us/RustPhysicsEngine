@@ -20,7 +20,7 @@ import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-STUBS = os.path.join(HERE, "python", "rust_physics_engine")
+STUBS = os.path.join(HERE, "python", "numeria")
 
 
 def stub_names(path: str) -> set[str]:
@@ -67,7 +67,7 @@ def module_names(mod) -> set[str]:
 
 def main() -> int:
     try:
-        import rust_physics_engine as rpe
+        import numeria as nm
     except ImportError as exc:  # pragma: no cover - the message is the point
         print(f"cannot import the extension: {exc}")
         print("build it first:  maturin develop --release -m bindings/python/Cargo.toml")
@@ -75,8 +75,8 @@ def main() -> int:
 
     problems: list[str] = []
     checked = 0
-    for dotted in rpe._core.__submodules__:
-        mod = sys.modules.get(f"rust_physics_engine.{dotted}")
+    for dotted in nm._core.__submodules__:
+        mod = sys.modules.get(f"numeria.{dotted}")
         if mod is None:
             problems.append(f"{dotted}: not installed in sys.modules")
             continue

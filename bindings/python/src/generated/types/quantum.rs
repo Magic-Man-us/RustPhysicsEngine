@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// A sequence of operations on a fixed number of qubits.
 ///
 /// Rust: `quantum::circuit::Circuit`
-#[pyclass(name = "Circuit", module = "rust_physics_engine.quantum.circuit", from_py_object)]
+#[pyclass(name = "Circuit", module = "numeria.quantum.circuit", from_py_object)]
 #[derive(Clone)]
 pub struct PyCircuit { pub inner: rust_physics_engine::quantum::circuit::Circuit }
 #[pymethods]
@@ -359,7 +359,7 @@ impl PyCircuit {
 /// A mixed state of `n` qubits.
 ///
 /// Rust: `quantum::circuit::DensityMatrix`
-#[pyclass(name = "DensityMatrix", module = "rust_physics_engine.quantum.circuit", from_py_object)]
+#[pyclass(name = "DensityMatrix", module = "numeria.quantum.circuit", from_py_object)]
 #[derive(Clone)]
 pub struct PyDensityMatrix { pub inner: rust_physics_engine::quantum::circuit::DensityMatrix }
 #[pymethods]
@@ -535,7 +535,7 @@ impl PyDensityMatrix {
 /// A one-qubit gate: a two-by-two unitary.
 ///
 /// Rust: `quantum::circuit::Gate`
-#[pyclass(name = "Gate", module = "rust_physics_engine.quantum.circuit", from_py_object)]
+#[pyclass(name = "Gate", module = "numeria.quantum.circuit", from_py_object)]
 #[derive(Clone)]
 pub struct PyGate { pub inner: rust_physics_engine::quantum::circuit::Gate }
 #[pymethods]
@@ -761,7 +761,7 @@ impl PyGate {
 /// One instruction in a circuit.
 ///
 /// Rust: `quantum::circuit::Op`
-#[pyclass(name = "Op", module = "rust_physics_engine.quantum.circuit", from_py_object)]
+#[pyclass(name = "Op", module = "numeria.quantum.circuit", from_py_object)]
 #[derive(Clone)]
 pub struct PyOp { pub inner: rust_physics_engine::quantum::circuit::Op }
 #[pymethods]
@@ -777,7 +777,7 @@ impl PyOp {
 /// A pure state of `n` qubits, as `2^n` amplitudes.
 ///
 /// Rust: `quantum::circuit::QState`
-#[pyclass(name = "QState", module = "rust_physics_engine.quantum.circuit", from_py_object)]
+#[pyclass(name = "QState", module = "numeria.quantum.circuit", from_py_object)]
 #[derive(Clone)]
 pub struct PyQState { pub inner: rust_physics_engine::quantum::circuit::QState }
 #[pymethods]
@@ -1192,7 +1192,7 @@ impl PyQState {
 /// Which basis to expand the Hamiltonian in.
 ///
 /// Rust: `quantum::schrodinger::Basis`
-#[pyclass(name = "Basis", module = "rust_physics_engine.quantum.schrodinger", from_py_object)]
+#[pyclass(name = "Basis", module = "numeria.quantum.schrodinger", from_py_object)]
 #[derive(Clone)]
 pub struct PyBasis { pub inner: rust_physics_engine::quantum::schrodinger::Basis }
 #[pymethods]
@@ -1215,7 +1215,7 @@ impl PyBasis {
 /// fermions in disguise.
 ///
 /// Rust: `quantum::spin::SpinChain`
-#[pyclass(name = "SpinChain", module = "rust_physics_engine.quantum.spin", from_py_object)]
+#[pyclass(name = "SpinChain", module = "numeria.quantum.spin", from_py_object)]
 #[derive(Clone)]
 pub struct PySpinChain { pub inner: rust_physics_engine::quantum::spin::SpinChain }
 #[pymethods]
@@ -1453,7 +1453,7 @@ impl PySpinChain {
 /// `x0 + k * dx`.
 ///
 /// Rust: `quantum::wavefunction::Wavefunction1D`
-#[pyclass(name = "Wavefunction1D", module = "rust_physics_engine.quantum.wavefunction", from_py_object)]
+#[pyclass(name = "Wavefunction1D", module = "numeria.quantum.wavefunction", from_py_object)]
 #[derive(Clone)]
 pub struct PyWavefunction1D { pub inner: rust_physics_engine::quantum::wavefunction::Wavefunction1D }
 #[pymethods]

@@ -14,7 +14,7 @@ use pyo3::types::PyModule;
 mod generated;
 mod runtime;
 
-/// The extension module. `rust_physics_engine/__init__.py` re-exports
+/// The extension module. `numeria/__init__.py` re-exports
 /// from here and installs the submodules into `sys.modules`.
 #[pymodule]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {

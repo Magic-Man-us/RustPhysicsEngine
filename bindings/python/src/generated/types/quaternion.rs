@@ -16,7 +16,7 @@ use pyo3::prelude::*;
 
 ///
 /// Rust: `quaternion::Quaternion`
-#[pyclass(name = "Quaternion", module = "rust_physics_engine.quaternion", from_py_object, eq)]
+#[pyclass(name = "Quaternion", module = "numeria.quaternion", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQuaternion { pub inner: rust_physics_engine::quaternion::Quaternion }
 #[pymethods]

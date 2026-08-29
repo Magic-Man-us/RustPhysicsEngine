@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// 2D vector (fluid grids, planar geometry).
 ///
 /// Rust: `math::Vec2`
-#[pyclass(name = "Vec2", module = "rust_physics_engine.math", from_py_object, eq)]
+#[pyclass(name = "Vec2", module = "numeria.math", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyVec2 { pub inner: rust_physics_engine::math::Vec2 }
 #[pymethods]
@@ -241,7 +241,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyVec2Arg {
 /// 3D vector used throughout the physics engine.
 ///
 /// Rust: `math::Vec3`
-#[pyclass(name = "Vec3", module = "rust_physics_engine.math", from_py_object, eq)]
+#[pyclass(name = "Vec3", module = "numeria.math", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyVec3 { pub inner: rust_physics_engine::math::Vec3 }
 #[pymethods]

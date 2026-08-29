@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Slope limiters for MUSCL-type schemes.
 ///
 /// Rust: `cfd::advection::Limiter`
-#[pyclass(name = "Limiter", module = "rust_physics_engine.cfd.advection", from_py_object, eq, eq_int)]
+#[pyclass(name = "Limiter", module = "numeria.cfd.advection", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyAdvectionLimiter {
     Minmod,
@@ -67,7 +67,7 @@ impl PyAdvectionLimiter {
 /// Spatial scheme selector for Burgers / advection-diffusion steps.
 ///
 /// Rust: `cfd::advection::Scheme`
-#[pyclass(name = "Scheme", module = "rust_physics_engine.cfd.advection", from_py_object, eq)]
+#[pyclass(name = "Scheme", module = "numeria.cfd.advection", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyScheme { pub inner: rust_physics_engine::cfd::advection::Scheme }
 #[pymethods]
@@ -84,7 +84,7 @@ impl PyScheme {
 /// pressure cells; node (i, j) sits at world ((i+0.5) dx, (j+0.5) dx).
 ///
 /// Rust: `cfd::grid::CellField2`
-#[pyclass(name = "CellField2", module = "rust_physics_engine.cfd.grid", from_py_object)]
+#[pyclass(name = "CellField2", module = "numeria.cfd.grid", from_py_object)]
 #[derive(Clone)]
 pub struct PyCellField2 { pub inner: rust_physics_engine::cfd::grid::CellField2 }
 #[pymethods]
@@ -189,7 +189,7 @@ impl PyCellField2 {
 /// Boundary condition for the velocity field.
 ///
 /// Rust: `cfd::grid::FluidBc`
-#[pyclass(name = "FluidBc", module = "rust_physics_engine.cfd.grid", from_py_object, eq)]
+#[pyclass(name = "FluidBc", module = "numeria.cfd.grid", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFluidBc { pub inner: rust_physics_engine::cfd::grid::FluidBc }
 #[pymethods]
@@ -207,7 +207,7 @@ impl PyFluidBc {
 /// centers. Cell (i, j) spans [i·dx, (i+1)·dx) × [j·dx, (j+1)·dx).
 ///
 /// Rust: `cfd::grid::MacGrid2`
-#[pyclass(name = "MacGrid2", module = "rust_physics_engine.cfd.grid")]
+#[pyclass(name = "MacGrid2", module = "numeria.cfd.grid")]
 pub struct PyMacGrid2 { pub inner: rust_physics_engine::cfd::grid::MacGrid2 }
 #[pymethods]
 impl PyMacGrid2 {
@@ -437,7 +437,7 @@ impl PyMacGrid2 {
 /// 3D MAC grid (faces staggered per axis).
 ///
 /// Rust: `cfd::grid::MacGrid3`
-#[pyclass(name = "MacGrid3", module = "rust_physics_engine.cfd.grid")]
+#[pyclass(name = "MacGrid3", module = "numeria.cfd.grid")]
 pub struct PyMacGrid3 { pub inner: rust_physics_engine::cfd::grid::MacGrid3 }
 #[pymethods]
 impl PyMacGrid3 {
@@ -588,7 +588,7 @@ impl PyMacGrid3 {
 /// Collision operator selector.
 ///
 /// Rust: `cfd::lbm::Collision`
-#[pyclass(name = "Collision", module = "rust_physics_engine.cfd.lbm", from_py_object, eq)]
+#[pyclass(name = "Collision", module = "numeria.cfd.lbm", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCollision { pub inner: rust_physics_engine::cfd::lbm::Collision }
 #[pymethods]
@@ -604,7 +604,7 @@ impl PyCollision {
 /// D2Q9 lattice Boltzmann solver.
 ///
 /// Rust: `cfd::lbm::LbmD2Q9`
-#[pyclass(name = "LbmD2Q9", module = "rust_physics_engine.cfd.lbm")]
+#[pyclass(name = "LbmD2Q9", module = "numeria.cfd.lbm")]
 pub struct PyLbmD2Q9 { pub inner: rust_physics_engine::cfd::lbm::LbmD2Q9 }
 #[pymethods]
 impl PyLbmD2Q9 {
@@ -848,7 +848,7 @@ impl PyLbmD2Q9 {
 /// D3Q19 BGK lattice Boltzmann solver (periodic + bounce-back).
 ///
 /// Rust: `cfd::lbm::LbmD3Q19`
-#[pyclass(name = "LbmD3Q19", module = "rust_physics_engine.cfd.lbm")]
+#[pyclass(name = "LbmD3Q19", module = "numeria.cfd.lbm")]
 pub struct PyLbmD3Q19 { pub inner: rust_physics_engine::cfd::lbm::LbmD3Q19 }
 #[pymethods]
 impl PyLbmD3Q19 {
@@ -946,7 +946,7 @@ impl PyLbmD3Q19 {
 /// D3Q27 lattice constants (velocities and weights), for custom solvers.
 ///
 /// Rust: `cfd::lbm::LbmD3Q27`
-#[pyclass(name = "LbmD3Q27", module = "rust_physics_engine.cfd.lbm")]
+#[pyclass(name = "LbmD3Q27", module = "numeria.cfd.lbm")]
 pub struct PyLbmD3Q27 { pub inner: rust_physics_engine::cfd::lbm::LbmD3Q27 }
 #[pymethods]
 impl PyLbmD3Q27 {
@@ -982,7 +982,7 @@ impl PyLbmD3Q27 {
 /// tension, gravity restricted to the liquid).
 ///
 /// Rust: `cfd::level_set::FreeSurfaceFluid2`
-#[pyclass(name = "FreeSurfaceFluid2", module = "rust_physics_engine.cfd.level_set")]
+#[pyclass(name = "FreeSurfaceFluid2", module = "numeria.cfd.level_set")]
 pub struct PyFreeSurfaceFluid2 { pub inner: rust_physics_engine::cfd::level_set::FreeSurfaceFluid2 }
 #[pymethods]
 impl PyFreeSurfaceFluid2 {
@@ -1079,7 +1079,7 @@ impl PyFreeSurfaceFluid2 {
 /// 2D signed distance level set (φ < 0 inside).
 ///
 /// Rust: `cfd::level_set::LevelSet2`
-#[pyclass(name = "LevelSet2", module = "rust_physics_engine.cfd.level_set")]
+#[pyclass(name = "LevelSet2", module = "numeria.cfd.level_set")]
 pub struct PyLevelSet2 { pub inner: rust_physics_engine::cfd::level_set::LevelSet2 }
 #[pymethods]
 impl PyLevelSet2 {
@@ -1314,7 +1314,7 @@ impl PyLevelSet2 {
 /// 3D level set with mesh extraction.
 ///
 /// Rust: `cfd::level_set::LevelSet3`
-#[pyclass(name = "LevelSet3", module = "rust_physics_engine.cfd.level_set")]
+#[pyclass(name = "LevelSet3", module = "numeria.cfd.level_set")]
 pub struct PyLevelSet3 { pub inner: rust_physics_engine::cfd::level_set::LevelSet3 }
 #[pymethods]
 impl PyLevelSet3 {
@@ -1380,7 +1380,7 @@ impl PyLevelSet3 {
 /// A line segment of the reconstructed interface.
 ///
 /// Rust: `cfd::level_set::Segment2`
-#[pyclass(name = "Segment2", module = "rust_physics_engine.cfd.level_set", from_py_object)]
+#[pyclass(name = "Segment2", module = "numeria.cfd.level_set", from_py_object)]
 #[derive(Clone)]
 pub struct PyLevelSetSegment2 { pub inner: rust_physics_engine::cfd::level_set::Segment2 }
 #[pymethods]
@@ -1413,7 +1413,7 @@ impl PyLevelSetSegment2 {
 /// Volume-of-fluid interface tracking with PLIC reconstruction.
 ///
 /// Rust: `cfd::level_set::Vof2`
-#[pyclass(name = "Vof2", module = "rust_physics_engine.cfd.level_set")]
+#[pyclass(name = "Vof2", module = "numeria.cfd.level_set")]
 pub struct PyVof2 { pub inner: rust_physics_engine::cfd::level_set::Vof2 }
 #[pymethods]
 impl PyVof2 {
@@ -1521,7 +1521,7 @@ impl PyVof2 {
 /// Advection scheme for the level set.
 ///
 /// Rust: `cfd::level_set::WenoOrUpwind`
-#[pyclass(name = "WenoOrUpwind", module = "rust_physics_engine.cfd.level_set", from_py_object, eq, eq_int)]
+#[pyclass(name = "WenoOrUpwind", module = "numeria.cfd.level_set", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyWenoOrUpwind {
     Weno,
@@ -1555,7 +1555,7 @@ impl PyWenoOrUpwind {
 /// Horizontal / near-horizontal two-phase flow patterns.
 ///
 /// Rust: `cfd::multiphase::FlowPattern`
-#[pyclass(name = "FlowPattern", module = "rust_physics_engine.cfd.multiphase", from_py_object, eq, eq_int)]
+#[pyclass(name = "FlowPattern", module = "numeria.cfd.multiphase", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyFlowPattern {
     Stratified,
@@ -1597,7 +1597,7 @@ impl PyFlowPattern {
 /// Saturated-fluid property bundle for boiling correlations.
 ///
 /// Rust: `cfd::multiphase::SaturatedFluid`
-#[pyclass(name = "SaturatedFluid", module = "rust_physics_engine.cfd.multiphase", from_py_object)]
+#[pyclass(name = "SaturatedFluid", module = "numeria.cfd.multiphase", from_py_object)]
 #[derive(Clone)]
 pub struct PySaturatedFluid { pub inner: rust_physics_engine::cfd::multiphase::SaturatedFluid }
 #[pymethods]
@@ -1689,7 +1689,7 @@ impl PySaturatedFluid {
 /// Van Genuchten soil retention parameters (`alpha` in 1/m, `k_s` in m/s).
 ///
 /// Rust: `cfd::porous::VanGenuchten`
-#[pyclass(name = "VanGenuchten", module = "rust_physics_engine.cfd.porous", from_py_object)]
+#[pyclass(name = "VanGenuchten", module = "numeria.cfd.porous", from_py_object)]
 #[derive(Clone)]
 pub struct PyVanGenuchten { pub inner: rust_physics_engine::cfd::porous::VanGenuchten }
 #[pymethods]
@@ -1860,7 +1860,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyVanGenuchtenArg {
 /// Elementary potential-flow element.
 ///
 /// Rust: `cfd::potential_flow::Element`
-#[pyclass(name = "Element", module = "rust_physics_engine.cfd.potential_flow", from_py_object)]
+#[pyclass(name = "Element", module = "numeria.cfd.potential_flow", from_py_object)]
 #[derive(Clone)]
 pub struct PyPotentialFlowElement { pub inner: rust_physics_engine::cfd::potential_flow::Element }
 #[pymethods]
@@ -1900,7 +1900,7 @@ impl PyPotentialFlowElement {
 /// Hess-Smith source/vortex panel method.
 ///
 /// Rust: `cfd::potential_flow::PanelMethod`
-#[pyclass(name = "PanelMethod", module = "rust_physics_engine.cfd.potential_flow")]
+#[pyclass(name = "PanelMethod", module = "numeria.cfd.potential_flow")]
 pub struct PyPanelMethod { pub inner: rust_physics_engine::cfd::potential_flow::PanelMethod }
 #[pymethods]
 impl PyPanelMethod {
@@ -2033,7 +2033,7 @@ impl PyPanelMethod {
 /// A wall line for the method of images.
 ///
 /// Rust: `cfd::potential_flow::Plane2`
-#[pyclass(name = "Plane2", module = "rust_physics_engine.cfd.potential_flow", from_py_object)]
+#[pyclass(name = "Plane2", module = "numeria.cfd.potential_flow", from_py_object)]
 #[derive(Clone)]
 pub struct PyPlane2 { pub inner: rust_physics_engine::cfd::potential_flow::Plane2 }
 #[pymethods]
@@ -2066,7 +2066,7 @@ impl PyPlane2 {
 /// Superposition of potential-flow elements.
 ///
 /// Rust: `cfd::potential_flow::PotentialFlow2`
-#[pyclass(name = "PotentialFlow2", module = "rust_physics_engine.cfd.potential_flow")]
+#[pyclass(name = "PotentialFlow2", module = "numeria.cfd.potential_flow")]
 pub struct PyPotentialFlow2 { pub inner: rust_physics_engine::cfd::potential_flow::PotentialFlow2 }
 #[pymethods]
 impl PyPotentialFlow2 {
@@ -2196,7 +2196,7 @@ impl PyPotentialFlow2 {
 /// Simple wing planform for the vortex lattice.
 ///
 /// Rust: `cfd::potential_flow::WingGeometry`
-#[pyclass(name = "WingGeometry", module = "rust_physics_engine.cfd.potential_flow", from_py_object)]
+#[pyclass(name = "WingGeometry", module = "numeria.cfd.potential_flow", from_py_object)]
 #[derive(Clone)]
 pub struct PyWingGeometry { pub inner: rust_physics_engine::cfd::potential_flow::WingGeometry }
 #[pymethods]
@@ -2268,7 +2268,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyWingGeometryArg {
 /// Conserved state (density, momentum, total energy).
 ///
 /// Rust: `cfd::riemann::Cons`
-#[pyclass(name = "Cons", module = "rust_physics_engine.cfd.riemann", from_py_object, eq)]
+#[pyclass(name = "Cons", module = "numeria.cfd.riemann", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCons { pub inner: rust_physics_engine::cfd::riemann::Cons }
 #[pymethods]
@@ -2332,7 +2332,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyConsArg {
 /// 1D finite-volume Euler solver (order 1, or 2 with minmod MUSCL).
 ///
 /// Rust: `cfd::riemann::Euler1D`
-#[pyclass(name = "Euler1D", module = "rust_physics_engine.cfd.riemann")]
+#[pyclass(name = "Euler1D", module = "numeria.cfd.riemann")]
 pub struct PyEuler1D { pub inner: rust_physics_engine::cfd::riemann::Euler1D }
 #[pymethods]
 impl PyEuler1D {
@@ -2485,7 +2485,7 @@ impl PyEuler1D {
 /// 2D finite-volume Euler solver (dimensional splitting, MUSCL + HLLC).
 ///
 /// Rust: `cfd::riemann::Euler2D`
-#[pyclass(name = "Euler2D", module = "rust_physics_engine.cfd.riemann")]
+#[pyclass(name = "Euler2D", module = "numeria.cfd.riemann")]
 pub struct PyEuler2D { pub inner: rust_physics_engine::cfd::riemann::Euler2D }
 #[pymethods]
 impl PyEuler2D {
@@ -2660,7 +2660,7 @@ impl PyEuler2D {
 /// Boundary condition for `Euler1D`.
 ///
 /// Rust: `cfd::riemann::EulerBc`
-#[pyclass(name = "EulerBc", module = "rust_physics_engine.cfd.riemann", from_py_object, eq, eq_int)]
+#[pyclass(name = "EulerBc", module = "numeria.cfd.riemann", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyEulerBc {
     Transmissive,
@@ -2698,7 +2698,7 @@ impl PyEulerBc {
 /// Numerical flux selector.
 ///
 /// Rust: `cfd::riemann::FluxKind`
-#[pyclass(name = "FluxKind", module = "rust_physics_engine.cfd.riemann", from_py_object, eq, eq_int)]
+#[pyclass(name = "FluxKind", module = "numeria.cfd.riemann", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyFluxKind {
     Exact,
@@ -2748,7 +2748,7 @@ impl PyFluxKind {
 /// Primitive state (density, velocity, pressure).
 ///
 /// Rust: `cfd::riemann::Prim`
-#[pyclass(name = "Prim", module = "rust_physics_engine.cfd.riemann", from_py_object, eq)]
+#[pyclass(name = "Prim", module = "numeria.cfd.riemann", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPrim { pub inner: rust_physics_engine::cfd::riemann::Prim }
 #[pymethods]
@@ -2814,7 +2814,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyPrimArg {
 /// friction, Coriolis, and wet/dry tolerance.
 ///
 /// Rust: `cfd::shallow_water::ShallowWater2D`
-#[pyclass(name = "ShallowWater2D", module = "rust_physics_engine.cfd.shallow_water")]
+#[pyclass(name = "ShallowWater2D", module = "numeria.cfd.shallow_water")]
 pub struct PyShallowWater2D { pub inner: rust_physics_engine::cfd::shallow_water::ShallowWater2D }
 #[pymethods]
 impl PyShallowWater2D {
@@ -3040,7 +3040,7 @@ impl PyShallowWater2D {
 /// SPH smoothing kernels.
 ///
 /// Rust: `cfd::sph::Kernel`
-#[pyclass(name = "Kernel", module = "rust_physics_engine.cfd.sph", from_py_object, eq, eq_int)]
+#[pyclass(name = "Kernel", module = "numeria.cfd.sph", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyKernel {
     CubicSpline,
@@ -3090,7 +3090,7 @@ impl PyKernel {
 /// Particle type.
 ///
 /// Rust: `cfd::sph::Kind`
-#[pyclass(name = "Kind", module = "rust_physics_engine.cfd.sph", from_py_object, eq, eq_int)]
+#[pyclass(name = "Kind", module = "numeria.cfd.sph", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyKind {
     Fluid,
@@ -3124,7 +3124,7 @@ impl PyKind {
 /// An infinite plane given by a point and unit normal.
 ///
 /// Rust: `cfd::sph::Plane`
-#[pyclass(name = "Plane", module = "rust_physics_engine.cfd.sph", from_py_object)]
+#[pyclass(name = "Plane", module = "numeria.cfd.sph", from_py_object)]
 #[derive(Clone)]
 pub struct PySphPlane { pub inner: rust_physics_engine::cfd::sph::Plane }
 #[pymethods]
@@ -3169,7 +3169,7 @@ impl PySphPlane {
 /// Uniform-cell spatial hash for neighbor queries.
 ///
 /// Rust: `cfd::sph::SpatialHash`
-#[pyclass(name = "SpatialHash", module = "rust_physics_engine.cfd.sph")]
+#[pyclass(name = "SpatialHash", module = "numeria.cfd.sph")]
 pub struct PySphSpatialHash { pub inner: rust_physics_engine::cfd::sph::SpatialHash }
 #[pymethods]
 impl PySphSpatialHash {
@@ -3216,7 +3216,7 @@ impl PySphSpatialHash {
 /// SPH fluid solver.
 ///
 /// Rust: `cfd::sph::Sph`
-#[pyclass(name = "Sph", module = "rust_physics_engine.cfd.sph")]
+#[pyclass(name = "Sph", module = "numeria.cfd.sph")]
 pub struct PySph { pub inner: rust_physics_engine::cfd::sph::Sph }
 #[pymethods]
 impl PySph {
@@ -3524,7 +3524,7 @@ impl PySph {
 /// One SPH particle.
 ///
 /// Rust: `cfd::sph::SphParticle`
-#[pyclass(name = "SphParticle", module = "rust_physics_engine.cfd.sph", from_py_object)]
+#[pyclass(name = "SphParticle", module = "numeria.cfd.sph", from_py_object)]
 #[derive(Clone)]
 pub struct PySphParticle { pub inner: rust_physics_engine::cfd::sph::SphParticle }
 #[pymethods]
@@ -3586,7 +3586,7 @@ impl PySphParticle {
 /// Pressure scheme.
 ///
 /// Rust: `cfd::sph::SphScheme`
-#[pyclass(name = "SphScheme", module = "rust_physics_engine.cfd.sph", from_py_object, eq)]
+#[pyclass(name = "SphScheme", module = "numeria.cfd.sph", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySphScheme { pub inner: rust_physics_engine::cfd::sph::SphScheme }
 #[pymethods]
@@ -3602,7 +3602,7 @@ impl PySphScheme {
 /// Pressure Poisson solver choice.
 ///
 /// Rust: `cfd::stable_fluids::PressureSolver`
-#[pyclass(name = "PressureSolver", module = "rust_physics_engine.cfd.stable_fluids", from_py_object, eq)]
+#[pyclass(name = "PressureSolver", module = "numeria.cfd.stable_fluids", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPressureSolver { pub inner: rust_physics_engine::cfd::stable_fluids::PressureSolver }
 #[pymethods]
@@ -3618,7 +3618,7 @@ impl PyPressureSolver {
 /// 2D stable-fluids solver.
 ///
 /// Rust: `cfd::stable_fluids::StableFluid2`
-#[pyclass(name = "StableFluid2", module = "rust_physics_engine.cfd.stable_fluids")]
+#[pyclass(name = "StableFluid2", module = "numeria.cfd.stable_fluids")]
 pub struct PyStableFluid2 { pub inner: rust_physics_engine::cfd::stable_fluids::StableFluid2 }
 #[pymethods]
 impl PyStableFluid2 {
@@ -3868,7 +3868,7 @@ impl PyStableFluid2 {
 /// projection).
 ///
 /// Rust: `cfd::stable_fluids::StableFluid3`
-#[pyclass(name = "StableFluid3", module = "rust_physics_engine.cfd.stable_fluids")]
+#[pyclass(name = "StableFluid3", module = "numeria.cfd.stable_fluids")]
 pub struct PyStableFluid3 { pub inner: rust_physics_engine::cfd::stable_fluids::StableFluid3 }
 #[pymethods]
 impl PyStableFluid3 {
@@ -3927,7 +3927,7 @@ impl PyStableFluid3 {
 /// Homogeneous (0D) k-epsilon model state advanced by production balance.
 ///
 /// Rust: `cfd::turbulence::KEpsilon`
-#[pyclass(name = "KEpsilon", module = "rust_physics_engine.cfd.turbulence", from_py_object)]
+#[pyclass(name = "KEpsilon", module = "numeria.cfd.turbulence", from_py_object)]
 #[derive(Clone)]
 pub struct PyKEpsilon { pub inner: rust_physics_engine::cfd::turbulence::KEpsilon }
 #[pymethods]
@@ -4083,7 +4083,7 @@ impl PyKEpsilon {
 /// Which k-epsilon variant to use.
 ///
 /// Rust: `cfd::turbulence::KEpsilonVariant`
-#[pyclass(name = "KEpsilonVariant", module = "rust_physics_engine.cfd.turbulence", from_py_object, eq, eq_int)]
+#[pyclass(name = "KEpsilonVariant", module = "numeria.cfd.turbulence", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyKEpsilonVariant {
     Standard,
@@ -4122,7 +4122,7 @@ impl PyKEpsilonVariant {
 /// `blend = 1` and k-epsilon at `blend = 0`.
 ///
 /// Rust: `cfd::turbulence::KOmegaSst`
-#[pyclass(name = "KOmegaSst", module = "rust_physics_engine.cfd.turbulence", from_py_object)]
+#[pyclass(name = "KOmegaSst", module = "numeria.cfd.turbulence", from_py_object)]
 #[derive(Clone)]
 pub struct PyKOmegaSst { pub inner: rust_physics_engine::cfd::turbulence::KOmegaSst }
 #[pymethods]
@@ -4228,7 +4228,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyKOmegaSstArg {
 /// Homogeneous Spalart-Allmaras one-equation model (no wall term).
 ///
 /// Rust: `cfd::turbulence::SpalartAllmaras`
-#[pyclass(name = "SpalartAllmaras", module = "rust_physics_engine.cfd.turbulence", from_py_object)]
+#[pyclass(name = "SpalartAllmaras", module = "numeria.cfd.turbulence", from_py_object)]
 #[derive(Clone)]
 pub struct PySpalartAllmaras { pub inner: rust_physics_engine::cfd::turbulence::SpalartAllmaras }
 #[pymethods]
@@ -4309,7 +4309,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PySpalartAllmarasArg {
 /// Regularization kernel for the Biot-Savart sum.
 ///
 /// Rust: `cfd::vortex::VortexKernel`
-#[pyclass(name = "VortexKernel", module = "rust_physics_engine.cfd.vortex", from_py_object, eq)]
+#[pyclass(name = "VortexKernel", module = "numeria.cfd.vortex", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyVortexKernel { pub inner: rust_physics_engine::cfd::vortex::VortexKernel }
 #[pymethods]
@@ -4325,7 +4325,7 @@ impl PyVortexKernel {
 /// 2D vortex blob method: particles carry scalar circulation.
 ///
 /// Rust: `cfd::vortex::VortexMethod2`
-#[pyclass(name = "VortexMethod2", module = "rust_physics_engine.cfd.vortex", from_py_object)]
+#[pyclass(name = "VortexMethod2", module = "numeria.cfd.vortex", from_py_object)]
 #[derive(Clone)]
 pub struct PyVortexMethod2 { pub inner: rust_physics_engine::cfd::vortex::VortexMethod2 }
 #[pymethods]
@@ -4463,7 +4463,7 @@ impl PyVortexMethod2 {
 /// 3D vortex particle method with direct Biot-Savart summation.
 ///
 /// Rust: `cfd::vortex::VortexMethod3`
-#[pyclass(name = "VortexMethod3", module = "rust_physics_engine.cfd.vortex", from_py_object)]
+#[pyclass(name = "VortexMethod3", module = "numeria.cfd.vortex", from_py_object)]
 #[derive(Clone)]
 pub struct PyVortexMethod3 { pub inner: rust_physics_engine::cfd::vortex::VortexMethod3 }
 #[pymethods]
@@ -4610,7 +4610,7 @@ impl PyVortexMethod3 {
 /// (the integral of vorticity over the particle's volume).
 ///
 /// Rust: `cfd::vortex::VortexParticle`
-#[pyclass(name = "VortexParticle", module = "rust_physics_engine.cfd.vortex", from_py_object)]
+#[pyclass(name = "VortexParticle", module = "numeria.cfd.vortex", from_py_object)]
 #[derive(Clone)]
 pub struct PyVortexParticle { pub inner: rust_physics_engine::cfd::vortex::VortexParticle }
 #[pymethods]

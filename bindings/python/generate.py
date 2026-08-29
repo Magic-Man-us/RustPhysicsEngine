@@ -42,8 +42,8 @@ import rustscan  # noqa: E402
 CRATE_ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 SRC = os.path.join(CRATE_ROOT, "src")
 OUT_RS = os.path.join(HERE, "src", "generated")
-OUT_PY = os.path.join(HERE, "python", "rust_physics_engine")
-PKG = "rust_physics_engine"
+OUT_PY = os.path.join(HERE, "python", "numeria")
+PKG = "numeria"
 
 # Error types are exceptions, not classes.
 ERROR_TYPES = {
@@ -2510,15 +2510,15 @@ class Build(Emitter):
 
     def _write_init(self, out_py: str, modules) -> None:
         top = [m for m in modules if "::" not in m]
-        text = f'''"""{PKG}: Python bindings for the rust_physics_engine library.
+        text = f'''"""{PKG} -- the rust_physics_engine library, from Python.
 
 Generated from the Rust source by ``bindings/python/generate.py``. Every
 module here mirrors a Rust module of the same name, and every function
 keeps the name, the argument order and the units it has in Rust.
 
-    >>> import {PKG} as rpe
+    >>> import {PKG} as nm
     >>> import math
-    >>> round(rpe.classical.projectile_range(20.0, math.pi / 4, 9.80665), 4)
+    >>> round(nm.classical.projectile_range(20.0, math.pi / 4, 9.80665), 4)
     40.7886
 
 Units are SI and angles are radians unless a docstring says otherwise.

@@ -16,7 +16,7 @@ use pyo3::prelude::*;
 
 ///
 /// Rust: `astrophysics::collisions::CollisionKind`
-#[pyclass(name = "CollisionKind", module = "rust_physics_engine.astrophysics.collisions", from_py_object, eq, eq_int)]
+#[pyclass(name = "CollisionKind", module = "numeria.astrophysics.collisions", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCollisionKind {
     Merger,
@@ -69,7 +69,7 @@ impl PyCollisionKind {
 
 ///
 /// Rust: `astrophysics::collisions::CollisionResult`
-#[pyclass(name = "CollisionResult", module = "rust_physics_engine.astrophysics.collisions", from_py_object)]
+#[pyclass(name = "CollisionResult", module = "numeria.astrophysics.collisions", from_py_object)]
 #[derive(Clone)]
 pub struct PyCollisionResult { pub inner: rust_physics_engine::astrophysics::collisions::CollisionResult }
 #[pymethods]
@@ -130,7 +130,7 @@ impl PyCollisionResult {
 
 ///
 /// Rust: `astrophysics::collisions::DebrisParams`
-#[pyclass(name = "DebrisParams", module = "rust_physics_engine.astrophysics.collisions", from_py_object)]
+#[pyclass(name = "DebrisParams", module = "numeria.astrophysics.collisions", from_py_object)]
 #[derive(Clone)]
 pub struct PyDebrisParams { pub inner: rust_physics_engine::astrophysics::collisions::DebrisParams }
 #[pymethods]
@@ -186,7 +186,7 @@ impl PyDebrisParams {
 /// The planets this module's low-precision ephemeris covers.
 ///
 /// Rust: `astrophysics::coords::Planet`
-#[pyclass(name = "Planet", module = "rust_physics_engine.astrophysics.coords", from_py_object, eq, eq_int)]
+#[pyclass(name = "Planet", module = "numeria.astrophysics.coords", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyPlanet {
     Mercury,
@@ -244,7 +244,7 @@ impl PyPlanet {
 /// The fields a two-line element set carries.
 ///
 /// Rust: `astrophysics::coords::TleElements`
-#[pyclass(name = "TleElements", module = "rust_physics_engine.astrophysics.coords", from_py_object, eq)]
+#[pyclass(name = "TleElements", module = "numeria.astrophysics.coords", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTleElements { pub inner: rust_physics_engine::astrophysics::coords::TleElements }
 #[pymethods]
@@ -359,7 +359,7 @@ impl PyTleElements {
 
 ///
 /// Rust: `astrophysics::magnetosphere::CelestialBodyType`
-#[pyclass(name = "CelestialBodyType", module = "rust_physics_engine.astrophysics.magnetosphere", from_py_object, eq, eq_int)]
+#[pyclass(name = "CelestialBodyType", module = "numeria.astrophysics.magnetosphere", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCelestialBodyType {
     Star,
@@ -408,7 +408,7 @@ impl PyCelestialBodyType {
 
 ///
 /// Rust: `astrophysics::nbody::Body`
-#[pyclass(name = "Body", module = "rust_physics_engine.astrophysics.nbody", from_py_object)]
+#[pyclass(name = "Body", module = "numeria.astrophysics.nbody", from_py_object)]
 #[derive(Clone)]
 pub struct PyBody { pub inner: rust_physics_engine::astrophysics::nbody::Body }
 #[pymethods]
@@ -483,7 +483,7 @@ impl PyBody {
 
 ///
 /// Rust: `astrophysics::nbody::NBodySystem`
-#[pyclass(name = "NBodySystem", module = "rust_physics_engine.astrophysics.nbody")]
+#[pyclass(name = "NBodySystem", module = "numeria.astrophysics.nbody")]
 pub struct PyNBodySystem { pub inner: rust_physics_engine::astrophysics::nbody::NBodySystem }
 #[pymethods]
 impl PyNBodySystem {
@@ -576,7 +576,7 @@ impl PyNBodySystem {
 
 ///
 /// Rust: `astrophysics::orbital_elements::OrbitalElements`
-#[pyclass(name = "OrbitalElements", module = "rust_physics_engine.astrophysics.orbital_elements", from_py_object)]
+#[pyclass(name = "OrbitalElements", module = "numeria.astrophysics.orbital_elements", from_py_object)]
 #[derive(Clone)]
 pub struct PyOrbitalElements { pub inner: rust_physics_engine::astrophysics::orbital_elements::OrbitalElements }
 #[pymethods]

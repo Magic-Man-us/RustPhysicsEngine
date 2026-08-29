@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Always cooperate.
 ///
 /// Rust: `optimization::game_theory::AlwaysCooperate`
-#[pyclass(name = "AlwaysCooperate", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "AlwaysCooperate", module = "numeria.optimization.game_theory")]
 pub struct PyAlwaysCooperate { pub inner: rust_physics_engine::optimization::game_theory::AlwaysCooperate }
 #[pymethods]
 impl PyAlwaysCooperate {
@@ -28,7 +28,7 @@ impl PyAlwaysCooperate {
 /// finitely repeated game with a commonly known end.
 ///
 /// Rust: `optimization::game_theory::AlwaysDefect`
-#[pyclass(name = "AlwaysDefect", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "AlwaysDefect", module = "numeria.optimization.game_theory")]
 pub struct PyAlwaysDefect { pub inner: rust_physics_engine::optimization::game_theory::AlwaysDefect }
 #[pymethods]
 impl PyAlwaysDefect {
@@ -41,7 +41,7 @@ impl PyAlwaysDefect {
 /// to move and its children.
 ///
 /// Rust: `optimization::game_theory::GameTree`
-#[pyclass(name = "GameTree", module = "rust_physics_engine.optimization.game_theory", from_py_object)]
+#[pyclass(name = "GameTree", module = "numeria.optimization.game_theory", from_py_object)]
 #[derive(Clone)]
 pub struct PyGameTree { pub inner: rust_physics_engine::optimization::game_theory::GameTree }
 #[pymethods]
@@ -58,7 +58,7 @@ impl PyGameTree {
 /// copies of it from locking into mutual retaliation under noise.
 ///
 /// Rust: `optimization::game_theory::GenerousTitForTat`
-#[pyclass(name = "GenerousTitForTat", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "GenerousTitForTat", module = "numeria.optimization.game_theory")]
 pub struct PyGenerousTitForTat { pub inner: rust_physics_engine::optimization::game_theory::GenerousTitForTat }
 #[pymethods]
 impl PyGenerousTitForTat {
@@ -84,7 +84,7 @@ impl PyGenerousTitForTat {
 /// Cooperate until defected on once, then defect forever.
 ///
 /// Rust: `optimization::game_theory::Grim`
-#[pyclass(name = "Grim", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "Grim", module = "numeria.optimization.game_theory")]
 pub struct PyGrim { pub inner: rust_physics_engine::optimization::game_theory::Grim }
 #[pymethods]
 impl PyGrim {
@@ -94,7 +94,7 @@ impl PyGrim {
 /// A move in the iterated prisoner's dilemma.
 ///
 /// Rust: `optimization::game_theory::Move`
-#[pyclass(name = "Move", module = "rust_physics_engine.optimization.game_theory", from_py_object, eq, eq_int)]
+#[pyclass(name = "Move", module = "numeria.optimization.game_theory", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyMove {
     Cooperate,
@@ -129,7 +129,7 @@ impl PyMove {
 /// switch if it did not.
 ///
 /// Rust: `optimization::game_theory::Pavlov`
-#[pyclass(name = "Pavlov", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "Pavlov", module = "numeria.optimization.game_theory")]
 pub struct PyPavlov { pub inner: rust_physics_engine::optimization::game_theory::Pavlov }
 #[pymethods]
 impl PyPavlov {
@@ -139,7 +139,7 @@ impl PyPavlov {
 /// Cooperate with fixed probability, ignoring the opponent.
 ///
 /// Rust: `optimization::game_theory::RandomPlayer`
-#[pyclass(name = "RandomPlayer", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "RandomPlayer", module = "numeria.optimization.game_theory")]
 pub struct PyRandomPlayer { pub inner: rust_physics_engine::optimization::game_theory::RandomPlayer }
 #[pymethods]
 impl PyRandomPlayer {
@@ -165,7 +165,7 @@ impl PyRandomPlayer {
 /// Cooperate first, then copy the opponent's last move.
 ///
 /// Rust: `optimization::game_theory::TitForTat`
-#[pyclass(name = "TitForTat", module = "rust_physics_engine.optimization.game_theory")]
+#[pyclass(name = "TitForTat", module = "numeria.optimization.game_theory")]
 pub struct PyTitForTat { pub inner: rust_physics_engine::optimization::game_theory::TitForTat }
 #[pymethods]
 impl PyTitForTat {
@@ -175,7 +175,7 @@ impl PyTitForTat {
 /// One edit in a transformation from one sequence to another.
 ///
 /// Rust: `optimization::integer::EditOp`
-#[pyclass(name = "EditOp", module = "rust_physics_engine.optimization.integer", from_py_object, eq)]
+#[pyclass(name = "EditOp", module = "numeria.optimization.integer", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyEditOp { pub inner: rust_physics_engine::optimization::integer::EditOp }
 #[pymethods]
@@ -195,7 +195,7 @@ impl PyEditOp {
 /// invertible, `None` otherwise.
 ///
 /// Rust: `optimization::least_squares::LmResult`
-#[pyclass(name = "LmResult", module = "rust_physics_engine.optimization.least_squares", from_py_object, eq)]
+#[pyclass(name = "LmResult", module = "numeria.optimization.least_squares", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLmResult { pub inner: rust_physics_engine::optimization::least_squares::LmResult }
 #[pymethods]
@@ -243,7 +243,7 @@ impl PyLmResult {
 /// The sense of a constraint row.
 ///
 /// Rust: `optimization::lp::Cmp`
-#[pyclass(name = "Cmp", module = "rust_physics_engine.optimization.lp", from_py_object, eq, eq_int)]
+#[pyclass(name = "Cmp", module = "numeria.optimization.lp", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCmp {
     Le,
@@ -287,7 +287,7 @@ impl PyCmp {
 /// variable free.
 ///
 /// Rust: `optimization::lp::LpProblem`
-#[pyclass(name = "LpProblem", module = "rust_physics_engine.optimization.lp", from_py_object, eq)]
+#[pyclass(name = "LpProblem", module = "numeria.optimization.lp", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLpProblem { pub inner: rust_physics_engine::optimization::lp::LpProblem }
 #[pymethods]
@@ -406,7 +406,7 @@ impl PyLpProblem {
 /// What a solver concluded.
 ///
 /// Rust: `optimization::lp::LpResult`
-#[pyclass(name = "LpResult", module = "rust_physics_engine.optimization.lp", from_py_object, eq)]
+#[pyclass(name = "LpResult", module = "numeria.optimization.lp", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLpResult { pub inner: rust_physics_engine::optimization::lp::LpResult }
 #[pymethods]
@@ -445,7 +445,7 @@ impl PyLpResult {
 /// known global minimum value.
 ///
 /// Rust: `optimization::metaheuristics::Benchmark`
-#[pyclass(name = "Benchmark", module = "rust_physics_engine.optimization.metaheuristics")]
+#[pyclass(name = "Benchmark", module = "numeria.optimization.metaheuristics")]
 pub struct PyBenchmark { pub inner: rust_physics_engine::optimization::metaheuristics::Benchmark }
 #[pymethods]
 impl PyBenchmark {
@@ -471,7 +471,7 @@ impl PyBenchmark {
 /// Settings for the real-valued genetic algorithm.
 ///
 /// Rust: `optimization::metaheuristics::GaConfig`
-#[pyclass(name = "GaConfig", module = "rust_physics_engine.optimization.metaheuristics", from_py_object, eq)]
+#[pyclass(name = "GaConfig", module = "numeria.optimization.metaheuristics", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGaConfig { pub inner: rust_physics_engine::optimization::metaheuristics::GaConfig }
 #[pymethods]
@@ -536,7 +536,7 @@ impl PyGaConfig {
 /// latest start, latest finish.
 ///
 /// Rust: `optimization::network::TaskTimes`
-#[pyclass(name = "TaskTimes", module = "rust_physics_engine.optimization.network", from_py_object, eq)]
+#[pyclass(name = "TaskTimes", module = "numeria.optimization.network", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTaskTimes { pub inner: rust_physics_engine::optimization::network::TaskTimes }
 #[pymethods]

@@ -18,7 +18,7 @@ use pyo3::prelude::*;
 /// internal circular delay line.
 ///
 /// Rust: `dsp::fir::FirState`
-#[pyclass(name = "FirState", module = "rust_physics_engine.dsp.fir")]
+#[pyclass(name = "FirState", module = "numeria.dsp.fir")]
 pub struct PyFirState { pub inner: rust_physics_engine::dsp::fir::FirState }
 #[pymethods]
 impl PyFirState {
@@ -66,7 +66,7 @@ impl PyFirState {
 /// (a0 = 1); `a1`, `a2` are the denominator terms.
 ///
 /// Rust: `dsp::iir::Biquad`
-#[pyclass(name = "Biquad", module = "rust_physics_engine.dsp.iir", from_py_object, eq)]
+#[pyclass(name = "Biquad", module = "numeria.dsp.iir", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBiquad { pub inner: rust_physics_engine::dsp::iir::Biquad }
 #[pymethods]
@@ -320,7 +320,7 @@ impl PyBiquad {
 /// Filter band selectors for the classical designs; frequencies in Hz.
 ///
 /// Rust: `dsp::iir::IirKind`
-#[pyclass(name = "IirKind", module = "rust_physics_engine.dsp.iir", from_py_object, eq)]
+#[pyclass(name = "IirKind", module = "numeria.dsp.iir", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyIirKind { pub inner: rust_physics_engine::dsp::iir::IirKind }
 #[pymethods]
@@ -336,7 +336,7 @@ impl PyIirKind {
 /// A cascade of biquads with an overall gain.
 ///
 /// Rust: `dsp::iir::Sos`
-#[pyclass(name = "Sos", module = "rust_physics_engine.dsp.iir", from_py_object)]
+#[pyclass(name = "Sos", module = "numeria.dsp.iir", from_py_object)]
 #[derive(Clone)]
 pub struct PySos { pub inner: rust_physics_engine::dsp::iir::Sos }
 #[pymethods]
@@ -450,7 +450,7 @@ impl PySos {
 /// high-pass, band-pass, and notch outputs.
 ///
 /// Rust: `dsp::iir::Svf`
-#[pyclass(name = "Svf", module = "rust_physics_engine.dsp.iir")]
+#[pyclass(name = "Svf", module = "numeria.dsp.iir")]
 pub struct PySvf { pub inner: rust_physics_engine::dsp::iir::Svf }
 #[pymethods]
 impl PySvf {
@@ -485,7 +485,7 @@ impl PySvf {
 /// in (positive) dB.
 ///
 /// Rust: `dsp::windows::WindowKind`
-#[pyclass(name = "WindowKind", module = "rust_physics_engine.dsp.windows", from_py_object, eq)]
+#[pyclass(name = "WindowKind", module = "numeria.dsp.windows", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyWindowKind { pub inner: rust_physics_engine::dsp::windows::WindowKind }
 #[pymethods]
@@ -501,7 +501,7 @@ impl PyWindowKind {
 /// Figures of merit for a window (Harris 1978).
 ///
 /// Rust: `dsp::windows::WindowMetrics`
-#[pyclass(name = "WindowMetrics", module = "rust_physics_engine.dsp.windows", from_py_object)]
+#[pyclass(name = "WindowMetrics", module = "numeria.dsp.windows", from_py_object)]
 #[derive(Clone)]
 pub struct PyWindowMetrics { pub inner: rust_physics_engine::dsp::windows::WindowMetrics }
 #[pymethods]

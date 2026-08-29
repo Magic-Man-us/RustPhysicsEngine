@@ -30,73 +30,73 @@ use rust_physics_engine::error::{GeomError, SolveError};
 use rust_physics_engine::units::quantity::DimError;
 
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     PhysicsError,
     pyo3::exceptions::PyException,
     "Base class for every exception raised by rust_physics_engine."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     InvalidArgumentError,
     PhysicsError,
     "An argument violated a documented precondition."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     SolverError,
     PhysicsError,
     "Base class for failures reported by the numerical solvers."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     SingularMatrixError,
     SolverError,
     "The matrix is singular, or a pivot fell below the safe threshold."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     NotPositiveDefiniteError,
     SolverError,
     "The matrix is not (numerically) symmetric positive definite."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     ConvergenceError,
     SolverError,
     "An iteration did not converge. Carries `iterations` and `residual`."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     DimensionMismatchError,
     SolverError,
     "Operand shapes are incompatible. Carries `expected` and `got`."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     GeometryError,
     PhysicsError,
     "Base class for failures reported by the geometric algorithms."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     DegenerateGeometryError,
     GeometryError,
     "Degenerate input: a zero-area triangle, coincident points, and so on."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     NotManifoldError,
     GeometryError,
     "The mesh is not manifold where the operation requires it."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     EmptyInputError,
     GeometryError,
     "The input contains no elements."
 );
 pyo3::create_exception!(
-    rust_physics_engine,
+    numeria,
     UnitsError,
     PhysicsError,
     "A dimensional check failed in `units`."

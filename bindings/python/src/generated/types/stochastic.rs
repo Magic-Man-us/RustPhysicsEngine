@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// The Archimedean and elliptical families supported here.
 ///
 /// Rust: `stochastic::extreme::CopulaFamily`
-#[pyclass(name = "CopulaFamily", module = "rust_physics_engine.stochastic.extreme", from_py_object, eq, eq_int)]
+#[pyclass(name = "CopulaFamily", module = "numeria.stochastic.extreme", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCopulaFamily {
     Gaussian,
@@ -60,7 +60,7 @@ impl PyCopulaFamily {
 /// covariance, before and after the measurement.
 ///
 /// Rust: `stochastic::hmm::FilterStep`
-#[pyclass(name = "FilterStep", module = "rust_physics_engine.stochastic.hmm", from_py_object)]
+#[pyclass(name = "FilterStep", module = "numeria.stochastic.hmm", from_py_object)]
 #[derive(Clone)]
 pub struct PyFilterStep { pub inner: rust_physics_engine::stochastic::hmm::FilterStep }
 #[pymethods]
@@ -101,7 +101,7 @@ impl PyFilterStep {
 /// A hidden Markov model whose emissions are one-dimensional Gaussians.
 ///
 /// Rust: `stochastic::hmm::GaussianHmm`
-#[pyclass(name = "GaussianHmm", module = "rust_physics_engine.stochastic.hmm", from_py_object, eq)]
+#[pyclass(name = "GaussianHmm", module = "numeria.stochastic.hmm", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGaussianHmm { pub inner: rust_physics_engine::stochastic::hmm::GaussianHmm }
 #[pymethods]
@@ -233,7 +233,7 @@ impl PyGaussianHmm {
 /// A hidden Markov model with discrete emissions.
 ///
 /// Rust: `stochastic::hmm::Hmm`
-#[pyclass(name = "Hmm", module = "rust_physics_engine.stochastic.hmm", from_py_object, eq)]
+#[pyclass(name = "Hmm", module = "numeria.stochastic.hmm", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHmm { pub inner: rust_physics_engine::stochastic::hmm::Hmm }
 #[pymethods]
@@ -467,7 +467,7 @@ impl PyHmm {
 /// on one particle and the rest of the cloud stops contributing.
 ///
 /// Rust: `stochastic::hmm::ParticleFilter`
-#[pyclass(name = "ParticleFilter", module = "rust_physics_engine.stochastic.hmm", from_py_object)]
+#[pyclass(name = "ParticleFilter", module = "numeria.stochastic.hmm", from_py_object)]
 #[derive(Clone)]
 pub struct PyParticleFilter { pub inner: rust_physics_engine::stochastic::hmm::ParticleFilter }
 #[pymethods]
@@ -557,7 +557,7 @@ impl PyParticleFilter {
 /// A finite Markov chain, held as its row-stochastic transition matrix.
 ///
 /// Rust: `stochastic::markov::MarkovChain`
-#[pyclass(name = "MarkovChain", module = "rust_physics_engine.stochastic.markov", from_py_object, eq)]
+#[pyclass(name = "MarkovChain", module = "numeria.stochastic.markov", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMarkovChain { pub inner: rust_physics_engine::stochastic::markov::MarkovChain }
 #[pymethods]
@@ -1027,7 +1027,7 @@ impl PyMarkovChain {
 /// target only through ratios, in which it cancels.
 ///
 /// Rust: `stochastic::markov::Mcmc`
-#[pyclass(name = "Mcmc", module = "rust_physics_engine.stochastic.markov", from_py_object)]
+#[pyclass(name = "Mcmc", module = "numeria.stochastic.markov", from_py_object)]
 #[derive(Clone)]
 pub struct PyMcmc { pub inner: rust_physics_engine::stochastic::markov::Mcmc }
 #[pymethods]
@@ -1305,7 +1305,7 @@ impl PyMcmc {
 /// How a state behaves in the long run.
 ///
 /// Rust: `stochastic::markov::StateClass`
-#[pyclass(name = "StateClass", module = "rust_physics_engine.stochastic.markov", from_py_object, eq, eq_int)]
+#[pyclass(name = "StateClass", module = "numeria.stochastic.markov", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyStateClass {
     Transient,
@@ -1348,7 +1348,7 @@ impl PyStateClass {
 /// asks "how long until something happens, and what".
 ///
 /// Rust: `stochastic::queueing::Ctmc`
-#[pyclass(name = "Ctmc", module = "rust_physics_engine.stochastic.queueing", from_py_object, eq)]
+#[pyclass(name = "Ctmc", module = "numeria.stochastic.queueing", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCtmc { pub inner: rust_physics_engine::stochastic::queueing::Ctmc }
 #[pymethods]
@@ -1492,7 +1492,7 @@ impl PyCtmc {
 /// the offered rate whenever the system turns customers away.
 ///
 /// Rust: `stochastic::queueing::QueueMetrics`
-#[pyclass(name = "QueueMetrics", module = "rust_physics_engine.stochastic.queueing", from_py_object, eq)]
+#[pyclass(name = "QueueMetrics", module = "numeria.stochastic.queueing", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQueueMetrics { pub inner: rust_physics_engine::stochastic::queueing::QueueMetrics }
 #[pymethods]
@@ -1594,7 +1594,7 @@ impl PyQueueMetrics {
 /// product-form state distribution report `QueueModel::MeanValueOnly`.
 ///
 /// Rust: `stochastic::queueing::QueueModel`
-#[pyclass(name = "QueueModel", module = "rust_physics_engine.stochastic.queueing", from_py_object, eq)]
+#[pyclass(name = "QueueModel", module = "numeria.stochastic.queueing", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQueueModel { pub inner: rust_physics_engine::stochastic::queueing::QueueModel }
 #[pymethods]
@@ -1615,7 +1615,7 @@ impl PyQueueModel {
 /// same quantity rather than one derived from the other.
 ///
 /// Rust: `stochastic::queueing::QueueSimResult`
-#[pyclass(name = "QueueSimResult", module = "rust_physics_engine.stochastic.queueing", from_py_object, eq)]
+#[pyclass(name = "QueueSimResult", module = "numeria.stochastic.queueing", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQueueSimResult { pub inner: rust_physics_engine::stochastic::queueing::QueueSimResult }
 #[pymethods]
@@ -1695,7 +1695,7 @@ impl PyQueueSimResult {
 /// Parameters of the Heston stochastic volatility model.
 ///
 /// Rust: `stochastic::sde::HestonParams`
-#[pyclass(name = "HestonParams", module = "rust_physics_engine.stochastic.sde", from_py_object, eq)]
+#[pyclass(name = "HestonParams", module = "numeria.stochastic.sde", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHestonParams { pub inner: rust_physics_engine::stochastic::sde::HestonParams }
 #[pymethods]
@@ -1775,7 +1775,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyHestonParamsArg {
 /// An ARIMA model: an `Arma` fitted to the `d`-th difference.
 ///
 /// Rust: `stochastic::timeseries::Arima`
-#[pyclass(name = "Arima", module = "rust_physics_engine.stochastic.timeseries", from_py_object, eq)]
+#[pyclass(name = "Arima", module = "numeria.stochastic.timeseries", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyArima { pub inner: rust_physics_engine::stochastic::timeseries::Arima }
 #[pymethods]
@@ -1850,7 +1850,7 @@ impl PyArima {
 /// moving-average side is the additive one, matching the Box-Jenkins form.
 ///
 /// Rust: `stochastic::timeseries::Arma`
-#[pyclass(name = "Arma", module = "rust_physics_engine.stochastic.timeseries", from_py_object, eq)]
+#[pyclass(name = "Arma", module = "numeria.stochastic.timeseries", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyArma { pub inner: rust_physics_engine::stochastic::timeseries::Arma }
 #[pymethods]
@@ -2137,7 +2137,7 @@ impl PyArma {
 /// stationary only while that sum is below one.
 ///
 /// Rust: `stochastic::timeseries::Garch11`
-#[pyclass(name = "Garch11", module = "rust_physics_engine.stochastic.timeseries", from_py_object, eq)]
+#[pyclass(name = "Garch11", module = "numeria.stochastic.timeseries", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGarch11 { pub inner: rust_physics_engine::stochastic::timeseries::Garch11 }
 #[pymethods]
@@ -2300,7 +2300,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyGarch11Arg {
 /// the recursion or to forecast forward.
 ///
 /// Rust: `stochastic::timeseries::HwState`
-#[pyclass(name = "HwState", module = "rust_physics_engine.stochastic.timeseries", from_py_object, eq)]
+#[pyclass(name = "HwState", module = "numeria.stochastic.timeseries", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHwState { pub inner: rust_physics_engine::stochastic::timeseries::HwState }
 #[pymethods]
@@ -2371,7 +2371,7 @@ impl PyHwState {
 /// as an ARMA in lags that are multiples of `s`.
 ///
 /// Rust: `stochastic::timeseries::Sarima`
-#[pyclass(name = "Sarima", module = "rust_physics_engine.stochastic.timeseries", from_py_object, eq)]
+#[pyclass(name = "Sarima", module = "numeria.stochastic.timeseries", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySarima { pub inner: rust_physics_engine::stochastic::timeseries::Sarima }
 #[pymethods]
@@ -2453,7 +2453,7 @@ impl PySarima {
 /// A vector autoregression: each series regressed on `p` lags of every series.
 ///
 /// Rust: `stochastic::timeseries::Var`
-#[pyclass(name = "Var", module = "rust_physics_engine.stochastic.timeseries", from_py_object, eq)]
+#[pyclass(name = "Var", module = "numeria.stochastic.timeseries", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyVar { pub inner: rust_physics_engine::stochastic::timeseries::Var }
 #[pymethods]

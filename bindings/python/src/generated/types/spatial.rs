@@ -18,7 +18,7 @@ use pyo3::prelude::*;
 /// original input slice.
 ///
 /// Rust: `spatial::bvh::Bvh`
-#[pyclass(name = "Bvh", module = "rust_physics_engine.spatial.bvh", from_py_object)]
+#[pyclass(name = "Bvh", module = "numeria.spatial.bvh", from_py_object)]
 #[derive(Clone)]
 pub struct PyBvh { pub inner: rust_physics_engine::spatial::bvh::Bvh }
 #[pymethods]
@@ -168,7 +168,7 @@ impl PyBvh {
 /// system expressed in world coordinates.
 ///
 /// Rust: `spatial::frame::Frame`
-#[pyclass(name = "Frame", module = "rust_physics_engine.spatial.frame", from_py_object, eq)]
+#[pyclass(name = "Frame", module = "numeria.spatial.frame", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFrame { pub inner: rust_physics_engine::spatial::frame::Frame }
 #[pymethods]
@@ -377,7 +377,7 @@ impl PyFrame {
 /// A ray hit: parameter, position, and surface normal (facing the ray).
 ///
 /// Rust: `spatial::intersect::RayHit`
-#[pyclass(name = "RayHit", module = "rust_physics_engine.spatial.intersect", from_py_object, eq)]
+#[pyclass(name = "RayHit", module = "numeria.spatial.intersect", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyIntersectRayHit { pub inner: rust_physics_engine::spatial::intersect::RayHit }
 #[pymethods]
@@ -418,7 +418,7 @@ impl PyIntersectRayHit {
 /// Median-split k-d tree over `Vec3` points.
 ///
 /// Rust: `spatial::kdtree::KdTree`
-#[pyclass(name = "KdTree", module = "rust_physics_engine.spatial.kdtree", from_py_object)]
+#[pyclass(name = "KdTree", module = "numeria.spatial.kdtree", from_py_object)]
 #[derive(Clone)]
 pub struct PyKdTree { pub inner: rust_physics_engine::spatial::kdtree::KdTree }
 #[pymethods]
@@ -494,7 +494,7 @@ impl PyKdTree {
 /// Median-split k-d tree over `Vec2` points.
 ///
 /// Rust: `spatial::kdtree::KdTree2`
-#[pyclass(name = "KdTree2", module = "rust_physics_engine.spatial.kdtree", from_py_object)]
+#[pyclass(name = "KdTree2", module = "numeria.spatial.kdtree", from_py_object)]
 #[derive(Clone)]
 pub struct PyKdTree2 { pub inner: rust_physics_engine::spatial::kdtree::KdTree2 }
 #[pymethods]
@@ -571,7 +571,7 @@ impl PyKdTree2 {
 /// queries visit only overlapping cells.
 ///
 /// Rust: `spatial::kdtree::SpatialHash`
-#[pyclass(name = "SpatialHash", module = "rust_physics_engine.spatial.kdtree", from_py_object)]
+#[pyclass(name = "SpatialHash", module = "numeria.spatial.kdtree", from_py_object)]
 #[derive(Clone)]
 pub struct PyKdtreeSpatialHash { pub inner: rust_physics_engine::spatial::kdtree::SpatialHash }
 #[pymethods]
@@ -642,7 +642,7 @@ impl PyKdtreeSpatialHash {
 /// 4×4 matrix, row-major: `data[row][col]`.
 ///
 /// Rust: `spatial::mat4::Mat4`
-#[pyclass(name = "Mat4", module = "rust_physics_engine.spatial.mat4", from_py_object, eq)]
+#[pyclass(name = "Mat4", module = "numeria.spatial.mat4", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMat4Mat4 { pub inner: rust_physics_engine::spatial::mat4::Mat4 }
 #[pymethods]
@@ -947,7 +947,7 @@ impl PyMat4Mat4 {
 
 ///
 /// Rust: `spatial::octree::Octree`
-#[pyclass(name = "Octree", module = "rust_physics_engine.spatial.octree")]
+#[pyclass(name = "Octree", module = "numeria.spatial.octree")]
 pub struct PyOctree { pub inner: rust_physics_engine::spatial::octree::Octree }
 #[pymethods]
 impl PyOctree {
@@ -982,7 +982,7 @@ impl PyOctree {
 /// Axis-aligned bounding box.
 ///
 /// Rust: `spatial::primitives::Aabb`
-#[pyclass(name = "Aabb", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Aabb", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyAabb { pub inner: rust_physics_engine::spatial::primitives::Aabb }
 #[pymethods]
@@ -1145,7 +1145,7 @@ impl PyAabb {
 /// Capsule: segment swept by a sphere.
 ///
 /// Rust: `spatial::primitives::Capsule`
-#[pyclass(name = "Capsule", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Capsule", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCapsule { pub inner: rust_physics_engine::spatial::primitives::Capsule }
 #[pymethods]
@@ -1186,7 +1186,7 @@ impl PyCapsule {
 /// Circle in the plane.
 ///
 /// Rust: `spatial::primitives::Circle`
-#[pyclass(name = "Circle", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Circle", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCircle { pub inner: rust_physics_engine::spatial::primitives::Circle }
 #[pymethods]
@@ -1222,7 +1222,7 @@ impl PyCircle {
 /// Finite cylinder between two cap centers.
 ///
 /// Rust: `spatial::primitives::Cylinder`
-#[pyclass(name = "Cylinder", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Cylinder", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCylinder { pub inner: rust_physics_engine::spatial::primitives::Cylinder }
 #[pymethods]
@@ -1263,7 +1263,7 @@ impl PyCylinder {
 /// Oriented bounding box: rotation columns are the local axes.
 ///
 /// Rust: `spatial::primitives::Obb`
-#[pyclass(name = "Obb", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Obb", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyObb { pub inner: rust_physics_engine::spatial::primitives::Obb }
 #[pymethods]
@@ -1351,7 +1351,7 @@ impl PyObb {
 /// Plane n·p + d = 0 with unit normal.
 ///
 /// Rust: `spatial::primitives::Plane`
-#[pyclass(name = "Plane", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Plane", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPrimitivesPlane { pub inner: rust_physics_engine::spatial::primitives::Plane }
 #[pymethods]
@@ -1454,7 +1454,7 @@ impl PyPrimitivesPlane {
 /// Simple polygon in the plane (implicitly closed).
 ///
 /// Rust: `spatial::primitives::Polygon2`
-#[pyclass(name = "Polygon2", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Polygon2", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPolygon2 { pub inner: rust_physics_engine::spatial::primitives::Polygon2 }
 #[pymethods]
@@ -1588,7 +1588,7 @@ impl PyPolygon2 {
 /// 3-D polyline (open or closed).
 ///
 /// Rust: `spatial::primitives::Polyline`
-#[pyclass(name = "Polyline", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Polyline", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPolyline { pub inner: rust_physics_engine::spatial::primitives::Polyline }
 #[pymethods]
@@ -1708,7 +1708,7 @@ impl PyPolyline {
 /// Ray with normalized direction.
 ///
 /// Rust: `spatial::primitives::Ray`
-#[pyclass(name = "Ray", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Ray", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyRay { pub inner: rust_physics_engine::spatial::primitives::Ray }
 #[pymethods]
@@ -1757,7 +1757,7 @@ impl PyRay {
 /// Axis-aligned rectangle.
 ///
 /// Rust: `spatial::primitives::Rect`
-#[pyclass(name = "Rect", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Rect", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyRect { pub inner: rust_physics_engine::spatial::primitives::Rect }
 #[pymethods]
@@ -1908,7 +1908,7 @@ impl PyRect {
 /// 3-D line segment.
 ///
 /// Rust: `spatial::primitives::Segment`
-#[pyclass(name = "Segment", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Segment", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySegment { pub inner: rust_physics_engine::spatial::primitives::Segment }
 #[pymethods]
@@ -1941,7 +1941,7 @@ impl PySegment {
 /// 2-D line segment.
 ///
 /// Rust: `spatial::primitives::Segment2`
-#[pyclass(name = "Segment2", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Segment2", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPrimitivesSegment2 { pub inner: rust_physics_engine::spatial::primitives::Segment2 }
 #[pymethods]
@@ -1974,7 +1974,7 @@ impl PyPrimitivesSegment2 {
 /// Sphere.
 ///
 /// Rust: `spatial::primitives::Sphere`
-#[pyclass(name = "Sphere", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Sphere", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySphere { pub inner: rust_physics_engine::spatial::primitives::Sphere }
 #[pymethods]
@@ -2010,7 +2010,7 @@ impl PySphere {
 /// 3-D triangle.
 ///
 /// Rust: `spatial::primitives::Triangle`
-#[pyclass(name = "Triangle", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Triangle", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTriangle { pub inner: rust_physics_engine::spatial::primitives::Triangle }
 #[pymethods]
@@ -2150,7 +2150,7 @@ impl PyTriangle {
 /// 2-D triangle.
 ///
 /// Rust: `spatial::primitives::Triangle2`
-#[pyclass(name = "Triangle2", module = "rust_physics_engine.spatial.primitives", from_py_object, eq)]
+#[pyclass(name = "Triangle2", module = "numeria.spatial.primitives", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTriangle2 { pub inner: rust_physics_engine::spatial::primitives::Triangle2 }
 #[pymethods]
@@ -2247,7 +2247,7 @@ impl PyTriangle2 {
 /// Plane projective transform p' ~ H·p.
 ///
 /// Rust: `spatial::projective::Homography`
-#[pyclass(name = "Homography", module = "rust_physics_engine.spatial.projective", from_py_object, eq)]
+#[pyclass(name = "Homography", module = "numeria.spatial.projective", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHomography { pub inner: rust_physics_engine::spatial::projective::Homography }
 #[pymethods]
@@ -2333,7 +2333,7 @@ impl PyHomography {
 /// Affine map of the plane.
 ///
 /// Rust: `spatial::transform2d::Affine2`
-#[pyclass(name = "Affine2", module = "rust_physics_engine.spatial.transform2d", from_py_object, eq)]
+#[pyclass(name = "Affine2", module = "numeria.spatial.transform2d", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyAffine2 { pub inner: rust_physics_engine::spatial::transform2d::Affine2 }
 #[pymethods]

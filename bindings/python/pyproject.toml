@@ -3,7 +3,7 @@ requires = ["maturin>=1.5,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "rust-physics-engine"
+name = "numeria"
 description = "Physics, mathematics and engineering computation: 4,000+ validated functions across 71 domains, in Rust, callable from Python"
 readme = "README.md"
 license = { text = "MIT" }
@@ -38,9 +38,9 @@ Changelog = "https://github.com/Magic-Man-us/RustPhysicsEngine/releases"
 # A mixed layout: the compiled `_core` extension lands inside the pure
 # Python package, which owns `__init__.py` and the `.pyi` stubs.
 python-source = "python"
-module-name = "rust_physics_engine._core"
+module-name = "numeria._core"
 features = ["pyo3/extension-module"]
-include = ["python/rust_physics_engine/py.typed"]
+include = ["python/numeria/py.typed"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

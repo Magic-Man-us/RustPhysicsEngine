@@ -16,7 +16,7 @@ use pyo3::prelude::*;
 
 ///
 /// Rust: `control_systems::PidController`
-#[pyclass(name = "PidController", module = "rust_physics_engine.control_systems")]
+#[pyclass(name = "PidController", module = "numeria.control_systems")]
 pub struct PyPidController { pub inner: rust_physics_engine::control_systems::PidController }
 #[pymethods]
 impl PyPidController {
@@ -84,7 +84,7 @@ impl PyPidController {
 /// with user-supplied Jacobians, linearized at the current estimate.
 ///
 /// Rust: `control_systems::kalman::ExtendedKalmanFilter`
-#[pyclass(name = "ExtendedKalmanFilter", module = "rust_physics_engine.control_systems.kalman", unsendable)]
+#[pyclass(name = "ExtendedKalmanFilter", module = "numeria.control_systems.kalman", unsendable)]
 pub struct PyExtendedKalmanFilter { pub inner: rust_physics_engine::control_systems::kalman::ExtendedKalmanFilter }
 #[pymethods]
 impl PyExtendedKalmanFilter {
@@ -135,7 +135,7 @@ impl PyExtendedKalmanFilter {
 /// observation H, process noise Q, and measurement noise R.
 ///
 /// Rust: `control_systems::kalman::KalmanFilter`
-#[pyclass(name = "KalmanFilter", module = "rust_physics_engine.control_systems.kalman", from_py_object, eq)]
+#[pyclass(name = "KalmanFilter", module = "numeria.control_systems.kalman", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyKalmanFilter { pub inner: rust_physics_engine::control_systems::kalman::KalmanFilter }
 #[pymethods]

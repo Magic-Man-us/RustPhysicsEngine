@@ -143,7 +143,7 @@ def test_use_statements_resolve_short_names():
 
 
 def test_the_package_declares_itself_typed():
-    assert os.path.exists(os.path.join(BINDINGS, "python", "rust_physics_engine", "py.typed"))
+    assert os.path.exists(os.path.join(BINDINGS, "python", "numeria", "py.typed"))
 
 
 def test_every_module_has_a_stub_and_the_stub_agrees():

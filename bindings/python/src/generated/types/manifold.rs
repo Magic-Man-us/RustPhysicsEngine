@@ -19,7 +19,7 @@ use pyo3::prelude::*;
 /// 0..p square to +1, the next q to -1, the last r to 0).
 ///
 /// Rust: `manifold::clifford::Multivector`
-#[pyclass(name = "Multivector", module = "rust_physics_engine.manifold.clifford", from_py_object, eq)]
+#[pyclass(name = "Multivector", module = "numeria.manifold.clifford", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMultivector { pub inner: rust_physics_engine::manifold::clifford::Multivector }
 #[pymethods]
@@ -597,7 +597,7 @@ impl PyMultivector {
 /// Kinds of CGA object.
 ///
 /// Rust: `manifold::clifford::cga3::CgaObject`
-#[pyclass(name = "CgaObject", module = "rust_physics_engine.manifold.clifford.cga3", from_py_object, eq, eq_int)]
+#[pyclass(name = "CgaObject", module = "numeria.manifold.clifford.cga3", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCgaObject {
     Point,
@@ -660,7 +660,7 @@ impl PyCgaObject {
 /// derivatives d0 and d1, and diagonal Hodge stars.
 ///
 /// Rust: `manifold::dec::DecMesh`
-#[pyclass(name = "DecMesh", module = "rust_physics_engine.manifold.dec")]
+#[pyclass(name = "DecMesh", module = "numeria.manifold.dec")]
 pub struct PyDecMesh { pub inner: rust_physics_engine::manifold::dec::DecMesh }
 #[pymethods]
 impl PyDecMesh {
@@ -1032,7 +1032,7 @@ impl PyDecMesh {
 /// A point on a geodesic: position, velocity, affine parameter.
 ///
 /// Rust: `manifold::geodesic::GeodesicState`
-#[pyclass(name = "GeodesicState", module = "rust_physics_engine.manifold.geodesic", from_py_object)]
+#[pyclass(name = "GeodesicState", module = "numeria.manifold.geodesic", from_py_object)]
 #[derive(Clone)]
 pub struct PyGeodesicState { pub inner: rust_physics_engine::manifold::geodesic::GeodesicState }
 #[pymethods]
@@ -1073,7 +1073,7 @@ impl PyGeodesicState {
 /// Time integrator selection for geodesic integration.
 ///
 /// Rust: `manifold::geodesic::Integrator`
-#[pyclass(name = "Integrator", module = "rust_physics_engine.manifold.geodesic", from_py_object, eq, eq_int)]
+#[pyclass(name = "Integrator", module = "numeria.manifold.geodesic", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyGeodesicIntegrator {
     Rk4,
@@ -1107,7 +1107,7 @@ impl PyGeodesicIntegrator {
 /// The classical models of hyperbolic space.
 ///
 /// Rust: `manifold::hyperbolic::HypModel`
-#[pyclass(name = "HypModel", module = "rust_physics_engine.manifold.hyperbolic", from_py_object, eq, eq_int)]
+#[pyclass(name = "HypModel", module = "numeria.manifold.hyperbolic", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyHypModel {
     PoincareDisk,
@@ -1157,7 +1157,7 @@ impl PyHypModel {
 /// A point of hyperbolic space tagged with the model its coordinates use.
 ///
 /// Rust: `manifold::hyperbolic::HypPoint`
-#[pyclass(name = "HypPoint", module = "rust_physics_engine.manifold.hyperbolic", from_py_object, eq)]
+#[pyclass(name = "HypPoint", module = "numeria.manifold.hyperbolic", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHypPoint { pub inner: rust_physics_engine::manifold::hyperbolic::HypPoint }
 #[pymethods]
@@ -1303,7 +1303,7 @@ impl PyHypPoint {
 /// (x, y, z)(x', y', z') = (x + x', y + y', z + z' + x y').
 ///
 /// Rust: `manifold::lie::Heisenberg3`
-#[pyclass(name = "Heisenberg3", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "Heisenberg3", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHeisenberg3 { pub inner: rust_physics_engine::manifold::lie::Heisenberg3 }
 #[pymethods]
@@ -1411,7 +1411,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyHeisenberg3Arg {
 /// Planar rigid transform.
 ///
 /// Rust: `manifold::lie::Se2`
-#[pyclass(name = "Se2", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "Se2", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySe2 { pub inner: rust_physics_engine::manifold::lie::Se2 }
 #[pymethods]
@@ -1547,7 +1547,7 @@ impl PySe2 {
 /// Rigid transform: rotation then translation.
 ///
 /// Rust: `manifold::lie::Se3`
-#[pyclass(name = "Se3", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "Se3", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySe3 { pub inner: rust_physics_engine::manifold::lie::Se3 }
 #[pymethods]
@@ -1833,7 +1833,7 @@ impl PySe3 {
 /// Similarity transform: scale, rotation, translation.
 ///
 /// Rust: `manifold::lie::Sim3`
-#[pyclass(name = "Sim3", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "Sim3", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySim3 { pub inner: rust_physics_engine::manifold::lie::Sim3 }
 #[pymethods]
@@ -1917,7 +1917,7 @@ impl PySim3 {
 /// SL(2, C) matrix.
 ///
 /// Rust: `manifold::lie::Sl2C`
-#[pyclass(name = "Sl2C", module = "rust_physics_engine.manifold.lie", from_py_object)]
+#[pyclass(name = "Sl2C", module = "numeria.manifold.lie", from_py_object)]
 #[derive(Clone)]
 pub struct PySl2C { pub inner: rust_physics_engine::manifold::lie::Sl2C }
 #[pymethods]
@@ -2019,7 +2019,7 @@ impl PySl2C {
 /// Classification of Mobius/SL(2) elements.
 ///
 /// Rust: `manifold::lie::Sl2Class`
-#[pyclass(name = "Sl2Class", module = "rust_physics_engine.manifold.lie", from_py_object, eq, eq_int)]
+#[pyclass(name = "Sl2Class", module = "numeria.manifold.lie", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PySl2Class {
     Elliptic,
@@ -2061,7 +2061,7 @@ impl PySl2Class {
 /// SL(2, R) matrix.
 ///
 /// Rust: `manifold::lie::Sl2R`
-#[pyclass(name = "Sl2R", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "Sl2R", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySl2R { pub inner: rust_physics_engine::manifold::lie::Sl2R }
 #[pymethods]
@@ -2169,7 +2169,7 @@ impl PySl2R {
 /// Planar rotation by an angle.
 ///
 /// Rust: `manifold::lie::So2`
-#[pyclass(name = "So2", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "So2", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySo2 { pub inner: rust_physics_engine::manifold::lie::So2 }
 #[pymethods]
@@ -2217,7 +2217,7 @@ impl PySo2 {
 /// A 3D rotation stored as a matrix.
 ///
 /// Rust: `manifold::lie::So3`
-#[pyclass(name = "So3", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "So3", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySo3 { pub inner: rust_physics_engine::manifold::lie::So3 }
 #[pymethods]
@@ -2512,7 +2512,7 @@ impl PySo3 {
 /// A 4D rotation matrix.
 ///
 /// Rust: `manifold::lie::So4`
-#[pyclass(name = "So4", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "So4", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySo4 { pub inner: rust_physics_engine::manifold::lie::So4 }
 #[pymethods]
@@ -2685,7 +2685,7 @@ impl PySo4 {
 /// SU(2) element stored as a unit quaternion.
 ///
 /// Rust: `manifold::lie::Su2`
-#[pyclass(name = "Su2", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "Su2", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySu2 { pub inner: rust_physics_engine::manifold::lie::Su2 }
 #[pymethods]
@@ -2805,7 +2805,7 @@ impl PySu2 {
 /// A unitary matrix U(n) with complex entries.
 ///
 /// Rust: `manifold::lie::Unitary`
-#[pyclass(name = "Unitary", module = "rust_physics_engine.manifold.lie", from_py_object)]
+#[pyclass(name = "Unitary", module = "numeria.manifold.lie", from_py_object)]
 #[derive(Clone)]
 pub struct PyUnitary { pub inner: rust_physics_engine::manifold::lie::Unitary }
 #[pymethods]
@@ -2893,7 +2893,7 @@ impl PyUnitary {
 /// se(3) algebra element: linear part rho, angular part phi.
 ///
 /// Rust: `manifold::lie::se3`
-#[pyclass(name = "se3", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "se3", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct Pyse3 { pub inner: rust_physics_engine::manifold::lie::se3 }
 #[pymethods]
@@ -2926,7 +2926,7 @@ impl Pyse3 {
 /// so(3) algebra element (axis-angle vector).
 ///
 /// Rust: `manifold::lie::so3`
-#[pyclass(name = "so3", module = "rust_physics_engine.manifold.lie", from_py_object, eq)]
+#[pyclass(name = "so3", module = "numeria.manifold.lie", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct Pyso3 { pub inner: rust_physics_engine::manifold::lie::so3 }
 #[pymethods]
@@ -2942,7 +2942,7 @@ impl Pyso3 {
 /// A (pseudo-)Riemannian metric given by a coordinate chart function.
 ///
 /// Rust: `manifold::metric::Metric`
-#[pyclass(name = "Metric", module = "rust_physics_engine.manifold.metric", unsendable)]
+#[pyclass(name = "Metric", module = "numeria.manifold.metric", unsendable)]
 pub struct PyMetricMetric { pub inner: rust_physics_engine::manifold::metric::Metric }
 #[pymethods]
 impl PyMetricMetric {
@@ -3547,7 +3547,7 @@ impl PyMetricMetric {
 /// Signature convention for Minkowski-type metrics.
 ///
 /// Rust: `manifold::metric::Sig`
-#[pyclass(name = "Sig", module = "rust_physics_engine.manifold.metric", from_py_object, eq, eq_int)]
+#[pyclass(name = "Sig", module = "numeria.manifold.metric", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PySig {
     MostlyPlus,
@@ -3582,7 +3582,7 @@ impl PySig {
 /// combinatorics. Faces and cells list vertex indices.
 ///
 /// Rust: `manifold::polytope4::Polytope4`
-#[pyclass(name = "Polytope4", module = "rust_physics_engine.manifold.polytope4", from_py_object)]
+#[pyclass(name = "Polytope4", module = "numeria.manifold.polytope4", from_py_object)]
 #[derive(Clone)]
 pub struct PyPolytope4 { pub inner: rust_physics_engine::manifold::polytope4::Polytope4 }
 #[pymethods]
@@ -4027,7 +4027,7 @@ impl PyPolytope4 {
 /// A 4D vector.
 ///
 /// Rust: `manifold::polytope4::Vec4`
-#[pyclass(name = "Vec4", module = "rust_physics_engine.manifold.polytope4", from_py_object, eq)]
+#[pyclass(name = "Vec4", module = "numeria.manifold.polytope4", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyVec4 { pub inner: rust_physics_engine::manifold::polytope4::Vec4 }
 #[pymethods]
@@ -4164,7 +4164,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyVec4Arg {
 /// Causal relation of event `b` relative to event `a`.
 ///
 /// Rust: `manifold::spacetime::Causal`
-#[pyclass(name = "Causal", module = "rust_physics_engine.manifold.spacetime", from_py_object, eq, eq_int)]
+#[pyclass(name = "Causal", module = "numeria.manifold.spacetime", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCausal {
     Past,
@@ -4206,7 +4206,7 @@ impl PyCausal {
 /// A spacetime four-vector (t, x) in units with c = 1.
 ///
 /// Rust: `manifold::spacetime::FourVector`
-#[pyclass(name = "FourVector", module = "rust_physics_engine.manifold.spacetime", from_py_object)]
+#[pyclass(name = "FourVector", module = "numeria.manifold.spacetime", from_py_object)]
 #[derive(Clone)]
 pub struct PyFourVector { pub inner: rust_physics_engine::manifold::spacetime::FourVector }
 #[pymethods]
@@ -4435,7 +4435,7 @@ impl PyFourVector {
 /// axial angular momentum `l`, and Carter constant `q` per unit mass.
 ///
 /// Rust: `manifold::spacetime::KerrConstants`
-#[pyclass(name = "KerrConstants", module = "rust_physics_engine.manifold.spacetime", from_py_object)]
+#[pyclass(name = "KerrConstants", module = "numeria.manifold.spacetime", from_py_object)]
 #[derive(Clone)]
 pub struct PyKerrConstants { pub inner: rust_physics_engine::manifold::spacetime::KerrConstants }
 #[pymethods]
@@ -4537,7 +4537,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyKerrConstantsArg {
 /// A Lorentz transformation as a 4x4 matrix acting on (t, x, y, z).
 ///
 /// Rust: `manifold::spacetime::LorentzTransform`
-#[pyclass(name = "LorentzTransform", module = "rust_physics_engine.manifold.spacetime", from_py_object)]
+#[pyclass(name = "LorentzTransform", module = "numeria.manifold.spacetime", from_py_object)]
 #[derive(Clone)]
 pub struct PyLorentzTransform { pub inner: rust_physics_engine::manifold::spacetime::LorentzTransform }
 #[pymethods]
@@ -4702,7 +4702,7 @@ impl PyLorentzTransform {
 /// A hyperplane of events: all x with normal . x = offset (Minkowski dot).
 ///
 /// Rust: `manifold::spacetime::Plane`
-#[pyclass(name = "Plane", module = "rust_physics_engine.manifold.spacetime", from_py_object)]
+#[pyclass(name = "Plane", module = "numeria.manifold.spacetime", from_py_object)]
 #[derive(Clone)]
 pub struct PySpacetimePlane { pub inner: rust_physics_engine::manifold::spacetime::Plane }
 #[pymethods]
@@ -4738,7 +4738,7 @@ impl PySpacetimePlane {
 /// A dense tensor of arbitrary rank, stored row-major (last index fastest).
 ///
 /// Rust: `manifold::vecn::TensorN`
-#[pyclass(name = "TensorN", module = "rust_physics_engine.manifold.vecn", from_py_object, eq)]
+#[pyclass(name = "TensorN", module = "numeria.manifold.vecn", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTensorN { pub inner: rust_physics_engine::manifold::vecn::TensorN }
 #[pymethods]
@@ -5109,7 +5109,7 @@ impl PyTensorN {
 /// A dense n-dimensional vector.
 ///
 /// Rust: `manifold::vecn::VecN`
-#[pyclass(name = "VecN", module = "rust_physics_engine.manifold.vecn", from_py_object, eq)]
+#[pyclass(name = "VecN", module = "numeria.manifold.vecn", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyVecN { pub inner: rust_physics_engine::manifold::vecn::VecN }
 #[pymethods]

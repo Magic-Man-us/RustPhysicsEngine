@@ -16,7 +16,7 @@ use pyo3::prelude::*;
 
 ///
 /// Rust: `sim::cloth_sim::MassSpringSystem`
-#[pyclass(name = "MassSpringSystem", module = "rust_physics_engine.sim.cloth_sim", from_py_object)]
+#[pyclass(name = "MassSpringSystem", module = "numeria.sim.cloth_sim", from_py_object)]
 #[derive(Clone)]
 pub struct PyMassSpringSystem { pub inner: rust_physics_engine::sim::cloth_sim::MassSpringSystem }
 #[pymethods]
@@ -144,7 +144,7 @@ impl PyMassSpringSystem {
 
 ///
 /// Rust: `sim::cloth_sim::Particle`
-#[pyclass(name = "Particle", module = "rust_physics_engine.sim.cloth_sim", from_py_object)]
+#[pyclass(name = "Particle", module = "numeria.sim.cloth_sim", from_py_object)]
 #[derive(Clone)]
 pub struct PyParticle { pub inner: rust_physics_engine::sim::cloth_sim::Particle }
 #[pymethods]
@@ -212,7 +212,7 @@ impl PyParticle {
 
 ///
 /// Rust: `sim::cloth_sim::Spring`
-#[pyclass(name = "Spring", module = "rust_physics_engine.sim.cloth_sim", from_py_object)]
+#[pyclass(name = "Spring", module = "numeria.sim.cloth_sim", from_py_object)]
 #[derive(Clone)]
 pub struct PySpring { pub inner: rust_physics_engine::sim::cloth_sim::Spring }
 #[pymethods]
@@ -278,7 +278,7 @@ impl PySpring {
 
 ///
 /// Rust: `sim::em_sim::Fdtd1D`
-#[pyclass(name = "Fdtd1D", module = "rust_physics_engine.sim.em_sim")]
+#[pyclass(name = "Fdtd1D", module = "numeria.sim.em_sim")]
 pub struct PyFdtd1D { pub inner: rust_physics_engine::sim::em_sim::Fdtd1D }
 #[pymethods]
 impl PyFdtd1D {
@@ -460,7 +460,7 @@ impl PyFdtd1D {
 
 ///
 /// Rust: `sim::em_sim::Fdtd2D`
-#[pyclass(name = "Fdtd2D", module = "rust_physics_engine.sim.em_sim")]
+#[pyclass(name = "Fdtd2D", module = "numeria.sim.em_sim")]
 pub struct PyFdtd2D { pub inner: rust_physics_engine::sim::em_sim::Fdtd2D }
 #[pymethods]
 impl PyFdtd2D {
@@ -589,7 +589,7 @@ impl PyFdtd2D {
 
 ///
 /// Rust: `sim::fluid_sim::ColumnFluid`
-#[pyclass(name = "ColumnFluid", module = "rust_physics_engine.sim.fluid_sim")]
+#[pyclass(name = "ColumnFluid", module = "numeria.sim.fluid_sim")]
 pub struct PyColumnFluid { pub inner: rust_physics_engine::sim::fluid_sim::ColumnFluid }
 #[pymethods]
 impl PyColumnFluid {
@@ -687,7 +687,7 @@ impl PyColumnFluid {
 
 ///
 /// Rust: `sim::fluid_sim::EulerFluid2D`
-#[pyclass(name = "EulerFluid2D", module = "rust_physics_engine.sim.fluid_sim")]
+#[pyclass(name = "EulerFluid2D", module = "numeria.sim.fluid_sim")]
 pub struct PyEulerFluid2D { pub inner: rust_physics_engine::sim::fluid_sim::EulerFluid2D }
 #[pymethods]
 impl PyEulerFluid2D {
@@ -808,7 +808,7 @@ impl PyEulerFluid2D {
 
 ///
 /// Rust: `sim::fluid_sim::ShallowWater1D`
-#[pyclass(name = "ShallowWater1D", module = "rust_physics_engine.sim.fluid_sim")]
+#[pyclass(name = "ShallowWater1D", module = "numeria.sim.fluid_sim")]
 pub struct PyShallowWater1D { pub inner: rust_physics_engine::sim::fluid_sim::ShallowWater1D }
 #[pymethods]
 impl PyShallowWater1D {
@@ -956,7 +956,7 @@ impl PyShallowWater1D {
 /// for the diffusion term.
 ///
 /// Rust: `sim::heat_sim::ConvectionDiffusion1D`
-#[pyclass(name = "ConvectionDiffusion1D", module = "rust_physics_engine.sim.heat_sim")]
+#[pyclass(name = "ConvectionDiffusion1D", module = "numeria.sim.heat_sim")]
 pub struct PyConvectionDiffusion1D { pub inner: rust_physics_engine::sim::heat_sim::ConvectionDiffusion1D }
 #[pymethods]
 impl PyConvectionDiffusion1D {
@@ -1064,7 +1064,7 @@ impl PyConvectionDiffusion1D {
 /// 2D heat conduction on a uniform Cartesian grid with Dirichlet boundaries.
 ///
 /// Rust: `sim::heat_sim::HeatConduction2D`
-#[pyclass(name = "HeatConduction2D", module = "rust_physics_engine.sim.heat_sim")]
+#[pyclass(name = "HeatConduction2D", module = "numeria.sim.heat_sim")]
 pub struct PyHeatConduction2D { pub inner: rust_physics_engine::sim::heat_sim::HeatConduction2D }
 #[pymethods]
 impl PyHeatConduction2D {
@@ -1254,7 +1254,7 @@ impl PyHeatConduction2D {
 /// 3D heat conduction on a uniform Cartesian grid with Dirichlet boundaries.
 ///
 /// Rust: `sim::heat_sim::HeatConduction3D`
-#[pyclass(name = "HeatConduction3D", module = "rust_physics_engine.sim.heat_sim")]
+#[pyclass(name = "HeatConduction3D", module = "numeria.sim.heat_sim")]
 pub struct PyHeatConduction3D { pub inner: rust_physics_engine::sim::heat_sim::HeatConduction3D }
 #[pymethods]
 impl PyHeatConduction3D {
@@ -1402,7 +1402,7 @@ impl PyHeatConduction3D {
 
 ///
 /// Rust: `sim::rigid_body::RigidBody`
-#[pyclass(name = "RigidBody", module = "rust_physics_engine.sim.rigid_body")]
+#[pyclass(name = "RigidBody", module = "numeria.sim.rigid_body")]
 pub struct PyRigidBody { pub inner: rust_physics_engine::sim::rigid_body::RigidBody }
 #[pymethods]
 impl PyRigidBody {
@@ -1604,7 +1604,7 @@ impl PyRigidBody {
 
 ///
 /// Rust: `sim::rigid_body::RigidBodySystem`
-#[pyclass(name = "RigidBodySystem", module = "rust_physics_engine.sim.rigid_body")]
+#[pyclass(name = "RigidBodySystem", module = "numeria.sim.rigid_body")]
 pub struct PyRigidBodySystem { pub inner: rust_physics_engine::sim::rigid_body::RigidBodySystem }
 #[pymethods]
 impl PyRigidBodySystem {
@@ -1681,7 +1681,7 @@ impl PyRigidBodySystem {
 /// 1D wave equation solver on a uniform grid with fixed (Dirichlet) endpoints.
 ///
 /// Rust: `sim::wave_sim::WaveEquation1D`
-#[pyclass(name = "WaveEquation1D", module = "rust_physics_engine.sim.wave_sim")]
+#[pyclass(name = "WaveEquation1D", module = "numeria.sim.wave_sim")]
 pub struct PyWaveEquation1D { pub inner: rust_physics_engine::sim::wave_sim::WaveEquation1D }
 #[pymethods]
 impl PyWaveEquation1D {
@@ -1845,7 +1845,7 @@ impl PyWaveEquation1D {
 /// Grid layout: row-major, index = j * nx + i  (i along x, j along y).
 ///
 /// Rust: `sim::wave_sim::WaveEquation2D`
-#[pyclass(name = "WaveEquation2D", module = "rust_physics_engine.sim.wave_sim")]
+#[pyclass(name = "WaveEquation2D", module = "numeria.sim.wave_sim")]
 pub struct PyWaveEquation2D { pub inner: rust_physics_engine::sim::wave_sim::WaveEquation2D }
 #[pymethods]
 impl PyWaveEquation2D {

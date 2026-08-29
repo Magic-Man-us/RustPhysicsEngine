@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// A discrete 2-D map x ← step(x).
 ///
 /// Rust: `fractals::attractors::Attractor2Map`
-#[pyclass(name = "Attractor2Map", module = "rust_physics_engine.fractals.attractors", unsendable)]
+#[pyclass(name = "Attractor2Map", module = "numeria.fractals.attractors", unsendable)]
 pub struct PyAttractor2Map { pub inner: rust_physics_engine::fractals::attractors::Attractor2Map }
 #[pymethods]
 impl PyAttractor2Map {
@@ -72,7 +72,7 @@ impl PyAttractor2Map {
 /// A 3-D autonomous flow ẋ = f(x) with a preferred time step.
 ///
 /// Rust: `fractals::attractors::Attractor3`
-#[pyclass(name = "Attractor3", module = "rust_physics_engine.fractals.attractors", unsendable)]
+#[pyclass(name = "Attractor3", module = "numeria.fractals.attractors", unsendable)]
 pub struct PyAttractor3 { pub inner: rust_physics_engine::fractals::attractors::Attractor3 }
 #[pymethods]
 impl PyAttractor3 {
@@ -158,7 +158,7 @@ impl PyAttractor3 {
 /// accuracy at fixed cost).
 ///
 /// Rust: `fractals::attractors::Integrator`
-#[pyclass(name = "Integrator", module = "rust_physics_engine.fractals.attractors", from_py_object, eq, eq_int)]
+#[pyclass(name = "Integrator", module = "numeria.fractals.attractors", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyAttractorsIntegrator {
     Euler,
@@ -197,7 +197,7 @@ impl PyAttractorsIntegrator {
 /// reaction: ∂u = ∇²u + (u(1−u) − f·v(u−q)/(u+q))/ε, ∂v = ∇²v·Dᵥ + u − v.
 ///
 /// Rust: `fractals::automata::BelousovZhabotinsky`
-#[pyclass(name = "BelousovZhabotinsky", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "BelousovZhabotinsky", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyBelousovZhabotinsky { pub inner: rust_physics_engine::fractals::automata::BelousovZhabotinsky }
 #[pymethods]
@@ -304,7 +304,7 @@ impl PyBelousovZhabotinsky {
 /// to dying, dying cells die.
 ///
 /// Rust: `fractals::automata::BriansBrain`
-#[pyclass(name = "BriansBrain", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "BriansBrain", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyBriansBrain { pub inner: rust_physics_engine::fractals::automata::BriansBrain }
 #[pymethods]
@@ -365,7 +365,7 @@ impl PyBriansBrain {
 /// Brusselator: ∂u = Dᵤ∇²u + A − (B+1)u + u²v, ∂v = Dᵥ∇²v + Bu − u²v.
 ///
 /// Rust: `fractals::automata::Brusselator`
-#[pyclass(name = "Brusselator", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "Brusselator", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyBrusselator { pub inner: rust_physics_engine::fractals::automata::Brusselator }
 #[pymethods]
@@ -474,7 +474,7 @@ impl PyBrusselator {
 /// Wolfram rule number.
 ///
 /// Rust: `fractals::automata::Ca1D`
-#[pyclass(name = "Ca1D", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "Ca1D", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyCa1D { pub inner: rust_physics_engine::fractals::automata::Ca1D }
 #[pymethods]
@@ -595,7 +595,7 @@ impl PyCa1D {
 /// carry the successor state; produces spiral waves.
 ///
 /// Rust: `fractals::automata::CyclicCa`
-#[pyclass(name = "CyclicCa", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "CyclicCa", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyCyclicCa { pub inner: rust_physics_engine::fractals::automata::CyclicCa }
 #[pymethods]
@@ -695,7 +695,7 @@ impl PyCyclicCa {
 /// annihilate spirals).
 ///
 /// Rust: `fractals::automata::FitzHughNagumo`
-#[pyclass(name = "FitzHughNagumo", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "FitzHughNagumo", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyFitzHughNagumo { pub inner: rust_physics_engine::fractals::automata::FitzHughNagumo }
 #[pymethods]
@@ -826,7 +826,7 @@ impl PyFitzHughNagumo {
 /// ∂v = Dᵥ∇²v + uv² − (F+k)v (Pearson 1993).
 ///
 /// Rust: `fractals::automata::GrayScott`
-#[pyclass(name = "GrayScott", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "GrayScott", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyGrayScott { pub inner: rust_physics_engine::fractals::automata::GrayScott }
 #[pymethods]
@@ -1051,7 +1051,7 @@ impl PyGrayScott {
 /// color).
 ///
 /// Rust: `fractals::automata::LangtonsAnt`
-#[pyclass(name = "LangtonsAnt", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "LangtonsAnt", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyLangtonsAnt { pub inner: rust_physics_engine::fractals::automata::LangtonsAnt }
 #[pymethods]
@@ -1156,7 +1156,7 @@ impl PyLangtonsAnt {
 /// convolution.
 ///
 /// Rust: `fractals::automata::Lenia`
-#[pyclass(name = "Lenia", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "Lenia", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyLenia { pub inner: rust_physics_engine::fractals::automata::Lenia }
 #[pymethods]
@@ -1247,7 +1247,7 @@ impl PyLenia {
 /// automaton on a `w` × `h` grid.
 ///
 /// Rust: `fractals::automata::LifeLike`
-#[pyclass(name = "LifeLike", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "LifeLike", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyLifeLike { pub inner: rust_physics_engine::fractals::automata::LifeLike }
 #[pymethods]
@@ -1453,7 +1453,7 @@ impl PyLifeLike {
 /// rules).
 ///
 /// Rust: `fractals::automata::LifeLike3D`
-#[pyclass(name = "LifeLike3D", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "LifeLike3D", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyLifeLike3D { pub inner: rust_physics_engine::fractals::automata::LifeLike3D }
 #[pymethods]
@@ -1556,7 +1556,7 @@ impl PyLifeLike3D {
 /// grids; no FFT dependency).
 ///
 /// Rust: `fractals::automata::SmoothLife`
-#[pyclass(name = "SmoothLife", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "SmoothLife", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PySmoothLife { pub inner: rust_physics_engine::fractals::automata::SmoothLife }
 #[pymethods]
@@ -1624,7 +1624,7 @@ impl PySmoothLife {
 /// the birth/death sigmoid intervals.
 ///
 /// Rust: `fractals::automata::SmoothLifeParams`
-#[pyclass(name = "SmoothLifeParams", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "SmoothLifeParams", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PySmoothLifeParams { pub inner: rust_physics_engine::fractals::automata::SmoothLifeParams }
 #[pymethods]
@@ -1713,7 +1713,7 @@ impl PySmoothLifeParams {
 /// ∂a = Dₐ∇²a + a²/h − μa + ρ, ∂h = Dₕ∇²h + a² − νh.
 ///
 /// Rust: `fractals::automata::Turing`
-#[pyclass(name = "Turing", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "Turing", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyTuring { pub inner: rust_physics_engine::fractals::automata::Turing }
 #[pymethods]
@@ -1829,7 +1829,7 @@ impl PyTuring {
 /// write, turn in quarter-turns clockwise, next state).
 ///
 /// Rust: `fractals::automata::Turmite`
-#[pyclass(name = "Turmite", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "Turmite", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyTurmite { pub inner: rust_physics_engine::fractals::automata::Turmite }
 #[pymethods]
@@ -1928,7 +1928,7 @@ impl PyTurmite {
 /// conductor becomes a head with one or two neighboring heads.
 ///
 /// Rust: `fractals::automata::Wireworld`
-#[pyclass(name = "Wireworld", module = "rust_physics_engine.fractals.automata", from_py_object)]
+#[pyclass(name = "Wireworld", module = "numeria.fractals.automata", from_py_object)]
 #[derive(Clone)]
 pub struct PyWireworld { pub inner: rust_physics_engine::fractals::automata::Wireworld }
 #[pymethods]
@@ -2023,7 +2023,7 @@ impl PyWireworld {
 /// Iteration parameters.
 ///
 /// Rust: `fractals::escape_time::EscapeParams`
-#[pyclass(name = "EscapeParams", module = "rust_physics_engine.fractals.escape_time", from_py_object)]
+#[pyclass(name = "EscapeParams", module = "numeria.fractals.escape_time", from_py_object)]
 #[derive(Clone)]
 pub struct PyEscapeParams { pub inner: rust_physics_engine::fractals::escape_time::EscapeParams }
 #[pymethods]
@@ -2075,7 +2075,7 @@ impl PyEscapeParams {
 /// Result of iterating one point.
 ///
 /// Rust: `fractals::escape_time::EscapeResult`
-#[pyclass(name = "EscapeResult", module = "rust_physics_engine.fractals.escape_time", from_py_object)]
+#[pyclass(name = "EscapeResult", module = "numeria.fractals.escape_time", from_py_object)]
 #[derive(Clone)]
 pub struct PyEscapeResult { pub inner: rust_physics_engine::fractals::escape_time::EscapeResult }
 #[pymethods]
@@ -2136,7 +2136,7 @@ impl PyEscapeResult {
 /// the orbit to the trap.
 ///
 /// Rust: `fractals::escape_time::OrbitTrap`
-#[pyclass(name = "OrbitTrap", module = "rust_physics_engine.fractals.escape_time", from_py_object)]
+#[pyclass(name = "OrbitTrap", module = "numeria.fractals.escape_time", from_py_object)]
 #[derive(Clone)]
 pub struct PyOrbitTrap { pub inner: rust_physics_engine::fractals::escape_time::OrbitTrap }
 #[pymethods]
@@ -2153,7 +2153,7 @@ impl PyOrbitTrap {
 /// selection probabilities.
 ///
 /// Rust: `fractals::ifs::Ifs`
-#[pyclass(name = "Ifs", module = "rust_physics_engine.fractals.ifs", from_py_object)]
+#[pyclass(name = "Ifs", module = "numeria.fractals.ifs", from_py_object)]
 #[derive(Clone)]
 pub struct PyIfs { pub inner: rust_physics_engine::fractals::ifs::Ifs }
 #[pymethods]
@@ -2310,7 +2310,7 @@ impl PyIfs {
 /// A 3-D IFS with affine maps stored as `Mat4`.
 ///
 /// Rust: `fractals::ifs::Ifs3`
-#[pyclass(name = "Ifs3", module = "rust_physics_engine.fractals.ifs", from_py_object)]
+#[pyclass(name = "Ifs3", module = "numeria.fractals.ifs", from_py_object)]
 #[derive(Clone)]
 pub struct PyIfs3 { pub inner: rust_physics_engine::fractals::ifs::Ifs3 }
 #[pymethods]
@@ -2374,7 +2374,7 @@ impl PyIfs3 {
 /// deterministic.
 ///
 /// Rust: `fractals::ifs::Variation`
-#[pyclass(name = "Variation", module = "rust_physics_engine.fractals.ifs", from_py_object, eq, eq_int)]
+#[pyclass(name = "Variation", module = "numeria.fractals.ifs", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyVariation {
     Linear,
@@ -2494,7 +2494,7 @@ impl PyVariation {
 /// context matching.
 ///
 /// Rust: `fractals::lsystem::LSystem`
-#[pyclass(name = "LSystem", module = "rust_physics_engine.fractals.lsystem", from_py_object)]
+#[pyclass(name = "LSystem", module = "numeria.fractals.lsystem", from_py_object)]
 #[derive(Clone)]
 pub struct PyLSystem { pub inner: rust_physics_engine::fractals::lsystem::LSystem }
 #[pymethods]
@@ -2568,7 +2568,7 @@ impl PyLSystem {
 /// A production rule.
 ///
 /// Rust: `fractals::lsystem::Rule`
-#[pyclass(name = "Rule", module = "rust_physics_engine.fractals.lsystem", from_py_object)]
+#[pyclass(name = "Rule", module = "numeria.fractals.lsystem", from_py_object)]
 #[derive(Clone)]
 pub struct PyRule { pub inner: rust_physics_engine::fractals::lsystem::Rule }
 #[pymethods]
@@ -2587,7 +2587,7 @@ impl PyRule {
 /// the line width by `width_factor`. Other characters are ignored.
 ///
 /// Rust: `fractals::lsystem::Turtle2`
-#[pyclass(name = "Turtle2", module = "rust_physics_engine.fractals.lsystem", from_py_object)]
+#[pyclass(name = "Turtle2", module = "numeria.fractals.lsystem", from_py_object)]
 #[derive(Clone)]
 pub struct PyTurtle2 { pub inner: rust_physics_engine::fractals::lsystem::Turtle2 }
 #[pymethods]
@@ -2706,7 +2706,7 @@ impl PyTurtle2 {
 /// `F` draws, `f` moves, ``/`` push/pop, `!` tapers the radius.
 ///
 /// Rust: `fractals::lsystem::Turtle3`
-#[pyclass(name = "Turtle3", module = "rust_physics_engine.fractals.lsystem", from_py_object)]
+#[pyclass(name = "Turtle3", module = "numeria.fractals.lsystem", from_py_object)]
 #[derive(Clone)]
 pub struct PyTurtle3 { pub inner: rust_physics_engine::fractals::lsystem::Turtle3 }
 #[pymethods]
@@ -2813,7 +2813,7 @@ impl PyTurtle3 {
 /// simulation).
 ///
 /// Rust: `fractals::noise::ErosionParams`
-#[pyclass(name = "ErosionParams", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "ErosionParams", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyErosionParams { pub inner: rust_physics_engine::fractals::noise::ErosionParams }
 #[pymethods]
@@ -2901,7 +2901,7 @@ impl PyErosionParams {
 /// Fractional Brownian motion parameters.
 ///
 /// Rust: `fractals::noise::FbmParams`
-#[pyclass(name = "FbmParams", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "FbmParams", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyFbmParams { pub inner: rust_physics_engine::fractals::noise::FbmParams }
 #[pymethods]
@@ -2965,7 +2965,7 @@ impl PyFbmParams {
 /// One Gabor kernel: a Gaussian-windowed cosine wave.
 ///
 /// Rust: `fractals::noise::GaborKernel`
-#[pyclass(name = "GaborKernel", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "GaborKernel", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyGaborKernel { pub inner: rust_physics_engine::fractals::noise::GaborKernel }
 #[pymethods]
@@ -3033,7 +3033,7 @@ impl PyGaborKernel {
 /// Distance metrics for Worley noise.
 ///
 /// Rust: `fractals::noise::Metric`
-#[pyclass(name = "Metric", module = "rust_physics_engine.fractals.noise", from_py_object, eq)]
+#[pyclass(name = "Metric", module = "numeria.fractals.noise", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyNoiseMetric { pub inner: rust_physics_engine::fractals::noise::Metric }
 #[pymethods]
@@ -3053,7 +3053,7 @@ impl PyNoiseMetric {
 /// needed.
 ///
 /// Rust: `fractals::noise::OpenSimplex2`
-#[pyclass(name = "OpenSimplex2", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "OpenSimplex2", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyOpenSimplex2 { pub inner: rust_physics_engine::fractals::noise::OpenSimplex2 }
 #[pymethods]
@@ -3104,7 +3104,7 @@ impl PyOpenSimplex2 {
 /// [-1, 1] and zero at every integer lattice point.
 ///
 /// Rust: `fractals::noise::Perlin`
-#[pyclass(name = "Perlin", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "Perlin", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyPerlin { pub inner: rust_physics_engine::fractals::noise::Perlin }
 #[pymethods]
@@ -3199,7 +3199,7 @@ impl PyPerlin {
 /// interpolated (quintic-smoothed bilinear, optional bicubic).
 ///
 /// Rust: `fractals::noise::ValueNoise`
-#[pyclass(name = "ValueNoise", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "ValueNoise", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyValueNoise { pub inner: rust_physics_engine::fractals::noise::ValueNoise }
 #[pymethods]
@@ -3260,7 +3260,7 @@ impl PyValueNoise {
 /// nearest and second-nearest feature points under `metric`.
 ///
 /// Rust: `fractals::noise::Worley`
-#[pyclass(name = "Worley", module = "rust_physics_engine.fractals.noise", from_py_object)]
+#[pyclass(name = "Worley", module = "numeria.fractals.noise", from_py_object)]
 #[derive(Clone)]
 pub struct PyWorley { pub inner: rust_physics_engine::fractals::noise::Worley }
 #[pymethods]

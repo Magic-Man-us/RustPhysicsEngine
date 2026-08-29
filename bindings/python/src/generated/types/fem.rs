@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// What to do at the ends of a one-dimensional grid.
 ///
 /// Rust: `fem::fdtd::Boundary1d`
-#[pyclass(name = "Boundary1d", module = "rust_physics_engine.fem.fdtd", from_py_object, eq, eq_int)]
+#[pyclass(name = "Boundary1d", module = "numeria.fem.fdtd", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyBoundary1d {
     Conductor,
@@ -52,7 +52,7 @@ impl PyBoundary1d {
 /// step, and the magnetic field alongside it.
 ///
 /// Rust: `fem::fdtd::Fdtd1d`
-#[pyclass(name = "Fdtd1d", module = "rust_physics_engine.fem.fdtd", from_py_object, eq)]
+#[pyclass(name = "Fdtd1d", module = "numeria.fem.fdtd", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFdtd1d { pub inner: rust_physics_engine::fem::fdtd::Fdtd1d }
 #[pymethods]
@@ -118,7 +118,7 @@ impl PyFdtd1d {
 /// possible.
 ///
 /// Rust: `fem::fdtd::Fdtd2d`
-#[pyclass(name = "Fdtd2d", module = "rust_physics_engine.fem.fdtd", from_py_object, eq)]
+#[pyclass(name = "Fdtd2d", module = "numeria.fem.fdtd", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFdtd2d { pub inner: rust_physics_engine::fem::fdtd::Fdtd2d }
 #[pymethods]
@@ -169,7 +169,7 @@ impl PyFdtd2d {
 /// same physical thing at either end.
 ///
 /// Rust: `fem::fem1d::Bc`
-#[pyclass(name = "Bc", module = "rust_physics_engine.fem.fem1d", from_py_object, eq)]
+#[pyclass(name = "Bc", module = "numeria.fem.fem1d", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFem1dBc { pub inner: rust_physics_engine::fem::fem1d::Bc }
 #[pymethods]
@@ -189,7 +189,7 @@ impl PyFem1dBc {
 /// ask for the value *between* nodes, which is what an error norm needs.
 ///
 /// Rust: `fem::fem1d::Fem1dSolution`
-#[pyclass(name = "Fem1dSolution", module = "rust_physics_engine.fem.fem1d", from_py_object, eq)]
+#[pyclass(name = "Fem1dSolution", module = "numeria.fem.fem1d", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFem1dSolution { pub inner: rust_physics_engine::fem::fem1d::Fem1dSolution }
 #[pymethods]
@@ -311,7 +311,7 @@ impl PyFem1dSolution {
 /// A conforming triangulation of a planar region.
 ///
 /// Rust: `fem::fem2d::FemMesh2`
-#[pyclass(name = "FemMesh2", module = "rust_physics_engine.fem.fem2d", from_py_object, eq)]
+#[pyclass(name = "FemMesh2", module = "numeria.fem.fem2d", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFemMesh2 { pub inner: rust_physics_engine::fem::fem2d::FemMesh2 }
 #[pymethods]

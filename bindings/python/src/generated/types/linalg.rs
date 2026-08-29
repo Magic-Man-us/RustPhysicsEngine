@@ -16,7 +16,7 @@ use pyo3::prelude::*;
 
 ///
 /// Rust: `linalg::Mat3`
-#[pyclass(name = "Mat3", module = "rust_physics_engine.linalg", from_py_object, eq)]
+#[pyclass(name = "Mat3", module = "numeria.linalg", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMat3 { pub inner: rust_physics_engine::linalg::Mat3 }
 #[pymethods]
@@ -198,7 +198,7 @@ impl PyMat3 {
 /// A dense 4x4 matrix with fixed-size storage.
 ///
 /// Rust: `linalg::Mat4`
-#[pyclass(name = "Mat4", module = "rust_physics_engine.linalg", from_py_object, eq)]
+#[pyclass(name = "Mat4", module = "numeria.linalg", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLinalgMat4 { pub inner: rust_physics_engine::linalg::Mat4 }
 #[pymethods]
@@ -356,7 +356,7 @@ impl PyLinalgMat4 {
 /// descending eigenvalue order and the vectors are orthonormal.
 ///
 /// Rust: `linalg::eigen::SymEigen`
-#[pyclass(name = "SymEigen", module = "rust_physics_engine.linalg.eigen", from_py_object, eq)]
+#[pyclass(name = "SymEigen", module = "numeria.linalg.eigen", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySymEigen { pub inner: rust_physics_engine::linalg::eigen::SymEigen }
 #[pymethods]
@@ -392,7 +392,7 @@ impl PySymEigen {
 /// that ended up in position i; `sign` is the permutation's parity (±1).
 ///
 /// Rust: `linalg::lu::Lu`
-#[pyclass(name = "Lu", module = "rust_physics_engine.linalg.lu", from_py_object, eq)]
+#[pyclass(name = "Lu", module = "numeria.linalg.lu", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLu { pub inner: rust_physics_engine::linalg::lu::Lu }
 #[pymethods]
@@ -482,7 +482,7 @@ impl PyLu {
 /// `data[r * cols + c]`.
 ///
 /// Rust: `linalg::matrix::Matrix`
-#[pyclass(name = "Matrix", module = "rust_physics_engine.linalg.matrix", from_py_object, eq)]
+#[pyclass(name = "Matrix", module = "numeria.linalg.matrix", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMatrix { pub inner: rust_physics_engine::linalg::matrix::Matrix }
 impl PyMatrix {
@@ -792,7 +792,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyMatrixArg {
 /// QR factorization A = Q·R.
 ///
 /// Rust: `linalg::qr::Qr`
-#[pyclass(name = "Qr", module = "rust_physics_engine.linalg.qr", from_py_object, eq)]
+#[pyclass(name = "Qr", module = "numeria.linalg.qr", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQr { pub inner: rust_physics_engine::linalg::qr::Qr }
 #[pymethods]
@@ -826,7 +826,7 @@ impl PyQr {
 /// `row_ptr[r]..row_ptr[r+1]` of `col_idx`/`vals`.
 ///
 /// Rust: `linalg::sparse::CsrMatrix`
-#[pyclass(name = "CsrMatrix", module = "rust_physics_engine.linalg.sparse", from_py_object, eq)]
+#[pyclass(name = "CsrMatrix", module = "numeria.linalg.sparse", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCsrMatrix { pub inner: rust_physics_engine::linalg::sparse::CsrMatrix }
 #[pymethods]
@@ -939,7 +939,7 @@ impl PyCsrMatrix {
 /// Thin SVD: A = U·Σ·Vᵀ.
 ///
 /// Rust: `linalg::svd::Svd`
-#[pyclass(name = "Svd", module = "rust_physics_engine.linalg.svd", from_py_object, eq)]
+#[pyclass(name = "Svd", module = "numeria.linalg.svd", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySvd { pub inner: rust_physics_engine::linalg::svd::Svd }
 #[pymethods]

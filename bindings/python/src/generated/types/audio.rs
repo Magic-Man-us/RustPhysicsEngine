@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Frame-wise pitch detection method selector.
 ///
 /// Rust: `audio::analysis::PitchMethod`
-#[pyclass(name = "PitchMethod", module = "rust_physics_engine.audio.analysis", from_py_object, eq, eq_int)]
+#[pyclass(name = "PitchMethod", module = "numeria.audio.analysis", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyPitchMethod {
     Yin,
@@ -63,7 +63,7 @@ impl PyPitchMethod {
 /// One frame of spectral descriptors.
 ///
 /// Rust: `audio::analysis::SpectralFeatures`
-#[pyclass(name = "SpectralFeatures", module = "rust_physics_engine.audio.analysis", from_py_object)]
+#[pyclass(name = "SpectralFeatures", module = "numeria.audio.analysis", from_py_object)]
 #[derive(Clone)]
 pub struct PySpectralFeatures { pub inner: rust_physics_engine::audio::analysis::SpectralFeatures }
 #[pymethods]
@@ -175,7 +175,7 @@ impl PySpectralFeatures {
 /// Schroeder all-pass diffuser.
 ///
 /// Rust: `audio::effects::AllpassFilter`
-#[pyclass(name = "AllpassFilter", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "AllpassFilter", module = "numeria.audio.effects")]
 pub struct PyAllpassFilter { pub inner: rust_physics_engine::audio::effects::AllpassFilter }
 #[pymethods]
 impl PyAllpassFilter {
@@ -215,7 +215,7 @@ impl PyAllpassFilter {
 /// Chorus: LFO-modulated fractional delay mixed with the dry path.
 ///
 /// Rust: `audio::effects::Chorus`
-#[pyclass(name = "Chorus", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Chorus", module = "numeria.audio.effects")]
 pub struct PyChorus { pub inner: rust_physics_engine::audio::effects::Chorus }
 #[pymethods]
 impl PyChorus {
@@ -271,7 +271,7 @@ impl PyChorus {
 /// Feedback comb filter with a one-pole damping low-pass in the loop.
 ///
 /// Rust: `audio::effects::CombFilter`
-#[pyclass(name = "CombFilter", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "CombFilter", module = "numeria.audio.effects")]
 pub struct PyCombFilter { pub inner: rust_physics_engine::audio::effects::CombFilter }
 #[pymethods]
 impl PyCombFilter {
@@ -319,7 +319,7 @@ impl PyCombFilter {
 /// Feed-forward compressor with soft knee and log-domain smoothing.
 ///
 /// Rust: `audio::effects::Compressor`
-#[pyclass(name = "Compressor", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Compressor", module = "numeria.audio.effects")]
 pub struct PyCompressor { pub inner: rust_physics_engine::audio::effects::Compressor }
 #[pymethods]
 impl PyCompressor {
@@ -421,7 +421,7 @@ impl PyCompressor {
 /// De-esser: sibilance-band compressor (band-passed key).
 ///
 /// Rust: `audio::effects::DeEsser`
-#[pyclass(name = "DeEsser", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "DeEsser", module = "numeria.audio.effects")]
 pub struct PyDeEsser { pub inner: rust_physics_engine::audio::effects::DeEsser }
 #[pymethods]
 impl PyDeEsser {
@@ -453,7 +453,7 @@ impl PyDeEsser {
 /// Circular delay line with fractional read.
 ///
 /// Rust: `audio::effects::DelayLine`
-#[pyclass(name = "DelayLine", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "DelayLine", module = "numeria.audio.effects")]
 pub struct PyDelayLine { pub inner: rust_physics_engine::audio::effects::DelayLine }
 #[pymethods]
 impl PyDelayLine {
@@ -518,7 +518,7 @@ impl PyDelayLine {
 /// A bank of peaking/shelf biquads.
 ///
 /// Rust: `audio::effects::Eq`
-#[pyclass(name = "Eq", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Eq", module = "numeria.audio.effects")]
 pub struct PyEq { pub inner: rust_physics_engine::audio::effects::Eq }
 #[pymethods]
 impl PyEq {
@@ -579,7 +579,7 @@ impl PyEq {
 /// Harmonic exciter: high-passed signal through a soft shaper, mixed in.
 ///
 /// Rust: `audio::effects::Exciter`
-#[pyclass(name = "Exciter", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Exciter", module = "numeria.audio.effects")]
 pub struct PyExciter { pub inner: rust_physics_engine::audio::effects::Exciter }
 #[pymethods]
 impl PyExciter {
@@ -627,7 +627,7 @@ impl PyExciter {
 /// Downward expander (gentler than a gate).
 ///
 /// Rust: `audio::effects::Expander`
-#[pyclass(name = "Expander", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Expander", module = "numeria.audio.effects")]
 pub struct PyExpander { pub inner: rust_physics_engine::audio::effects::Expander }
 #[pymethods]
 impl PyExpander {
@@ -675,7 +675,7 @@ impl PyExpander {
 /// Feedback delay network reverb with an orthogonal mixing matrix.
 ///
 /// Rust: `audio::effects::Fdn`
-#[pyclass(name = "Fdn", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Fdn", module = "numeria.audio.effects")]
 pub struct PyFdn { pub inner: rust_physics_engine::audio::effects::Fdn }
 #[pymethods]
 impl PyFdn {
@@ -767,7 +767,7 @@ impl PyFdn {
 /// Flanger: short modulated delay with feedback.
 ///
 /// Rust: `audio::effects::Flanger`
-#[pyclass(name = "Flanger", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Flanger", module = "numeria.audio.effects")]
 pub struct PyFlanger { pub inner: rust_physics_engine::audio::effects::Flanger }
 #[pymethods]
 impl PyFlanger {
@@ -824,7 +824,7 @@ impl PyFlanger {
 /// a fixed stereo spread.
 ///
 /// Rust: `audio::effects::Freeverb`
-#[pyclass(name = "Freeverb", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Freeverb", module = "numeria.audio.effects")]
 pub struct PyFreeverb { pub inner: rust_physics_engine::audio::effects::Freeverb }
 #[pymethods]
 impl PyFreeverb {
@@ -857,7 +857,7 @@ impl PyFreeverb {
 /// Brickwall limiter with lookahead.
 ///
 /// Rust: `audio::effects::Limiter`
-#[pyclass(name = "Limiter", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Limiter", module = "numeria.audio.effects")]
 pub struct PyEffectsLimiter { pub inner: rust_physics_engine::audio::effects::Limiter }
 #[pymethods]
 impl PyEffectsLimiter {
@@ -897,7 +897,7 @@ impl PyEffectsLimiter {
 /// Downward noise gate.
 ///
 /// Rust: `audio::effects::NoiseGate`
-#[pyclass(name = "NoiseGate", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "NoiseGate", module = "numeria.audio.effects")]
 pub struct PyNoiseGate { pub inner: rust_physics_engine::audio::effects::NoiseGate }
 #[pymethods]
 impl PyNoiseGate {
@@ -954,7 +954,7 @@ impl PyNoiseGate {
 /// streaming long impulse responses.
 ///
 /// Rust: `audio::effects::PartitionedConvolver`
-#[pyclass(name = "PartitionedConvolver", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "PartitionedConvolver", module = "numeria.audio.effects")]
 pub struct PyPartitionedConvolver { pub inner: rust_physics_engine::audio::effects::PartitionedConvolver }
 #[pymethods]
 impl PyPartitionedConvolver {
@@ -990,7 +990,7 @@ impl PyPartitionedConvolver {
 /// Phaser: cascaded LFO-swept all-pass biquads.
 ///
 /// Rust: `audio::effects::Phaser`
-#[pyclass(name = "Phaser", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Phaser", module = "numeria.audio.effects")]
 pub struct PyPhaser { pub inner: rust_physics_engine::audio::effects::Phaser }
 #[pymethods]
 impl PyPhaser {
@@ -1031,7 +1031,7 @@ impl PyPhaser {
 /// all-passes.
 ///
 /// Rust: `audio::effects::SchroederReverb`
-#[pyclass(name = "SchroederReverb", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "SchroederReverb", module = "numeria.audio.effects")]
 pub struct PySchroederReverb { pub inner: rust_physics_engine::audio::effects::SchroederReverb }
 #[pymethods]
 impl PySchroederReverb {
@@ -1085,7 +1085,7 @@ impl PySchroederReverb {
 /// Mid/side stereo widener.
 ///
 /// Rust: `audio::effects::StereoWidener`
-#[pyclass(name = "StereoWidener", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "StereoWidener", module = "numeria.audio.effects")]
 pub struct PyStereoWidener { pub inner: rust_physics_engine::audio::effects::StereoWidener }
 #[pymethods]
 impl PyStereoWidener {
@@ -1122,7 +1122,7 @@ impl PyStereoWidener {
 /// Tremolo (amplitude modulation by an LFO).
 ///
 /// Rust: `audio::effects::Tremolo`
-#[pyclass(name = "Tremolo", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Tremolo", module = "numeria.audio.effects")]
 pub struct PyTremolo { pub inner: rust_physics_engine::audio::effects::Tremolo }
 #[pymethods]
 impl PyTremolo {
@@ -1162,7 +1162,7 @@ impl PyTremolo {
 /// Vibrato (pitch modulation via modulated delay).
 ///
 /// Rust: `audio::effects::Vibrato`
-#[pyclass(name = "Vibrato", module = "rust_physics_engine.audio.effects")]
+#[pyclass(name = "Vibrato", module = "numeria.audio.effects")]
 pub struct PyVibrato { pub inner: rust_physics_engine::audio::effects::Vibrato }
 #[pymethods]
 impl PyVibrato {
@@ -1203,7 +1203,7 @@ impl PyVibrato {
 /// seconds, sustain as a level in \[0, 1\].
 ///
 /// Rust: `audio::envelope::Adsr`
-#[pyclass(name = "Adsr", module = "rust_physics_engine.audio.envelope")]
+#[pyclass(name = "Adsr", module = "numeria.audio.envelope")]
 pub struct PyAdsr { pub inner: rust_physics_engine::audio::envelope::Adsr }
 #[pymethods]
 impl PyAdsr {
@@ -1312,7 +1312,7 @@ impl PyAdsr {
 /// Exponential ADSR driven by RC time constants (τ per segment).
 ///
 /// Rust: `audio::envelope::AdsrExp`
-#[pyclass(name = "AdsrExp", module = "rust_physics_engine.audio.envelope")]
+#[pyclass(name = "AdsrExp", module = "numeria.audio.envelope")]
 pub struct PyAdsrExp { pub inner: rust_physics_engine::audio::envelope::AdsrExp }
 #[pymethods]
 impl PyAdsrExp {
@@ -1410,7 +1410,7 @@ impl PyAdsrExp {
 /// is released immediately).
 ///
 /// Rust: `audio::envelope::Ar`
-#[pyclass(name = "Ar", module = "rust_physics_engine.audio.envelope")]
+#[pyclass(name = "Ar", module = "numeria.audio.envelope")]
 pub struct PyAr { pub inner: rust_physics_engine::audio::envelope::Ar }
 #[pymethods]
 impl PyAr {
@@ -1491,7 +1491,7 @@ impl PyAr {
 /// Fade curve shapes.
 ///
 /// Rust: `audio::envelope::FadeShape`
-#[pyclass(name = "FadeShape", module = "rust_physics_engine.audio.envelope", from_py_object, eq, eq_int)]
+#[pyclass(name = "FadeShape", module = "numeria.audio.envelope", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyFadeShape {
     Linear,
@@ -1533,7 +1533,7 @@ impl PyFadeShape {
 /// Low-frequency oscillator: scaled/offset wrapper over `Oscillator`.
 ///
 /// Rust: `audio::envelope::Lfo`
-#[pyclass(name = "Lfo", module = "rust_physics_engine.audio.envelope")]
+#[pyclass(name = "Lfo", module = "numeria.audio.envelope")]
 pub struct PyLfo { pub inner: rust_physics_engine::audio::envelope::Lfo }
 #[pymethods]
 impl PyLfo {
@@ -1581,7 +1581,7 @@ impl PyLfo {
 /// Noise spectra for `NoiseGen`.
 ///
 /// Rust: `audio::oscillators::NoiseColor`
-#[pyclass(name = "NoiseColor", module = "rust_physics_engine.audio.oscillators", from_py_object, eq, eq_int)]
+#[pyclass(name = "NoiseColor", module = "numeria.audio.oscillators", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyNoiseColor {
     White,
@@ -1631,7 +1631,7 @@ impl PyNoiseColor {
 /// Deterministic colored-noise generator.
 ///
 /// Rust: `audio::oscillators::NoiseGen`
-#[pyclass(name = "NoiseGen", module = "rust_physics_engine.audio.oscillators")]
+#[pyclass(name = "NoiseGen", module = "numeria.audio.oscillators")]
 pub struct PyNoiseGen { pub inner: rust_physics_engine::audio::oscillators::NoiseGen }
 #[pymethods]
 impl PyNoiseGen {
@@ -1665,7 +1665,7 @@ impl PyNoiseGen {
 /// polyBLAMP triangle, seeded noise, optional wavetables).
 ///
 /// Rust: `audio::oscillators::Oscillator`
-#[pyclass(name = "Oscillator", module = "rust_physics_engine.audio.oscillators")]
+#[pyclass(name = "Oscillator", module = "numeria.audio.oscillators")]
 pub struct PyOscillator { pub inner: rust_physics_engine::audio::oscillators::Oscillator }
 #[pymethods]
 impl PyOscillator {
@@ -1782,7 +1782,7 @@ impl PyOscillator {
 /// Waveform selector for `Oscillator`.
 ///
 /// Rust: `audio::oscillators::Waveform`
-#[pyclass(name = "Waveform", module = "rust_physics_engine.audio.oscillators", from_py_object, eq)]
+#[pyclass(name = "Waveform", module = "numeria.audio.oscillators", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyWaveform { pub inner: rust_physics_engine::audio::oscillators::Waveform }
 #[pymethods]
@@ -1799,7 +1799,7 @@ impl PyWaveform {
 /// can play at up to `base_freqs[m]` without aliasing.
 ///
 /// Rust: `audio::oscillators::Wavetable`
-#[pyclass(name = "Wavetable", module = "rust_physics_engine.audio.oscillators")]
+#[pyclass(name = "Wavetable", module = "numeria.audio.oscillators")]
 pub struct PyWavetable { pub inner: rust_physics_engine::audio::oscillators::Wavetable }
 #[pymethods]
 impl PyWavetable {
@@ -1904,7 +1904,7 @@ impl PyWavetable {
 /// stick-slip friction curve producing Helmholtz motion.
 ///
 /// Rust: `audio::physical::BowedString`
-#[pyclass(name = "BowedString", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "BowedString", module = "numeria.audio.physical")]
 pub struct PyBowedString { pub inner: rust_physics_engine::audio::physical::BowedString }
 #[pymethods]
 impl PyBowedString {
@@ -1952,7 +1952,7 @@ impl PyBowedString {
 /// Kelly-Lochbaum piecewise-cylindrical vocal tract lattice.
 ///
 /// Rust: `audio::physical::KellyLochbaum`
-#[pyclass(name = "KellyLochbaum", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "KellyLochbaum", module = "numeria.audio.physical")]
 pub struct PyKellyLochbaum { pub inner: rust_physics_engine::audio::physical::KellyLochbaum }
 #[pymethods]
 impl PyKellyLochbaum {
@@ -2001,7 +2001,7 @@ impl PyKellyLochbaum {
 /// the waveguide against a direct Newtonian simulation.
 ///
 /// Rust: `audio::physical::MassSpringString`
-#[pyclass(name = "MassSpringString", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "MassSpringString", module = "numeria.audio.physical")]
 pub struct PyMassSpringString { pub inner: rust_physics_engine::audio::physical::MassSpringString }
 #[pymethods]
 impl PyMassSpringString {
@@ -2074,7 +2074,7 @@ impl PyMassSpringString {
 /// Circular drum head on a masked finite-difference grid, audio-rate.
 ///
 /// Rust: `audio::physical::Membrane2D`
-#[pyclass(name = "Membrane2D", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "Membrane2D", module = "numeria.audio.physical")]
 pub struct PyMembrane2D { pub inner: rust_physics_engine::audio::physical::Membrane2D }
 #[pymethods]
 impl PyMembrane2D {
@@ -2120,7 +2120,7 @@ impl PyMembrane2D {
 /// Bank of two-pole resonators driven by an excitation buffer.
 ///
 /// Rust: `audio::physical::ModalSynth`
-#[pyclass(name = "ModalSynth", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "ModalSynth", module = "numeria.audio.physical")]
 pub struct PyModalSynth { pub inner: rust_physics_engine::audio::physical::ModalSynth }
 #[pymethods]
 impl PyModalSynth {
@@ -2244,7 +2244,7 @@ impl PyModalSynth {
 /// finite-difference grid, audio-rate.
 ///
 /// Rust: `audio::physical::Plate2D`
-#[pyclass(name = "Plate2D", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "Plate2D", module = "numeria.audio.physical")]
 pub struct PyPlate2D { pub inner: rust_physics_engine::audio::physical::Plate2D }
 #[pymethods]
 impl PyPlate2D {
@@ -2298,7 +2298,7 @@ impl PyPlate2D {
 /// pitch exact at the fundamental.
 ///
 /// Rust: `audio::physical::WaveguideString`
-#[pyclass(name = "WaveguideString", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "WaveguideString", module = "numeria.audio.physical")]
 pub struct PyWaveguideString { pub inner: rust_physics_engine::audio::physical::WaveguideString }
 #[pymethods]
 impl PyWaveguideString {
@@ -2423,7 +2423,7 @@ impl PyWaveguideString {
 /// Single-reed (clarinet) or jet (flute) waveguide wind instrument.
 ///
 /// Rust: `audio::physical::WaveguideTube`
-#[pyclass(name = "WaveguideTube", module = "rust_physics_engine.audio.physical")]
+#[pyclass(name = "WaveguideTube", module = "numeria.audio.physical")]
 pub struct PyWaveguideTube { pub inner: rust_physics_engine::audio::physical::WaveguideTube }
 #[pymethods]
 impl PyWaveguideTube {
@@ -2482,7 +2482,7 @@ impl PyWaveguideTube {
 /// amplitude when used as a modulator), envelope, and self-feedback.
 ///
 /// Rust: `audio::synthesis::FmOperator`
-#[pyclass(name = "FmOperator", module = "rust_physics_engine.audio.synthesis")]
+#[pyclass(name = "FmOperator", module = "numeria.audio.synthesis")]
 pub struct PyFmOperator { pub inner: rust_physics_engine::audio::synthesis::FmOperator }
 #[pymethods]
 impl PyFmOperator {
@@ -2527,7 +2527,7 @@ impl PyFmOperator {
 /// the output).
 ///
 /// Rust: `audio::synthesis::FmSynth`
-#[pyclass(name = "FmSynth", module = "rust_physics_engine.audio.synthesis")]
+#[pyclass(name = "FmSynth", module = "numeria.audio.synthesis")]
 pub struct PyFmSynth { pub inner: rust_physics_engine::audio::synthesis::FmSynth }
 #[pymethods]
 impl PyFmSynth {
@@ -2607,7 +2607,7 @@ impl PyFmSynth {
 /// Voice types for `vowel_formants`.
 ///
 /// Rust: `audio::synthesis::Voice`
-#[pyclass(name = "Voice", module = "rust_physics_engine.audio.synthesis", from_py_object, eq, eq_int)]
+#[pyclass(name = "Voice", module = "numeria.audio.synthesis", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyVoice {
     Male,
@@ -2641,7 +2641,7 @@ impl PyVoice {
 /// Chord qualities.
 ///
 /// Rust: `audio::tuning::ChordQuality`
-#[pyclass(name = "ChordQuality", module = "rust_physics_engine.audio.tuning", from_py_object, eq, eq_int)]
+#[pyclass(name = "ChordQuality", module = "numeria.audio.tuning", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyChordQuality {
     Major,
@@ -2711,7 +2711,7 @@ impl PyChordQuality {
 /// Diatonic modes and common scales.
 ///
 /// Rust: `audio::tuning::Mode`
-#[pyclass(name = "Mode", module = "rust_physics_engine.audio.tuning", from_py_object, eq, eq_int)]
+#[pyclass(name = "Mode", module = "numeria.audio.tuning", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyMode {
     Ionian,
@@ -2793,7 +2793,7 @@ impl PyMode {
 /// Excitation source for the LPC vocoder.
 ///
 /// Rust: `audio::vocoder::Excitation`
-#[pyclass(name = "Excitation", module = "rust_physics_engine.audio.vocoder", from_py_object, eq)]
+#[pyclass(name = "Excitation", module = "numeria.audio.vocoder", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyExcitation { pub inner: rust_physics_engine::audio::vocoder::Excitation }
 #[pymethods]
@@ -2810,7 +2810,7 @@ impl PyExcitation {
 /// (Laroche-Dolson).
 ///
 /// Rust: `audio::vocoder::PhaseVocoder`
-#[pyclass(name = "PhaseVocoder", module = "rust_physics_engine.audio.vocoder")]
+#[pyclass(name = "PhaseVocoder", module = "numeria.audio.vocoder")]
 pub struct PyPhaseVocoder { pub inner: rust_physics_engine::audio::vocoder::PhaseVocoder }
 #[pymethods]
 impl PyPhaseVocoder {
@@ -2912,7 +2912,7 @@ impl PyPhaseVocoder {
 /// in −1..1.
 ///
 /// Rust: `audio::wav::WavData`
-#[pyclass(name = "WavData", module = "rust_physics_engine.audio.wav", from_py_object, eq)]
+#[pyclass(name = "WavData", module = "numeria.audio.wav", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyWavData { pub inner: rust_physics_engine::audio::wav::WavData }
 #[pymethods]

@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Penrose tile kinds.
 ///
 /// Rust: `patterns::aperiodic::PenroseTile`
-#[pyclass(name = "PenroseTile", module = "rust_physics_engine.patterns.aperiodic", from_py_object, eq, eq_int)]
+#[pyclass(name = "PenroseTile", module = "numeria.patterns.aperiodic", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyPenroseTile {
     Kite,
@@ -61,7 +61,7 @@ impl PyPenroseTile {
 /// kites and darts, the splitting diagonal for rhombs).
 ///
 /// Rust: `patterns::aperiodic::PlacedTile`
-#[pyclass(name = "PlacedTile", module = "rust_physics_engine.patterns.aperiodic", from_py_object, eq)]
+#[pyclass(name = "PlacedTile", module = "numeria.patterns.aperiodic", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPlacedTile { pub inner: rust_physics_engine::patterns::aperiodic::PlacedTile }
 #[pymethods]
@@ -94,7 +94,7 @@ impl PyPlacedTile {
 /// How offset corners are joined.
 ///
 /// Rust: `patterns::polygon_ops::JoinStyle`
-#[pyclass(name = "JoinStyle", module = "rust_physics_engine.patterns.polygon_ops", from_py_object, eq)]
+#[pyclass(name = "JoinStyle", module = "numeria.patterns.polygon_ops", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyJoinStyle { pub inner: rust_physics_engine::patterns::polygon_ops::JoinStyle }
 #[pymethods]
@@ -110,7 +110,7 @@ impl PyJoinStyle {
 /// The 13 Archimedean solids.
 ///
 /// Rust: `patterns::polyhedra::ArchimedeanSolid`
-#[pyclass(name = "ArchimedeanSolid", module = "rust_physics_engine.patterns.polyhedra", from_py_object, eq, eq_int)]
+#[pyclass(name = "ArchimedeanSolid", module = "numeria.patterns.polyhedra", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyArchimedeanSolid {
     TruncatedTetrahedron,
@@ -189,7 +189,7 @@ impl PyArchimedeanSolid {
 /// outside).
 ///
 /// Rust: `patterns::polyhedra::Polyhedron`
-#[pyclass(name = "Polyhedron", module = "rust_physics_engine.patterns.polyhedra", from_py_object, eq)]
+#[pyclass(name = "Polyhedron", module = "numeria.patterns.polyhedra", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPolyhedron { pub inner: rust_physics_engine::patterns::polyhedra::Polyhedron }
 #[pymethods]
@@ -393,7 +393,7 @@ impl PyPolyhedron {
 /// The 7 frieze groups (IUCr-style names).
 ///
 /// Rust: `patterns::symmetry::FriezeGroup`
-#[pyclass(name = "FriezeGroup", module = "rust_physics_engine.patterns.symmetry", from_py_object, eq, eq_int)]
+#[pyclass(name = "FriezeGroup", module = "numeria.patterns.symmetry", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyFriezeGroup {
     P1,
@@ -447,7 +447,7 @@ impl PyFriezeGroup {
 /// A 2-D lattice spanned by two basis vectors.
 ///
 /// Rust: `patterns::symmetry::Lattice`
-#[pyclass(name = "Lattice", module = "rust_physics_engine.patterns.symmetry", from_py_object, eq)]
+#[pyclass(name = "Lattice", module = "numeria.patterns.symmetry", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLattice { pub inner: rust_physics_engine::patterns::symmetry::Lattice }
 #[pymethods]
@@ -566,7 +566,7 @@ impl PyLattice {
 /// 3-D point groups (rotation parts).
 ///
 /// Rust: `patterns::symmetry::PointGroup3`
-#[pyclass(name = "PointGroup3", module = "rust_physics_engine.patterns.symmetry", from_py_object, eq)]
+#[pyclass(name = "PointGroup3", module = "numeria.patterns.symmetry", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPointGroup3 { pub inner: rust_physics_engine::patterns::symmetry::PointGroup3 }
 #[pymethods]
@@ -582,7 +582,7 @@ impl PyPointGroup3 {
 /// The 17 wallpaper groups.
 ///
 /// Rust: `patterns::symmetry::WallpaperGroup`
-#[pyclass(name = "WallpaperGroup", module = "rust_physics_engine.patterns.symmetry", from_py_object, eq, eq_int)]
+#[pyclass(name = "WallpaperGroup", module = "numeria.patterns.symmetry", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyWallpaperGroup {
     P1,
@@ -676,7 +676,7 @@ impl PyWallpaperGroup {
 /// The 11 Archimedean (uniform) tilings by vertex configuration.
 ///
 /// Rust: `patterns::tilings::Archimedean`
-#[pyclass(name = "Archimedean", module = "rust_physics_engine.patterns.tilings", from_py_object, eq, eq_int)]
+#[pyclass(name = "Archimedean", module = "numeria.patterns.tilings", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyArchimedean {
     T3_3_3_3_3_3,
@@ -747,7 +747,7 @@ impl PyArchimedean {
 /// cube coordinate is `s = -q - r`.
 ///
 /// Rust: `patterns::tilings::Hex`
-#[pyclass(name = "Hex", module = "rust_physics_engine.patterns.tilings", from_py_object, eq)]
+#[pyclass(name = "Hex", module = "numeria.patterns.tilings", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyHex { pub inner: rust_physics_engine::patterns::tilings::Hex }
 #[pymethods]
@@ -943,7 +943,7 @@ impl PyHex {
 /// vertex loops, `edges` the unique undirected edges.
 ///
 /// Rust: `patterns::tilings::Tiling`
-#[pyclass(name = "Tiling", module = "rust_physics_engine.patterns.tilings", from_py_object, eq)]
+#[pyclass(name = "Tiling", module = "numeria.patterns.tilings", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTiling { pub inner: rust_physics_engine::patterns::tilings::Tiling }
 #[pymethods]

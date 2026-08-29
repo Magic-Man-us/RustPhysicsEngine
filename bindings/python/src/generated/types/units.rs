@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// The seven SI base exponents.
 ///
 /// Rust: `units::quantity::Dim`
-#[pyclass(name = "Dim", module = "rust_physics_engine.units.quantity", from_py_object, eq)]
+#[pyclass(name = "Dim", module = "numeria.units.quantity", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyDim { pub inner: rust_physics_engine::units::quantity::Dim }
 #[pymethods]
@@ -224,7 +224,7 @@ impl PyDim {
 /// A value together with its dimension.
 ///
 /// Rust: `units::quantity::Quantity`
-#[pyclass(name = "Quantity", module = "rust_physics_engine.units.quantity", from_py_object, eq)]
+#[pyclass(name = "Quantity", module = "numeria.units.quantity", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQuantity { pub inner: rust_physics_engine::units::quantity::Quantity }
 #[pymethods]

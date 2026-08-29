@@ -19,7 +19,7 @@ use pyo3::prelude::*;
 /// `normals` and `uvs`, when present, are parallel to `vertices`.
 ///
 /// Rust: `mesh::Mesh`
-#[pyclass(name = "Mesh", module = "rust_physics_engine.mesh", from_py_object, eq)]
+#[pyclass(name = "Mesh", module = "numeria.mesh", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMeshMesh { pub inner: rust_physics_engine::mesh::Mesh }
 #[pymethods]
@@ -482,7 +482,7 @@ impl PyMeshMesh {
 /// Summary statistics of a mesh.
 ///
 /// Rust: `mesh::analyze::MeshStats`
-#[pyclass(name = "MeshStats", module = "rust_physics_engine.mesh.analyze", from_py_object, eq)]
+#[pyclass(name = "MeshStats", module = "numeria.mesh.analyze", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMeshStats { pub inner: rust_physics_engine::mesh::analyze::MeshStats }
 #[pymethods]
@@ -607,7 +607,7 @@ impl PyMeshStats {
 /// x-fastest layout: `data[j * width + i]`).
 ///
 /// Rust: `mesh::isosurface::ScalarField2`
-#[pyclass(name = "ScalarField2", module = "rust_physics_engine.mesh.isosurface", from_py_object, eq)]
+#[pyclass(name = "ScalarField2", module = "numeria.mesh.isosurface", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyIsosurfaceScalarField2 { pub inner: rust_physics_engine::mesh::isosurface::ScalarField2 }
 #[pymethods]
@@ -703,7 +703,7 @@ impl PyIsosurfaceScalarField2 {
 /// x-fastest layout: `data[(k * ny + j) * nx + i]`).
 ///
 /// Rust: `mesh::isosurface::ScalarField3`
-#[pyclass(name = "ScalarField3", module = "rust_physics_engine.mesh.isosurface", from_py_object, eq)]
+#[pyclass(name = "ScalarField3", module = "numeria.mesh.isosurface", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyIsosurfaceScalarField3 { pub inner: rust_physics_engine::mesh::isosurface::ScalarField3 }
 #[pymethods]
@@ -852,7 +852,7 @@ impl PyIsosurfaceScalarField3 {
 /// parameterization.
 ///
 /// Rust: `mesh::parameterize::BoundaryShape`
-#[pyclass(name = "BoundaryShape", module = "rust_physics_engine.mesh.parameterize", from_py_object, eq, eq_int)]
+#[pyclass(name = "BoundaryShape", module = "numeria.mesh.parameterize", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyBoundaryShape {
     Circle,
@@ -890,7 +890,7 @@ impl PyBoundaryShape {
 /// Quadrilateral mesh (faces as counterclockwise vertex quadruples).
 ///
 /// Rust: `mesh::subdivide::QuadMesh`
-#[pyclass(name = "QuadMesh", module = "rust_physics_engine.mesh.subdivide", from_py_object, eq)]
+#[pyclass(name = "QuadMesh", module = "numeria.mesh.subdivide", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyQuadMesh { pub inner: rust_physics_engine::mesh::subdivide::QuadMesh }
 #[pymethods]
@@ -968,7 +968,7 @@ impl PyQuadMesh {
 /// `[knots[degree], knots[len - degree - 1]]` in each direction.
 ///
 /// Rust: `mesh::surfaces::BSplineSurface`
-#[pyclass(name = "BSplineSurface", module = "rust_physics_engine.mesh.surfaces", from_py_object, eq)]
+#[pyclass(name = "BSplineSurface", module = "numeria.mesh.surfaces", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBSplineSurface { pub inner: rust_physics_engine::mesh::surfaces::BSplineSurface }
 #[pymethods]
@@ -1072,7 +1072,7 @@ impl PyBSplineSurface {
 /// B_i(u) B_j(v).
 ///
 /// Rust: `mesh::surfaces::BezierPatch`
-#[pyclass(name = "BezierPatch", module = "rust_physics_engine.mesh.surfaces", from_py_object, eq)]
+#[pyclass(name = "BezierPatch", module = "numeria.mesh.surfaces", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBezierPatch { pub inner: rust_physics_engine::mesh::surfaces::BezierPatch }
 #[pymethods]
@@ -1161,7 +1161,7 @@ impl PyBezierPatch {
 /// of a parametric surface.
 ///
 /// Rust: `mesh::surfaces::FundamentalForms`
-#[pyclass(name = "FundamentalForms", module = "rust_physics_engine.mesh.surfaces", from_py_object, eq)]
+#[pyclass(name = "FundamentalForms", module = "numeria.mesh.surfaces", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyFundamentalForms { pub inner: rust_physics_engine::mesh::surfaces::FundamentalForms }
 #[pymethods]
@@ -1250,7 +1250,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyFundamentalFormsArg {
 /// weights allow exact conics.
 ///
 /// Rust: `mesh::surfaces::NurbsSurface`
-#[pyclass(name = "NurbsSurface", module = "rust_physics_engine.mesh.surfaces", from_py_object, eq)]
+#[pyclass(name = "NurbsSurface", module = "numeria.mesh.surfaces", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyNurbsSurface { pub inner: rust_physics_engine::mesh::surfaces::NurbsSurface }
 #[pymethods]

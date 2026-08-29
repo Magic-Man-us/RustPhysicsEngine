@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Boundary condition for `dct_poisson_1d`.
 ///
 /// Rust: `transforms::dct::Bc`
-#[pyclass(name = "Bc", module = "rust_physics_engine.transforms.dct", from_py_object, eq, eq_int)]
+#[pyclass(name = "Bc", module = "numeria.transforms.dct", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyDctBc {
     Dirichlet,
@@ -52,7 +52,7 @@ impl PyDctBc {
 /// power-of-two FFTs of one size.
 ///
 /// Rust: `transforms::fft::FftPlan`
-#[pyclass(name = "FftPlan", module = "rust_physics_engine.transforms.fft")]
+#[pyclass(name = "FftPlan", module = "numeria.transforms.fft")]
 pub struct PyFftPlan { pub inner: rust_physics_engine::transforms::fft::FftPlan }
 #[pymethods]
 impl PyFftPlan {
@@ -131,7 +131,7 @@ impl PyFftPlan {
 /// Filter kernels for filtered back-projection.
 ///
 /// Rust: `transforms::radon::FbpFilter`
-#[pyclass(name = "FbpFilter", module = "rust_physics_engine.transforms.radon", from_py_object, eq, eq_int)]
+#[pyclass(name = "FbpFilter", module = "numeria.transforms.radon", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyFbpFilter {
     RamLak,
@@ -179,7 +179,7 @@ impl PyFbpFilter {
 /// zero-padded up to it).
 ///
 /// Rust: `transforms::stft::Stft`
-#[pyclass(name = "Stft", module = "rust_physics_engine.transforms.stft")]
+#[pyclass(name = "Stft", module = "numeria.transforms.stft")]
 pub struct PyStft { pub inner: rust_physics_engine::transforms::stft::Stft }
 #[pymethods]
 impl PyStft {
@@ -311,7 +311,7 @@ impl PyStft {
 /// Morlet(ω₀), Mexican hat (DOG order 2), Paul(m), DOG(m).
 ///
 /// Rust: `transforms::wavelet::Mother`
-#[pyclass(name = "Mother", module = "rust_physics_engine.transforms.wavelet", from_py_object, eq)]
+#[pyclass(name = "Mother", module = "numeria.transforms.wavelet", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMother { pub inner: rust_physics_engine::transforms::wavelet::Mother }
 #[pymethods]
@@ -327,7 +327,7 @@ impl PyMother {
 /// Signal extension at the boundaries.
 ///
 /// Rust: `transforms::wavelet::PadMode`
-#[pyclass(name = "PadMode", module = "rust_physics_engine.transforms.wavelet", from_py_object, eq, eq_int)]
+#[pyclass(name = "PadMode", module = "numeria.transforms.wavelet", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyPadMode {
     Zero,
@@ -369,7 +369,7 @@ impl PyPadMode {
 /// Detail-coefficient thresholding rules for `wavelet_denoise`.
 ///
 /// Rust: `transforms::wavelet::Threshold`
-#[pyclass(name = "Threshold", module = "rust_physics_engine.transforms.wavelet", from_py_object, eq)]
+#[pyclass(name = "Threshold", module = "numeria.transforms.wavelet", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyThreshold { pub inner: rust_physics_engine::transforms::wavelet::Threshold }
 #[pymethods]
@@ -386,7 +386,7 @@ impl PyThreshold {
 /// and the biorthogonal spline family (bior p.q as in PyWavelets).
 ///
 /// Rust: `transforms::wavelet::Wavelet`
-#[pyclass(name = "Wavelet", module = "rust_physics_engine.transforms.wavelet", from_py_object, eq)]
+#[pyclass(name = "Wavelet", module = "numeria.transforms.wavelet", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyWavelet { pub inner: rust_physics_engine::transforms::wavelet::Wavelet }
 #[pymethods]

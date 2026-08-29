@@ -87,26 +87,27 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999
 
 ## From Python
 
-The same library, callable from Python: 4,086 of its 4,149 free functions,
-2,254 of its 2,277 methods, 416 of its 426 types and every constant. The
-bindings live in [`bindings/python`](bindings/python) and are generated
-from this crate's source, so they cannot fall behind it.
+Published to PyPI as **numeria**: 4,086 of this crate's 4,149 free
+functions, 2,254 of its 2,277 methods, 416 of its 426 types and every
+constant. The bindings live in [`bindings/python`](bindings/python) and
+are generated from this crate's source, so they cannot fall behind it.
 
 ```console
-$ pip install rust-physics-engine
+$ pip install numeria
 ```
 
 ```python
 import math
-import rust_physics_engine as rpe
+import numeria as nm
 
-rpe.classical.projectile_range(50.0, math.pi / 4, 9.81)   # 254.841997961...
-rpe.linalg.lu.solve([[2, 1], [1, 3]], [5, 10])            # [1.0, 3.0]
-rpe.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
-rpe.exact.bigint.factorial(100)                           # a Python int
+nm.classical.projectile_range(50.0, math.pi / 4, 9.81)   # 254.841997961...
+nm.linalg.lu.solve([[2, 1], [1, 3]], [5, 10])            # [1.0, 3.0]
+nm.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
+nm.exact.bigint.factorial(100)                           # a Python int
 ```
 
-Every Python module mirrors a Rust module of the same name. `Result` errors
+Every Python module mirrors a Rust module of the same name beneath
+`numeria`. `Result` errors
 become exceptions under one `PhysicsError` root; a `Vec3` argument accepts
 `(x, y, z)`; `Complex`, `BigInt` and `Rational` cross over as Python's own
 `complex`, `int` and `fractions.Fraction`; and anywhere the library takes a

@@ -20,7 +20,7 @@ use pyo3::prelude::*;
 /// inverse temperature in units where Boltzmann's constant is one.
 ///
 /// Rust: `statistical_mechanics::ising::Ising2D`
-#[pyclass(name = "Ising2D", module = "rust_physics_engine.statistical_mechanics.ising", from_py_object)]
+#[pyclass(name = "Ising2D", module = "numeria.statistical_mechanics.ising", from_py_object)]
 #[derive(Clone)]
 pub struct PyIsing2D { pub inner: rust_physics_engine::statistical_mechanics::ising::Ising2D }
 #[pymethods]
@@ -344,7 +344,7 @@ impl PyIsing2D {
 /// Summary statistics from a Monte Carlo run.
 ///
 /// Rust: `statistical_mechanics::ising::IsingStats`
-#[pyclass(name = "IsingStats", module = "rust_physics_engine.statistical_mechanics.ising", from_py_object, eq)]
+#[pyclass(name = "IsingStats", module = "numeria.statistical_mechanics.ising", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyIsingStats { pub inner: rust_physics_engine::statistical_mechanics::ising::IsingStats }
 #[pymethods]
@@ -437,7 +437,7 @@ impl PyIsingStats {
 /// interaction but a consequence of the symmetry.
 ///
 /// Rust: `statistical_mechanics::ising::Potts2D`
-#[pyclass(name = "Potts2D", module = "rust_physics_engine.statistical_mechanics.ising", from_py_object)]
+#[pyclass(name = "Potts2D", module = "numeria.statistical_mechanics.ising", from_py_object)]
 #[derive(Clone)]
 pub struct PyPotts2D { pub inner: rust_physics_engine::statistical_mechanics::ising::Potts2D }
 #[pymethods]
@@ -555,7 +555,7 @@ impl PyPotts2D {
 /// parameter is what makes it interesting.
 ///
 /// Rust: `statistical_mechanics::ising::XyModel2D`
-#[pyclass(name = "XyModel2D", module = "rust_physics_engine.statistical_mechanics.ising", from_py_object)]
+#[pyclass(name = "XyModel2D", module = "numeria.statistical_mechanics.ising", from_py_object)]
 #[derive(Clone)]
 pub struct PyXyModel2D { pub inner: rust_physics_engine::statistical_mechanics::ising::XyModel2D }
 #[pymethods]
@@ -691,7 +691,7 @@ impl PyXyModel2D {
 /// Which way an inhibitor acts.
 ///
 /// Rust: `statistical_mechanics::kinetics::Inhibition`
-#[pyclass(name = "Inhibition", module = "rust_physics_engine.statistical_mechanics.kinetics", from_py_object, eq, eq_int)]
+#[pyclass(name = "Inhibition", module = "numeria.statistical_mechanics.kinetics", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyInhibition {
     Competitive,
@@ -730,7 +730,7 @@ impl PyInhibition {
 /// coefficients.
 ///
 /// Rust: `statistical_mechanics::kinetics::Reaction`
-#[pyclass(name = "Reaction", module = "rust_physics_engine.statistical_mechanics.kinetics", from_py_object, eq)]
+#[pyclass(name = "Reaction", module = "numeria.statistical_mechanics.kinetics", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyReaction { pub inner: rust_physics_engine::statistical_mechanics::kinetics::Reaction }
 #[pymethods]
@@ -789,7 +789,7 @@ impl PyReaction {
 /// One record from a trajectory.
 ///
 /// Rust: `statistical_mechanics::md::MdSample`
-#[pyclass(name = "MdSample", module = "rust_physics_engine.statistical_mechanics.md", from_py_object, eq)]
+#[pyclass(name = "MdSample", module = "numeria.statistical_mechanics.md", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMdSample { pub inner: rust_physics_engine::statistical_mechanics::md::MdSample }
 #[pymethods]
@@ -877,7 +877,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyMdSampleArg {
 /// A box of particles interacting through one pair potential.
 ///
 /// Rust: `statistical_mechanics::md::MdSystem`
-#[pyclass(name = "MdSystem", module = "rust_physics_engine.statistical_mechanics.md", from_py_object)]
+#[pyclass(name = "MdSystem", module = "numeria.statistical_mechanics.md", from_py_object)]
 #[derive(Clone)]
 pub struct PyMdSystem { pub inner: rust_physics_engine::statistical_mechanics::md::MdSystem }
 #[pymethods]
@@ -1515,7 +1515,7 @@ impl PyMdSystem {
 /// integrator bug.
 ///
 /// Rust: `statistical_mechanics::md::Potential`
-#[pyclass(name = "Potential", module = "rust_physics_engine.statistical_mechanics.md", from_py_object)]
+#[pyclass(name = "Potential", module = "numeria.statistical_mechanics.md", from_py_object)]
 #[derive(Clone)]
 pub struct PyPotential { pub inner: rust_physics_engine::statistical_mechanics::md::Potential }
 #[pymethods]

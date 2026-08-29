@@ -315,2072 +315,2072 @@ pub mod m_numerical__ode__symplectic;
 pub fn register<'py>(py: Python<'py>, root: &Bound<'py, PyModule>) -> PyResult<()> {
     let mut mods: HashMap<&'static str, Bound<'py, PyModule>> = HashMap::new();
     {
-        let sub = PyModule::new(py, "rust_physics_engine.acoustics")?;
+        let sub = PyModule::new(py, "numeria.acoustics")?;
         sub.setattr("__doc__", "Room acoustics, psychoacoustic scales, and musical pitch.  Reverberation by Sabine (`RT60 = 0.161 V / A`) and by Eyring, which differ in how they treat a very absorptive room: Sabine's formula is a diffuse-field approximation that never reaches zero however absorptive the surfaces, while Eyring's does. Room modes, critical distance and the mass-law transmission loss follow.  The perceptual scales -- mel, bark, ERB, A-weighting, equal-loudness phon -- map physical frequency and level onto what a listener reports, and are fits to listening data rather than derivations. Musical pitch is here too: equal temperament, cents, and MIDI note conversion.")?;
         m_acoustics::register(py, &sub)?;
         root.add("acoustics", &sub)?;
         mods.insert("acoustics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics")?;
+        let sub = PyModule::new(py, "numeria.astrophysics")?;
         sub.setattr("__doc__", "Astrodynamics and astrophysics.  Orbits are the core. `kepler` solves Kepler's equation for elliptic, parabolic and hyperbolic orbits; `orbital_elements` converts between state vectors and Keplerian elements; `maneuvers` covers Hohmann and bi-elliptic transfers, plane changes, phasing and J2 secular rates; and `lambert` solves for the transfer orbit connecting two positions in a given time.  `time_systems` and `coords` are the bookkeeping that makes those answers refer to anything real -- Julian dates, UT1/TAI/TT/TDB, sidereal time, and the equatorial, ecliptic, galactic, horizontal and ITRF frames with precession and nutation.  Many-body gravity is handled by `nbody` with a leapfrog integrator and `octree` for Barnes-Hut O(N log N) forces. The remaining modules cover `tidal` forces and Roche limits, `lagrange` points, `gravitational_waves`, `magnetosphere` field-line tracing, `habitable_zone` boundaries, and `collisions` and impact cratering.")?;
         m_astrophysics::register(py, &sub)?;
         root.add("astrophysics", &sub)?;
         mods.insert("astrophysics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.atmosphere")?;
+        let sub = PyModule::new(py, "numeria.atmosphere")?;
         sub.setattr("__doc__", "The standard atmosphere, humidity, and near-surface wind.  The barometric formula and the ISA lapse-rate model give pressure, temperature and density against altitude, plus the pressure and density altitudes an aircraft altimeter reports. Humidity is covered by the Magnus formulation for dew point and relative humidity.  Wind includes the power-law shear profile, the wind power density that sets a turbine's available energy (`P/A = ½ρv³`, so a doubling of wind speed is eight times the power), the Beaufort scale, and the Coriolis parameter `f = 2Ω sin φ`.")?;
         m_atmosphere::register(py, &sub)?;
         root.add("atmosphere", &sub)?;
         mods.insert("atmosphere", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio")?;
+        let sub = PyModule::new(py, "numeria.audio")?;
         sub.setattr("__doc__", "Audio synthesis, analysis, effects, and I/O.")?;
         m_audio::register(py, &sub)?;
         root.add("audio", &sub)?;
         mods.insert("audio", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.biophysics")?;
+        let sub = PyModule::new(py, "numeria.biophysics")?;
         sub.setattr("__doc__", "Biophysics: the elementary membrane, transport and mechanics relations here, with the population-scale models in submodules.  The roadmap calls this area `bio`; it lives under the existing `biophysics` module instead, so that there is one home for the subject rather than two.")?;
         m_biophysics::register(py, &sub)?;
         root.add("biophysics", &sub)?;
         mods.insert("biophysics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd")?;
+        let sub = PyModule::new(py, "numeria.cfd")?;
         sub.setattr("__doc__", "Computational fluid dynamics: staggered grids, advection schemes, and (in later modules) incompressible solvers, shallow water, SPH, LBM, level sets, and turbulence models.")?;
         m_cfd::register(py, &sub)?;
         root.add("cfd", &sub)?;
         mods.insert("cfd", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.chemistry")?;
+        let sub = PyModule::new(py, "numeria.chemistry")?;
         sub.setattr("__doc__", "Reaction kinetics, chemical thermodynamics and electrochemistry.  Rate laws for first- and second-order decay and the Arrhenius temperature dependence `k = A exp(−Eₐ/RT)`; the Gibbs free energy and its relation to the equilibrium constant, `ΔG° = −RT ln K`, with the van 't Hoff equation for how K moves with temperature; and Hess's law.  Electrochemistry covers the Nernst equation, cell potentials and Faraday electrolysis. Solution chemistry covers pH and pOH, molarity, dilution and osmotic pressure.")?;
         m_chemistry::register(py, &sub)?;
         root.add("chemistry", &sub)?;
         mods.insert("chemistry", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.classical")?;
+        let sub = PyModule::new(py, "numeria.classical")?;
         sub.setattr("__doc__", "Newtonian mechanics: kinematics, dynamics, and the harmonic oscillator.  Linear and rotational motion under constant acceleration, forces and momentum, work, energy and power, collisions in one dimension from perfectly elastic to perfectly inelastic, moments of inertia for the standard bodies, and circular motion.  The oscillator section runs from the undamped period through the damped response -- damping ratio, logarithmic decrement, quality factor -- to the driven steady state and its resonance, and ends with the normal frequencies of two coupled oscillators. For the same problem solved numerically, or with more than two masses, see `resonance`.")?;
         m_classical::register(py, &sub)?;
         root.add("classical", &sub)?;
         mods.insert("classical", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes")?;
+        let sub = PyModule::new(py, "numeria.codes")?;
         sub.setattr("__doc__", "Error detection, error correction, compression, and the arithmetic cryptography is built on.")?;
         m_codes::register(py, &sub)?;
         root.add("codes", &sub)?;
         mods.insert("codes", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.color_science")?;
+        let sub = PyModule::new(py, "numeria.color_science")?;
         sub.setattr("__doc__", "Colour: the standard spaces, the transforms between them, and perceptual measures.  RGB to and from HSV, HSL and CIE XYZ, with the sRGB transfer function kept separate from the linear values -- the distinction that most colour bugs come from, since averaging or blending is only meaningful in linear light.  Also spectral colour (wavelength to RGB), the Planckian locus (blackbody temperature to RGB, and the correlated colour temperature back), relative luminance and the WCAG contrast ratio.")?;
         m_color_science::register(py, &sub)?;
         root.add("color_science", &sub)?;
         mods.insert("color_science", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.continuum_mechanics")?;
+        let sub = PyModule::new(py, "numeria.continuum_mechanics")?;
         sub.setattr("__doc__", "Stress and strain as tensors, and the yield criteria built on them.  The stress tensor with its invariants, principal stresses, and the split into hydrostatic and deviatoric parts -- the split that matters because metals yield on the deviatoric part alone, which is why the von Mises criterion ignores hydrostatic pressure entirely.  Strain in both the small-strain and Green-Lagrange forms, the isotropic 3-D Hooke's law `σᵢⱼ = λ δᵢⱼ ε_kk + 2μ εᵢⱼ` and its compliance inverse, plane stress and plane strain, and the von Mises, Tresca, Mohr-Coulomb and Drucker-Prager yield criteria.")?;
         m_continuum_mechanics::register(py, &sub)?;
         root.add("continuum_mechanics", &sub)?;
         mods.insert("continuum_mechanics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.control_systems")?;
+        let sub = PyModule::new(py, "numeria.control_systems")?;
         sub.setattr("__doc__", "Linear control: system response, stability margins and PID tuning.  First- and second-order step and impulse responses in closed form, and the parameters that characterise them -- natural frequency, damping ratio, rise and settling time, percent overshoot, bandwidth.  Stability is assessed through the gain and phase margins, which say how much extra gain or delay the loop tolerates before it oscillates. Steady-state error is given by system type.  PID tuning uses the Ziegler-Nichols rules. They are a starting point rather than an answer: they were derived for a quarter-amplitude decay and typically give an aggressive loop that wants detuning.")?;
         m_control_systems::register(py, &sub)?;
         root.add("control_systems", &sub)?;
         mods.insert("control_systems", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.core")?;
+        let sub = PyModule::new(py, "numeria.core")?;
         sub.setattr("__doc__", "Pure numeric building blocks: compensated summation, forward-mode automatic differentiation, and interval arithmetic.")?;
         m_core::register(py, &sub)?;
         root.add("core", &sub)?;
         mods.insert("core", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.curves")?;
+        let sub = PyModule::new(py, "numeria.curves")?;
         sub.setattr("__doc__", "Plane curves: conics, Bézier curves, and parametric families.  The conic sections with their eccentricities, foci and the discriminant that classifies a general quadratic; quadratic and cubic Bézier curves in 2-D and 3-D; and parametric circles, ellipses, spirals, Lissajous figures, cycloids and helices.  Arc length and signed curvature close the module. For subdivision surfaces and B-spline or NURBS patches see `mesh::surfaces`; for space curves with Frenet frames see `patterns::knots`.")?;
         m_curves::register(py, &sub)?;
         root.add("curves", &sub)?;
         mods.insert("curves", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete")?;
+        let sub = PyModule::new(py, "numeria.discrete")?;
         sub.setattr("__doc__", "Discrete mathematics: primes and factorization, elementary and analytic number theory, counting and enumeration, integer partitions, integer sequences, and union-find.")?;
         m_discrete::register(py, &sub)?;
         root.add("discrete", &sub)?;
         mods.insert("discrete", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.dsp")?;
+        let sub = PyModule::new(py, "numeria.dsp")?;
         sub.setattr("__doc__", "Digital signal processing: window functions, FIR/IIR filter design, resampling, and phase utilities.  The window generators and first-order RC filters that used to live in `signal_processing` moved here; the old paths re-export them.")?;
         m_dsp::register(py, &sub)?;
         root.add("dsp", &sub)?;
         mods.insert("dsp", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.electromagnetism")?;
+        let sub = PyModule::new(py, "numeria.electromagnetism")?;
         sub.setattr("__doc__", "Classical electromagnetism, from Coulomb's law to radiating dipoles.  Electrostatics (Coulomb force and field, potential, Gauss flux, capacitance), magnetostatics (the force on a moving charge, the field of a wire, solenoid and toroid, dipole moments and torques), induction (Faraday and motional EMF, self and mutual inductance), and circuits from Ohm's law through RC transients to the AC steady state -- complex reactance, RLC impedance, resonance, quality factor and bandwidth, power factor, and transformer ratios.  The wave section covers the free-space relations: propagation speed, the Poynting magnitude, energy density, the impedance of free space `Z₀ = μ₀c ≈ 376.73 Ω`, dipole radiation and the Larmor power.")?;
         m_electromagnetism::register(py, &sub)?;
         root.add("electromagnetism", &sub)?;
         mods.insert("electromagnetism", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.electronics")?;
+        let sub = PyModule::new(py, "numeria.electronics")?;
         sub.setattr("__doc__", "Semiconductor device physics.  Carrier statistics -- the intrinsic concentration, Fermi-Dirac occupancy, the thermal voltage `kT/q` -- and transport by drift and diffusion, linked by the Einstein relation `D/μ = kT/q`.  Then the devices: the PN junction's built-in potential and depletion width, the Shockley diode equation, MOSFET drain current in the linear and saturation regimes, and solar cells through open-circuit voltage, fill factor and efficiency.")?;
         m_electronics::register(py, &sub)?;
         root.add("electronics", &sub)?;
         mods.insert("electronics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact")?;
+        let sub = PyModule::new(py, "numeria.exact")?;
         sub.setattr("__doc__", "Exact arithmetic: arbitrary-precision integers, exact rationals, arbitrary-precision binary floating point, polynomials, and continued fractions.")?;
         m_exact::register(py, &sub)?;
         root.add("exact", &sub)?;
         mods.insert("exact", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fem")?;
+        let sub = PyModule::new(py, "numeria.fem")?;
         sub.setattr("__doc__", "Finite elements, finite-difference time domain, and spectral methods.  Three ways of turning a differential equation into a linear system, kept in one place because the interesting content is how they differ.  A finite *difference* replaces the derivative with a difference quotient and asks the equation to hold at grid points. A finite *element* never differentiates the solution twice at all: it multiplies by a test function, integrates by parts, and asks the resulting integral identity to hold for every test function in a finite dimensional space. That change of question is what buys the method its two best properties -- it needs one less derivative of the solution to make sense, so a kink in the coefficient is admissible rather than fatal, and the answer it produces is the *best* approximation in the space with respect to the energy the operator defines.  A spectral method is the same Galerkin idea with global smooth basis functions instead of local piecewise ones, which trades the sparsity of the matrix for a convergence rate limited only by the smoothness of the solution.")?;
         m_fem::register(py, &sub)?;
         root.add("fem", &sub)?;
         mods.insert("fem", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fields")?;
+        let sub = PyModule::new(py, "numeria.fields")?;
         sub.setattr("__doc__", "Uniform-grid scalar fields.  Minimal backfill of the Part 2 `ScalarField2`/`ScalarField3` types that later roadmap phases build on: row-major storage with grid spacing and bilinear/trilinear sampling.")?;
         m_fields::register(py, &sub)?;
         root.add("fields", &sub)?;
         mods.insert("fields", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.finance")?;
+        let sub = PyModule::new(py, "numeria.finance")?;
         sub.setattr("__doc__", "Quantitative finance: derivative pricing, interest rates, portfolio construction and risk measurement.  # What the models are and are not  Every pricing model here is a statement about a *hypothetical* market: continuous trading, no transaction costs, a known volatility, and a price process of a stated form. None of those is true. What the models buy is not a prediction of price but a consistent way to quote one instrument in terms of another -- which is why the quantity traders actually exchange is implied volatility, the number that makes the formula reproduce the market price, rather than the price itself.  The tests in this module lean hard on that internal consistency. Put-call parity is a no-arbitrage identity independent of the model; a binomial tree must converge to Black-Scholes as its steps grow; Monte Carlo must agree with the closed form within its own standard error; and the Greeks must match finite differences of the price they are derivatives of. Those are checkable. Whether the model describes a real market is not, and nothing here claims it.")?;
         m_finance::register(py, &sub)?;
         root.add("finance", &sub)?;
         mods.insert("finance", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fluid_instabilities")?;
+        let sub = PyModule::new(py, "numeria.fluid_instabilities")?;
         sub.setattr("__doc__", "When a fluid configuration stops being stable, and how fast it comes apart.  Each entry here is a growth rate or a threshold. Rayleigh-Taylor for a heavy fluid over a light one, with the Atwood number and the most unstable wavelength; Kelvin-Helmholtz for a velocity shear; Rayleigh-Bénard convection through the Rayleigh number and its critical value; Plateau-Rayleigh for the breakup of a liquid column into drops; Richtmyer-Meshkov for a shock crossing an interface; and the Jeans criterion, which is the same instability applied to a self-gravitating gas cloud and so sets the mass at which a cloud collapses into a star.  The Richardson number and its stability test cover stratified shear flow.")?;
         m_fluid_instabilities::register(py, &sub)?;
         root.add("fluid_instabilities", &sub)?;
         mods.insert("fluid_instabilities", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fluids")?;
+        let sub = PyModule::new(py, "numeria.fluids")?;
         sub.setattr("__doc__", "Fluid statics and single-phase flow.  Statics: hydrostatic pressure, buoyancy and flotation, Pascal's principle. Inviscid flow: continuity, Bernoulli, Torricelli, the Venturi meter. Viscous flow: Stokes drag, the drag equation and terminal velocity, Poiseuille's law, the Darcy-Weisbach head loss. Compressible flow: Mach number, stagnation and isentropic ratios.  Surface tension, capillary rise, vorticity, circulation and the Kutta-Joukowski lift round it out, along with the dimensionless groups that decide which regime you are in -- Reynolds, Froude, Weber, Bond, Peclet, Marangoni, Archimedes.  These are the closed-form relations. For flow solved on a grid or with particles see `cfd`.")?;
         m_fluids::register(py, &sub)?;
         root.add("fluids", &sub)?;
         mods.insert("fluids", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals")?;
+        let sub = PyModule::new(py, "numeria.fractals")?;
         sub.setattr("__doc__", "Fractals: escape-time sets, attractors, automata and noise.  The module root holds the classic escape-time sets computed directly -- Mandelbrot with smooth (continuous) iteration counts, Julia, burning ship, Newton fractals and the Sierpinski gasket.  The submodules generalise each direction: `escape_time` for a generic iteration engine, `attractors` for chaotic flows and maps, `ifs` for iterated function systems and the chaos game, `lsystem` for Lindenmayer rewriting, `automata` for cellular automata and growth, and `noise` for Perlin, OpenSimplex2, Worley and fBm.  For the dynamical-systems view -- Lyapunov exponents and bifurcation -- see `nonlinear`.")?;
         m_fractals::register(py, &sub)?;
         root.add("fractals", &sub)?;
         mods.insert("fractals", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.general_relativity")?;
+        let sub = PyModule::new(py, "numeria.general_relativity")?;
         sub.setattr("__doc__", "General relativity: black holes and cosmology.  The Schwarzschild solution -- the metric components, the horizon at `r_s = 2GM/c²`, proper time and gravitational redshift, the photon sphere at `1.5 r_s` and the innermost stable circular orbit at `3 r_s`, with the effective potential and the orbital energy and angular momentum that produce them. The Kerr solution adds rotation: the horizon, the ergosphere, the shifted ISCO, and the frame-dragging rate.  Cosmology covers the Friedmann equation for the Hubble parameter, the critical density, redshift-distance relations, luminosity distance, lookback time, and the scale factor and CMB temperature at a given redshift.  For four-vectors and curved-spacetime tensor machinery see `manifold::spacetime` and `manifold::metric`.")?;
         m_general_relativity::register(py, &sub)?;
         root.add("general_relativity", &sub)?;
         mods.insert("general_relativity", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.geometry")?;
+        let sub = PyModule::new(py, "numeria.geometry")?;
         sub.setattr("__doc__", "Areas, volumes and surface areas of the standard shapes.  Plane figures (circle, ellipse, triangle by base-height and by Heron's formula, regular polygon, sector, annulus) and solids (sphere, cylinder, cone, ellipsoid, torus, frustum, capsule), with perimeters and surface areas alongside.  Closed-form mensuration only. For triangle solving see `trigonometry`, for curves and conics see `curves`, for polygon algorithms such as triangulation and offsetting see `patterns::polygon_ops`, and for meshes see `mesh`.")?;
         m_geometry::register(py, &sub)?;
         root.add("geometry", &sub)?;
         mods.insert("geometry", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.geophysics")?;
+        let sub = PyModule::new(py, "numeria.geophysics")?;
         sub.setattr("__doc__", "The solid Earth: gravity, seismology, and heat.  Gravity surveying -- the latitude formula, the free-air and Bouguer corrections, the resulting anomaly, and Airy isostatic compensation.  Seismology: P- and S-wave travel times, epicentral distance from the S−P lag, the Richter and moment magnitude scales, and seismic moment and energy. The moment magnitude is the one to use for large events, because Richter saturates.  Heat flow: pressure and temperature with depth, the geothermal gradient, and geothermal power. Plate tectonics closes the module with Euler-pole plate velocities and the square-root-of-age law for seafloor depth.")?;
         m_geophysics::register(py, &sub)?;
         root.add("geophysics", &sub)?;
         mods.insert("geophysics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph")?;
+        let sub = PyModule::new(py, "numeria.graph")?;
         sub.setattr("__doc__", "Graphs: representation and structure, shortest paths, network flow, matchings, spectral graph theory, colouring, and drawing.")?;
         m_graph::register(py, &sub)?;
         root.add("graph", &sub)?;
         mods.insert("graph", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.gravitation")?;
+        let sub = PyModule::new(py, "numeria.gravitation")?;
         sub.setattr("__doc__", "Newtonian gravity and two-body orbits.  The inverse-square force and its potential energy, the field of a point mass, escape and circular orbital velocity, and Kepler's third law in both directions. The vis-viva equation `v² = μ(2/r − 1/a)` ties speed to position on any conic orbit, and the specific orbital energy fixes which conic it is.  Also the Roche limit, the Hill sphere, the Schwarzschild radius and gravitational time dilation -- the last two are the points at which Newtonian gravity stops being enough; see `general_relativity`.  For orbits propagated rather than characterised, and for transfers between them, see `astrophysics`.")?;
         m_gravitation::register(py, &sub)?;
         root.add("gravitation", &sub)?;
         mods.insert("gravitation", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.information_theory")?;
+        let sub = PyModule::new(py, "numeria.information_theory")?;
         sub.setattr("__doc__", "Shannon information: entropy, divergence, and channel capacity.  Entropy in bits and in nats, the maximum-entropy bound for a given alphabet, and the entropy rate. Then the relations between two distributions: cross entropy, Kullback-Leibler divergence, and the Jensen-Shannon divergence -- which unlike KL is symmetric and bounded, which is why it is the one that behaves like a distance.  Mutual information and conditional entropy connect the two, and the binary entropy function gives the capacity of a binary symmetric channel as `C = 1 − H₂(p)`. Fisher information and the Cramér-Rao bound cover the estimation side.  For codes that approach these limits see `codes`.")?;
         m_information_theory::register(py, &sub)?;
         root.add("information_theory", &sub)?;
         mods.insert("information_theory", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.learn")?;
+        let sub = PyModule::new(py, "numeria.learn")?;
         sub.setattr("__doc__", "Learning algorithms, written to be read rather than to be fast.  Every method here has a closed-form or exactly-checkable property attached to it, because that is what makes a learning algorithm testable at all. A network that trains to a plausible loss is not evidence of anything -- gradient descent will happily reduce the loss of a model whose gradients are wrong, just more slowly. What settles it is comparing the analytic gradient against a finite difference, comparing a linear model fitted by descent against the normal equations, or checking that a clustering agrees with itself under a relabelling.")?;
         m_learn::register(py, &sub)?;
         root.add("learn", &sub)?;
         mods.insert("learn", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg")?;
+        let sub = PyModule::new(py, "numeria.linalg")?;
         sub.setattr("__doc__", "Dense and sparse linear algebra.  `Matrix` is the dense row-major `f64` type everything here operates on. The factorizations are chosen by what the matrix is: `lu` with partial pivoting for a general square solve, `cholesky` for symmetric positive-definite (half the work, and it fails cleanly if the matrix is not), `qr` by Householder reflections for least squares, `svd` by one-sided Jacobi for rank and pseudo-inverse, and `tridiagonal` for the Thomas algorithm in O(n).  `eigen` provides the symmetric eigenproblem and general eigenvalues. `sparse` provides CSR storage with conjugate gradient and a Jacobi-preconditioned variant, for the large systems that the PDE solvers in `fem` produce.  Note that `pcg_jacobi`'s tolerance is relative to the norm of the right-hand side, not absolute.")?;
         m_linalg::register(py, &sub)?;
         root.add("linalg", &sub)?;
         mods.insert("linalg", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.magnetohydrodynamics")?;
+        let sub = PyModule::new(py, "numeria.magnetohydrodynamics")?;
         sub.setattr("__doc__", "Magnetohydrodynamics: a conducting fluid and the field frozen into it.  The dimensionless numbers first, because they decide the regime: magnetic Reynolds (advection against diffusion, and so whether the field is frozen in), Lundquist, Hartmann, and the plasma beta -- the ratio of thermal to magnetic pressure, which says whether the field or the gas is in charge.  Wave speeds: Alfvén, and the slow and fast magnetosonic branches. Equilibria: pinch pressure balance, the Bennett condition, and the Grad-Shafranov beta limit. Reconnection is covered by the Sweet-Parker rate and the associated electric field.")?;
         m_magnetohydrodynamics::register(py, &sub)?;
         root.add("magnetohydrodynamics", &sub)?;
         mods.insert("magnetohydrodynamics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold")?;
+        let sub = PyModule::new(py, "numeria.manifold")?;
         sub.setattr("__doc__", "Manifolds and higher-dimensional geometry: generic n-dimensional vectors and tensors, metric-driven curvature, and (in later modules) geodesics, Lie groups, constant-curvature spaces, polytopes, Clifford algebras, embeddings, discrete exterior calculus, and spacetimes.")?;
         m_manifold::register(py, &sub)?;
         root.add("manifold", &sub)?;
         mods.insert("manifold", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.materials")?;
+        let sub = PyModule::new(py, "numeria.materials")?;
         sub.setattr("__doc__", "Reference property tables.  Lookup data rather than computation: `elements` carries all 118 elements with atomic mass, density, melting and boiling points and thermal and electrical conductivity; `common` carries engineering solids; `fluids` carries liquids with density, viscosity, surface tension and speed of sound; and `gases` carries molar mass, specific heat ratio and thermal conductivity.  Values are room-temperature and one-atmosphere unless stated. They are reference figures for calculation, not a substitute for a datasheet on a specific alloy or grade.")?;
         m_materials::register(py, &sub)?;
         root.add("materials", &sub)?;
         mods.insert("materials", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.math")?;
+        let sub = PyModule::new(py, "numeria.math")?;
         sub.setattr("__doc__", "Vectors and the crate's table of physical constants.  `Vec2` and `Vec3` with the usual algebra -- addition, scaling, dot and cross products, norms, normalization, projection, reflection, rotation and interpolation.  `constants` is the single table the rest of the crate refers back to, and it is deliberately one table: duplicate definitions elsewhere are re-exports of it, and a test enforces that they agree. The values fixed by the 2019 SI redefinition -- `C`, `H`, `HBAR`, `E_CHARGE`, `K_B`, `N_A` -- are exact by definition rather than measured. Constants that are products of others, such as `FARADAY = N_A · E_CHARGE`, are computed from their factors rather than transcribed, so they cannot disagree with them.  For the 2022 CODATA set with units attached see `units::quantity::constants_codata`.")?;
         m_math::register(py, &sub)?;
         root.add("math", &sub)?;
         mods.insert("math", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh")?;
+        let sub = PyModule::new(py, "numeria.mesh")?;
         sub.setattr("__doc__", "Indexed triangle meshes: construction, mass properties, cleanup, spatial queries, and OBJ/STL interchange.")?;
         m_mesh::register(py, &sub)?;
         root.add("mesh", &sub)?;
         mods.insert("mesh", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.monte_carlo")?;
+        let sub = PyModule::new(py, "numeria.monte_carlo")?;
         sub.setattr("__doc__", "Monte Carlo methods and the random number generator behind them.  Integration (plain, 2-D, and importance-sampled), random walks in one to three dimensions, the Wiener and Ornstein-Uhlenbeck processes, Langevin dynamics, and Metropolis-Hastings sampling with a worked Ising example.  # A warning about `Rng`  It is a linear congruential generator that returns its raw state, so the low bits have a short period: `next_u64() % m` for a power-of-two `m` cycles through a handful of values -- `% 2` gives 0,1,0,1 and `% 4` gives 0,3,2,1 forever. Use `Rng::below`, which takes the high bits, for any small-integer draw. It is adequate for simulation and testing and is not cryptographically secure.")?;
         m_monte_carlo::register(py, &sub)?;
         root.add("monte_carlo", &sub)?;
         mods.insert("monte_carlo", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.neutronics")?;
+        let sub = PyModule::new(py, "numeria.neutronics")?;
         sub.setattr("__doc__", "Reactor physics: criticality, neutron diffusion, and shielding.  Criticality through the six-factor formula and `k_eff`, with reactivity and the reactor period. Neutron transport in diffusion theory: the diffusion coefficient and length, migration length, thermal utilization, and the flux in a slab.  Cross sections and reaction rates convert between microscopic and macroscopic pictures, including the 1/v absorption law. Operations covers reactor power, burnup and decay heat.  Shielding closes with attenuation, half- and tenth-value layers, and the buildup factor that corrects the exponential law for scattered photons -- the correction that matters, since ignoring it underestimates the dose behind a thick shield.")?;
         m_neutronics::register(py, &sub)?;
         root.add("neutronics", &sub)?;
         mods.insert("neutronics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.nonlinear")?;
+        let sub = PyModule::new(py, "numeria.nonlinear")?;
         sub.setattr("__doc__", "Chaos in low-dimensional systems.  The logistic map and its period-doubling route to chaos, the Hénon map, and the Lorenz and Rössler flows given as derivative functions to hand to an integrator from `numerical`.  Lyapunov exponents are the quantitative test: a positive exponent means nearby trajectories separate exponentially, which is what makes a system chaotic rather than merely complicated. Dimension estimators -- box counting and the correlation dimension -- measure the attractor that results.  For strange attractors as drawable objects, escape-time fractals and cellular automata see `fractals`.")?;
         m_nonlinear::register(py, &sub)?;
         root.add("nonlinear", &sub)?;
         mods.insert("nonlinear", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.nuclear")?;
+        let sub = PyModule::new(py, "numeria.nuclear")?;
         sub.setattr("__doc__", "Radioactive decay, nuclear binding, and dosimetry.  Exponential decay in its several parameterisations -- decay constant, half-life, mean lifetime -- and activity. Binding energy from the mass defect, binding energy per nucleon (the curve whose peak at iron-56 is why both fission and fusion release energy), and reaction Q-values.  Nuclear size follows `R = R₀A^(1/3)`, giving a roughly constant nuclear density. Dosimetry covers absorbed and equivalent dose and the inverse-square falloff of intensity with distance.  For reactor-scale neutron transport see `neutronics`.")?;
         m_nuclear::register(py, &sub)?;
         root.add("nuclear", &sub)?;
         mods.insert("nuclear", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical")?;
+        let sub = PyModule::new(py, "numeria.numerical")?;
         sub.setattr("__doc__", "Numerical methods: quadrature, root finding, ODE solvers, and interpolation. Submodules are re-exported so historical paths such as `numerical::trapezoid` keep working.")?;
         m_numerical::register(py, &sub)?;
         root.add("numerical", &sub)?;
         mods.insert("numerical", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optics")?;
+        let sub = PyModule::new(py, "numeria.optics")?;
         sub.setattr("__doc__", "Geometric and wave optics.  Refraction by Snell's law, the critical angle for total internal reflection, and the Brewster angle at which reflected light is fully polarized. Imaging through the thin-lens and mirror equations, magnification, lens power, combined focal lengths and the lensmaker's radius of curvature.  Wave optics covers single-slit minima, double-slit maxima, the grating equation, thin-film interference, and the Rayleigh resolution criterion `θ = 1.22 λ/D`. Malus's law closes it.  For Gaussian beams, fibre optics and ray transfer matrices see `photonics`.")?;
         m_optics::register(py, &sub)?;
         root.add("optics", &sub)?;
         mods.insert("optics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization")?;
+        let sub = PyModule::new(py, "numeria.optimization")?;
         sub.setattr("__doc__", "Optimization: continuous, combinatorial, and strategic.  The module root holds the scalar and unconstrained-gradient methods -- golden section and Brent for a bracketed minimum of one variable, then gradient descent with and without momentum, Adam, numerical gradients, and the regression and curve fitting built on them.  The submodules take it further: `lp` for linear programming and duality, `integer` for branch-and-bound and dynamic programming, `network` for flows and scheduling, `convex` for L-BFGS, proximal methods and ADMM, `metaheuristics` for the derivative-free and population-based methods, `game_theory` for equilibria and cooperative solutions, and `least_squares` for Levenberg-Marquardt.")?;
         m_optimization::register(py, &sub)?;
         root.add("optimization", &sub)?;
         mods.insert("optimization", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.particle_physics")?;
+        let sub = PyModule::new(py, "numeria.particle_physics")?;
         sub.setattr("__doc__", "Relativistic kinematics and scattering for particle collisions.  Invariant mass -- the quantity every collider analysis is built on, because it is the same in every frame -- along with centre-of-mass energy for colliding and fixed-target geometries, and the Lorentz boost of energy and longitudinal momentum.  The collider coordinates: rapidity, pseudorapidity and transverse momentum, chosen because rapidity differences are boost invariant along the beam. Scattering by the Rutherford cross section and the Breit-Wigner resonance shape, with the width-lifetime relation `Γτ = ħ` and branching ratios.  Also the conservation-law checks -- charge, lepton number, baryon number -- that say whether a proposed reaction can happen at all.")?;
         m_particle_physics::register(py, &sub)?;
         root.add("particle_physics", &sub)?;
         mods.insert("particle_physics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns")?;
+        let sub = PyModule::new(py, "numeria.patterns")?;
         sub.setattr("__doc__", "Geometric patterns: polygon algorithms, sampling distributions, phyllotaxis, tilings, symmetry groups, packings, space-filling curves, polyhedra, aperiodic tilings, and knots.")?;
         m_patterns::register(py, &sub)?;
         root.add("patterns", &sub)?;
         mods.insert("patterns", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.photonics")?;
+        let sub = PyModule::new(py, "numeria.photonics")?;
         sub.setattr("__doc__", "Laser beams, optical fibre, and interferometry.  Gaussian beam propagation: waist, Rayleigh range, radius and curvature against distance, divergence, the Gouy phase, and on-axis intensity.  Fibre through the numerical aperture, acceptance angle, and the V-number that decides single- versus multi-mode operation, plus attenuation and dispersion broadening. Ray transfer (ABCD) matrices compose optical elements by matrix multiplication.  Coherence length and time, fringe visibility, and the Fabry-Pérot transmission with its free spectral range close the module.")?;
         m_photonics::register(py, &sub)?;
         root.add("photonics", &sub)?;
         mods.insert("photonics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.plasma")?;
+        let sub = PyModule::new(py, "numeria.plasma")?;
         sub.setattr("__doc__", "Plasma parameters: the characteristic lengths, frequencies and speeds.  The Debye length is where it starts -- the distance over which a plasma screens a charge, and therefore the scale below which \"plasma\" stops being the right description. The Debye number counts particles in that sphere, and a plasma is only collective if that number is large.  Frequencies: electron and ion plasma frequencies, and the cyclotron frequencies in a magnetic field, with the associated Larmor radius. Speeds: thermal, ion-acoustic, Alfvén and magnetosonic. Plus magnetic pressure, plasma beta, the skin depth, the Coulomb logarithm and the collision frequency.  For a conducting fluid treated as a continuum see `magnetohydrodynamics`.")?;
         m_plasma::register(py, &sub)?;
         root.add("plasma", &sub)?;
         mods.insert("plasma", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.propulsion")?;
+        let sub = PyModule::new(py, "numeria.propulsion")?;
         sub.setattr("__doc__", "Rocket propulsion and impulsive orbital transfers.  The Tsiolkovsky equation `Δv = v_e ln(m₀/m_f)` and the specific impulse and mass ratio around it, thrust with and without the pressure-thrust term, staged Δv, and the gravity-turn loss that makes the ideal Δv an underestimate for a launch.  Transfers: Hohmann Δv and time, the bi-elliptic alternative (which wins beyond a radius ratio of about 11.94), and plane changes. Nozzle design covers exit velocity, throat area and the area ratio for a given exit Mach number.  For Lambert targeting, J2 effects and orbit propagation see `astrophysics`.")?;
         m_propulsion::register(py, &sub)?;
         root.add("propulsion", &sub)?;
         mods.insert("propulsion", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum")?;
+        let sub = PyModule::new(py, "numeria.quantum")?;
         sub.setattr("__doc__", "Quantum mechanics: the elementary relations here, with the wavefunction machinery and the Schrodinger solvers in submodules.")?;
         m_quantum::register(py, &sub)?;
         root.add("quantum", &sub)?;
         mods.insert("quantum", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quaternion")?;
+        let sub = PyModule::new(py, "numeria.quaternion")?;
         sub.setattr("__doc__", "Unit quaternions for 3-D rotation.  `Quaternion` with the full algebra -- Hamilton product, conjugate, inverse, norm and normalization -- and conversion to and from axis-angle, Euler angles and rotation matrices.  Quaternions are used for orientation rather than Euler angles because they compose without gimbal lock and interpolate smoothly: `slerp` moves along the great circle at constant angular rate, and `nlerp` is the cheaper normalized-linear approximation to it.  For the Lie-group view of the same object, and for rotations in four dimensions, see `manifold::lie`.")?;
         m_quaternion::register(py, &sub)?;
         root.add("quaternion", &sub)?;
         mods.insert("quaternion", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.radiation")?;
+        let sub = PyModule::new(py, "numeria.radiation")?;
         sub.setattr("__doc__", "Thermal radiation and radiative transfer.  The Stefan-Boltzmann law `j = σT⁴`, Wien's displacement of the spectral peak, and the colour and brightness temperatures that invert them.  Transfer through an absorbing medium: optical depth, the Beer-Lambert law, and the photon mean free path. Radiation pressure for absorbing and reflecting surfaces. Surface exchange via Kirchhoff's law (emissivity equals absorptivity at equilibrium), view factors, and net radiative exchange between surfaces.  For the Planck spectrum itself see `quantum`; for reactor and photon shielding see `neutronics`.")?;
         m_radiation::register(py, &sub)?;
         root.add("radiation", &sub)?;
         mods.insert("radiation", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.relativity")?;
+        let sub = PyModule::new(py, "numeria.relativity")?;
         sub.setattr("__doc__", "Special relativity.  The Lorentz factor and the kinematic consequences -- time dilation, length contraction, the velocity-addition law that keeps `c` a limit, and the Lorentz transformation of position and time.  Dynamics: relativistic momentum and kinetic energy, total and rest energy, and the energy-momentum relation `E² = (pc)² + (mc²)²`. The relativistic Doppler shift for approaching and receding sources.  Also proper time and the spacetime interval, whose sign classifies a separation as timelike, spacelike or null -- the invariant that replaces separate notions of distance and duration.")?;
         m_relativity::register(py, &sub)?;
         root.add("relativity", &sub)?;
         mods.insert("relativity", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.resonance")?;
+        let sub = PyModule::new(py, "numeria.resonance")?;
         sub.setattr("__doc__", "Resonance and vibration: single and coupled oscillators, acoustic and electromagnetic cavities, nonlinear resonance, and structural dynamics.")?;
         m_resonance::register(py, &sub)?;
         root.add("resonance", &sub)?;
         mods.insert("resonance", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.rf")?;
+        let sub = PyModule::new(py, "numeria.rf")?;
         sub.setattr("__doc__", "Radio-frequency engineering: links, lines and noise.  Link budgets built from free-space path loss, the Friis transmission equation, antenna gain and effective area, EIRP, beamwidth, directivity and fade margin.  Transmission lines: characteristic impedance of coax, velocity factor, guide wavelength, and the mismatch quantities -- VSWR, return loss, mismatch loss. Conductors are covered by the skin depth `δ = √(2ρ/ωμ)`, which is why RF current flows in a thin surface layer.  Noise and units: thermal noise power and floor in dBm, signal-to-noise ratio, the Shannon capacity of the resulting channel, and conversions between watts, dBm, ratios and decibels.")?;
         m_rf::register(py, &sub)?;
         root.add("rf", &sub)?;
         mods.insert("rf", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.signal_processing")?;
+        let sub = PyModule::new(py, "numeria.signal_processing")?;
         sub.setattr("__doc__", "Time-domain signal operations and test waveforms.  Convolution, cross- and autocorrelation, normalization, windowing, and the simple smoothers -- moving average, exponential moving average, and the median filter, which unlike the other two removes impulsive noise without smearing an edge.  Waveform generators (sine, square, sawtooth, triangle, noise, chirp) provide test signals.  This module is the elementary layer and re-exports the pieces of `transforms` and `dsp` most often wanted alongside it. For FFTs of any length go to `transforms::fft`; for filter *design* go to `dsp`.")?;
         m_signal_processing::register(py, &sub)?;
         root.add("signal_processing", &sub)?;
         mods.insert("signal_processing", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim")?;
+        let sub = PyModule::new(py, "numeria.sim")?;
         sub.setattr("__doc__", "Time-stepping simulation engines.  Where the rest of the crate evaluates a relation, these advance a state forward in time: `rigid_body` for 3-D dynamics with quaternion orientation and Euler's equations, `fluid_sim` for shallow water and 2-D incompressible Euler, `heat_sim` for conduction and convection-diffusion, `wave_sim` for the wave equation with Mur absorbing boundaries, `em_sim` for FDTD electromagnetics, and `cloth_sim` for Verlet cloth and rope.  These are compact, readable integrators intended for interactive use and for seeing the physics behave. For the research-grade schemes -- Riemann solvers, WENO, lattice Boltzmann, SPH -- see `cfd`; for finite elements and a Yee-grid FDTD with PML see `fem`.")?;
         m_sim::register(py, &sub)?;
         root.add("sim", &sub)?;
         mods.insert("sim", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.solid_mechanics")?;
+        let sub = PyModule::new(py, "numeria.solid_mechanics")?;
         sub.setattr("__doc__", "Strength of materials: stress, strain, elastic constants and beams.  Engineering and true stress and strain, and the elastic constants with the identities that connect them -- any two of `E`, `G`, `K` and `ν` determine the other two for an isotropic material, and the conversions are all here.  Beam bending: cantilever and simply-supported deflections, bending moment and stress, and second moments of area for rectangular and circular sections. Design closes with the von Mises equivalent stress, the safety factor, and strain energy density.  For the tensor formulation and yield surfaces see `continuum_mechanics`; for finite-element beams and modal analysis see `resonance::structural`.")?;
         m_solid_mechanics::register(py, &sub)?;
         root.add("solid_mechanics", &sub)?;
         mods.insert("solid_mechanics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial")?;
+        let sub = PyModule::new(py, "numeria.spatial")?;
         sub.setattr("__doc__", "Spatial data structures, transforms, geometric primitives, and queries.")?;
         m_spatial::register(py, &sub)?;
         root.add("spatial", &sub)?;
         mods.insert("spatial", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special")?;
+        let sub = PyModule::new(py, "numeria.special")?;
         sub.setattr("__doc__", "Special functions: error function family, gamma family, and beta functions.")?;
         m_special::register(py, &sub)?;
         root.add("special", &sub)?;
         mods.insert("special", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistical_mechanics")?;
+        let sub = PyModule::new(py, "numeria.statistical_mechanics")?;
         sub.setattr("__doc__", "Statistical mechanics: the elementary relations here, with lattice models and Monte Carlo in submodules.  The roadmap calls this area `statmech`; it lives under the existing `statistical_mechanics` module instead, so that there is one home for the subject rather than two.")?;
         m_statistical_mechanics::register(py, &sub)?;
         root.add("statistical_mechanics", &sub)?;
         mods.insert("statistical_mechanics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistics")?;
+        let sub = PyModule::new(py, "numeria.statistics")?;
         sub.setattr("__doc__", "Statistics: descriptive measures, probability distributions, and Fourier utilities. Submodules are re-exported so historical paths such as `statistics::mean` keep working.")?;
         m_statistics::register(py, &sub)?;
         root.add("statistics", &sub)?;
         mods.insert("statistics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic")?;
+        let sub = PyModule::new(py, "numeria.stochastic")?;
         sub.setattr("__doc__", "Stochastic processes: Markov chains, Markov chain Monte Carlo, and hidden state models.")?;
         m_stochastic::register(py, &sub)?;
         root.add("stochastic", &sub)?;
         mods.insert("stochastic", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.thermodynamics")?;
+        let sub = PyModule::new(py, "numeria.thermodynamics")?;
         sub.setattr("__doc__", "Thermodynamics: gases, heat transfer, cycles and phase change.  The ideal gas law in each of its four solved forms, and the kinetic picture behind it -- average kinetic energy, RMS speed, mean free path. Work and entropy change along isothermal, isobaric and adiabatic paths.  Heat transfer by all three mechanisms: Fourier conduction (with an explicit 1-D stepper and its stability limit), Newton's law of cooling and convection, and radiative exchange. The dimensionless groups that classify convection -- Grashof, Rayleigh, Prandtl, Nusselt, Biot -- are here too.  Cycles through the Carnot efficiency and the coefficients of performance for refrigerators and heat pumps; phase change through latent heat, Clausius-Clapeyron, boiling-point elevation, freezing-point depression, and wet-steam quality. Temperature scale conversions round it out.")?;
         m_thermodynamics::register(py, &sub)?;
         root.add("thermodynamics", &sub)?;
         mods.insert("thermodynamics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms")?;
+        let sub = PyModule::new(py, "numeria.transforms")?;
         sub.setattr("__doc__", "Discrete transforms: FFT (any length), DCT/DST, STFT, wavelets, Hilbert, Laplace inversion, Radon, and spectral estimation.  The radix-2 FFT that used to live in `signal_processing::fft` moved here; the old paths re-export everything so no caller changes.")?;
         m_transforms::register(py, &sub)?;
         root.add("transforms", &sub)?;
         mods.insert("transforms", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.trigonometry")?;
+        let sub = PyModule::new(py, "numeria.trigonometry")?;
         sub.setattr("__doc__", "Triangle solving, trigonometric identities, and hyperbolic functions.  The laws of sines and cosines in both directions -- side from angles and angle from sides -- and the SAS triangle area.  The identities are provided as functions rather than left to the caller to expand: sum and difference, double and half angle, and product-to-sum. The hyperbolic family includes the reciprocals (`sech`, `csch`, `coth`) and inverses that `f64` does not provide directly.  Angle utilities close the module: normalization to `[0, 2π)` or `(−π, π]`, the signed shortest difference between two angles, and classification as acute, right or obtuse.")?;
         m_trigonometry::register(py, &sub)?;
         root.add("trigonometry", &sub)?;
         mods.insert("trigonometry", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.units")?;
+        let sub = PyModule::new(py, "numeria.units")?;
         sub.setattr("__doc__", "Unit conversions, dimensional analysis and the CODATA constants.  The flat conversion functions below are the original contents of this module and are unchanged. What sits alongside them now is the typed machinery: `quantity` carries a value together with its seven SI exponents so that adding a length to a time is a compile-time-shaped error rather than a silent number, and `dimensional` does the analysis those exponents make possible -- Buckingham's theorem over exact rationals, the named dimensionless groups, natural units and the Planck scale.")?;
         m_units::register(py, &sub)?;
         root.add("units", &sub)?;
         mods.insert("units", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.vector_calculus")?;
+        let sub = PyModule::new(py, "numeria.vector_calculus")?;
         sub.setattr("__doc__", "Vector calculus operators and field theory for physics grids.  Provides discrete differential operators (gradient, laplacian, divergence, curl) on 2D and 3D uniform grids, point-wise numerical differentiation via function pointers, line/surface integrals, and a Jacobi Poisson solver.")?;
         m_vector_calculus::register(py, &sub)?;
         root.add("vector_calculus", &sub)?;
         mods.insert("vector_calculus", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.waves")?;
+        let sub = PyModule::new(py, "numeria.waves")?;
         sub.setattr("__doc__", "Wave propagation: mechanical, acoustic and seismic.  The kinematic relations (`v = fλ` and the wavenumber-frequency pair), displacement, energy density and intensity, and the inverse-square falloff of a spherical wave. The Doppler effect in both classical and relativistic forms, with the Mach cone angle for supersonic sources.  Standing waves on strings and in open and closed pipes, beats, and superposition. Boundaries are handled by impedance: the reflection and transmission coefficients follow from the impedance mismatch, which is also why they carry a sign.  Acoustics covers the speed of sound in a gas, sound pressure level and the decibel scale, and absorption and penetration depth. Seismology covers P-, S-, Rayleigh and Love wave speeds. Diffraction closes with the Fraunhofer single-slit pattern, the Airy disk radius and the Fresnel number.")?;
         m_waves::register(py, &sub)?;
         root.add("waves", &sub)?;
         mods.insert("waves", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.collisions")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.collisions")?;
         sub.setattr("__doc__", "Impacts, mergers, and collision probability.  Impact geometry and speed (including the gravitational focusing that makes the impact speed at least the escape velocity, however slowly the bodies approach), perfectly inelastic merger of mass and momentum, and the energy released.  Crater scaling and the collision probability for objects sharing a volume of space follow, along with the debris-flux relations used for orbital collision risk.")?;
         m_astrophysics__collisions::register(py, &sub)?;
         mods["astrophysics"].add("collisions", &sub)?;
         mods.insert("astrophysics::collisions", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.coords")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.coords")?;
         sub.setattr("__doc__", "Astronomical coordinates, low-precision ephemerides and TLE parsing.  # Four frames and what each is for  *Equatorial* coordinates -- right ascension and declination -- are fixed to the stars, or nearly so, and are what a catalogue lists. *Horizontal* coordinates -- azimuth and altitude -- are what an observer sees, and depend on where and when they are looking. *Ecliptic* coordinates are referred to the Earth's orbital plane, which is the natural frame for anything in the solar system. And the *perifocal* and inertial frames of `astrophysics::kepler` are where orbits live.  Converting between the first three is pure spherical trigonometry, and all of it is exactly invertible. Which is worth saying because the *ephemerides* here are not: they are truncated series good to a fraction of a degree, and their inverses do not exist in any useful sense.  # What \"low precision\" means  `sun_position_approx` is good to about a hundredth of a degree over a couple of centuries around J2000. `moon_position_approx` is good to a few tenths of a degree, because the Moon's motion has hundreds of terms of comparable size and this keeps a handful. `planet_position_low_precision` uses mean elements with linear rates and no perturbations at all, which is good to a fraction of a degree for the inner planets over a few centuries and steadily worse outward, where Jupiter and Saturn pull each other around by degrees.  None of these is suitable for an occultation, a transit timing, or anything where arcseconds matter. They are for pointing a small telescope, checking whether a planet is up, and drawing a sky map.")?;
         m_astrophysics__coords::register(py, &sub)?;
         mods["astrophysics"].add("coords", &sub)?;
         mods.insert("astrophysics::coords", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.gravitational_waves")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.gravitational_waves")?;
         sub.setattr("__doc__", "Gravitational radiation from a compact binary.  Quadrupole-formula results for an inspiralling binary: the emitted luminosity, the wave frequency (twice the orbital frequency), the strain amplitude at a given distance, and the time remaining to merger.  The chirp mass `ℳ = (m₁m₂)^(3/5)/(m₁+m₂)^(1/5)` is the combination that governs all of them -- it is the parameter the inspiral waveform actually determines, which is why it is measured far better than either individual mass.")?;
         m_astrophysics__gravitational_waves::register(py, &sub)?;
         mods["astrophysics"].add("gravitational_waves", &sub)?;
         mods.insert("astrophysics::gravitational_waves", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.habitable_zone")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.habitable_zone")?;
         sub.setattr("__doc__", "Habitable zone boundaries and tidal locking.  Inner and outer edges scale as the square root of the stellar luminosity, with the conventional coefficients: 0.95 AU and 1.37 AU per square root of a solar luminosity.  Also the mass-luminosity relation for main-sequence stars, equilibrium temperature for a given albedo, and the tidal locking timescale -- which matters here because low-mass stars have close-in habitable zones, so their habitable planets are likely to be locked.")?;
         m_astrophysics__habitable_zone::register(py, &sub)?;
         mods["astrophysics"].add("habitable_zone", &sub)?;
         mods.insert("astrophysics::habitable_zone", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.kepler")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.kepler")?;
         sub.setattr("__doc__", "Kepler's equation, anomaly conversions and two-body propagation.  # Three anomalies and why there are three  An orbit's position is described by an angle, and three different angles are useful for different things. *True anomaly* is the physical angle from periapsis to the body, seen from the focus -- it is what a telescope measures and what converts directly to a position. *Mean anomaly* advances uniformly in time, `M = n (t - t_p)`, so it is what a clock gives. *Eccentric anomaly* is the intermediate angle on the circumscribing circle that connects the two, and it exists because no closed form connects the other two directly.  Kepler's equation `M = E - e sin E` is the link, and it is transcendental. Everything in orbital mechanics that looks like \"where will it be at time t\" bottoms out in solving it, which is why five centuries of work have gone into doing so quickly.  # What is not here  `astrophysics::orbital_elements` already provides the element set, the state-to-elements conversion and the geometric quantities read off an orbit; this module adds the time dependence and the inverse conversion, and does not repeat them.")?;
         m_astrophysics__kepler::register(py, &sub)?;
         mods["astrophysics"].add("kepler", &sub)?;
         mods.insert("astrophysics::kepler", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.lagrange")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.lagrange")?;
         sub.setattr("__doc__", "The five Lagrange points of the circular restricted three-body problem.  L1, L2 and L3 lie on the line through the two masses and are found by solving a quintic numerically; L4 and L5 sit at the vertices of equilateral triangles with the two masses and are exact.  The collinear points are unstable saddles -- a spacecraft there needs station-keeping -- while L4 and L5 are stable for a mass ratio below about 1/24.96, which is why Jupiter's Trojan asteroids stay put. The Hill radius is here as well.")?;
         m_astrophysics__lagrange::register(py, &sub)?;
         mods["astrophysics"].add("lagrange", &sub)?;
         mods.insert("astrophysics::lagrange", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.lambert")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.lambert")?;
         sub.setattr("__doc__", "Lambert's problem: the orbit connecting two positions in a given time.  # The problem and why it is hard  Given where a spacecraft is, where it must be, and how long it has to get there, find the transfer orbit. Stated that way it sounds like `astrophysics::kepler::propagate_kepler` run backwards, but it is a genuinely different problem: propagation is an initial-value problem with one answer, and Lambert's is a *boundary*-value problem whose answer need not be unique.  It is not, however, a problem of existence. Within a single revolution a transfer exists for every positive flight time: making the trip faster costs more energy without limit, and the minimum-energy transfer is a particular duration rather than a floor on one. What *does* fail is a degenerate geometry -- a transfer angle of zero or exactly `pi`, where the two radii do not determine a plane and infinitely many orbits connect the points.  Only the zero-revolution solution is computed here, which is the one interplanetary trajectory design starts from. Multi-revolution transfers exist for longer flight times and are a separate search, with two branches per revolution count; they are not attempted rather than approximated.  # The universal-variable formulation  Every conic is covered by one iteration, on a variable `z` that is positive for an ellipse, negative for a hyperbola and zero for a parabola. The Stumpff functions `C(z)` and `S(z)` carry the difference, and their series expansions near zero are what keep the parabolic case from losing precision to cancellation -- the closed forms are `0/0` there.")?;
         m_astrophysics__lambert::register(py, &sub)?;
         mods["astrophysics"].add("lambert", &sub)?;
         mods.insert("astrophysics::lambert", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.magnetosphere")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.magnetosphere")?;
         sub.setattr("__doc__", "Planetary dipole fields and the magnetopause.  The magnetic dipole field in vector form, field-line tracing by integration along the field, and the magnetopause standoff distance -- where magnetic pressure balances the solar wind's dynamic pressure, which is what sets the size of a magnetosphere.  Field strength falls as `1/r³`, so the standoff distance depends only weakly (as the sixth root) on the wind pressure.")?;
         m_astrophysics__magnetosphere::register(py, &sub)?;
         mods["astrophysics"].add("magnetosphere", &sub)?;
         mods.insert("astrophysics::magnetosphere", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.maneuvers")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.maneuvers")?;
         sub.setattr("__doc__", "Orbital manoeuvres: combined burns, patched conics, gravity assists and the perturbation that dominates low orbits.  # What lives elsewhere  The impulsive transfers themselves are already in `propulsion`: `hohmann_delta_v`, `hohmann_transfer_time`, `bi_elliptic_delta_v`, `delta_v_plane_change`, `tsiolkovsky_delta_v` and `delta_v_staged`. The Roche limit is in `astrophysics::tidal` and the Hill radius in `astrophysics::lagrange`. This module adds what those do not cover, and reuses rather than repeats them.  # Why delta-v is the currency  Every manoeuvre here is priced in velocity change rather than in fuel, because the conversion between them is exponential: Tsiolkovsky's equation says the mass ratio is `e^(dv/v_e)`, so a mission's delta-v budget is a linear quantity that adds up while its mass is not. Ten per cent more delta-v is not ten per cent more spacecraft.  The other consequence is the Oberth effect. A burn's *energy* gain is `v dv`, proportional to the speed you already have, so the same delta-v spent deep in a gravity well buys far more energy than the same delta-v spent far from it. That is why escape burns are made at periapsis and why a flyby is worth planning around.")?;
         m_astrophysics__maneuvers::register(py, &sub)?;
         mods["astrophysics"].add("maneuvers", &sub)?;
         mods.insert("astrophysics::maneuvers", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.nbody")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.nbody")?;
         sub.setattr("__doc__", "Direct N-body gravitational simulation.  Velocity Verlet integration, chosen because it is symplectic: it conserves a nearby \"shadow\" energy exactly rather than drifting, so orbits stay closed over long integrations where Runge-Kutta of the same order would spiral.  Softening replaces `1/r²` with `1/(r² + ε²)` to keep close encounters from producing unbounded accelerations, at the cost of biasing the force at short range. Includes energy and momentum diagnostics, and system generators.  Cost is O(N²) per step. For large N use `astrophysics::octree`.")?;
         m_astrophysics__nbody::register(py, &sub)?;
         mods["astrophysics"].add("nbody", &sub)?;
         mods.insert("astrophysics::nbody", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.orbital_elements")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.orbital_elements")?;
         sub.setattr("__doc__", "Keplerian elements: conversion, propagation, and the anomalies.  State vectors to elements and back -- semi-major axis, eccentricity, inclination, longitude of ascending node, argument of periapsis and true anomaly -- via the specific orbital energy, the angular momentum and the eccentricity vector.  The three anomalies (true, eccentric and mean) and the conversions between them, with Kepler's equation solved by Newton iteration. Periapsis and apoapsis distances and speeds, orbital period, and propagation forward in time complete the module.  For a solver that also handles parabolic and hyperbolic orbits and near e = 1, see `astrophysics::kepler`.")?;
         m_astrophysics__orbital_elements::register(py, &sub)?;
         mods["astrophysics"].add("orbital_elements", &sub)?;
         mods.insert("astrophysics::orbital_elements", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.tidal")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.tidal")?;
         sub.setattr("__doc__", "Tidal forces and the Roche limit.  The tidal acceleration is the *difference* in gravitational pull across a body, so it falls as `1/r³` rather than `1/r²` -- which is why the Moon raises larger tides on Earth than the far more massive Sun does.  The Roche limit is given in both the rigid and fluid forms; the fluid limit is the larger, because a fluid body deforms and so becomes easier to pull apart. Tidal heating, the locking timescale and the tidal tensor complete the module.")?;
         m_astrophysics__tidal::register(py, &sub)?;
         mods["astrophysics"].add("tidal", &sub)?;
         mods.insert("astrophysics::tidal", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.astrophysics.time_systems")?;
+        let sub = PyModule::new(py, "numeria.astrophysics.time_systems")?;
         sub.setattr("__doc__", "Astronomical time: Julian dates and sidereal time.  # Why a day is not a day  The Earth turns once on its axis in 23h 56m 04s -- a *sidereal* day -- and takes the extra four minutes to face the sun again, because it has moved along its orbit in the meantime. A solar day is therefore longer than a rotation, by almost exactly one part in 366. Everything about pointing a telescope, predicting a satellite pass or reading a ground track depends on keeping the two apart.  Sidereal time is the hour angle of the vernal equinox, which is to say how far the Earth has turned relative to the stars. Greenwich mean sidereal time is that quantity at longitude zero, and adding the observer's longitude gives the local value. Right ascension is measured from the same origin, so an object is due south exactly when the local sidereal time equals its right ascension -- which is the whole reason the quantity exists.  # What is approximated here  `UT1` and `UTC` are treated as the same thing. They differ by up to 0.9 seconds, which is 0.0037 degrees of rotation -- irrelevant for anything in this module and decisive for geodesy. The `TT`/`UTC` offset from leap seconds is likewise ignored; the sun and planet positions here are low-precision approximations for which it does not matter.")?;
         m_astrophysics__time_systems::register(py, &sub)?;
         mods["astrophysics"].add("time_systems", &sub)?;
         mods.insert("astrophysics::time_systems", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.analysis")?;
+        let sub = PyModule::new(py, "numeria.audio.analysis")?;
         sub.setattr("__doc__", "Audio analysis: pitch detection (YIN, autocorrelation, cepstral, HPS, McLeod), onset/tempo/beat tracking, MFCCs, LPC and formants, LSPs, spectral descriptors, chroma/key/chord estimation, psychoacoustic approximations, distortion metrics, room-acoustics measures from impulse responses, DTW, and constellation fingerprinting.")?;
         m_audio__analysis::register(py, &sub)?;
         mods["audio"].add("analysis", &sub)?;
         mods.insert("audio::analysis", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.effects")?;
+        let sub = PyModule::new(py, "numeria.audio.effects")?;
         sub.setattr("__doc__", "Audio effects: delays, reverbs (Schroeder, Freeverb, FDN), convolution, modulation effects, dynamics, distortion, EQ, imaging, loudness (ITU-R BS.1770), and dithering.")?;
         m_audio__effects::register(py, &sub)?;
         mods["audio"].add("effects", &sub)?;
         mods.insert("audio::effects", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.envelope")?;
+        let sub = PyModule::new(py, "numeria.audio.envelope")?;
         sub.setattr("__doc__", "Envelopes, LFOs, followers, fades, and glides.")?;
         m_audio__envelope::register(py, &sub)?;
         mods["audio"].add("envelope", &sub)?;
         mods.insert("audio::envelope", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.oscillators")?;
+        let sub = PyModule::new(py, "numeria.audio.oscillators")?;
         sub.setattr("__doc__", "Audio-rate oscillators and test signals: PolyBLEP anti-aliased classics, additive resynthesis, mipmapped wavetables, colored noise, chirps, and measurement sweeps.")?;
         m_audio__oscillators::register(py, &sub)?;
         mods["audio"].add("oscillators", &sub)?;
         mods.insert("audio::oscillators", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.physical")?;
+        let sub = PyModule::new(py, "numeria.audio.physical")?;
         sub.setattr("__doc__", "Physical modeling synthesis: digital waveguides (plucked/struck/bowed strings, clarinet and flute bores), modal synthesis (bars, membranes, plates, bells, glasses), finite-difference membranes and Kirchhoff plates, a brute-force mass-spring string for validation, the Kelly-Lochbaum vocal tract, and glottal source models.")?;
         m_audio__physical::register(py, &sub)?;
         mods["audio"].add("physical", &sub)?;
         mods.insert("audio::physical", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.spatial")?;
+        let sub = PyModule::new(py, "numeria.audio.spatial")?;
         sub.setattr("__doc__", "Spatial audio: panning laws, VBAP, ambisonics, simple binaural cues, Doppler, distance/air attenuation, geometric room acoustics (image source and ray tracing), microphone arrays (beamforming, TDOA localization), sonar, and loudspeaker system responses.")?;
         m_audio__spatial::register(py, &sub)?;
         mods["audio"].add("spatial", &sub)?;
         mods.insert("audio::spatial", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.synthesis")?;
+        let sub = PyModule::new(py, "numeria.audio.synthesis")?;
         sub.setattr("__doc__", "Sound synthesis: additive, FM (DX7-style operator routing), Karplus-Strong, subtractive, granular, formant, waveshaping, drums, and note/sequence rendering.")?;
         m_audio__synthesis::register(py, &sub)?;
         mods["audio"].add("synthesis", &sub)?;
         mods.insert("audio::synthesis", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.tuning")?;
+        let sub = PyModule::new(py, "numeria.audio.tuning")?;
         sub.setattr("__doc__", "Musical tuning: temperaments, interval math, Scala parsing, consonance models, stretch tuning, and pitch-class utilities.")?;
         m_audio__tuning::register(py, &sub)?;
         mods["audio"].add("tuning", &sub)?;
         mods.insert("audio::tuning", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.vocoder")?;
+        let sub = PyModule::new(py, "numeria.audio.vocoder")?;
         sub.setattr("__doc__", "Phase vocoder and related voice/spectral processors: time stretching, pitch shifting, robotization, channel and LPC vocoders, WSOLA, PSOLA, spectral morphing, cross synthesis, harmonizing, and autotune.")?;
         m_audio__vocoder::register(py, &sub)?;
         mods["audio"].add("vocoder", &sub)?;
         mods.insert("audio::vocoder", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.audio.wav")?;
+        let sub = PyModule::new(py, "numeria.audio.wav")?;
         sub.setattr("__doc__", "WAV (RIFF) reading and writing: PCM 8/16/24/32-bit, IEEE float 32/64-bit, and WAVE_FORMAT_EXTENSIBLE containers. Samples are normalized to −1..1 per channel.")?;
         m_audio__wav::register(py, &sub)?;
         mods["audio"].add("wav", &sub)?;
         mods.insert("audio::wav", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.biophysics.epidemiology")?;
+        let sub = PyModule::new(py, "numeria.biophysics.epidemiology")?;
         sub.setattr("__doc__", "Compartment models of epidemics, their stochastic counterparts, and the quantities estimated from case data.  # Units and conventions  Compartments are *fractions* of the population and sum to one, so a model is independent of the population size and the numbers can be read as probabilities. The stochastic models work in whole individuals instead, because the questions they answer -- will this outbreak die out, how long until it does -- are questions about integers and have no meaning in a continuum. Rates are per unit time in whatever unit the caller uses for `t_end`; the recovery rate `gamma` is the reciprocal of the mean infectious period, so a two-week illness with time in days is `gamma = 1/14`.  # What the basic reproduction number is and is not  `R0 = beta / gamma` is the expected number of secondary cases from one case in a *wholly susceptible* population. It is a property of the pathogen and the contact structure together, not of the pathogen alone, and it stops describing the epidemic the moment susceptibles are depleted -- which is what the effective reproduction number is for. Two populations with the same `R0` and different contact heterogeneity do not have the same epidemic; see `epidemic_threshold_network`, where the threshold is set by the largest eigenvalue of the contact graph rather than by any average.")?;
         m_biophysics__epidemiology::register(py, &sub)?;
         mods["biophysics"].add("epidemiology", &sub)?;
         mods.insert("biophysics::epidemiology", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.biophysics.neuro")?;
+        let sub = PyModule::new(py, "numeria.biophysics.neuro")?;
         sub.setattr("__doc__", "Computational neuroscience: single neurons, spike trains, synapses and the small networks built from them.  # Units  The conductance-based models use the squid axon's units throughout: millivolts, milliseconds, microfarads and microamps per square centimetre, and millisiemens per square centimetre. A rate is therefore a count per millisecond unless a function says otherwise, and the spike frequencies reported by the F-I curves are converted to hertz where that is the useful number. The reduced models -- FitzHugh-Nagumo and the drift-diffusion process -- carry no units at all.  # What a spike is here  Every model that fires does so by one of two mechanisms, and the difference decides what can be asked of it. Hodgkin-Huxley, Morris-Lecar and FitzHugh-Nagumo generate the spike from their own dynamics: the upstroke is a solution of the equations and the threshold is not a parameter but an emergent property of the vector field. The integrate-and-fire family -- LIF, Izhikevich, AdEx -- *stipulates* the spike: the equations describe only the approach, and a rule replaces the voltage when it crosses a number. The second kind is far cheaper and reproduces firing statistics well; it has no answer to questions about the spike's shape, because the shape was never computed.  Spikes are detected in a trace by an upward crossing of a fixed level, which is the right test for a model whose spikes are tall and brief.  # Equilibrium potentials  `biophysics::nernst_potential` and `biophysics::goldman_potential` already provide the reversal potentials these models take as constants, and are not repeated here.")?;
         m_biophysics__neuro::register(py, &sub)?;
         mods["biophysics"].add("neuro", &sub)?;
         mods.insert("biophysics::neuro", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.biophysics.phylo")?;
+        let sub = PyModule::new(py, "numeria.biophysics.phylo")?;
         sub.setattr("__doc__", "Phylogenetics: trees, the distance and character methods that build them, and the statistics read off them.  # What a tree is here  `PhyloTree` stores a parent index and a branch length per node, with leaves first and internal nodes after. That representation makes the two operations everything else needs -- walking to the root, and finding a common ancestor -- direct, at the cost of making \"children of\" a search. Trees in this module are rooted; an unrooted method such as neighbour joining produces a tree whose root is an artefact of the construction and carries no meaning, which is noted where it matters.  # Distances are not times  A branch length is a number of substitutions per site, not an elapsed time, and converting between them needs a rate that no method here estimates. UPGMA is the exception and it is an *assumption* rather than an inference: it produces an ultrametric tree, in which every leaf is equidistant from the root, which is true only under a strict molecular clock. Neighbour joining makes no such assumption, and the difference shows immediately on data where rates vary between lineages.")?;
         m_biophysics__phylo::register(py, &sub)?;
         mods["biophysics"].add("phylo", &sub)?;
         mods.insert("biophysics::phylo", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.biophysics.population")?;
+        let sub = PyModule::new(py, "numeria.biophysics.population")?;
         sub.setattr("__doc__", "Population dynamics and population genetics: growth laws, interacting species, age-structured projection, discrete maps, and the drift, selection and coalescent theory that describes gene frequencies.  # Two kinds of model, and why they disagree  The deterministic models here describe a population large enough that averages are the whole story. The genetic models mostly do not: drift is the *variance* introduced by finite sampling, and it vanishes from any model that tracks only the mean. A Wright-Fisher population's expected allele frequency never changes at all, and yet every such population eventually fixes one allele or the other -- so the mean is not merely an approximation here, it is silent about the outcome. Where a function reports an expectation, it says so.  # Units  Times are in whatever unit the caller uses for rates. Genetic models work in generations, and `n` is the number of *diploid* individuals unless a function says otherwise, so a population of `n` carries `2n` gene copies -- the factor that makes heterozygosity decay as `1 - 1/(2n)` rather than `1 - 1/n`.")?;
         m_biophysics__population::register(py, &sub)?;
         mods["biophysics"].add("population", &sub)?;
         mods.insert("biophysics::population", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.biophysics.seq_align")?;
+        let sub = PyModule::new(py, "numeria.biophysics.seq_align")?;
         sub.setattr("__doc__", "Sequence alignment and the elementary sequence analysis around it.  # What an alignment score means  Every function here returns a score under an explicit `Scoring`, and the score is only comparable between alignments computed under the *same* one. That is not pedantry: a gap penalty is a free parameter, and the choice of it decides whether two sequences align as one long homology with an insertion or as two short unrelated fragments. Where a function returns an alignment as well as a score, the score is always the score of that alignment under that scoring -- which the tests check directly, since a dynamic program that reports a maximum it did not achieve is the commonest way for one of these to be wrong.  # Global, local and affine  The three classical algorithms differ in one line of the recurrence each, and the differences matter more than the similarity suggests. Needleman-Wunsch aligns the sequences end to end; Smith-Waterman clamps the score at zero so a poor prefix cannot drag a good local match below the surface; Gotoh separates opening a gap from extending one, which is what lets a single long insertion cost less than many short ones.")?;
         m_biophysics__seq_align::register(py, &sub)?;
         mods["biophysics"].add("seq_align", &sub)?;
         mods.insert("biophysics::seq_align", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.advection")?;
+        let sub = PyModule::new(py, "numeria.cfd.advection")?;
         sub.setattr("__doc__", "Advection schemes: classic 1D finite-volume methods (upwind, Lax-Wendroff, MUSCL with slope limiters, WENO5), 2D semi-Lagrangian transport with BFECC/MacCormack error compensation, SSP-RK3, Burgers solvers, and the Cole-Hopf exact solution.")?;
         m_cfd__advection::register(py, &sub)?;
         mods["cfd"].add("advection", &sub)?;
         mods.insert("cfd::advection", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.boundary_layer")?;
+        let sub = PyModule::new(py, "numeria.cfd.boundary_layer")?;
         sub.setattr("__doc__", "Boundary layers: Blasius and Falkner-Skan similarity solutions (shooting), Thwaites and Head integral methods, turbulent wall laws, transition and separation criteria, rotating and oscillating layers, and flat-plate heat transfer.")?;
         m_cfd__boundary_layer::register(py, &sub)?;
         mods["cfd"].add("boundary_layer", &sub)?;
         mods.insert("cfd::boundary_layer", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.grid")?;
+        let sub = PyModule::new(py, "numeria.cfd.grid")?;
         sub.setattr("__doc__", "Staggered (MAC) grids and cell-centered scalar fields for incompressible flow solvers.")?;
         m_cfd__grid::register(py, &sub)?;
         mods["cfd"].add("grid", &sub)?;
         mods.insert("cfd::grid", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.lbm")?;
+        let sub = PyModule::new(py, "numeria.cfd.lbm")?;
         sub.setattr("__doc__", "Lattice Boltzmann method: D2Q9 with BGK/TRT/MRT/cumulant-style collisions, bounce-back solids, Zou-He open boundaries, Guo forcing, D3Q19 and D3Q27 lattices, and classic benchmarks.")?;
         m_cfd__lbm::register(py, &sub)?;
         mods["cfd"].add("lbm", &sub)?;
         mods.insert("cfd::lbm", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.level_set")?;
+        let sub = PyModule::new(py, "numeria.cfd.level_set")?;
         sub.setattr("__doc__", "Interface capturing: level sets (upwind/WENO advection, Sussman reinitialization, fast marching, marching squares/tetrahedra), volume of fluid with PLIC, a simple free-surface fluid, and bubble/droplet physics relations.")?;
         m_cfd__level_set::register(py, &sub)?;
         mods["cfd"].add("level_set", &sub)?;
         mods.insert("cfd::level_set", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.multiphase")?;
+        let sub = PyModule::new(py, "numeria.cfd.multiphase")?;
         sub.setattr("__doc__", "Multiphase flow correlations: mixture properties, drift-flux and void fraction models, two-phase pressure drop, flow-pattern maps, bubble and droplet dynamics, population balance, boiling and condensation, sprays, and dispersed-particle transport.")?;
         m_cfd__multiphase::register(py, &sub)?;
         mods["cfd"].add("multiphase", &sub)?;
         mods.insert("cfd::multiphase", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.porous")?;
+        let sub = PyModule::new(py, "numeria.cfd.porous")?;
         sub.setattr("__doc__", "Porous-media flow: Darcy's law and extensions, unsaturated flow (Richards equation with Van Genuchten retention), well hydraulics, solute transport, and two-phase relations (Leverett, Corey, Buckley-Leverett).")?;
         m_cfd__porous::register(py, &sub)?;
         mods["cfd"].add("porous", &sub)?;
         mods.insert("cfd::porous", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.potential_flow")?;
+        let sub = PyModule::new(py, "numeria.cfd.potential_flow")?;
         sub.setattr("__doc__", "Incompressible potential flow: elementary singularities, complex potentials, Joukowski and Karman-Trefftz airfoils, NACA sections, the Hess-Smith panel method, thin-airfoil and lifting-line theory, a simple vortex lattice, and added-mass results.")?;
         m_cfd__potential_flow::register(py, &sub)?;
         mods["cfd"].add("potential_flow", &sub)?;
         mods.insert("cfd::potential_flow", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.riemann")?;
+        let sub = PyModule::new(py, "numeria.cfd.riemann")?;
         sub.setattr("__doc__", "1D/2D compressible Euler equations: exact and approximate Riemann solvers (HLL, HLLC, Roe with entropy fix, Rusanov, AUSM+), MUSCL finite-volume drivers, classic shock-tube problems, and gas-dynamic shock/expansion relations.")?;
         m_cfd__riemann::register(py, &sub)?;
         mods["cfd"].add("riemann", &sub)?;
         mods.insert("cfd::riemann", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.shallow_water")?;
+        let sub = PyModule::new(py, "numeria.cfd.shallow_water")?;
         sub.setattr("__doc__", "Shallow water equations: well-balanced HLL finite volumes with hydrostatic reconstruction and wet/dry handling (1D and 2D), the Stoker dam-break solution, water-wave dispersion relations, ocean spectra, and Gerstner waves.")?;
         m_cfd__shallow_water::register(py, &sub)?;
         mods["cfd"].add("shallow_water", &sub)?;
         mods.insert("cfd::shallow_water", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.sph")?;
+        let sub = PyModule::new(py, "numeria.cfd.sph")?;
         sub.setattr("__doc__", "Smoothed-particle hydrodynamics: standard kernel family, spatial hashing, weakly compressible (WCSPH) and predictive-corrective solvers with boundary particles, and classic free-surface benchmarks.")?;
         m_cfd__sph::register(py, &sub)?;
         mods["cfd"].add("sph", &sub)?;
         mods.insert("cfd::sph", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.stable_fluids")?;
+        let sub = PyModule::new(py, "numeria.cfd.stable_fluids")?;
         sub.setattr("__doc__", "Stable-fluids incompressible solver on a MAC grid: MacCormack advection, implicit viscosity, buoyancy, vorticity confinement, and a pressure projection with a choice of Poisson solvers, plus classic benchmark configurations.")?;
         m_cfd__stable_fluids::register(py, &sub)?;
         mods["cfd"].add("stable_fluids", &sub)?;
         mods.insert("cfd::stable_fluids", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.turbulence")?;
+        let sub = PyModule::new(py, "numeria.cfd.turbulence")?;
         sub.setattr("__doc__", "Turbulence modelling and statistics.  Kolmogorov scaling, energy spectra, LES subgrid models (Smagorinsky, dynamic Smagorinsky, WALE, Vreman), vortex identification criteria, RANS models (k-epsilon, k-omega SST, Spalart-Allmaras), synthetic turbulence generation, and canonical spectra (von Karman, Pao).")?;
         m_cfd__turbulence::register(py, &sub)?;
         mods["cfd"].add("turbulence", &sub)?;
         mods.insert("cfd::turbulence", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.cfd.vortex")?;
+        let sub = PyModule::new(py, "numeria.cfd.vortex")?;
         sub.setattr("__doc__", "Vortex methods: regularized Biot-Savart particle methods in 2D and 3D, classical vortex solutions (Lamb-Oseen, Rankine, Burgers, Hill), point vortex dynamics with a symplectic integrator, and vortex phenomenology (shedding, Crow instability, tip vortices).")?;
         m_cfd__vortex::register(py, &sub)?;
         mods["cfd"].add("vortex", &sub)?;
         mods.insert("cfd::vortex", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes.block")?;
+        let sub = PyModule::new(py, "numeria.codes.block")?;
         sub.setattr("__doc__", "Binary linear block codes.  A linear code of length `n` and dimension `k` is a `k`-dimensional subspace of `GF(2)^n`. Everything follows from that one sentence. The subspace is described either by a basis -- the rows of a generator matrix `G` -- or by the equations that cut it out -- the rows of a parity check matrix `H`, with `C = { x : H x' = 0 }`. Encoding is a matrix product. Decoding is the observation that `H (c + e)' = H e'`, so the syndrome depends only on the error and not on what was sent: correcting is choosing the lightest error pattern with the observed syndrome.  Linearity is also what makes the minimum distance computable at all. The distance between two codewords is the weight of their difference, which is another codeword, so the minimum distance over all `2^k (2^k - 1) / 2` pairs is just the minimum weight over the `2^k - 1` non-zero codewords.  The `_small` routines enumerate the whole code and are exponential in `k` by construction; they are for the classical codes, which are small.")?;
         m_codes__block::register(py, &sub)?;
         mods["codes"].add("block", &sub)?;
         mods.insert("codes::block", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes.checksum")?;
+        let sub = PyModule::new(py, "numeria.codes.checksum")?;
         sub.setattr("__doc__", "Checksums and check digits: cheap ways to notice that data changed.  None of these corrects anything, and none of them resists an adversary. What they do is turn a class of likely accidents into a mismatch, and the useful question about each is which class. A single parity bit catches any odd number of flipped bits and nothing else. A Fletcher or Adler sum catches reordering, which a plain sum does not, because the second accumulator weights each byte by its position. A CRC of width `w` catches every burst of `w` bits or fewer, every odd number of bit errors when the polynomial has `x + 1` as a factor, and all but `2^-w` of everything else. The decimal check digits catch every single-digit error and, except for Luhn, every transposition of adjacent digits.  For an adversary, none of this is relevant: all of it is linear or nearly so, and a forger can adjust the data to hit any checksum they like.")?;
         m_codes__checksum::register(py, &sub)?;
         mods["codes"].add("checksum", &sub)?;
         mods.insert("codes::checksum", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes.compression")?;
+        let sub = PyModule::new(py, "numeria.codes.compression")?;
         sub.setattr("__doc__", "Lossless compression, and the string machinery it is built on.  Every method here is one of two ideas. *Entropy coding* -- Huffman, Shannon-Fano, arithmetic -- assumes the symbols are drawn independently from a known distribution and spends about `-log2 p` bits on a symbol of probability `p`. It cannot beat the entropy, and Shannon's theorem says nothing can. *Modelling* -- run lengths, LZ77, LZW, the Burrows-Wheeler transform -- changes what the symbols are, so that a stream with obvious structure and high byte entropy becomes one with low entropy that an entropy coder can then finish off. Real compressors are a modelling stage followed by an entropy stage, and the two halves are here separately.  The suffix array and its longest-common-prefix array sit underneath: they are what makes the Burrows-Wheeler transform computable in near-linear time, and they answer questions about repetition in their own right.")?;
         m_codes__compression::register(py, &sub)?;
         mods["codes"].add("compression", &sub)?;
         mods.insert("codes::compression", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes.convolutional")?;
+        let sub = PyModule::new(py, "numeria.codes.convolutional")?;
         sub.setattr("__doc__", "Convolutional and turbo codes, and the channels they run over.  A convolutional code has no block length. The encoder is a shift register: each input bit is combined with the last few, and the output depends on a sliding window rather than on a partition of the message. That makes the code a walk through a *trellis* -- a graph whose vertices are the register states and whose edges are the possible inputs -- and decoding the problem of finding the walk that best matches what arrived. Viterbi's algorithm is dynamic programming on that graph, and it is optimal: it returns the maximum-likelihood sequence, not an approximation to it.  Turbo codes take two such encoders, feed the second an interleaved copy of the message, and decode by having the two halves exchange opinions. What each passes the other is *extrinsic* information -- what it concluded about a bit from everything except that bit's own channel evidence -- and keeping the exchange extrinsic is the whole trick. Feeding back a decoder's full opinion would let it hear its own guess reflected as independent confirmation, and the iteration would converge confidently to nonsense.  The capacity functions at the end say where the limits are. A rate-`1/2` binary code cannot work below about `0.187` decibels of `Eb/N0`, whatever it is; turbo codes reached within a few tenths of that, which is why they ended a thirty-year search.")?;
         m_codes__convolutional::register(py, &sub)?;
         mods["codes"].add("convolutional", &sub)?;
         mods.insert("codes::convolutional", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes.crypto_math")?;
+        let sub = PyModule::new(py, "numeria.codes.crypto_math")?;
         sub.setattr("__doc__", "The arithmetic underneath public-key cryptography, for study rather than for use.  **None of this is safe to deploy.** Every routine here branches and indexes on secret values, so the time it takes and the memory it touches leak what it is working on; a modular exponentiation that skips a squaring when a bit is zero tells anyone timing it how many bits are set. Real implementations are written to take the same time and the same path whatever the key, use blinding to break the correlation between input and timing, and are audited for the dozen further side channels that remain. Nothing here does any of that, and the key sizes the tests use are small enough to factor over lunch.  What it is for is seeing why the constructions work. RSA rests on the fact that exponentiating by `e` and then by `d` returns you to where you started whenever `ed = 1` modulo the group order -- so anyone who can compute the group order can find `d`, and the security assumption is exactly that factoring `n` is hard. Diffie-Hellman and elliptic curve Diffie-Hellman rest on the same shape in a different group. Shamir's scheme rests on a polynomial of degree `k - 1` being determined by `k` points and by no fewer. Each of those is a theorem, and the tests here check the theorem rather than the ciphertext.")?;
         m_codes__crypto_math::register(py, &sub)?;
         mods["codes"].add("crypto_math", &sub)?;
         mods.insert("codes::crypto_math", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.codes.reed_solomon")?;
+        let sub = PyModule::new(py, "numeria.codes.reed_solomon")?;
         sub.setattr("__doc__", "Reed-Solomon and BCH codes over finite fields.  Reed-Solomon works on symbols rather than bits, which is why it appears wherever errors arrive in clumps: a scratch on a disc, a fading burst on a radio link, a smudge across a printed barcode. A byte is wrong whether one bit of it flipped or all eight, so a burst that would defeat a bit-level code costs an `RS(255, 223)` codeword at most one of its sixteen correctable symbols per byte touched.  The construction is one idea. Fix a field, treat the message as the coefficients of a polynomial, and multiply by a generator whose roots are consecutive powers of a primitive element. A codeword is then exactly a polynomial vanishing at those `n - k` points, so evaluating the received word there gives zero if nothing went wrong and, if something did, a set of *syndromes* that depend only on the errors. Berlekamp-Massey turns those syndromes into a polynomial whose roots say where the errors are, Chien search finds the roots, and Forney's formula says how large each error was. Every step is field arithmetic; none of it looks at the message.  Because the generator has exactly `n - k` roots, the code meets the Singleton bound with equality -- `d = n - k + 1`. Reed-Solomon codes are the standard example of a maximum distance separable code, and there is no slack anywhere in the parameters.")?;
         m_codes__reed_solomon::register(py, &sub)?;
         mods["codes"].add("reed_solomon", &sub)?;
         mods.insert("codes::reed_solomon", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.control_systems.kalman")?;
+        let sub = PyModule::new(py, "numeria.control_systems.kalman")?;
         sub.setattr("__doc__", "Kalman filtering.  Linear filter: predict x ← F·x, P ← F·P·Fᵀ + Q; update with gain K = P·Hᵀ·S⁻¹, S = H·P·Hᵀ + R, using the Joseph-form covariance update P ← (I−KH)·P·(I−KH)ᵀ + K·R·Kᵀ so P stays symmetric PSD. The gain solve goes through `linalg::lu`. Reference: Bar-Shalom, Li & Kirubarajan, *Estimation with Applications to Tracking*.")?;
         m_control_systems__kalman::register(py, &sub)?;
         mods["control_systems"].add("kalman", &sub)?;
         mods.insert("control_systems::kalman", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.core.compensated")?;
+        let sub = PyModule::new(py, "numeria.core.compensated")?;
         sub.setattr("__doc__", "Compensated (error-free-transformation) summation.  Formulas: Neumaier's improved Kahan-Babuska summation (A. Neumaier, \"Rundungsfehleranalyse einiger Verfahren zur Summation endlicher Summen\", ZAMM 54, 1974) and recursive pairwise summation (Higham, *Accuracy and Stability of Numerical Algorithms*, ch. 4).")?;
         m_core__compensated::register(py, &sub)?;
         mods["core"].add("compensated", &sub)?;
         mods.insert("core::compensated", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.core.dual")?;
+        let sub = PyModule::new(py, "numeria.core.dual")?;
         sub.setattr("__doc__", "Forward-mode automatic differentiation with dual numbers.  A dual number x = re + ε·eps with ε² = 0 propagates exact first derivatives through arithmetic: f(a + ε·a') = f(a) + ε·f'(a)·a'.")?;
         m_core__dual::register(py, &sub)?;
         mods["core"].add("dual", &sub)?;
         mods.insert("core::dual", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.core.interval")?;
+        let sub = PyModule::new(py, "numeria.core.interval")?;
         sub.setattr("__doc__", "Rigorous interval arithmetic with outward rounding.  Every operation returns an interval guaranteed to contain the true real result for all inputs in the operand intervals: computed bounds are widened outward with `f64::next_down`/`next_up` (plus a small ulp margin for transcendental functions whose libm error is ≤ 1 ulp but unproven). Reference: Moore, Kearfott & Cloud, *Introduction to Interval Analysis* (SIAM, 2009).")?;
         m_core__interval::register(py, &sub)?;
         mods["core"].add("interval", &sub)?;
         mods.insert("core::interval", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete.combinatorics")?;
+        let sub = PyModule::new(py, "numeria.discrete.combinatorics")?;
         sub.setattr("__doc__", "Counting, enumeration, and the permutation group.  Three kinds of function live here. Counting functions return a `BigInt` whenever the value outgrows 64 bits, which is almost immediately -- the Bell numbers pass `u64::MAX` at n = 25 and the Catalan numbers at n = 33. Enumeration functions return iterators that generate one object at a time rather than materialising the whole family. The permutation functions treat a `&[usize]` as the one-line form of a bijection on `0..n`, so `p[i]` is the image of `i`.")?;
         m_discrete__combinatorics::register(py, &sub)?;
         mods["discrete"].add("combinatorics", &sub)?;
         mods.insert("discrete::combinatorics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete.disjoint_set")?;
+        let sub = PyModule::new(py, "numeria.discrete.disjoint_set")?;
         sub.setattr("__doc__", "Union-find over `0..n` with path compression and union by size.  Shared infrastructure: graph minimum spanning trees, percolation cluster labelling, and single-linkage clustering all reduce to the same \"merge these two, are these two together\" question.")?;
         m_discrete__disjoint_set::register(py, &sub)?;
         mods["discrete"].add("disjoint_set", &sub)?;
         mods.insert("discrete::disjoint_set", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete.number_theory")?;
+        let sub = PyModule::new(py, "numeria.discrete.number_theory")?;
         sub.setattr("__doc__", "Elementary and analytic number theory.  Divisibility and the Euclidean algorithm, modular arithmetic and the Chinese remainder theorem, the classical arithmetic functions (`phi`, `mu`, `sigma_k`, Carmichael's `lambda`) together with their sieves, multiplicative order, discrete logarithms, quadratic residues, and a collection of Diophantine and digit problems.  Factorization comes from `discrete::primes`; nothing here re-implements it.")?;
         m_discrete__number_theory::register(py, &sub)?;
         mods["discrete"].add("number_theory", &sub)?;
         mods.insert("discrete::number_theory", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete.partitions")?;
+        let sub = PyModule::new(py, "numeria.discrete.partitions")?;
         sub.setattr("__doc__", "Integer partitions, Young diagrams, and the RSK correspondence.  A partition of `n` is a weakly decreasing list of positive integers summing to `n`. It is stored as `Vec<u64>` in that order, so `p[0]` is the largest part.")?;
         m_discrete__partitions::register(py, &sub)?;
         mods["discrete"].add("partitions", &sub)?;
         mods.insert("discrete::partitions", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete.primes")?;
+        let sub = PyModule::new(py, "numeria.discrete.primes")?;
         sub.setattr("__doc__", "Primes: sieves, primality testing, factorization, and prime counting.")?;
         m_discrete__primes::register(py, &sub)?;
         mods["discrete"].add("primes", &sub)?;
         mods.insert("discrete::primes", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.discrete.sequences")?;
+        let sub = PyModule::new(py, "numeria.discrete.sequences")?;
         sub.setattr("__doc__", "Integer sequences, linear recurrences, and generating functions.  Two halves. The first recovers a sequence from an analytic or algebraic description: Taylor coefficients from a function by Cauchy's integral, and the minimal linear recurrence from a prefix by Berlekamp-Massey. The second is the named sequences themselves.")?;
         m_discrete__sequences::register(py, &sub)?;
         mods["discrete"].add("sequences", &sub)?;
         mods.insert("discrete::sequences", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.dsp.fir")?;
+        let sub = PyModule::new(py, "numeria.dsp.fir")?;
         sub.setattr("__doc__", "FIR filter design and application.  All frequencies are normalized to the sample rate (cycles/sample), so cutoffs live in (0, 0.5). Designs are linear-phase; windowed-sinc designs follow Oppenheim & Schafer §7.5, the equiripple design is the Parks-McClellan / Remez exchange (type I), and Savitzky-Golay follows the least-squares polynomial derivation.")?;
         m_dsp__fir::register(py, &sub)?;
         mods["dsp"].add("fir", &sub)?;
         mods.insert("dsp::fir", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.dsp.iir")?;
+        let sub = PyModule::new(py, "numeria.dsp.iir")?;
         sub.setattr("__doc__", "Infinite impulse response filters: RBJ biquads, second-order-section cascades, and classical designs (Butterworth, Chebyshev I/II, elliptic, Bessel) via analog prototypes, frequency transformation, and the bilinear transform.  Frequencies are in Hz against an explicit sample rate. The elliptic prototype follows Orfanidis' lecture notes (the same construction as scipy's `ellipap`); Chebyshev and Butterworth prototypes are the textbook pole formulas.  The pre-Part-3 first-order RC filters remain here unchanged.")?;
         m_dsp__iir::register(py, &sub)?;
         mods["dsp"].add("iir", &sub)?;
         mods.insert("dsp::iir", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.dsp.phase")?;
+        let sub = PyModule::new(py, "numeria.dsp.phase")?;
         sub.setattr("__doc__", "Phase utilities: unwrapping (1D and Itoh 2D), phase-locked loops, interpolated zero crossings, and phase measurement against a reference tone.")?;
         m_dsp__phase::register(py, &sub)?;
         mods["dsp"].add("phase", &sub)?;
         mods.insert("dsp::phase", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.dsp.resample")?;
+        let sub = PyModule::new(py, "numeria.dsp.resample")?;
         sub.setattr("__doc__", "Sample-rate conversion: integer up/down sampling, polyphase rational resampling, windowed-sinc/linear/cubic interpolation, CIC decimation, and half-band filters.  Anti-aliasing and interpolation kernels are symmetric windowed-sinc filters applied centered (\"same\" alignment), so resampled signals keep zero net delay.")?;
         m_dsp__resample::register(py, &sub)?;
         mods["dsp"].add("resample", &sub)?;
         mods.insert("dsp::resample", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.dsp.windows")?;
+        let sub = PyModule::new(py, "numeria.dsp.windows")?;
         sub.setattr("__doc__", "Window functions for spectral analysis and FIR design.  `window` generates any of the standard windows in symmetric form (filter design; endpoints at k = 0 and k = n−1) or periodic form (spectral analysis; the implied period is n). `window_metrics` measures the figures of merit from Harris (1978), *On the Use of Windows for Harmonic Analysis with the DFT*.  The pre-Part-3 generators (`hann_window`, …) are kept and wrap `window` with their original symmetric convention.")?;
         m_dsp__windows::register(py, &sub)?;
         mods["dsp"].add("windows", &sub)?;
         mods.insert("dsp::windows", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact.bigfloat")?;
+        let sub = PyModule::new(py, "numeria.exact.bigfloat")?;
         sub.setattr("__doc__", "Arbitrary-precision binary floating point.  A `BigFloat` is the exact dyadic rational `mantissa * 2^exponent` together with a working `precision` measured in bits.  # Canonical form  Every value produced by this module is normalized: either the mantissa is zero (and the exponent is zero), or the mantissa's magnitude has *exactly* `precision` significant bits. Normalization is applied on construction and after every operation, so `precision` is the true working precision rather than an upper bound, and the leading bit of the mantissa is always set.  # Rounding  All rounding is **round-to-nearest, ties-to-even** — the IEEE-754 default — applied exactly once per operation. `add`, `sub`, `mul`, `div` and `sqrt` form the exact result (or an exact result plus a sticky low bit that cannot change the rounding decision) and round it once, so they are correctly rounded: the returned value is the closest `precision`-bit dyadic to the true mathematical result. As a consequence they reproduce IEEE-754 `f64` arithmetic bit for bit when used at `precision = 53` on operands in the normal range.  The transcendental functions (`BigFloat::exp`, `BigFloat::ln`, `BigFloat::sin`, `BigFloat::cos`, `BigFloat::atan`, `BigFloat::pow`) and the constants (`BigFloat::pi`, `BigFloat::e`, `BigFloat::ln2`) evaluate their series at 64 guard bits above the target precision and round once at the end. They are not *proved* correctly rounded (that would need the table-maker's dilemma resolved), but the guard digits put the error far below one ulp of the requested precision.  Formulas: Gauss-Legendre AGM iteration for π (Brent 1976, Salamin 1976), Machin's `π/4 = 4·atan(1/5) − atan(1/239)` as an independent cross-check, `ln 2 = 2·atanh(1/3)`, exponential and circular Taylor series after range reduction, and `ln x = 2^s · 2·atanh((m−1)/(m+1))` after repeated square roots.")?;
         m_exact__bigfloat::register(py, &sub)?;
         mods["exact"].add("bigfloat", &sub)?;
         mods.insert("exact::bigfloat", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact.bigint")?;
+        let sub = PyModule::new(py, "numeria.exact.bigint")?;
         sub.setattr("__doc__", "Arbitrary-precision signed integers.  Magnitudes are little-endian vectors of `u64` limbs in base 2^64, held in a canonical form: no trailing zero limbs, and the limb vector is empty exactly when the value is zero. Every operation restores that form, so equality is structural and `is_zero` is a length check.")?;
         m_exact__bigint::register(py, &sub)?;
         mods["exact"].add("bigint", &sub)?;
         mods.insert("exact::bigint", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact.contfrac")?;
+        let sub = PyModule::new(py, "numeria.exact.contfrac")?;
         sub.setattr("__doc__", "Continued fractions: expansions, convergents, the periodic expansion of a square root, Pell's equation, generalized continued fractions by the modified Lentz algorithm, and the Gauss-map statistics.")?;
         m_exact__contfrac::register(py, &sub)?;
         mods["exact"].add("contfrac", &sub)?;
         mods.insert("exact::contfrac", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact.polynomial")?;
+        let sub = PyModule::new(py, "numeria.exact.polynomial")?;
         sub.setattr("__doc__", "Dense univariate polynomials with `f64` coefficients (`Poly`) and with exact rational coefficients (`PolyQ`).  Both types store coefficients from lowest to highest degree, so `c[i]` multiplies `x^i`, and both keep that vector trimmed: the last entry of a non-empty coefficient vector is never zero. The zero polynomial is the empty vector, and `Poly::degree` reports `0` for it (use `Poly::is_zero` to tell the zero polynomial from a non-zero constant).  `Poly` carries the numerical machinery -- root finding, Sturm sequences, Chebyshev fitting, Pade approximants -- while `PolyQ` carries the exact machinery: subresultant GCDs, content and primitive parts, rational root factoring, and Eisenstein's criterion.")?;
         m_exact__polynomial::register(py, &sub)?;
         mods["exact"].add("polynomial", &sub)?;
         mods.insert("exact::polynomial", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact.rational")?;
+        let sub = PyModule::new(py, "numeria.exact.rational")?;
         sub.setattr("__doc__", "Exact rational arithmetic over `BigInt`.  Every `Rational` is kept in lowest terms with a strictly positive denominator, so equality is structural and there is exactly one representation of each value. Zero is `0/1`.")?;
         m_exact__rational::register(py, &sub)?;
         mods["exact"].add("rational", &sub)?;
         mods.insert("exact::rational", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.exact.symbolic")?;
+        let sub = PyModule::new(py, "numeria.exact.symbolic")?;
         sub.setattr("__doc__", "A small computer algebra system over expression trees.  Expressions are built from constants, exact rationals, named variables, n-ary sums and products, powers, and the usual elementary functions. The design is numeric-first: everything can be evaluated, differentiated exactly, simplified enough to make cancellation visible, and compiled to a stack machine for repeated evaluation.")?;
         m_exact__symbolic::register(py, &sub)?;
         mods["exact"].add("symbolic", &sub)?;
         mods.insert("exact::symbolic", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fem.fdtd")?;
+        let sub = PyModule::new(py, "numeria.fem.fdtd")?;
         sub.setattr("__doc__", "Finite-difference time domain: Maxwell's equations on a Yee grid.  # Why the grid is staggered  Maxwell's curl equations couple the two fields' time derivatives to each other's spatial derivatives. Yee's arrangement puts `E` and `H` half a cell apart in space *and* half a step apart in time, so that every derivative in the scheme is a centred difference straddling the point it is evaluated at. Nothing is interpolated and nothing is averaged: the update is second-order accurate while using the narrowest possible stencil, and it is explicit, so a step costs one pass over the arrays.  The arrangement also makes the discrete divergence of `B` exactly conserved -- the update adds a discrete curl, and the discrete divergence of a discrete curl is identically zero on this grid. A collocated scheme has to enforce that separately or watch it drift.  # The Courant limit is not a guideline  With `S = c dt / dx`, the scheme's numerical dispersion relation admits a real wavenumber for every real frequency only while `S <= 1` in one dimension, or `S <= 1/sqrt(d)` in `d` dimensions. Past that the scheme has a mode that grows geometrically, and it grows from rounding noise if nothing else. This is not accuracy degrading gently; it is a hard threshold, and `fdtd_courant_check` reports which side of it a set of parameters falls on.  # The magic time step  At exactly `S = 1` in one dimension the numerical dispersion relation becomes the exact one, and the update degenerates into a shift: a pulse moves one cell per step with its shape unchanged, to machine precision, forever. One dimension is the only place this happens -- in two or three the dispersion error depends on the propagation angle and cannot be cancelled at all angles at once, which is why a two-dimensional simulation is run at a Courant number safely below the limit rather than at it.  # Fields are normalised  The updates here track `E` and `eta_0 H` rather than `E` and `H`, which removes the free-space impedance from every line of the update and leaves the Courant number as the only coefficient. It also makes the two fields comparable in magnitude, which matters because the conserved energy adds their squares -- in unnormalised units one term would be `1e5` times the other and the sum would be numerical nonsense.")?;
         m_fem__fdtd::register(py, &sub)?;
         mods["fem"].add("fdtd", &sub)?;
         mods.insert("fem::fdtd", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fem.fem1d")?;
+        let sub = PyModule::new(py, "numeria.fem.fem1d")?;
         sub.setattr("__doc__", "One-dimensional finite elements for `-(p u')' + q u = f`.  # The weak form  The strong form asks for a function whose second derivative satisfies the equation pointwise. Multiplying by a test function `v` that vanishes wherever `u` is prescribed, integrating over the interval and integrating the second-derivative term by parts gives  ```text a(u, v) = integral p u' v' + q u v dx = integral f v dx = L(v) ```  for every admissible `v`. Two things happened in that line. The solution now needs only one derivative rather than two, so a discontinuous `p` -- a layered material -- is admissible instead of fatal. And the boundary term `[p u' v]` that integration by parts produced is where flux conditions enter: prescribe nothing and the method silently imposes zero flux, which is why Neumann conditions are called *natural* and Dirichlet conditions, which have to be built into the space, are called *essential*.  # Why the answer is the best one available  Galerkin's method asks for the identity to hold not for every `v` but for every `v` in a finite dimensional subspace, and looks for `u_h` in that same subspace. Subtracting the two statements gives Galerkin orthogonality, `a(u - u_h, v_h) = 0` for every `v_h` in the space: the error is `a`-orthogonal to everything representable. When `a` is symmetric and positive definite it is an inner product, orthogonality of the error is exactly the characterisation of an orthogonal projection, and so  ```text ||u - u_h||_a  <=  ||u - v_h||_a   for every v_h in the space ```  with a constant of one. The finite element solution is not merely a good approximation in the energy norm; it is *the* best one. Nothing in a finite difference scheme corresponds to this. It is checked directly against the nodal interpolant in the property tests.  Equivalently, `u_h` minimises the energy `J(v) = a(v,v)/2 - L(v)` over the space -- the Ritz view -- which is why refining a mesh can only lower the computed energy: the coarse space sits inside the fine one.  # A variable coefficient is averaged, not sampled  Linear elements have a constant derivative on each element, so the quadrature in the stiffness term integrates `p` against a constant and reproduces its element *average* exactly. That has a consequence worth knowing: the discrete bilinear form still agrees with the true one on the element space itself, so `u_h` is the exact `a`-orthogonal projection of the true solution rather than an approximation of one, and the Pythagoras identity  ```text ||u - v_h||_a^2 = ||u - u_h||_a^2 + ||u_h - v_h||_a^2 ```  holds to rounding for every `v_h` in the space. It is not an accident of a smooth `p`: a `p` that jumps *within* an element is averaged the same way, which is the sense in which a finite element method handles a discontinuous coefficient gracefully rather than exactly.  # Nodal exactness, and its limits  For the pure Poisson problem `-u'' = f` with Dirichlet data, the linear element solution is exact *at the nodes*, to machine precision, on any mesh. The Green's function of `-d^2/dx^2` is piecewise linear with its kink at the source point, so for a mesh node it lies in the element space itself; pairing it against the orthogonal error gives `(u - u_h)(x_i) = 0`. This is a property of the operator, not a lucky cancellation, and it fails the moment either ingredient goes:  - a variable `p` makes the Green's function piecewise `int dx/p`, which is not piecewise linear, and nodal exactness disappears; - a reaction term `q` does the same; - for quadratic elements the piecewise linear Green's function of a *vertex* is still in the space, so vertices stay exact, but the one belonging to a midside node kinks in the middle of an element and is not. Quadratic elements are exact at element vertices and merely third-order accurate at the midsides.  Nodal exactness also needs the load `integral f phi_i` integrated exactly. Assembly here uses five-point Gauss-Legendre per element, exact through degree nine, so it holds to rounding for polynomial data and to quadrature error otherwise.  # Sign conventions  Flux conditions are stated with the *outward* normal, so the same `Bc::Neumann` value means the same physical thing at both ends: `p du/dn = g`, which is `-p u'(a) = g` on the left and `p u'(b) = g` on the right. `Bc::Robin` is `p du/dn + alpha u = g` in the same convention, and keeps the stiffness matrix symmetric.")?;
         m_fem__fem1d::register(py, &sub)?;
         mods["fem"].add("fem1d", &sub)?;
         mods.insert("fem::fem1d", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fem.fem2d")?;
+        let sub = PyModule::new(py, "numeria.fem.fem2d")?;
         sub.setattr("__doc__", "Triangular finite elements in the plane.  # The linear triangle  On a triangle the three barycentric coordinates are themselves the linear shape functions, and their gradients are constant. That single fact does most of the work: the stiffness integral `integral grad(phi_i) . grad(phi_j)` has a constant integrand, so it is the gradient product times the triangle's area, with no quadrature involved and no error introduced. The whole element matrix for the Laplacian is  ```text K_ij = (b_i b_j + c_i c_j) / (4 A) ```  where `b` and `c` are the edge-opposite coordinate differences and `A` is the signed area. The two-dimensional method inherits everything the one-dimensional one has -- Galerkin orthogonality, energy minimisation, best approximation in the energy norm -- because none of those arguments mentions the dimension.  # What the mesh has to guarantee  Two conditions matter and they are different in kind.  *Conformity* is structural: two triangles meet along a whole shared edge or at a single shared vertex, never at a vertex hanging in the middle of a neighbour's edge. Without it the assembled function is not continuous and the space is not a subspace of `H1`, so the theory does not apply at all. It is checked here by counting: every edge belongs to one triangle or two, never more.  *Shape* is quantitative. The interpolation error carries a factor of `1/sin(theta_min)`, so a mesh of slivers converges at the same rate with a much worse constant. `FemMesh2::quality_min_angle` reports the worst angle in the mesh, and uniform refinement leaves it exactly unchanged -- the four children of a triangle are all similar to their parent, which is the property that makes repeated refinement safe and that a red-green or longest-edge scheme has to work to recover.  # Delaunay and the maximum principle  The off-diagonal stiffness entry for an interior edge is `-(cot alpha + cot beta)/2`, the two angles opposite the edge in the triangles sharing it. It is nonpositive exactly when those angles sum to no more than `pi` -- which is the Delaunay condition. So a Delaunay triangulation gives an M-matrix, and an M-matrix gives a discrete maximum principle: a nonnegative load produces a nonnegative solution, and a harmonic one attains its extremes on the boundary. On a badly shaped non-Delaunay mesh the discrete solution can overshoot its own boundary data while still converging, which is exactly the kind of defect a plausibility check on a picture would miss.")?;
         m_fem__fem2d::register(py, &sub)?;
         mods["fem"].add("fem2d", &sub)?;
         mods.insert("fem::fem2d", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fem.spectral_pde")?;
+        let sub = PyModule::new(py, "numeria.fem.spectral_pde")?;
         sub.setattr("__doc__", "Spectral methods: global basis functions instead of local ones.  # What changes when the basis stops being local  A finite element expands the solution in functions that are nonzero on one or two cells. The matrix is sparse, and the accuracy is whatever the polynomial degree gives -- `h^2`, `h^3`, a fixed power of the mesh size no matter how smooth the answer is.  A spectral method expands in functions that are nonzero everywhere and smooth: complex exponentials on a periodic domain, Chebyshev polynomials on an interval. The matrix becomes dense, and in exchange the error stops obeying any fixed power of `N` at all. For an analytic function it falls geometrically -- adding a few points multiplies the error by a constant factor rather than reducing it by a fixed order -- and for a function with `k` continuous derivatives it falls as `N^-k`. The method is only as good as the solution is smooth, and it is *exactly* as good as that. Both halves are measured in the tests rather than asserted.  # Two Poisson solvers that are not the same solver  `transforms::fft::fft_poisson_2d` already solves the periodic Poisson problem with an FFT, but it is not a spectral method. It divides by the eigenvalue of the *five-point* Laplacian, `(2 cos kx + 2 cos ky - 4)/h^2`, which makes the discrete residual vanish to rounding -- exactly what a pressure projection in a fluid solver wants, since there the finite-difference divergence is the thing that must be zero. Against the continuum it is second-order accurate and no better.  `spectral_poisson_periodic` divides by the true symbol `-k^2`. Its discrete residual is not zero, and its error against the continuum solution is nil for anything the grid can represent and geometrically small otherwise. The two answers differ by `O(h^2)`, and which one is wanted depends on whether the discrete operator or the differential one is the thing being solved.  # Chebyshev points cluster, and they have to  Interpolating at equally spaced points on an interval diverges as the degree grows, even for functions as tame as `1/(1+25x^2)` -- Runge's phenomenon, and it is not a rounding problem but a property of the Lebesgue constant, which grows like `2^N/(N log N)`. The Chebyshev points `cos(j pi / N)` cluster towards the ends at a density that makes the Lebesgue constant grow only logarithmically, which is what makes high-degree interpolation usable at all.")?;
         m_fem__spectral_pde::register(py, &sub)?;
         mods["fem"].add("spectral_pde", &sub)?;
         mods.insert("fem::spectral_pde", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.finance.options")?;
+        let sub = PyModule::new(py, "numeria.finance.options")?;
         sub.setattr("__doc__", "Option pricing: closed forms, lattices, Monte Carlo and a PDE solver.  # Conventions  Rates and volatilities are continuously compounded and annualised; time is in years. `q` is a continuous dividend yield, which also serves as a foreign interest rate for a currency option and as a convenience yield for a commodity. A `call: bool` argument names the payoff: `max(S - K, 0)` when true and `max(K - S, 0)` when false.  # Why there are so many methods for one number  They price different things, and where they overlap they check each other. `black_scholes` is exact but only for a European payoff on a lognormal process. A lattice (`binomial_crr`, `trinomial`) handles early exercise, at the cost of converging to the closed form only in the limit -- and it converges by oscillating around the answer, not by approaching it from one side. Monte Carlo (`monte_carlo_european` and the path-dependent payoffs) handles anything you can simulate, and pays for that with an error that falls like the square root of the path count, which is why the variance reduction here is not an optimisation but the difference between usable and not.  # The volatility argument is the whole problem  Black-Scholes takes one volatility for all strikes. Real option prices do not admit one: the implied volatilities of options on the same underlying and expiry form a smile, and a model with a single sigma cannot produce it. That is not a defect in the arithmetic, it is the lognormal assumption failing. `merton_jump_price` and the Heston model add mechanisms that generate a smile, and `volatility_smile_svi` simply parameterises one without a mechanism.")?;
         m_finance__options::register(py, &sub)?;
         mods["finance"].add("options", &sub)?;
         mods.insert("finance::options", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.finance.portfolio")?;
+        let sub = PyModule::new(py, "numeria.finance.portfolio")?;
         sub.setattr("__doc__", "Portfolio construction and performance measurement.  # What mean-variance optimisation actually does  Markowitz's problem is: given expected returns and a covariance matrix, find the weights minimising variance at each level of expected return. It has a closed form, and that is both its appeal and its trap. The optimiser is an *error maximiser*: it puts weight where the estimated return is highest relative to the estimated risk, which is exactly where the estimates are most likely to be wrong. Expected returns estimated from a decade of monthly data carry standard errors of the same order as the differences between assets, so the \"optimal\" portfolio is often a leveraged bet on estimation noise.  Nothing here shrinks, regularises or constrains, because the roadmap's signatures do not. `min_variance_weights` uses only the covariance matrix, which is estimated far more reliably than the mean, and is for that reason the one output here that survives contact with real data.  # Returns compound, and that decides which average to use  `returns_from_prices` gives simple returns, whose *arithmetic* mean is the expected one-period return. `log_returns` gives continuously compounded returns, which add across periods, so their *sum* is the total log return. Mixing them up produces the standard error of quoting an arithmetic mean as though it were achievable: a series that gains 50% then loses 50% has an arithmetic mean return of zero and has lost a quarter of its value.")?;
         m_finance__portfolio::register(py, &sub)?;
         mods["finance"].add("portfolio", &sub)?;
         mods.insert("finance::portfolio", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.finance.rates")?;
+        let sub = PyModule::new(py, "numeria.finance.rates")?;
         sub.setattr("__doc__", "Interest rates: discounting, bonds, curves and short-rate models.  # Two things a \"rate\" can mean  A quoted rate is meaningless without its compounding convention. 10% compounded annually, semi-annually and continuously produce growth factors of 1.1, 1.1025 and 1.10517 over a year -- differences that are small over one period and decisive over thirty. `Compounding` makes the convention explicit at every call site rather than leaving it to a comment, and `equivalent_rate` converts between them.  The second distinction is between a *zero rate*, which discounts a single payment at one maturity, and a *yield*, which is the single rate that reproduces a whole bond's price. They coincide only for a zero-coupon bond. A coupon bond's yield is a weighted average of the zero rates along its life, weighted by the discounted cashflows -- so two bonds of the same maturity and different coupons have different yields off the same curve, which is what makes a yield a property of the instrument rather than of the market.  # What is solved and what is assumed  `irr`, `ytm_solve` and `bootstrap_zero_curve` invert a price to find a rate, and each has a uniqueness condition that the documentation states and the code checks where it can. A yield always exists and is unique for a bond with positive cashflows; an internal rate of return need not be either, and the sign-change test is the only cheap guarantee available.")?;
         m_finance__rates::register(py, &sub)?;
         mods["finance"].add("rates", &sub)?;
         mods.insert("finance::rates", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.finance.risk")?;
+        let sub = PyModule::new(py, "numeria.finance.risk")?;
         sub.setattr("__doc__", "Risk measurement: value at risk, expected shortfall, backtesting.  # What value at risk does and does not tell you  VaR at confidence `1 - alpha` is a *quantile*: the loss that will be exceeded on a fraction `alpha` of days. It says nothing whatever about how much worse things get beyond it, and that is not a subtlety but the central objection to the measure. Two portfolios with identical VaR can have completely different tails, and the one with the fatter tail is the one that ends the firm.  `cvar_historical` -- expected shortfall -- answers the question VaR ducks: the *average* loss given that VaR is exceeded. It is also *coherent* where VaR is not: VaR can penalise diversification, saying a combined portfolio is riskier than the sum of its parts, because a quantile is not subadditive. Expected shortfall cannot do that. Since Basel III, expected shortfall is the regulatory measure and VaR is the one everyone still quotes.  # Sign convention  Every function here returns a **positive number for a loss**. A VaR of 0.023 means a 2.3% loss. This is the industry convention and it is the opposite of the return series' own sign, which is a standing source of confusion; the tests pin it down explicitly.")?;
         m_finance__risk::register(py, &sub)?;
         mods["finance"].add("risk", &sub)?;
         mods.insert("finance::risk", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.attractors")?;
+        let sub = PyModule::new(py, "numeria.fractals.attractors")?;
         sub.setattr("__doc__", "Strange attractors: 3-D chaotic flows and 2-D chaotic maps with trajectory integration, Lyapunov spectra (Benettin renormalization), Kaplan-Yorke dimension, Poincaré sections, bifurcation diagrams, and dimension estimators (Grassberger-Procaccia correlation dimension, box counting, Rosenstein's largest-Lyapunov method, Feigenbaum ratios).")?;
         m_fractals__attractors::register(py, &sub)?;
         mods["fractals"].add("attractors", &sub)?;
         mods.insert("fractals::attractors", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.automata")?;
+        let sub = PyModule::new(py, "numeria.fractals.automata")?;
         sub.setattr("__doc__", "Cellular automata and growth models: elementary 1-D rules, life-like 2-D automata with pattern/RLE placement, cyclic CA, Langton's ant and turmites, Brian's Brain, Wireworld, 3-D life-like rules, SmoothLife and Lenia (direct convolution), abelian sandpiles, stochastic lattice models (forest fire, Greenberg-Hastings, majority/voter dynamics, Schelling segregation), reaction-diffusion systems (Gray-Scott, Gierer-Meinhardt, FitzHugh-Nagumo, Oregonator, Brusselator), and aggregation/percolation (DLA, Eden growth, invasion percolation).")?;
         m_fractals__automata::register(py, &sub)?;
         mods["fractals"].add("automata", &sub)?;
         mods.insert("fractals::automata", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.escape_time")?;
+        let sub = PyModule::new(py, "numeria.fractals.escape_time")?;
         sub.setattr("__doc__", "Escape-time fractals: a generic iteration engine with smooth coloring, orbit traps, and distance estimation, the classic quadratic families (Mandelbrot, Julia, tricorn, burning ship), Newton/nova and magnet fractals, Lyapunov fractals, Buddhabrot accumulation, and perturbation iteration for deep zooms.")?;
         m_fractals__escape_time::register(py, &sub)?;
         mods["fractals"].add("escape_time", &sub)?;
         mods.insert("fractals::escape_time", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.ifs")?;
+        let sub = PyModule::new(py, "numeria.fractals.ifs")?;
         sub.setattr("__doc__", "Iterated function systems: the chaos game and deterministic attractor construction (Barnsley, \"Fractals Everywhere\", 1988), Moran similarity dimension, collage error, a library of classic IFS presets in 2-D and 3-D, and Draves-style fractal flames.")?;
         m_fractals__ifs::register(py, &sub)?;
         mods["fractals"].add("ifs", &sub)?;
         mods.insert("fractals::ifs", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.lsystem")?;
+        let sub = PyModule::new(py, "numeria.fractals.lsystem")?;
         sub.setattr("__doc__", "Lindenmayer systems: parallel string rewriting with simple, stochastic, and context-sensitive rules, 2-D and 3-D turtle interpretation of the ABOP alphabet (Prusinkiewicz & Lindenmayer, \"The Algorithmic Beauty of Plants\", 1990), and a library of classic presets. Parametric modules are out of scope: the rule set here covers character rewriting only.")?;
         m_fractals__lsystem::register(py, &sub)?;
         mods["fractals"].add("lsystem", &sub)?;
         mods.insert("fractals::lsystem", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.noise")?;
+        let sub = PyModule::new(py, "numeria.fractals.noise")?;
         sub.setattr("__doc__", "Coherent noise: Perlin gradient noise (Perlin 2002), OpenSimplex2 (ported from K.jpg's reference implementation), value noise, Worley cellular noise, fractal combinators (fBm, turbulence, ridged and hybrid multifractals, domain warping, curl noise), and terrain synthesis (diamond-square, spectral synthesis, thermal and hydraulic erosion, void-and-cluster blue noise).")?;
         m_fractals__noise::register(py, &sub)?;
         mods["fractals"].add("noise", &sub)?;
         mods.insert("fractals::noise", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.geometry.delaunay")?;
+        let sub = PyModule::new(py, "numeria.geometry.delaunay")?;
         sub.setattr("__doc__", "Delaunay triangulation and Voronoi diagrams in the plane.  Triangulation: Bowyer-Watson incremental insertion with a super-triangle. Voronoi cells: half-plane intersection of the perpendicular bisectors (the dual definition), clipped to the bounding box of the sites — robust for boundary cells.")?;
         m_geometry__delaunay::register(py, &sub)?;
         mods["geometry"].add("delaunay", &sub)?;
         mods.insert("geometry::delaunay", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.geometry.geodesy")?;
+        let sub = PyModule::new(py, "numeria.geometry.geodesy")?;
         sub.setattr("__doc__", "Geodesy on a reference ellipsoid.  Vincenty's inverse and direct formulae (Vincenty, \"Direct and inverse solutions of geodesics on the ellipsoid\", Survey Review 1975) plus geodetic ↔ ECEF ↔ ENU coordinate conversions. Angles are radians; distances and heights are meters.")?;
         m_geometry__geodesy::register(py, &sub)?;
         mods["geometry"].add("geodesy", &sub)?;
         mods.insert("geometry::geodesy", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.geometry.hull")?;
+        let sub = PyModule::new(py, "numeria.geometry.hull")?;
         sub.setattr("__doc__", "Convex hulls and polygon predicates.  2-D hull: Andrew's monotone chain (O(n log n)), CCW output. 3-D hull: incremental visible-face (quickhull-style) algorithm returning triangle index triples with outward-facing orientation.")?;
         m_geometry__hull::register(py, &sub)?;
         mods["geometry"].add("hull", &sub)?;
         mods.insert("geometry::hull", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.geometry.mesh")?;
+        let sub = PyModule::new(py, "numeria.geometry.mesh")?;
         sub.setattr("__doc__", "Minimal indexed triangle mesh with ray intersection, backfilling the Part 2 `Mesh` type consumed by acoustics ray tracing and display helpers.")?;
         m_geometry__mesh::register(py, &sub)?;
         mods["geometry"].add("mesh", &sub)?;
         mods.insert("geometry::mesh", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.coloring")?;
+        let sub = PyModule::new(py, "numeria.graph.coloring")?;
         sub.setattr("__doc__", "Colouring, cliques, independent sets, and covers.  Almost everything here is NP-hard in general, so the module is split deliberately between two kinds of routine. The heuristics -- greedy colouring, Welsh-Powell, the two-approximation for vertex cover, the greedy dominating set -- run on any graph and come with a stated guarantee, usually a bound relative to a structural parameter rather than to the optimum. The exact routines carry `_small` or `_exact` in their names and are honest about the size they can take: they enumerate, and the cost is exponential.  The exception is Vizing's edge colouring, which is exact-ish for free: the theorem says `Delta` or `Delta + 1` colours always suffice, and the Misra-Gries construction reaches `Delta + 1` in polynomial time. Which of the two a given graph needs is itself NP-hard to decide.")?;
         m_graph__coloring::register(py, &sub)?;
         mods["graph"].add("coloring", &sub)?;
         mods.insert("graph::coloring", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.core")?;
+        let sub = PyModule::new(py, "numeria.graph.core")?;
         sub.setattr("__doc__", "Graphs: representation, structural queries, generators, and products.  A `Graph` is an adjacency list of weighted arcs over the vertices `0..n`. An undirected graph stores each edge in both directions, so degree, traversal and neighbour iteration need no special case; `Graph::edges` reports each undirected edge once.  Weights are `f64` and default to one. Structural queries here ignore them; the shortest-path and flow modules use them.")?;
         m_graph__core::register(py, &sub)?;
         mods["graph"].add("core", &sub)?;
         mods.insert("graph::core", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.flow")?;
+        let sub = PyModule::new(py, "numeria.graph.flow")?;
         sub.setattr("__doc__", "Network flow: maximum flow, minimum cut, and the problems that reduce to them.  A flow network is a `Graph` whose weights are capacities. An undirected edge is treated as a pair of arcs, each with the full capacity, which is the usual convention: flow may run either way but not both at once.  Capacities must be finite and non-negative. The residual graph is built internally as an arc list with paired indices, so the reverse arc of arc `i` is arc `i ^ 1`.")?;
         m_graph__flow::register(py, &sub)?;
         mods["graph"].add("flow", &sub)?;
         mods.insert("graph::flow", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.layout")?;
+        let sub = PyModule::new(py, "numeria.graph.layout")?;
         sub.setattr("__doc__", "Graph drawing: where to put the vertices.  Two families. The *metric* layouts -- Kamada-Kawai, stress majorization, Fruchterman-Reingold, spectral -- treat drawing as optimisation: pick a target distance for every pair, usually the number of edges between them, and place the points so the drawn distances match. What they optimise is stated exactly, so what they achieve can be measured, which is why `layout_stress` is public.  The *structural* layouts -- circular, shell, Reingold-Tilford, Sugiyama -- draw a shape the graph already has. They are not approximating anything, and their output satisfies exact statements: a tree drawn by Reingold-Tilford has every parent centred over its children and no two subtrees overlapping, and a layered drawing of an acyclic graph has every arc pointing downward.  Planarity sits apart from both: `planarity_test` answers whether a crossing-free drawing exists at all, and `planar_embedding_small` produces the combinatorial structure of one.")?;
         m_graph__layout::register(py, &sub)?;
         mods["graph"].add("layout", &sub)?;
         mods.insert("graph::layout", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.matching")?;
+        let sub = PyModule::new(py, "numeria.graph.matching")?;
         sub.setattr("__doc__", "Matchings: bipartite, general, weighted, and stable.  A matching is a set of edges no two of which share a vertex. It is returned as a partner array: `m[v]` is the vertex matched to `v`, or `None` when `v` is unmatched. That form is symmetric by construction, so `m[m[v]] == v` whenever `m[v]` is `Some`.")?;
         m_graph__matching::register(py, &sub)?;
         mods["graph"].add("matching", &sub)?;
         mods.insert("graph::matching", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.paths")?;
+        let sub = PyModule::new(py, "numeria.graph.paths")?;
         sub.setattr("__doc__", "Shortest paths, spanning trees, and tours.  Distances are `f64` and an unreachable vertex is `f64::INFINITY`, so the results compose without an `Option` at every step. Predecessor arrays use `None` for the source and for unreachable vertices alike; the distance distinguishes the two.")?;
         m_graph__paths::register(py, &sub)?;
         mods["graph"].add("paths", &sub)?;
         mods.insert("graph::paths", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.graph.spectral")?;
+        let sub = PyModule::new(py, "numeria.graph.spectral")?;
         sub.setattr("__doc__", "Spectral graph theory: Laplacians, centralities, resistances, and community detection.  The Laplacian `L = D - A` is the object almost everything here rests on. It is symmetric positive semi-definite for an undirected graph, its smallest eigenvalue is always zero with the all-ones eigenvector, and the multiplicity of that zero is the number of connected components. The second-smallest eigenvalue -- the algebraic connectivity -- measures how hard the graph is to cut, and its eigenvector orders the vertices in a way that separates the graph well.  Weights are treated as edge multiplicities where that makes sense (Laplacian, resistance, random walks) and ignored where it does not (the combinatorial centralities, which count edges).")?;
         m_graph__spectral::register(py, &sub)?;
         mods["graph"].add("spectral", &sub)?;
         mods.insert("graph::spectral", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.learn.cluster")?;
+        let sub = PyModule::new(py, "numeria.learn.cluster")?;
         sub.setattr("__doc__", "Clustering, mixture models and nearest neighbours.  # Clustering has no ground truth, so the tests need invariants  Nothing here has a right answer to compare against. What it has instead is a supply of exact statements, and those are what the tests use:  *Lloyd's algorithm cannot go uphill.* Each half of a k-means iteration -- reassigning points to their nearest centre, then moving each centre to its cluster's mean -- minimises the same objective over one of its two arguments, so the inertia is non-increasing and the algorithm terminates in finitely many steps. There are finitely many assignments and none repeats.  *Expectation-maximisation cannot go downhill.* The same argument in the other direction: each step maximises a lower bound that touches the log-likelihood at the current parameters, so the likelihood climbs monotonically. Both are asserted step by step rather than end to end, because a monotone sequence is a much sharper claim than an improved endpoint.  *A label is not a name.* Cluster indices are arbitrary, so every comparison between two clusterings has to be invariant under relabelling either of them. `adjusted_rand_index` is, exactly, and it is corrected for chance so that two independent random partitions score about zero rather than about a half.  # Where the guarantees stop, and why that is worth saying  Single and complete linkage produce merge heights that never decrease, so their dendrograms can be drawn without crossings. *Centroid linkage does not.* Merging two clusters moves their centre to somewhere between them, which can be closer to a third cluster than either original was, and the dendrogram then contains an inversion. That is a property of the method, not a bug in it, and `Linkage::Centroid` is documented and tested as inverting rather than quietly producing dendrograms nobody should draw.  DBSCAN's core points are determined by the data alone and do not depend on the order it arrives in. Its *border* points can: a point within reach of two clusters joins whichever claimed it first. That asymmetry is in the algorithm as Ester and colleagues defined it, and pretending otherwise would mean inventing a tie-break and calling it DBSCAN.")?;
         m_learn__cluster::register(py, &sub)?;
         mods["learn"].add("cluster", &sub)?;
         mods.insert("learn::cluster", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.learn.gp")?;
+        let sub = PyModule::new(py, "numeria.learn.gp")?;
         sub.setattr("__doc__", "Gaussian process regression.  # A distribution over functions, conditioned  A Gaussian process says that any finite set of function values is jointly normal, with a covariance given by the kernel. Regression is then not fitting but conditioning: the posterior over an unobserved point is the conditional of a multivariate normal, and that has a closed form. There is no optimisation anywhere in `Gp::fit` -- it is one Cholesky factorisation, and the answer is exact given the kernel.  Two consequences are worth stating because they surprise people and because they are exactly testable.  *The posterior variance does not depend on what was observed.* It is `k(x,x) - k_*^T K^-1 k_*`, and `y` does not appear. Uncertainty in a Gaussian process is a statement about where the data *is*, not about what it said. Doubling every observation doubles the mean and leaves every error bar alone.  *With no noise the mean interpolates exactly and the variance vanishes at the data.* The conditional of a normal on one of its own coordinates is a point mass. Adding noise is what turns interpolation into smoothing, and the residual at the data grows from zero in proportion to it.  # Which kernel is a modelling choice, not a detail  The kernel *is* the prior. A squared exponential asserts that the function is infinitely differentiable, which is a very strong claim and the reason its posterior can look implausibly smooth between widely spaced points. The Matern family asserts a finite number of derivatives -- `3/2` gives one, `5/2` gives two -- and is usually the better default for anything physical. A periodic kernel asserts exact periodicity, and `KernelFn::Periodic` satisfies `k(x, x + p) = k(x, x)` to rounding rather than approximately.  Kernels are closed under addition and multiplication, which is what `KernelFn::Sum` and `KernelFn::Product` are for: a sum models additive structure (a trend plus a wiggle), a product models interaction (a periodicity whose amplitude decays).  # The marginal likelihood balances fit against complexity on its own  `log p(y | X)` splits into a data-fit term `-y^T K^-1 y / 2` and a complexity penalty `-log|K| / 2`. Making the kernel more flexible improves the first and costs the second, and the trade is not a hyperparameter anyone chose -- it falls out of the normalisation of a probability distribution. That is why hyperparameters can be tuned by maximising it without a validation set.")?;
         m_learn__gp::register(py, &sub)?;
         mods["learn"].add("gp", &sub)?;
         mods.insert("learn::gp", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.learn.nn")?;
+        let sub = PyModule::new(py, "numeria.learn.nn")?;
         sub.setattr("__doc__", "Feed-forward networks, trained by backpropagation.  # Backpropagation is the chain rule with the products reassociated  The derivative of the loss with respect to an early weight is a product of Jacobians, one per layer. Multiplying them left to right costs a matrix-matrix product per layer; multiplying right to left, starting from the scalar loss, costs a matrix-*vector* product per layer. Backpropagation is the second association, and that is the whole of it. It is not an approximation and it is not specific to neural networks -- it is reverse-mode differentiation, and the cost of one gradient is a small multiple of the cost of one forward pass however many parameters there are.  Which is why `Mlp::numerical_grad_check` is the test that matters. Descent will reduce a loss using wrong gradients, just more slowly and towards somewhere else, so a falling training curve is no evidence at all. A central difference agreeing with the analytic gradient to eight digits is.  # Softmax and cross-entropy belong together  Taken separately, softmax has a Jacobian and cross-entropy has a gradient, and composing them involves a matrix. Taken together the product collapses: the gradient of cross-entropy with respect to the *logits* is exactly `p - y`, the predicted distribution minus the target. That cancellation is worth having for accuracy as well as speed -- computing the two separately loses precision exactly where the network is confident and the softmax output is near zero or one. The two are therefore fused here, and `Loss::CrossEntropy` requires `Act::Softmax` on the output layer.  # Initialisation is not cosmetic  Weights start from a scaled normal draw -- the He scaling `sqrt(2/fan_in)` for rectifiers, the Xavier scaling `sqrt(1/fan_in)` otherwise. Initialising everything to zero makes every hidden unit in a layer compute the same thing and receive the same gradient forever, so the layer has one effective unit no matter how wide it is; initialising too large saturates the sigmoid and tanh, whose derivative is then near zero and whose gradient therefore vanishes.")?;
         m_learn__nn::register(py, &sub)?;
         mods["learn"].add("nn", &sub)?;
         mods.insert("learn::nn", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.learn.tree")?;
+        let sub = PyModule::new(py, "numeria.learn.tree")?;
         sub.setattr("__doc__", "Decision trees, random forests and gradient boosting.  # What a tree does that a linear model cannot  A decision tree asks a sequence of threshold questions about single features. Three consequences follow, and they are what the method is for rather than incidental to it.  *Scale does not matter.* A threshold on a feature is decided by the order of its values, not their magnitudes, so multiplying a column by a thousand changes the thresholds and nothing else -- the tree computes the same function and the predictions are identical. Nothing that measures a distance can say that: k-nearest-neighbours, k-means and a Gaussian process all change their answers entirely under the same rescaling. This is asserted directly.  *Interactions come free.* A split below a split conditions on the first, so a tree represents `x > a AND y > b` without anyone writing the product term.  *Nothing is extrapolated.* Every prediction is a leaf's summary of the training points that reached it, so a tree's output outside the training range is flat. That is honest and it is also useless for trend extrapolation, which is the usual reason to reach for something else.  # The impurity decrease is never negative  A split is chosen to minimise the weighted impurity of its two children, and refusing to split is always available, so the decrease recorded at every node is at least zero. Feature importances are sums of those decreases, weighted by how many samples passed through, so they are nonnegative and they sum to exactly the total impurity the tree removed. Both are checked rather than assumed.  # A single tree overfits by construction  Grown without limit, a tree separates every training point that can be separated, and its training error reaches zero. That number is therefore worthless as evidence of anything, in the same way a 1-nearest-neighbour training error is. What the ensembles do about it differs:  - a **random forest** grows many deep trees on bootstrap samples with a random subset of features considered at each split, and averages them. The trees are individually overfitted and their errors are decorrelated, so averaging cancels the variance without adding bias. - **gradient boosting** grows shallow trees in sequence, each fitted to what the previous ones got wrong. The trees are individually underfitted and the bias comes down step by step, which is why the learning rate matters and why the round count is what has to be stopped early.  The two are opposite strategies and neither is a variant of the other.")?;
         m_learn__tree::register(py, &sub)?;
         mods["learn"].add("tree", &sub)?;
         mods.insert("learn::tree", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.cholesky")?;
+        let sub = PyModule::new(py, "numeria.linalg.cholesky")?;
         sub.setattr("__doc__", "Cholesky factorization of symmetric positive-definite matrices.  Reference: Golub & Van Loan, *Matrix Computations*, §4.2: A = L·Lᵀ with L lower triangular and positive diagonal.")?;
         m_linalg__cholesky::register(py, &sub)?;
         mods["linalg"].add("cholesky", &sub)?;
         mods.insert("linalg::cholesky", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.eigen")?;
+        let sub = PyModule::new(py, "numeria.linalg.eigen")?;
         sub.setattr("__doc__", "Eigenvalue solvers.  Symmetric matrices use the cyclic Jacobi rotation method (Golub & Van Loan §8.5), which is unconditionally convergent. General real matrices are reduced to upper Hessenberg form by Gaussian similarity transformations and their eigenvalues extracted with the Francis-shift QR iteration (Wilkinson, *The Algebraic Eigenvalue Problem*; the classic `hqr` algorithm).")?;
         m_linalg__eigen::register(py, &sub)?;
         mods["linalg"].add("eigen", &sub)?;
         mods.insert("linalg::eigen", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.lu")?;
+        let sub = PyModule::new(py, "numeria.linalg.lu")?;
         sub.setattr("__doc__", "LU decomposition with partial pivoting (Doolittle form).  Reference: Golub & Van Loan, *Matrix Computations*, §3.4.")?;
         m_linalg__lu::register(py, &sub)?;
         mods["linalg"].add("lu", &sub)?;
         mods.insert("linalg::lu", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.matrix")?;
+        let sub = PyModule::new(py, "numeria.linalg.matrix")?;
         sub.setattr("__doc__", "Dense row-major matrix of `f64`.")?;
         m_linalg__matrix::register(py, &sub)?;
         mods["linalg"].add("matrix", &sub)?;
         mods.insert("linalg::matrix", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.qr")?;
+        let sub = PyModule::new(py, "numeria.linalg.qr")?;
         sub.setattr("__doc__", "QR decomposition by Householder reflections and least-squares solve.  Reference: Golub & Van Loan, *Matrix Computations*, §5.2: A = Q·R with Q orthogonal (m×m) and R upper trapezoidal (m×n).")?;
         m_linalg__qr::register(py, &sub)?;
         mods["linalg"].add("qr", &sub)?;
         mods.insert("linalg::qr", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.sparse")?;
+        let sub = PyModule::new(py, "numeria.linalg.sparse")?;
         sub.setattr("__doc__", "Compressed sparse row (CSR) matrices and conjugate-gradient solvers.  Reference: Golub & Van Loan §11.5 (CG), Saad, *Iterative Methods for Sparse Linear Systems* §9.2 (Jacobi-preconditioned CG).")?;
         m_linalg__sparse::register(py, &sub)?;
         mods["linalg"].add("sparse", &sub)?;
         mods.insert("linalg::sparse", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.svd")?;
+        let sub = PyModule::new(py, "numeria.linalg.svd")?;
         sub.setattr("__doc__", "Singular value decomposition by one-sided Jacobi rotations.  Reference: Golub & Van Loan §8.6 / Demmel & Veselić, \"Jacobi's method is more accurate than QR\". Produces the thin decomposition A = U·Σ·Vᵀ with U m×n (orthonormal columns where σ > 0), Σ the non-negative singular values in descending order, and Vᵀ n×n.")?;
         m_linalg__svd::register(py, &sub)?;
         mods["linalg"].add("svd", &sub)?;
         mods.insert("linalg::svd", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.linalg.tridiagonal")?;
+        let sub = PyModule::new(py, "numeria.linalg.tridiagonal")?;
         sub.setattr("__doc__", "Tridiagonal linear solve (Thomas algorithm).  Reference: Press et al., *Numerical Recipes*, §2.4. Solves `sub[i-1]·x[i-1] + diag[i]·x[i] + sup[i]·x[i+1] = rhs[i]` in O(n).")?;
         m_linalg__tridiagonal::register(py, &sub)?;
         mods["linalg"].add("tridiagonal", &sub)?;
         mods.insert("linalg::tridiagonal", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.clifford")?;
+        let sub = PyModule::new(py, "numeria.manifold.clifford")?;
         sub.setattr("__doc__", "Clifford (geometric) algebras Cl(p, q, r): a dense multivector type over any signature, with the geometric/outer/inner products, versors and rotors, and specialized models — Euclidean `cl3`, projective `pga3`, conformal `cga3`, and spacetime `sta` geometric algebra.")?;
         m_manifold__clifford::register(py, &sub)?;
         mods["manifold"].add("clifford", &sub)?;
         mods.insert("manifold::clifford", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.dec")?;
+        let sub = PyModule::new(py, "numeria.manifold.dec")?;
         sub.setattr("__doc__", "Discrete exterior calculus on triangle meshes: exterior derivatives, diagonal Hodge stars, Laplacians, Hodge decomposition, harmonic forms and Betti numbers, heat and Poisson solves, spectral shape analysis, curvature flows, and persistent homology.")?;
         m_manifold__dec::register(py, &sub)?;
         mods["manifold"].add("dec", &sub)?;
         mods.insert("manifold::dec", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.embedding")?;
+        let sub = PyModule::new(py, "numeria.manifold.embedding")?;
         sub.setattr("__doc__", "Manifold learning and dimensionality reduction: spectral embeddings (MDS, Isomap, LLE, Laplacian eigenmaps, diffusion maps), PCA and kernel PCA, stochastic neighbor embeddings, intrinsic-dimension estimators, embedding quality metrics, benchmark datasets, and optimization on matrix manifolds.")?;
         m_manifold__embedding::register(py, &sub)?;
         mods["manifold"].add("embedding", &sub)?;
         mods.insert("manifold::embedding", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.geodesic")?;
+        let sub = PyModule::new(py, "numeria.manifold.geodesic")?;
         sub.setattr("__doc__", "Geodesics, parallel transport, Jacobi fields, and relativistic orbits, all driven by the finite-difference `Metric` machinery.")?;
         m_manifold__geodesic::register(py, &sub)?;
         mods["manifold"].add("geodesic", &sub)?;
         mods.insert("manifold::geodesic", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.hyperbolic")?;
+        let sub = PyModule::new(py, "numeria.manifold.hyperbolic")?;
         sub.setattr("__doc__", "Hyperbolic geometry across the standard models: Poincare disk/ball, upper half-plane/space, Klein disk, and the hyperboloid, with isometries, trigonometry, tilings, and low-distortion embeddings.")?;
         m_manifold__hyperbolic::register(py, &sub)?;
         mods["manifold"].add("hyperbolic", &sub)?;
         mods.insert("manifold::hyperbolic", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.lie")?;
+        let sub = PyModule::new(py, "numeria.manifold.lie")?;
         sub.setattr("__doc__", "Lie groups and algebras: rotation and rigid-motion groups in 2/3/4 dimensions, SU(2) and SL(2) groups, matrix exponentials and logarithms, representation-theory helpers (Wigner d, Clebsch-Gordan), and estimation algorithms on these manifolds (pose graphs, hand-eye, Umeyama).")?;
         m_manifold__lie::register(py, &sub)?;
         mods["manifold"].add("lie", &sub)?;
         mods.insert("manifold::lie", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.metric")?;
+        let sub = PyModule::new(py, "numeria.manifold.metric")?;
         sub.setattr("__doc__", "Metric geometry on n-dimensional manifolds: a metric is a function from coordinates to a matrix g_ij, and everything else — Christoffel symbols, Riemann/Ricci/Weyl curvature, covariant derivatives, geodesic machinery inputs — is derived from it by finite differences.")?;
         m_manifold__metric::register(py, &sub)?;
         mods["manifold"].add("metric", &sub)?;
         mods.insert("manifold::metric", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.polytope4")?;
+        let sub = PyModule::new(py, "numeria.manifold.polytope4")?;
         sub.setattr("__doc__", "Four-dimensional polytopes: the six regular 4-polytopes with their full combinatorics, prisms and products, projections and cross-sections, duals, Coxeter-plane pictures, exceptional root systems and lattices, and curse-of-dimensionality demonstrations.")?;
         m_manifold__polytope4::register(py, &sub)?;
         mods["manifold"].add("polytope4", &sub)?;
         mods.insert("manifold::polytope4", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.spacetime")?;
+        let sub = PyModule::new(py, "numeria.manifold.spacetime")?;
         sub.setattr("__doc__", "Special and general relativity: four-vectors and Lorentz transforms, Rindler and Kruskal coordinates, Schwarzschild and Kerr geodesics, gravitational lensing, black hole thermodynamics, cosmological distances, inspiral waveforms, and Kaluza-Klein reduction.  Kinematics and geometry use geometric units (G = c = 1) with the mostly-minus signature (+, -, -, -) unless stated otherwise; the thermodynamic and cosmological helpers use SI units.")?;
         m_manifold__spacetime::register(py, &sub)?;
         mods["manifold"].add("spacetime", &sub)?;
         mods.insert("manifold::spacetime", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.spherical")?;
+        let sub = PyModule::new(py, "numeria.manifold.spherical")?;
         sub.setattr("__doc__", "Spherical geometry: n-sphere maps, spherical trigonometry, map projections, the Hopf fibration, spherical harmonics and their transforms, sky pixelizations, point distributions, and directional statistics.")?;
         m_manifold__spherical::register(py, &sub)?;
         mods["manifold"].add("spherical", &sub)?;
         mods.insert("manifold::spherical", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.vecn")?;
+        let sub = PyModule::new(py, "numeria.manifold.vecn")?;
         sub.setattr("__doc__", "n-dimensional vectors and arbitrary-rank tensors: the generic machinery behind the metric-driven differential geometry in this module tree.")?;
         m_manifold__vecn::register(py, &sub)?;
         mods["manifold"].add("vecn", &sub)?;
         mods.insert("manifold::vecn", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.materials.common")?;
+        let sub = PyModule::new(py, "numeria.materials.common")?;
         sub.setattr("__doc__", "Engineering solids: metals, alloys, polymers and ceramics.  Density, Young's modulus, yield and tensile strength, Poisson's ratio, thermal conductivity and expansion, and specific heat. Room-temperature values; a specific alloy, temper or grade will differ, sometimes substantially.")?;
         m_materials__common::register(py, &sub)?;
         mods["materials"].add("common", &sub)?;
         mods.insert("materials::common", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.materials.elements")?;
+        let sub = PyModule::new(py, "numeria.materials.elements")?;
         sub.setattr("__doc__", "The 118 chemical elements.  Atomic number, symbol, name, atomic mass, density, melting and boiling points, and thermal and electrical conductivity, with lookup by atomic number, symbol or name.  Densities are for the standard state at room temperature, so gases are quoted at STP. Where an element has no stable isotope the atomic mass is that of the longest-lived one, and properties that have never been measured are absent rather than guessed.")?;
         m_materials__elements::register(py, &sub)?;
         mods["materials"].add("elements", &sub)?;
         mods.insert("materials::elements", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.materials.fluids")?;
+        let sub = PyModule::new(py, "numeria.materials.fluids")?;
         sub.setattr("__doc__", "Common liquids.  Density, dynamic and kinematic viscosity, surface tension, speed of sound, specific heat, and boiling and freezing points, at room temperature and one atmosphere.  Viscosity is the strongly temperature-dependent one: it can change by a factor of several over a few tens of degrees, so a single figure is only a starting point.")?;
         m_materials__fluids::register(py, &sub)?;
         mods["materials"].add("fluids", &sub)?;
         mods.insert("materials::fluids", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.materials.gases")?;
+        let sub = PyModule::new(py, "numeria.materials.gases")?;
         sub.setattr("__doc__", "Common gases.  Molar mass, density at STP, specific heat at constant pressure and the specific heat ratio `γ`, thermal conductivity, viscosity and the speed of sound.  `γ` is the entry most often needed: it fixes the adiabatic relations and the speed of sound `c = √(γRT/M)`, and it follows the molecular structure -- about 5/3 for a monatomic gas, 7/5 for a diatomic one.")?;
         m_materials__gases::register(py, &sub)?;
         mods["materials"].add("gases", &sub)?;
         mods.insert("materials::gases", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.math.constants")?;
+        let sub = PyModule::new(py, "numeria.math.constants")?;
         sub.setattr("__doc__", "Physical and mathematical constants (NIST CODATA 2018 / 2019 SI redefinition).")?;
         m_math__constants::register(py, &sub)?;
         mods["math"].add("constants", &sub)?;
         mods.insert("math::constants", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh.analyze")?;
+        let sub = PyModule::new(py, "numeria.mesh.analyze")?;
         sub.setattr("__doc__", "Mesh analysis: topology (manifoldness, orientation, boundary, components, genus), quality statistics, QEM decimation, discrete curvatures, and geodesic distances.")?;
         m_mesh__analyze::register(py, &sub)?;
         mods["mesh"].add("analyze", &sub)?;
         mods.insert("mesh::analyze", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh.generate")?;
+        let sub = PyModule::new(py, "numeria.mesh.generate")?;
         sub.setattr("__doc__", "Procedural mesh generators. Closed shapes are watertight (shared seam vertices, no duplicates) with outward-facing counterclockwise winding.")?;
         m_mesh__generate::register(py, &sub)?;
         mods["mesh"].add("generate", &sub)?;
         mods.insert("mesh::generate", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh.isosurface")?;
+        let sub = PyModule::new(py, "numeria.mesh.isosurface")?;
         sub.setattr("__doc__", "Isosurface and isocontour extraction from sampled scalar fields: marching squares/cubes/tetrahedra, surface nets, dual contouring, and metaballs.  Convention: a sample is \"inside\" when its value is below the iso level (matching signed distance fields, negative inside). Output triangles are wound counterclockwise seen from the outside (normals point toward values above the iso level); 2-D contours keep the inside region on their left, so they run counterclockwise around regions below the iso level.")?;
         m_mesh__isosurface::register(py, &sub)?;
         mods["mesh"].add("isosurface", &sub)?;
         mods.insert("mesh::isosurface", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh.parameterize")?;
+        let sub = PyModule::new(py, "numeria.mesh.parameterize")?;
         sub.setattr("__doc__", "Mesh parameterization: closed-form spherical/planar/cylindrical projections, harmonic (cotangent-Laplace) disk parameterization with fixed boundaries, least-squares conformal maps (Lévy, Petitjean, Ray & Maillot 2002), and per-triangle conformal and area distortion measures.")?;
         m_mesh__parameterize::register(py, &sub)?;
         mods["mesh"].add("parameterize", &sub)?;
         mods.insert("mesh::parameterize", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh.subdivide")?;
+        let sub = PyModule::new(py, "numeria.mesh.subdivide")?;
         sub.setattr("__doc__", "Subdivision surfaces (Loop, Catmull-Clark, sqrt(3), midpoint) and Laplacian-family smoothing.")?;
         m_mesh__subdivide::register(py, &sub)?;
         mods["mesh"].add("subdivide", &sub)?;
         mods.insert("mesh::subdivide", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.mesh.surfaces")?;
+        let sub = PyModule::new(py, "numeria.mesh.surfaces")?;
         sub.setattr("__doc__", "Parametric surfaces: Bézier/B-spline/NURBS patches, classic surface constructions, differential geometry via fundamental forms, and a catalogue of named surfaces.")?;
         m_mesh__surfaces::register(py, &sub)?;
         mods["mesh"].add("surfaces", &sub)?;
         mods.insert("mesh::surfaces", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.monte_carlo.quasi")?;
+        let sub = PyModule::new(py, "numeria.monte_carlo.quasi")?;
         sub.setattr("__doc__", "Quasi-random (low-discrepancy) sequences: Sobol and Halton.  Sobol points use the Gray-code construction of Bratley & Fox with the Joe-Kuo (new-joe-kuo-6) primitive polynomials and initial direction numbers, embedded here for dimensions up to 21. Halton points use the radical inverse in the first `dim` primes.")?;
         m_monte_carlo__quasi::register(py, &sub)?;
         mods["monte_carlo"].add("quasi", &sub)?;
         mods.insert("monte_carlo::quasi", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.bvp")?;
+        let sub = PyModule::new(py, "numeria.numerical.bvp")?;
         sub.setattr("__doc__", "Two-point boundary value problems.  `shooting` reduces y'' = f(t, y, y') with y(t0) = y0, y(t1) = y1 to root finding on the initial slope (integrated with Dormand-Prince, slope found with Brent's method). `finite_difference_linear_bvp` discretizes the linear problem y'' + p·y' + q·y = r on a uniform grid and solves the tridiagonal system with the Thomas algorithm (Burden & Faires, *Numerical Analysis*, §11.3).")?;
         m_numerical__bvp::register(py, &sub)?;
         mods["numerical"].add("bvp", &sub)?;
         mods.insert("numerical::bvp", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.integrate")?;
+        let sub = PyModule::new(py, "numeria.numerical.integrate")?;
         sub.setattr("__doc__", "Numerical integration (quadrature) rules.")?;
         m_numerical__integrate::register(py, &sub)?;
         mods["numerical"].add("integrate", &sub)?;
         mods.insert("numerical::integrate", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.interpolate")?;
+        let sub = PyModule::new(py, "numeria.numerical.interpolate")?;
         sub.setattr("__doc__", "Interpolation routines.")?;
         m_numerical__interpolate::register(py, &sub)?;
         mods["numerical"].add("interpolate", &sub)?;
         mods.insert("numerical::interpolate", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.ode")?;
+        let sub = PyModule::new(py, "numeria.numerical.ode")?;
         sub.setattr("__doc__", "Ordinary differential equation solvers.")?;
         m_numerical__ode::register(py, &sub)?;
         mods["numerical"].add("ode", &sub)?;
         mods.insert("numerical::ode", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.roots")?;
+        let sub = PyModule::new(py, "numeria.numerical.roots")?;
         sub.setattr("__doc__", "Scalar and polynomial root finding.")?;
         m_numerical__roots::register(py, &sub)?;
         mods["numerical"].add("roots", &sub)?;
         mods.insert("numerical::roots", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.convex")?;
+        let sub = PyModule::new(py, "numeria.optimization.convex")?;
         sub.setattr("__doc__", "Convex optimisation: gradient methods, quasi-Newton methods, proximal splitting, and constrained solvers.  Convexity buys one thing, and it is decisive: every local minimum is global. That removes the question the methods in `optimization::metaheuristics` spend all their effort on -- where else to look -- and replaces it with a purely local question, how fast to get downhill. Everything here is an answer to that.  The answers differ in what they know about curvature. Gradient descent knows nothing and pays for it: on a quadratic its error contracts by `(k-1)/(k+1)` per step, so a condition number of a thousand costs a thousand-fold more iterations than a condition number of one. Conjugate gradients build a set of mutually conjugate directions and finish an `n`-dimensional quadratic in at most `n` steps exactly. Newton's method uses the Hessian outright and lands on a quadratic's minimum in a single step. Quasi-Newton methods sit in between, accumulating an approximation to the Hessian from the gradients they have already paid for.  Those are not asymptotic claims but exact ones, and the tests check them as such: Newton in one step, conjugate gradients in `n`, and every method against the closed-form minimiser `-Q^-1 c` of the quadratic it was given.  The proximal half of the module handles objectives that are convex but not differentiable -- an L1 penalty, a constraint set -- by splitting them into a smooth part, handled by a gradient step, and a simple part, handled by its proximal operator. The reason that works is that the awkward part is usually simple in isolation: the proximal operator of an L1 penalty is soft thresholding, of a box is clamping, and of a simplex is a sorted shift. Each is a projection or near-projection with a closed form, so the non-smoothness costs almost nothing.")?;
         m_optimization__convex::register(py, &sub)?;
         mods["optimization"].add("convex", &sub)?;
         mods.insert("optimization::convex", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.game_theory")?;
+        let sub = PyModule::new(py, "numeria.optimization.game_theory")?;
         sub.setattr("__doc__", "Game theory: equilibria, dynamics, cooperative solution concepts, auctions, and two-player search.  The organising fact of the non-cooperative half is that equilibrium is a *fixed-point* condition and not an optimisation: no player is optimising against a fixed environment, because the environment is the other players doing the same thing. That is why the zero-sum case is easy and the general case is not. In a zero-sum game the two players' problems are linear programs dual to each other, so von Neumann's minimax theorem is a corollary of LP duality and the equilibrium is computable in polynomial time. In a bimatrix game there is no such dual, the equilibrium set can be disconnected, and the best general algorithms are pivoting schemes with exponential worst cases.  The cooperative half asks a different question -- not what players will do but how a surplus they have already agreed to create should be split -- and its solution concepts are axiomatic. The Shapley value is the unique allocation satisfying efficiency, symmetry, the null-player property and additivity; the core is the set of allocations no coalition can improve on; and the two can be disjoint, since a game can have an empty core while the Shapley value always exists.")?;
         m_optimization__game_theory::register(py, &sub)?;
         mods["optimization"].add("game_theory", &sub)?;
         mods.insert("optimization::game_theory", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.integer")?;
+        let sub = PyModule::new(py, "numeria.optimization.integer")?;
         sub.setattr("__doc__", "Integer programming, dynamic programming, and combinatorial search.  Adding \"and the answer must be a whole number\" to a linear program changes its character completely. The feasible region stops being a convex polyhedron and becomes a scatter of lattice points inside one, so the guarantee that made linear programming easy -- that an optimum sits at a vertex, reachable by local moves -- is gone. What remains is the relaxation: drop the integrality, solve the linear program, and use its value as a bound on what any integer solution could achieve. Branch and bound is that observation applied recursively, and the bound is the only reason it terminates before enumerating everything.  Most problems here have that flavour. A few do not, and those are the dynamic programming classics: when a problem decomposes into overlapping subproblems whose optimal solutions compose, the exponential search collapses to a table and the answer is exact in polynomial time. Knapsack, edit distance and the rest are here because the boundary between the two situations is worth being able to see -- the 0/1 knapsack is NP-hard and yet has a pseudo-polynomial table, which is not a contradiction but a statement about what \"polynomial\" is measured against.  Where an exact method is impractical the module gives a greedy one with its proven ratio: first-fit-decreasing bin packing within `11/9` of optimal, greedy set cover within `H_n`, longest-processing-time scheduling within `4/3 - 1/(3m)`. Those ratios are worst-case guarantees rather than typical behaviour, and the tests check the guarantee holds against an exact answer on small instances rather than checking the greedy answer is merely plausible.")?;
         m_optimization__integer::register(py, &sub)?;
         mods["optimization"].add("integer", &sub)?;
         mods.insert("optimization::integer", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.least_squares")?;
+        let sub = PyModule::new(py, "numeria.optimization.least_squares")?;
         sub.setattr("__doc__", "Nonlinear least squares: Levenberg-Marquardt.  Reference: Marquardt (1963); Nocedal & Wright, *Numerical Optimization*, §10.3. Minimizes ½‖r(p)‖² by solving (JᵀJ + λ·diag(JᵀJ))·δ = −Jᵀr and adapting λ on accept/reject.")?;
         m_optimization__least_squares::register(py, &sub)?;
         mods["optimization"].add("least_squares", &sub)?;
         mods.insert("optimization::least_squares", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.lp")?;
+        let sub = PyModule::new(py, "numeria.optimization.lp")?;
         sub.setattr("__doc__", "Linear programming: the simplex method, interior point methods, duality, and the classical models that reduce to a linear program.  This module sits alongside the continuous optimisers in the parent module rather than replacing them. Those search a smooth objective by following gradients or shrinking a simplex, and stop at a local optimum. A linear program has no local optima to stop at: the objective is linear and the feasible region is a convex polyhedron, so any local optimum is global and at least one optimum sits at a vertex. That is the whole reason the subject exists as a separate discipline, and why an exact answer is available where a nonlinear problem admits only an approximation.  Two solvers are provided because they fail in different ways. The simplex method walks vertex to vertex along the boundary, and terminates in an exactly optimal basis, but its worst case is exponential and it can cycle in the presence of degeneracy -- handled here by Bland's rule, which guarantees termination at the cost of speed. The interior point method approaches the optimum through the middle of the region, takes a number of iterations that barely grows with problem size, and never lands exactly on a vertex. Running both on the same problem and comparing is the cheapest real check available on either.  Duality is the organising idea. Every linear program has a dual whose optimal value equals its own, and whose optimal solution is the vector of rates at which the primal objective responds to relaxing each constraint. Those rates -- shadow prices -- are usually worth more than the solution itself, since they say which constraint to attack. The convention used here is stated once and adhered to throughout:  > `duals[i]` is the derivative of the reported objective with respect to > `b[i]`.  That definition is what makes the sensitivity ranges mean something, and it is what the tests check: perturbing a right-hand side within its range changes the objective by exactly `duals[i]` times the perturbation.")?;
         m_optimization__lp::register(py, &sub)?;
         mods["optimization"].add("lp", &sub)?;
         mods.insert("optimization::lp", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.metaheuristics")?;
+        let sub = PyModule::new(py, "numeria.optimization.metaheuristics")?;
         sub.setattr("__doc__", "Derivative-free and population-based optimisation, and the benchmark landscapes used to tell one method from another.  Every method here treats the objective as a black box: it may be discontinuous, noisy, or defined only by a simulation, and no gradient is available even in principle. That rules out every gradient-based method and leaves search. What distinguishes the methods here is what they do with the evaluations they have spent.  Pattern search and Nelder-Mead keep a small geometric structure and move it downhill; they are cheap and get stuck in the first basin they find. Differential evolution and particle swarms keep a population, and their mutation steps are built from *differences between members*, so the search scale adapts to the spread of the population without anyone tuning it. CMA-ES goes furthest: it estimates the covariance of the successful steps and samples from that, which amounts to learning the local metric of the landscape, and is why it handles badly scaled and rotated problems that defeat the others.  None of them is guaranteed to find a global optimum in finite time, and any claim otherwise is a claim about the objective rather than the method. What the tests here check is therefore not \"finds the optimum\" in general, but the properties that must hold regardless: bounds are respected, the best-so-far never worsens, a Pareto front contains nothing dominated, and on landscapes whose optima are known analytically the methods get there.  The benchmark table exists so those claims can be made against something. Its stated optima are checked by dense sampling in the tests rather than taken on trust -- a benchmark whose recorded optimum is wrong silently invalidates every comparison made with it.")?;
         m_optimization__metaheuristics::register(py, &sub)?;
         mods["optimization"].add("metaheuristics", &sub)?;
         mods.insert("optimization::metaheuristics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.optimization.network")?;
+        let sub = PyModule::new(py, "numeria.optimization.network")?;
         sub.setattr("__doc__", "Network models and scheduling: project planning, flows on networks, and the sequencing rules that provably optimise a stated objective.  Two threads run through this module. The first is that several graph problems are linear programs in disguise, and their constraint matrices are totally unimodular, so the linear relaxation is automatically integral. Shortest path and maximum flow both have this property, which is why they can be solved by combinatorial algorithms *and* by a general linear programming solver with the same answer. Having both is worth the duplication: the graph module's algorithms are far faster, and the linear programs are an independent check on them.  The second is that scheduling is a subject of exact greedy rules rather than heuristics. Sorting by processing time minimises mean flow time; sorting by due date minimises maximum lateness; Moore and Hodgson's rule minimises the *number* of late jobs; Johnson's rule minimises makespan on two machines. Each is provably optimal for its own objective and provably not for the others -- shortest-processing-time can make a job catastrophically late while minimising the average -- so the objective must be chosen before the rule. The tests check each rule against exhaustive enumeration of every permutation, on the objective it claims and on nothing else.")?;
         m_optimization__network::register(py, &sub)?;
         mods["optimization"].add("network", &sub)?;
         mods.insert("optimization::network", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.aperiodic")?;
+        let sub = PyModule::new(py, "numeria.patterns.aperiodic")?;
         sub.setattr("__doc__", "Aperiodic tilings: Penrose P2 (kite/dart) and P3 (rhombs) by Robinson-triangle deflation, de Bruijn multigrid projection, Ammann-Beenker, the hat and spectre monotiles (ported from the reference implementations accompanying Smith, Myers, Kaplan & Goodman-Strauss 2023), the pinwheel tiling, and 1-D quasiperiodic sequences.")?;
         m_patterns__aperiodic::register(py, &sub)?;
         mods["patterns"].add("aperiodic", &sub)?;
         mods.insert("patterns::aperiodic", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.knots")?;
+        let sub = PyModule::new(py, "numeria.patterns.knots")?;
         sub.setattr("__doc__", "Knots and space curves: parametric knot families, Frenet and rotation-minimizing frames, curvature/torsion estimates, and the classical knot invariants computable from a curve in space — writhe and linking number by the Gauss integral, crossing numbers of projections, and the Alexander polynomial from a knot diagram.")?;
         m_patterns__knots::register(py, &sub)?;
         mods["patterns"].add("knots", &sub)?;
         mods.insert("patterns::knots", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.packing")?;
+        let sub = PyModule::new(py, "numeria.patterns.packing")?;
         sub.setattr("__doc__", "Circle and sphere packings: Descartes/Apollonian circles, lattice packings, random sequential adsorption, Doyle spirals, Ford circles, Steiner chains, and the problem of Apollonius.  Lattice generators include every circle/sphere whose *center* lies in the half-open region, so exact-multiple regions give the exact lattice density.")?;
         m_patterns__packing::register(py, &sub)?;
         mods["patterns"].add("packing", &sub)?;
         mods.insert("patterns::packing", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.phyllotaxis")?;
+        let sub = PyModule::new(py, "numeria.patterns.phyllotaxis")?;
         sub.setattr("__doc__", "Phyllotactic patterns and spirals: Vogel sunflowers, Fibonacci point sets, the classical spiral family, and parastichy analysis.")?;
         m_patterns__phyllotaxis::register(py, &sub)?;
         mods["patterns"].add("phyllotaxis", &sub)?;
         mods.insert("patterns::phyllotaxis", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.polygon_ops")?;
+        let sub = PyModule::new(py, "numeria.patterns.polygon_ops")?;
         sub.setattr("__doc__", "2-D polygon algorithms: triangulation, simplification, offsetting, Minkowski sums, boolean operations, clipping, decomposition, hulls, skeletons, enclosing/inscribed shapes, and fill patterns.")?;
         m_patterns__polygon_ops::register(py, &sub)?;
         mods["patterns"].add("polygon_ops", &sub)?;
         mods.insert("patterns::polygon_ops", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.polyhedra")?;
+        let sub = PyModule::new(py, "numeria.patterns.polyhedra")?;
         sub.setattr("__doc__", "Polyhedra: Platonic/Archimedean/Catalan/Johnson solids, Goldberg and geodesic polyhedra, and Conway polyhedron operators.")?;
         m_patterns__polyhedra::register(py, &sub)?;
         mods["patterns"].add("polyhedra", &sub)?;
         mods.insert("patterns::polyhedra", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.sampling")?;
+        let sub = PyModule::new(py, "numeria.patterns.sampling")?;
         sub.setattr("__doc__", "Random and low-discrepancy sampling: Poisson disk (Bridson), blue-noise ranking, stratified jitter, uniform samplers over shapes, random polygons (Valtr), random rotations (Shoemake), and Lloyd relaxation.")?;
         m_patterns__sampling::register(py, &sub)?;
         mods["patterns"].add("sampling", &sub)?;
         mods.insert("patterns::sampling", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.space_filling")?;
+        let sub = PyModule::new(py, "numeria.patterns.space_filling")?;
         sub.setattr("__doc__", "Space-filling curves and locality-preserving orders: Hilbert (2-D and 3-D), Peano, Morton/Z-order, Gray codes, and L-system curves (Sierpiński arrowhead, Moore, Gosper).")?;
         m_patterns__space_filling::register(py, &sub)?;
         mods["patterns"].add("space_filling", &sub)?;
         mods.insert("patterns::space_filling", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.symmetry")?;
+        let sub = PyModule::new(py, "numeria.patterns.symmetry")?;
         sub.setattr("__doc__", "Plane symmetry groups (the 17 wallpaper groups and 7 frieze groups), lattices, 3-D point groups, symmetry detection, and Hankin-style Islamic star patterns.  Wallpaper operations are expressed in unit-cell (lattice) coordinates: an element maps the unit cell to itself modulo unit translations, so the returned sets are the coset representatives of the point group (plus the centering translation for the centered groups cm and cmm).")?;
         m_patterns__symmetry::register(py, &sub)?;
         mods["patterns"].add("symmetry", &sub)?;
         mods.insert("patterns::symmetry", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.patterns.tilings")?;
+        let sub = PyModule::new(py, "numeria.patterns.tilings")?;
         sub.setattr("__doc__", "Plane tilings: regular and Archimedean (uniform) tilings, their Laves duals, hex-grid coordinate algebra, and a few classic non-edge-to-edge patterns (brick, herringbone).")?;
         m_patterns__tilings::register(py, &sub)?;
         mods["patterns"].add("tilings", &sub)?;
         mods.insert("patterns::tilings", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum.algorithms")?;
+        let sub = PyModule::new(py, "numeria.quantum.algorithms")?;
         sub.setattr("__doc__", "Quantum algorithms on the state-vector simulator.  What the speedups have in common is not \"trying every answer at once\". A superposition over `2^n` inputs is easy; the difficulty is that measurement returns one of them at random, so the exponential is useless by itself. Every algorithm here earns its advantage by arranging *interference* -- amplitudes for wrong answers cancelling while the right one adds -- and the structure being exploited differs each time: a global property of a function for Deutsch-Jozsa, a hidden period for Shor, and nothing at all for Grover, which is why Grover's speedup is only quadratic and provably cannot be more.  Oracles are given as ordinary Rust closures and applied directly to the amplitudes. That is exactly what a black box means: the algorithm is charged for each query and never sees inside.")?;
         m_quantum__algorithms::register(py, &sub)?;
         mods["quantum"].add("algorithms", &sub)?;
         mods.insert("quantum::algorithms", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum.circuit")?;
+        let sub = PyModule::new(py, "numeria.quantum.circuit")?;
         sub.setattr("__doc__", "A state-vector quantum circuit simulator, with density matrices and noise channels.  The representation is the whole story. An `n`-qubit pure state is a vector of `2^n` complex amplitudes, so the memory doubles with each qubit: thirty qubits is sixteen gigabytes and there is no cleverness that avoids it for a general state. That exponential is not a limitation of this implementation but the reason quantum computers are interesting, and it is why everything here is capped at a couple of dozen qubits.  Applying a one-qubit gate does *not* cost `2^n x 2^n` work. The gate acts on one tensor factor, so the amplitudes split into `2^(n-1)` independent pairs and each pair gets a two-by-two multiply: `O(2^n)` in total. Building the full unitary and multiplying would be `O(4^n)` and is offered only for small circuits, where seeing the matrix is the point.  Qubit `q` is bit `q` of the amplitude index, so `|q_2 q_1 q_0>` has index `4 q_2 + 2 q_1 + q_0`. The opposite convention is equally common and the two disagree on every multi-qubit gate, so it is stated here rather than left to be inferred.")?;
         m_quantum__circuit::register(py, &sub)?;
         mods["quantum"].add("circuit", &sub)?;
         mods.insert("quantum::circuit", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum.schrodinger")?;
+        let sub = PyModule::new(py, "numeria.quantum.schrodinger")?;
         sub.setattr("__doc__", "Solvers for the Schrodinger equation, stationary and time dependent.  The stationary problem is an eigenvalue problem and the time-dependent one is an initial value problem, and the two want different numerics. For the first, discretising the Hamiltonian gives a symmetric matrix whose eigenvalues converge to the true spectrum from below at second order in the grid; for the second, what matters is not local accuracy but *unitarity*, because an integrator that loses norm loses probability and one that gains it manufactures particles from nothing. Both methods offered here are unitary by construction rather than by accident: the split-operator method applies exponentials of Hermitian operators, and Crank-Nicolson applies a Cayley transform, which is unitary for any step size at all.  Everything takes `hbar` and the mass explicitly, so `hbar = m = 1` is available for the cases with exact answers.")?;
         m_quantum__schrodinger::register(py, &sub)?;
         mods["quantum"].add("schrodinger", &sub)?;
         mods.insert("quantum::schrodinger", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum.solid_state")?;
+        let sub = PyModule::new(py, "numeria.quantum.solid_state")?;
         sub.setattr("__doc__", "Electrons and phonons in crystals: bands, densities of states, transport, and the standard model systems.  Bloch's theorem is the organising fact. A potential with a lattice translation symmetry has eigenstates labelled by a crystal momentum, so the infinite problem reduces to one over a single Brillouin zone -- and the spectrum breaks into bands separated by gaps. That the gaps exist at all is the reason there are insulators; that they are absent at the Fermi level is the reason there are metals; and everything about semiconductors is the behaviour of a gap small enough for temperature to matter.  Functions take `hbar` and the masses explicitly where a natural-unit calculation is the point, and use SI constants where a number in electronvolts or siemens is wanted.")?;
         m_quantum__solid_state::register(py, &sub)?;
         mods["quantum"].add("solid_state", &sub)?;
         mods.insert("quantum::solid_state", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum.spin")?;
+        let sub = PyModule::new(py, "numeria.quantum.spin")?;
         sub.setattr("__doc__", "Spin operators, quantum magnets, and magnetic resonance.  Two quite different things live here. The first is many-body: a chain of coupled spins has a Hilbert space of dimension `2^n`, so exact diagonalisation stops at a dozen or so sites and everything past that is a matter of finding the small part of the space that matters. Lanczos does that for the ground state, and the reason it works is that the extreme eigenvalues of a large sparse matrix converge in a Krylov space of dimension far smaller than the matrix.  The second is single-spin dynamics -- Larmor precession, Rabi flopping, echoes -- which is a two-level problem with closed-form answers and is interesting for the opposite reason: the classical Bloch equations describe it exactly, so it is where quantum mechanics is least mysterious.  Spin-1/2 operators are `sigma / 2` throughout, and `hbar = 1` unless a function takes it explicitly.")?;
         m_quantum__spin::register(py, &sub)?;
         mods["quantum"].add("spin", &sub)?;
         mods.insert("quantum::spin", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.quantum.wavefunction")?;
+        let sub = PyModule::new(py, "numeria.quantum.wavefunction")?;
         sub.setattr("__doc__", "One-dimensional wavefunctions, the standard eigenstates, and phase-space distributions.  Everything here works in whatever unit system the caller supplies through `hbar` and the masses, so the natural choice for testing -- `hbar = m = 1` -- is available alongside SI. That matters more than it sounds: the quantities that can be checked exactly, like the harmonic oscillator's `(n + 1/2) hbar omega` spectrum or a Gaussian's saturation of the uncertainty bound, are clearest when the constants are one, and a module that hard-codes SI cannot express them.  The one thing worth stating up front is the discretisation. A wavefunction is represented by its samples on a uniform grid, and every integral below is the corresponding Riemann sum. That is exact for none of them and spectrally accurate for a smooth function that has decayed to nothing at both ends -- which is the condition the callers here are responsible for arranging, and the one under which the tests hold to the tolerances they state.")?;
         m_quantum__wavefunction::register(py, &sub)?;
         mods["quantum"].add("wavefunction", &sub)?;
         mods.insert("quantum::wavefunction", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.resonance.cavity")?;
+        let sub = PyModule::new(py, "numeria.resonance.cavity")?;
         sub.setattr("__doc__", "Resonant cavities and structures: RLC circuits, Helmholtz resonators, strings, air columns, membranes, plates, beams, rooms, optical etalons, and microwave cavities.")?;
         m_resonance__cavity::register(py, &sub)?;
         mods["resonance"].add("cavity", &sub)?;
         mods.insert("resonance::cavity", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.resonance.coupled")?;
+        let sub = PyModule::new(py, "numeria.resonance.coupled")?;
         sub.setattr("__doc__", "Coupled linear oscillators: normal modes, modal superposition, receptance, classic two-body systems, Kuramoto synchronization, and tuned-mass-damper design.")?;
         m_resonance__coupled::register(py, &sub)?;
         mods["resonance"].add("coupled", &sub)?;
         mods.insert("resonance::coupled", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.resonance.nonlinear")?;
+        let sub = PyModule::new(py, "numeria.resonance.nonlinear")?;
         sub.setattr("__doc__", "Nonlinear resonance: the Duffing and van der Pol oscillators, parametric (Mathieu) stability, Fano interference, synchronization pulling/locking, and generic harmonic-balance machinery.  The Duffing convention throughout is x″ + δ·x′ + α·x + β·x³ = γ·cos(ωt).")?;
         m_resonance__nonlinear::register(py, &sub)?;
         mods["resonance"].add("nonlinear", &sub)?;
         mods.insert("resonance::nonlinear", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.resonance.oscillator")?;
+        let sub = PyModule::new(py, "numeria.resonance.oscillator")?;
         sub.setattr("__doc__", "The damped harmonic oscillator m·x″ + c·x′ + k·x = F(t): closed-form responses in every damping regime, frequency-domain descriptions, and resonance measurement (Lorentzian fits, Q extraction).")?;
         m_resonance__oscillator::register(py, &sub)?;
         mods["resonance"].add("oscillator", &sub)?;
         mods.insert("resonance::oscillator", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.resonance.structural")?;
+        let sub = PyModule::new(py, "numeria.resonance.structural")?;
         sub.setattr("__doc__", "Structural dynamics: finite-element bars and beams, modal analysis with general (consistent) mass matrices, Rayleigh damping, implicit time integration (Newmark-β, HHT-α), model reduction, response spectra, and experimental modal analysis tools.")?;
         m_resonance__structural::register(py, &sub)?;
         mods["resonance"].add("structural", &sub)?;
         mods.insert("resonance::structural", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim.cloth_sim")?;
+        let sub = PyModule::new(py, "numeria.sim.cloth_sim")?;
         sub.setattr("__doc__", "Verlet cloth and rope with spring constraints.  Particles are advanced by position Verlet, which stores the previous position rather than a velocity: it is stable under stiff constraints and conserves energy far better than explicit Euler at the same step size, because velocity is inferred from the positions rather than integrated separately.  Structural, shear and bend springs are then satisfied by iterated position projection -- more iterations gives a stiffer cloth -- with pinning, sphere and floor collision, and wind and gravity forces.")?;
         m_sim__cloth_sim::register(py, &sub)?;
         mods["sim"].add("cloth_sim", &sub)?;
         mods.insert("sim::cloth_sim", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim.em_sim")?;
+        let sub = PyModule::new(py, "numeria.sim.em_sim")?;
         sub.setattr("__doc__", "FDTD electromagnetic simulation in one and two dimensions.  Explicit leapfrog on a Yee-style grid: the electric and magnetic fields are staggered by half a cell and half a time step, so each is updated from the curl of the other and the scheme is second-order accurate with no matrix to solve.  Supports dielectric media, hard and soft sources, PEC (perfectly conducting) walls and Mur first-order absorbing boundaries. Stability requires the Courant condition, and the limit is set by the fastest medium in the grid -- that is, the smallest relative permittivity.  For a Yee grid with Berenger split-field PML, photonic band gaps and waveguide cutoff, see `fem::fdtd`.")?;
         m_sim__em_sim::register(py, &sub)?;
         mods["sim"].add("em_sim", &sub)?;
         mods.insert("sim::em_sim", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim.fluid_sim")?;
+        let sub = PyModule::new(py, "numeria.sim.fluid_sim")?;
         sub.setattr("__doc__", "Compact fluid solvers: column, shallow water, and 2-D Euler.  A draining column for the simplest case, a 1-D shallow-water solver, and a 2-D incompressible Euler solver that advects velocity and then restores `∇·u = 0` by pressure projection -- subtracting the gradient of a pressure field found by solving a Poisson equation, which is what makes the result divergence-free.  Written to be read and to run interactively. For well-balanced schemes, Riemann solvers and the rest of the research-grade machinery see `cfd`.")?;
         m_sim__fluid_sim::register(py, &sub)?;
         mods["sim"].add("fluid_sim", &sub)?;
         mods.insert("sim::fluid_sim", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim.heat_sim")?;
+        let sub = PyModule::new(py, "numeria.sim.heat_sim")?;
         sub.setattr("__doc__", "Heat conduction and convection-diffusion on a grid.  Explicit finite differences in two and three dimensions, with Dirichlet and Neumann boundaries, sources, and an advection term for convection-diffusion.  Explicit stepping is only conditionally stable: the step must satisfy `α Δt / Δx² ≤ 1/4` in 2-D and `1/6` in 3-D, so halving the grid spacing quarters the allowable time step. The stability limit is provided as a function rather than left to the caller to remember.")?;
         m_sim__heat_sim::register(py, &sub)?;
         mods["sim"].add("heat_sim", &sub)?;
         mods.insert("sim::heat_sim", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim.rigid_body")?;
+        let sub = PyModule::new(py, "numeria.sim.rigid_body")?;
         sub.setattr("__doc__", "Rigid body dynamics in three dimensions.  State is position, linear velocity, orientation as a unit quaternion, and angular velocity. Rotation uses a quaternion rather than Euler angles because it composes without gimbal lock and stays well conditioned under renormalization.  Angular motion follows Euler's equations, which carry the `ω × Iω` term -- the reason a freely spinning body with three distinct moments of inertia tumbles rather than spinning steadily about an intermediate axis.  Includes inertia tensors for the standard bodies, force and torque accumulation, sphere-sphere collision detection, and impulse-based collision response with restitution.")?;
         m_sim__rigid_body::register(py, &sub)?;
         mods["sim"].add("rigid_body", &sub)?;
         mods.insert("sim::rigid_body", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.sim.wave_sim")?;
+        let sub = PyModule::new(py, "numeria.sim.wave_sim")?;
         sub.setattr("__doc__", "The wave equation in one and two dimensions.  Explicit second-order finite differences on `∂²u/∂t² = c²∇²u`, with fixed, free, and Mur first-order absorbing boundaries. The absorbing condition passes a normally-incident wave out of the domain exactly and degrades with the angle of incidence.  Stability requires the Courant number `r = cΔt/Δx` to satisfy `r ≤ 1` in 1-D and `r ≤ 1/√2` in 2-D. At exactly `r = 1` in one dimension the scheme is an exact shift and has no dispersion error at all.")?;
         m_sim__wave_sim::register(py, &sub)?;
         mods["sim"].add("wave_sim", &sub)?;
         mods.insert("sim::wave_sim", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.bvh")?;
+        let sub = PyModule::new(py, "numeria.spatial.bvh")?;
         sub.setattr("__doc__", "Bounding volume hierarchy over axis-aligned boxes.  Built top-down with binned surface-area-heuristic splits (12 bins; Wald 2007), falling back to a median split when SAH finds no gain. Leaves store index ranges into a permutation of the input.")?;
         m_spatial__bvh::register(py, &sub)?;
         mods["spatial"].add("bvh", &sub)?;
         mods.insert("spatial::bvh", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.contain")?;
+        let sub = PyModule::new(py, "numeria.spatial.contain")?;
         sub.setattr("__doc__", "Orientation predicates and containment tests.  `orient2d_exact` follows Shewchuk's approach: a floating-point filter with a proven error bound, falling back to exact expansion arithmetic (error-free two_sum / two_product transforms) when the filter cannot decide (Shewchuk, \"Adaptive precision floating-point arithmetic and fast robust geometric predicates\", 1997).")?;
         m_spatial__contain::register(py, &sub)?;
         mods["spatial"].add("contain", &sub)?;
         mods.insert("spatial::contain", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.distance")?;
+        let sub = PyModule::new(py, "numeria.spatial.distance")?;
         sub.setattr("__doc__", "Closest-point queries and set distances.  References: Ericson, *Real-Time Collision Detection*, ch. 5 (point and segment queries); Eiter & Mannila 1994 (discrete Fréchet distance).")?;
         m_spatial__distance::register(py, &sub)?;
         mods["spatial"].add("distance", &sub)?;
         mods.insert("spatial::distance", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.frame")?;
+        let sub = PyModule::new(py, "numeria.spatial.frame")?;
         sub.setattr("__doc__", "Rigid coordinate frames (origin + unit-quaternion rotation).  `to_world(p_local) = origin + R·p_local`; composition and inverses follow the usual rigid-motion group structure SE(3).")?;
         m_spatial__frame::register(py, &sub)?;
         mods["spatial"].add("frame", &sub)?;
         mods.insert("spatial::frame", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.intersect")?;
+        let sub = PyModule::new(py, "numeria.spatial.intersect")?;
         sub.setattr("__doc__", "Intersection tests between the spatial primitives.  References: Ericson, *Real-Time Collision Detection* (RTCD); Möller & Trumbore 1997 (ray-triangle); Akenine-Möller 2001 (triangle-box SAT). Ray parameters are along the (normalized) ray direction; only t ≥ 0 counts as a hit.")?;
         m_spatial__intersect::register(py, &sub)?;
         mods["spatial"].add("intersect", &sub)?;
         mods.insert("spatial::intersect", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.kdtree")?;
+        let sub = PyModule::new(py, "numeria.spatial.kdtree")?;
         sub.setattr("__doc__", "k-d trees (3-D and 2-D) with median splits, plus a uniform spatial hash for broadphase neighbor queries.  Reference: Bentley 1975; Friedman, Bentley & Finkel 1977 (nearest neighbor search with bounds pruning).")?;
         m_spatial__kdtree::register(py, &sub)?;
         mods["spatial"].add("kdtree", &sub)?;
         mods.insert("spatial::kdtree", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.mat4")?;
+        let sub = PyModule::new(py, "numeria.spatial.mat4")?;
         sub.setattr("__doc__", "4×4 homogeneous transform matrix (row-major storage, column-vector convention: p' = M·p).  References: Foley et al., *Computer Graphics: Principles and Practice*; the OpenGL clip-space conventions for `perspective` and `orthographic` (z mapped to [−1, 1]).")?;
         m_spatial__mat4::register(py, &sub)?;
         mods["spatial"].add("mat4", &sub)?;
         mods.insert("spatial::mat4", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.octree")?;
+        let sub = PyModule::new(py, "numeria.spatial.octree")?;
         sub.setattr("__doc__", "Barnes-Hut octree for N-body force approximation.  Direct summation costs O(N²). The octree groups distant bodies and treats each group as a single mass at its centre of mass, which brings the cost to O(N log N).  The approximation is controlled by `theta`: a node is used as a whole when its width divided by the distance to it is below that threshold. Smaller `theta` is more accurate and slower, and `theta = 0` degenerates to direct summation. The conventional default of 0.5 is `BH_THETA`.")?;
         m_spatial__octree::register(py, &sub)?;
         mods["spatial"].add("octree", &sub)?;
         mods.insert("spatial::octree", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.primitives")?;
+        let sub = PyModule::new(py, "numeria.spatial.primitives")?;
         sub.setattr("__doc__", "Geometric primitive types shared by the intersection, distance, containment, and acceleration modules.  Conventions: plane as n·p + d = 0 with unit normal; ray directions normalized by the constructor; polygons CCW-positive.")?;
         m_spatial__primitives::register(py, &sub)?;
         mods["spatial"].add("primitives", &sub)?;
         mods.insert("spatial::primitives", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.projective")?;
+        let sub = PyModule::new(py, "numeria.spatial.projective")?;
         sub.setattr("__doc__", "Homogeneous 2-D projective geometry: points, lines, cross ratios, and plane homographies (Hartley & Zisserman, *Multiple View Geometry*, ch. 2 and 4).")?;
         m_spatial__projective::register(py, &sub)?;
         mods["spatial"].add("projective", &sub)?;
         mods.insert("spatial::projective", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.sdf")?;
+        let sub = PyModule::new(py, "numeria.spatial.sdf")?;
         sub.setattr("__doc__", "Signed distance fields: primitives, combinators, domain operators, and queries (sphere tracing, normals, AO, soft shadows).  Primitive formulas follow Inigo Quilez's reference catalogue (iquilezles.org/articles/distfunctions). Negative inside, positive outside; all primitive SDFs are exact unless noted.")?;
         m_spatial__sdf::register(py, &sub)?;
         mods["spatial"].add("sdf", &sub)?;
         mods.insert("spatial::sdf", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.spatial.transform2d")?;
+        let sub = PyModule::new(py, "numeria.spatial.transform2d")?;
         sub.setattr("__doc__", "2-D affine transforms stored as 3×3 homogeneous matrices (last row 0 0 1), column-vector convention: p' = M·p.")?;
         m_spatial__transform2d::register(py, &sub)?;
         mods["spatial"].add("transform2d", &sub)?;
         mods.insert("spatial::transform2d", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.bessel")?;
+        let sub = PyModule::new(py, "numeria.special.bessel")?;
         sub.setattr("__doc__", "Bessel functions of integer order.  J and Y use the rational approximations of Numerical Recipes §6.5 (about 1e-8 absolute accuracy); higher orders use upward recurrence for Y and Miller's downward-recurrence algorithm for J when the argument is smaller than the order. I and K follow the polynomial approximations of Abramowitz & Stegun §9.8 (as in NR §6.6).")?;
         m_special__bessel::register(py, &sub)?;
         mods["special"].add("bessel", &sub)?;
         mods.insert("special::bessel", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.beta")?;
+        let sub = PyModule::new(py, "numeria.special.beta")?;
         sub.setattr("__doc__", "Beta function and regularized incomplete beta.  B(a,b) = Γ(a)Γ(b)/Γ(a+b), evaluated in log space. The regularized incomplete beta I_x(a,b) uses the modified Lentz continued fraction of Numerical Recipes §6.4.")?;
         m_special__beta::register(py, &sub)?;
         mods["special"].add("beta", &sub)?;
         mods.insert("special::beta", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.elliptic")?;
+        let sub = PyModule::new(py, "numeria.special.elliptic")?;
         sub.setattr("__doc__", "Elliptic integrals and physical applications.  Complete integrals use the arithmetic-geometric mean (Abramowitz & Stegun §17.6); incomplete integrals use the Carlson symmetric forms R_F and R_D (Carlson 1979; NR §6.11). The parameter is m = k².")?;
         m_special__elliptic::register(py, &sub)?;
         mods["special"].add("elliptic", &sub)?;
         mods.insert("special::elliptic", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.erf")?;
+        let sub = PyModule::new(py, "numeria.special.erf")?;
         sub.setattr("__doc__", "Error function family.  `erf`/`erfc` implement W. J. Cody's rational Chebyshev approximations (\"Rational Chebyshev approximation for the error function\", Math. Comp. 23, 1969; the SPECFUN `CALERF` algorithm), accurate to full double precision. `erfinv` uses M. Giles' polynomial approximation (\"Approximating the erfinv function\", GPU Computing Gems, 2012) polished with Newton steps on `erf`.")?;
         m_special__erf::register(py, &sub)?;
         mods["special"].add("erf", &sub)?;
         mods.insert("special::erf", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.expint")?;
+        let sub = PyModule::new(py, "numeria.special.expint")?;
         sub.setattr("__doc__", "Exponential integrals Ei(x) and E1(x).")?;
         m_special__expint::register(py, &sub)?;
         mods["special"].add("expint", &sub)?;
         mods.insert("special::expint", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.gamma")?;
+        let sub = PyModule::new(py, "numeria.special.gamma")?;
         sub.setattr("__doc__", "Gamma function family.  `gamma` uses the Lanczos approximation (g = 7, n = 9); `lgamma` is the same approximation carried in log space so it does not overflow up to very large arguments. The regularized incomplete functions P(a,x) (`gamma_p`) and Q(a,x) (`gamma_q`) follow Numerical Recipes ch. 6.2 (series for x < a+1, Lentz continued fraction otherwise).")?;
         m_special__gamma::register(py, &sub)?;
         mods["special"].add("gamma", &sub)?;
         mods.insert("special::gamma", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.special.legendre")?;
+        let sub = PyModule::new(py, "numeria.special.legendre")?;
         sub.setattr("__doc__", "Legendre polynomials, associated Legendre functions, real spherical harmonics, and Gauss-Legendre quadrature nodes.  References: Abramowitz & Stegun ch. 8; Numerical Recipes §6.8 (`plgndr`) and §4.5 (`gauleg`).")?;
         m_special__legendre::register(py, &sub)?;
         mods["special"].add("legendre", &sub)?;
         mods.insert("special::legendre", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistical_mechanics.ising")?;
+        let sub = PyModule::new(py, "numeria.statistical_mechanics.ising")?;
         sub.setattr("__doc__", "The Ising model and its relatives, by Monte Carlo.  The two-dimensional Ising model is the one interacting system with a phase transition that is solved exactly, so it is where a Monte Carlo code can be checked against arithmetic rather than against another Monte Carlo code. Onsager's solution gives the critical temperature, the energy and the spontaneous magnetisation in closed form, and any sampler that disagrees with them is wrong.  The algorithmic point of the module is the contrast between the two updates. Metropolis flips one spin at a time, so near the critical temperature -- where the correlation length diverges and whole regions must turn over together -- successive configurations stay correlated for a time growing as the system size to a power near two. Wolff builds a cluster whose size is itself set by the correlation length and flips it whole, which all but removes that critical slowing down. The two sample the same distribution; they differ only in how long it takes.")?;
         m_statistical_mechanics__ising::register(py, &sub)?;
         mods["statistical_mechanics"].add("ising", &sub)?;
         mods.insert("statistical_mechanics::ising", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistical_mechanics.kinetics")?;
+        let sub = PyModule::new(py, "numeria.statistical_mechanics.kinetics")?;
         sub.setattr("__doc__", "Chemical kinetics: rate laws, deterministic and stochastic reaction networks, enzyme saturation, equilibrium composition, oscillating mechanisms, nucleation and transformation, and the acid-base and electrochemical relations that share their arithmetic.  # What lives here and what lives in `chemistry`  The elementary single-formula relations -- the Arrhenius rate, the equilibrium constant from a free energy, the Nernst potential, pH from a proton concentration -- are already in `chemistry`, and are not duplicated. This module is the part that needs a solver: networks integrated in time, fits inverted from data, compositions found by root-finding, and the stochastic algorithms.  # Units  Concentrations are molar, times are seconds, energies are joules per mole and temperatures are kelvin, so `R` rather than `k_B` appears throughout. The one exception is `kramers_rate_check`, which follows its own literature convention of barrier heights in units of `k_B T`; it is marked at the function.")?;
         m_statistical_mechanics__kinetics::register(py, &sub)?;
         mods["statistical_mechanics"].add("kinetics", &sub)?;
         mods.insert("statistical_mechanics::kinetics", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistical_mechanics.lattice_models")?;
+        let sub = PyModule::new(py, "numeria.statistical_mechanics.lattice_models")?;
         sub.setattr("__doc__", "Lattice models: percolation, walks, growth, and avalanches.  These are the systems where critical behaviour appears without any Hamiltonian or temperature at all. Percolation has a sharp threshold and a divergent cluster size, self-avoiding walks have a non-trivial exponent that mean-field theory gets wrong, and a growing interface roughens with exponents shared by systems that have nothing physically in common. That last fact -- universality -- is what makes the subject more than a collection of models: the exponents depend on dimension and symmetry, and on essentially nothing else.  Everything here is on a square lattice unless said otherwise, and the random routines take the crate's deterministic generator so a run can be repeated exactly.")?;
         m_statistical_mechanics__lattice_models::register(py, &sub)?;
         mods["statistical_mechanics"].add("lattice_models", &sub)?;
         mods.insert("statistical_mechanics::lattice_models", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistical_mechanics.md")?;
+        let sub = PyModule::new(py, "numeria.statistical_mechanics.md")?;
         sub.setattr("__doc__", "Molecular dynamics: pair potentials, a cell-list force evaluation, a symplectic integrator, thermostats and barostats, and the structural and transport measurements taken from a trajectory.  # Units  Everything here is in *reduced* Lennard-Jones units: `sigma`, `eps`, the particle mass and Boltzmann's constant are all one unless the caller says otherwise, so a temperature is an energy and a pressure is an energy per volume. This is not a convenience -- mixing SI constants into a molecular dynamics run is how the field's worst bugs happen, because the equations of motion are dimensionally consistent under any consistent choice and silently wrong under an inconsistent one. See `lj_reduced_units_note`.  The roadmap gives `MdSystem` a `SpatialHash` field. The general-purpose hash in `spatial::kdtree` owns a copy of every position and knows nothing about periodic images, so this module carries its own cell list instead: it is rebuilt each step from the live positions and wraps at the box boundary, which is what the minimum-image convention needs.")?;
         m_statistical_mechanics__md::register(py, &sub)?;
         mods["statistical_mechanics"].add("md", &sub)?;
         mods.insert("statistical_mechanics::md", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistics.descriptive")?;
+        let sub = PyModule::new(py, "numeria.statistics.descriptive")?;
         sub.setattr("__doc__", "Descriptive statistics, error propagation, and weighted means.")?;
         m_statistics__descriptive::register(py, &sub)?;
         mods["statistics"].add("descriptive", &sub)?;
         mods.insert("statistics::descriptive", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistics.distributions")?;
+        let sub = PyModule::new(py, "numeria.statistics.distributions")?;
         sub.setattr("__doc__", "Probability distributions: densities, mass functions, and CDFs.")?;
         m_statistics__distributions::register(py, &sub)?;
         mods["statistics"].add("distributions", &sub)?;
         mods.insert("statistics::distributions", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistics.fourier")?;
+        let sub = PyModule::new(py, "numeria.statistics.fourier")?;
         sub.setattr("__doc__", "Discrete Fourier transform utilities.  These are thin wrappers over `transforms::fft` (Step 0 of roadmap Part 3): every length now runs in O(n log n) via the mixed-radix / Bluestein FFT while keeping the original `(re, im)` tuple API.")?;
         m_statistics__fourier::register(py, &sub)?;
         mods["statistics"].add("fourier", &sub)?;
         mods.insert("statistics::fourier", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistics.inference")?;
+        let sub = PyModule::new(py, "numeria.statistics.inference")?;
         sub.setattr("__doc__", "Hypothesis tests and confidence intervals.  p-values come from the crate's own distribution CDFs (Student t, chi-squared, F) and the asymptotic Kolmogorov distribution Q_KS(λ) = 2·Σ (−1)^{j−1} e^{−2j²λ²} (NR §14.3). All t-type tests report two-sided p-values.")?;
         m_statistics__inference::register(py, &sub)?;
         mods["statistics"].add("inference", &sub)?;
         mods.insert("statistics::inference", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.statistics.resampling")?;
+        let sub = PyModule::new(py, "numeria.statistics.resampling")?;
         sub.setattr("__doc__", "Resampling methods: bootstrap, BCa bootstrap, permutation tests, and the jackknife.  Reference: Efron & Tibshirani, *An Introduction to the Bootstrap* (1993), ch. 6 (percentile), ch. 14 (BCa), ch. 15 (permutation).")?;
         m_statistics__resampling::register(py, &sub)?;
         mods["statistics"].add("resampling", &sub)?;
         mods.insert("statistics::resampling", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.extreme")?;
+        let sub = PyModule::new(py, "numeria.stochastic.extreme")?;
         sub.setattr("__doc__", "Extreme value theory and copulas: the distribution of maxima, the distribution of exceedances, and the dependence structure between them.  Ordinary statistics describes the middle of a distribution, where there is data. Extreme value theory describes the edge, where by construction there is almost none, and it does so by an argument that parallels the central limit theorem. Just as a normalised *sum* of independent variables has only one possible limit whatever the summands, a normalised *maximum* has only three -- Gumbel, Frechet, Weibull -- and the generalised extreme value family holds all three, distinguished by the sign of a single shape parameter. That is what licenses extrapolating past the largest observation: the tail shape is not assumed, it is forced.  Two routes lead to the same place. Taking the maximum of each block and fitting a GEV throws away every observation but one per block. Taking every exceedance over a high threshold instead keeps far more of the data, and the Pickands-Balkema-de Haan theorem says those exceedances follow a generalised Pareto distribution with the *same* shape parameter. The threshold approach is usually the better estimator; the block approach is easier to explain and needs no threshold chosen.  The shape parameter is the whole story. Negative means a bounded tail with a finite upper endpoint; zero means an exponential tail, where every moment exists; positive means a power-law tail, where moments beyond `1/xi` do not. A hundred-year return level computed under the wrong sign is not slightly wrong.  Copulas answer the other half of the question. Marginal tails say how extreme each variable gets; a copula says whether they get extreme together. The distinction matters because correlation does not capture it: a Gaussian copula has zero tail dependence at any correlation below one, so two variables can be strongly correlated in the body and yet asymptotically independent in the tail, which is precisely the failure mode a correlation-based risk model cannot see.")?;
         m_stochastic__extreme::register(py, &sub)?;
         mods["stochastic"].add("extreme", &sub)?;
         mods.insert("stochastic::extreme", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.hmm")?;
+        let sub = PyModule::new(py, "numeria.stochastic.hmm")?;
         sub.setattr("__doc__", "Hidden state models: hidden Markov models, smoothing, and particle filters.  The common thread is a state that evolves as a Markov chain and is never observed directly -- only through emissions that depend on it. Three questions follow, and each has its own algorithm. *How likely is this observation sequence?* is answered by summing over every possible state path, which the forward recursion does in linear time by never enumerating the paths. *Which single path best explains it?* is answered by Viterbi, the same recursion with the sum replaced by a maximum. *What parameters make it likeliest?* is answered by Baum-Welch, which is expectation-maximisation applied to the first two.  The discrete and Gaussian models here differ only in what an emission is. The Kalman smoother and the particle filter answer the same questions for a continuous state: exactly, when the model is linear and Gaussian, and by sampling when it is not.  Everything works in logs or with explicit scaling, because the probability of a sequence of a few hundred observations underflows a double long before the algorithm finishes.")?;
         m_stochastic__hmm::register(py, &sub)?;
         mods["stochastic"].add("hmm", &sub)?;
         mods.insert("stochastic::hmm", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.markov")?;
+        let sub = PyModule::new(py, "numeria.stochastic.markov")?;
         sub.setattr("__doc__", "Finite Markov chains and Markov chain Monte Carlo.  A Markov chain is a square matrix whose rows sum to one, and almost everything about it follows from linear algebra applied to that matrix. The long-run behaviour is an eigenvector; how fast it is reached is the gap between the leading eigenvalue and the next; expected hitting times are the solution of a linear system; and the answer to \"what happens after `n` steps\" is a matrix power.  Markov chain Monte Carlo runs the idea backwards. Given a distribution you can evaluate but not sample from, build a chain whose stationary distribution is that one, and run it. Metropolis-Hastings does this by proposing a move and accepting it with a probability that makes detailed balance hold; Hamiltonian Monte Carlo does it by simulating a physical trajectory that conserves energy, so the acceptance probability stays near one even for a long move. The samplers are only ever asymptotically correct, so the diagnostics -- effective sample size, the Gelman-Rubin statistic, the autocorrelation time -- are not optional extras but the only evidence that a run has converged.")?;
         m_stochastic__markov::register(py, &sub)?;
         mods["stochastic"].add("markov", &sub)?;
         mods.insert("stochastic::markov", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.point_process")?;
+        let sub = PyModule::new(py, "numeria.stochastic.point_process")?;
         sub.setattr("__doc__", "Point processes: random collections of points in time or space.  The Poisson process is the reference against which every other is described. It has no memory -- the chance of an event in the next instant does not depend on what happened before -- and everything else follows: counts in disjoint sets are independent and Poisson, waiting times are exponential, and given the count in an interval the points are uniformly scattered in it.  The other processes here are departures from that in one of two directions. *Clustered* processes -- Hawkes, Cox, Matern, Thomas -- put more points near other points, either because events trigger events or because the rate is itself random. *Regular* processes have points that avoid each other. Ripley's `K` function and the pair correlation measure which of the three a pattern is, by comparing what is seen at each distance against what a Poisson process would give.")?;
         m_stochastic__point_process::register(py, &sub)?;
         mods["stochastic"].add("point_process", &sub)?;
         mods.insert("stochastic::point_process", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.queueing")?;
+        let sub = PyModule::new(py, "numeria.stochastic.queueing")?;
         sub.setattr("__doc__", "Queueing theory: birth-death queues, Erlang loss and delay formulas, networks of queues, and continuous-time Markov chains.  Almost every closed form here is a birth-death chain in disguise. A queue with Poisson arrivals and exponential service moves up one state at rate `lambda` and down one at a rate set by how many servers are busy, so the stationary distribution telescopes into a product of ratios and the means follow by summation. The Erlang formulas are the two boundary cases of that product: B when a full system turns customers away, C when it makes them wait.  Two results tie the whole module together and are worth stating because the tests lean on them. Little's law, `L = lambda W`, holds for every model below -- it is a statement about areas under a sample path and assumes nothing about the arrival or service distributions. And the Pollaczek-Khinchine formula shows what the exponential assumption was buying: for a single server the mean queue depends on the service distribution only through its first two moments, so M/D/1 has exactly half the queue of M/M/1 at the same load.  Where a model has no closed form the module simulates it instead. The event-driven simulator tracks the number in system by integrating over a merged event list rather than by invoking Little's law, so comparing its output against `lambda W` is a real check rather than a tautology.")?;
         m_stochastic__queueing::register(py, &sub)?;
         mods["stochastic"].add("queueing", &sub)?;
         mods.insert("stochastic::queueing", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.rmt")?;
+        let sub = PyModule::new(py, "numeria.stochastic.rmt")?;
         sub.setattr("__doc__", "Random matrix theory: the classical ensembles, their limiting spectral laws, and the local statistics that distinguish correlated spectra from uncorrelated ones.  The subject rests on a surprise: the eigenvalues of a large random matrix are not themselves random in any useful sense. Their *density* converges to a fixed shape that does not depend on the distribution of the entries -- Wigner's semicircle for a symmetric matrix, Marchenko-Pastur for a sample covariance -- and their *spacings* converge to a distribution that depends only on the symmetry class. Universality is what makes the subject applicable: a spectrum can be compared against these laws without knowing anything about the mechanism that produced it.  The practical payoff is a null hypothesis. Eigenvalues of independent variables repel each other, in a way that independent *points* do not, so the spacing distribution separates a spectrum with genuine level correlations from a Poisson process of unrelated levels. In finance the same statement is a filter: any eigenvalue of a sample correlation matrix that falls inside the Marchenko-Pastur band is consistent with pure noise and carries no information about the correlations being estimated.  Two conventions are fixed throughout. Ensembles are scaled so their limiting support stays put as `n` grows -- otherwise the semicircle's radius would drift and nothing would converge to compare against. And spacings are always measured on *unfolded* eigenvalues, rescaled to unit mean density, since the raw spacings of a semicircular spectrum are much tighter in the middle than at the edges and their distribution would say more about the density than about the correlations.")?;
         m_stochastic__rmt::register(py, &sub)?;
         mods["stochastic"].add("rmt", &sub)?;
         mods.insert("stochastic::rmt", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.sde")?;
+        let sub = PyModule::new(py, "numeria.stochastic.sde")?;
         sub.setattr("__doc__", "Stochastic differential equations: simulation, convergence, and the densities the paths are distributed by.  An equation `dX = mu dt + sigma dW` is not an ordinary differential equation with noise added. Brownian motion is nowhere differentiable, and `dW` has magnitude of order `sqrt(dt)` rather than `dt`, so a term that would be second order in a deterministic expansion is first order here. That is the whole content of Ito's lemma, and it is why the numerical schemes are not the familiar ones: Euler-Maruyama looks like Euler's method but converges at half its order, and recovering first order needs the Milstein correction, which is precisely the term Ito's lemma says is missing.  *Strong* convergence is about paths -- how close a simulated path is to the exact path driven by the same noise -- and *weak* convergence is about distributions, how close the expectation of a function is. They are genuinely different: Euler-Maruyama is strong order one half and weak order one. Which one matters depends on the question, and both are measured here rather than asserted.")?;
         m_stochastic__sde::register(py, &sub)?;
         mods["stochastic"].add("sde", &sub)?;
         mods.insert("stochastic::sde", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.stochastic.timeseries")?;
+        let sub = PyModule::new(py, "numeria.stochastic.timeseries")?;
         sub.setattr("__doc__", "Time series analysis: correlation structure, stationarity, ARMA models, smoothing, volatility, and change detection.  A time series differs from a sample only in that the order matters, and every tool here is a way of asking how much it matters. The autocorrelation function measures it directly; the partial autocorrelation strips out what is already explained by the lags in between; the spectral density says the same thing in the frequency domain. An ARMA model is a compact parameterisation of that structure, and its impulse-response weights are the bridge between the two views -- they generate the autocovariances, the forecast error variances, and the spectral density alike.  Stationarity is the assumption the whole apparatus rests on, so it is tested rather than assumed. The augmented Dickey-Fuller test takes a unit root as the null and looks for evidence against it; the KPSS test takes stationarity as the null and looks for evidence against *that*. They are deliberately opposed: agreeing on a rejection is much stronger evidence than either alone, and disagreement is a signal that the series is neither cleanly one nor the other.  The p-values for both come from tabulated quantiles of their non-standard null distributions, interpolated. Neither statistic is asymptotically normal or chi-squared -- a Dickey-Fuller `t`-ratio is not a `t` at all -- so a p-value computed from a standard distribution would be wrong rather than approximate. The tables are documented where they are used.")?;
         m_stochastic__timeseries::register(py, &sub)?;
         mods["stochastic"].add("timeseries", &sub)?;
         mods.insert("stochastic::timeseries", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.dct")?;
+        let sub = PyModule::new(py, "numeria.transforms.dct")?;
         sub.setattr("__doc__", "Discrete cosine, sine, and Hartley transforms.  Conventions match scipy's unnormalized (`norm=None`) definitions:  * DCT-I:   y\\[k\\] = x\\[0\\] + (−1)^k x\\[N−1\\] + 2 Σ_{n=1}^{N−2} x\\[n\\] cos(πkn/(N−1)) * DCT-II:  y\\[k\\] = 2 Σ x\\[n\\] cos(πk(2n+1)/(2N)) * DCT-III: y\\[k\\] = x\\[0\\] + 2 Σ_{n≥1} x\\[n\\] cos(πn(2k+1)/(2N)) * DCT-IV:  y\\[k\\] = 2 Σ x\\[n\\] cos(π(2k+1)(2n+1)/(4N)) * DST-I:   y\\[k\\] = 2 Σ x\\[n\\] sin(π(k+1)(n+1)/(N+1)) * DST-II:  y\\[k\\] = 2 Σ x\\[n\\] sin(π(k+1)(2n+1)/(2N))  Everything runs in O(n log n) through the any-length FFT.")?;
         m_transforms__dct::register(py, &sub)?;
         mods["transforms"].add("dct", &sub)?;
         mods.insert("transforms::dct", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.fft")?;
+        let sub = PyModule::new(py, "numeria.transforms.fft")?;
         sub.setattr("__doc__", "Fast Fourier transforms.  The power-of-two core is the iterative radix-2 Cooley-Tukey from Press et al., *Numerical Recipes*, §12.2. `fft_any` extends it to arbitrary lengths with a recursive mixed-radix 2/3/5 decomposition and a Bluestein chirp-z fallback for lengths with other prime factors.")?;
         m_transforms__fft::register(py, &sub)?;
         mods["transforms"].add("fft", &sub)?;
         mods.insert("transforms::fft", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.hilbert")?;
+        let sub = PyModule::new(py, "numeria.transforms.hilbert")?;
         sub.setattr("__doc__", "Hilbert transform, analytic signals, modulation, empirical mode decomposition, and causality (Kramers-Kronig) tools.")?;
         m_transforms__hilbert::register(py, &sub)?;
         mods["transforms"].add("hilbert", &sub)?;
         mods.insert("transforms::hilbert", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.laplace")?;
+        let sub = PyModule::new(py, "numeria.transforms.laplace")?;
         sub.setattr("__doc__", "Laplace-domain tools: numerical inverse transforms (fixed-Talbot and Gaver-Stehfest), the z-transform, transfer-function responses, and a discrete fractional Fourier transform.  Polynomial coefficient conventions: s-domain polynomials are highest-power-first (like `numerical::polynomial_roots`); digital filter coefficient arrays are in z⁻¹ powers (b\\[0\\] + b\\[1\\]z⁻¹ + …).")?;
         m_transforms__laplace::register(py, &sub)?;
         mods["transforms"].add("laplace", &sub)?;
         mods.insert("transforms::laplace", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.radon")?;
+        let sub = PyModule::new(py, "numeria.transforms.radon")?;
         sub.setattr("__doc__", "Radon transform and tomographic reconstruction, plus Hankel/Abel transforms and Hough voting.  Images are row-major (index = y·w + x) with the projection geometry centered on the image; a projection at angle θ integrates along lines perpendicular to the direction (cos θ, sin θ).")?;
         m_transforms__radon::register(py, &sub)?;
         mods["transforms"].add("radon", &sub)?;
         mods.insert("transforms::radon", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.spectral")?;
+        let sub = PyModule::new(py, "numeria.transforms.spectral")?;
         sub.setattr("__doc__", "Spectral estimation: periodogram, Welch averaging, multitaper (DPSS), parametric AR models (Burg, Yule-Walker), MUSIC, cross-spectra, coherence, cepstra, Lomb-Scargle, and spectrum descriptors.  All PSDs are one-sided densities in units²/Hz: integrating them over frequency (trapezoid over the returned grid) recovers the signal's variance/power.")?;
         m_transforms__spectral::register(py, &sub)?;
         mods["transforms"].add("spectral", &sub)?;
         mods.insert("transforms::spectral", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.stft")?;
+        let sub = PyModule::new(py, "numeria.transforms.stft")?;
         sub.setattr("__doc__", "Short-time Fourier transform, spectrograms, Goertzel, chirp-z, and constant-Q analysis.")?;
         m_transforms__stft::register(py, &sub)?;
         mods["transforms"].add("stft", &sub)?;
         mods.insert("transforms::stft", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.transforms.wavelet")?;
+        let sub = PyModule::new(py, "numeria.transforms.wavelet")?;
         sub.setattr("__doc__", "Discrete and continuous wavelet transforms.  Filter banks, boundary handling, and coefficient lengths follow the PyWavelets conventions (dwt output length ⌊(n + L − 1)/2⌋, idwt output length 2·len − L + 2), so round trips are exact for every wavelet and padding mode. The CWT follows Torrence & Compo (1998).")?;
         m_transforms__wavelet::register(py, &sub)?;
         mods["transforms"].add("wavelet", &sub)?;
         mods.insert("transforms::wavelet", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.units.dimensional")?;
+        let sub = PyModule::new(py, "numeria.units.dimensional")?;
         sub.setattr("__doc__", "Dimensional analysis: Buckingham's theorem, the named groups, natural units and the Planck scale.  # Buckingham's theorem is a rank computation  A physical relation among `n` quantities built from `r` independent dimensions can be rewritten as a relation among exactly `n - r` dimensionless groups. That is not a heuristic: the dimension vectors form the columns of a matrix, a dimensionless product of powers is a vector in its null space, and the dimension of a null space is the column count minus the rank. Every part of it is linear algebra over the rationals.  Which is why `buckingham_pi` works in `Rational` rather than in floating point. An exponent vector is *exactly* in the null space or it is not, and a group whose dimensions cancel to `1e-16` instead of to zero is not a dimensionless group -- it is a rounding error that will be reported as physics. The returned exponents are exact rationals for the same reason: the Reynolds number's exponents happen to be integers, but the null space basis of a general problem is not integral, and rounding it would silently change the group.  The theorem says how many groups there are, not which ones. Any basis of the null space works, and the conventional groups -- Reynolds, Froude, Mach -- are particular choices made for physical reasons that the algebra knows nothing about. `dimensionless_groups_named` lists those conventions; `buckingham_pi` finds a basis and makes no claim that it is the one anybody would name.  # Natural units are a change of bookkeeping, not of physics  Setting `hbar = c = 1` makes length, time and mass powers of a single unit, conventionally energy: `[L] = [T] = [E]^-1` and `[M] = [E]`. Nothing physical changes -- the dimensionless combinations are the same -- but a quantity's dimension collapses to one integer, its energy power, and `natural_units_convert` returns the magnitude in `eV` to that power. Electromagnetic and thermal dimensions need further conventions to absorb, so a dimension involving amperes, kelvin, moles or candela is refused rather than guessed at.  # Checking a formula is not the same as evaluating it  `dimensional_check_formula` walks a symbolic expression and asks whether it is dimensionally coherent: that every term of every sum agrees, and that nothing dimensioned is handed to a sine or an exponential. Neither question can be answered by running the formula, because both sides of `x + v` are perfectly good floats. It is the check a physicist does by eye before believing an algebra step, done mechanically, and it catches the dropped factor that numerical testing cannot.")?;
         m_units__dimensional::register(py, &sub)?;
         mods["units"].add("dimensional", &sub)?;
         mods.insert("units::dimensional", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.units.quantity")?;
+        let sub = PyModule::new(py, "numeria.units.quantity")?;
         sub.setattr("__doc__", "Values that carry their dimensions.  # Why a number alone is not a measurement  The two most expensive unit mistakes on record -- the Mars Climate Orbiter's pound-seconds fed to a newton-second interface, and the Gimli Glider's kilograms of fuel loaded as pounds -- were both arithmetic that a computer performed correctly on numbers that meant something other than what the receiving code assumed. Neither was a rounding error and neither would have been caught by testing the arithmetic.  A `Quantity` carries seven small integers alongside its value: the exponents of metre, kilogram, second, ampere, kelvin, mole and candela. Addition then checks that the two exponent vectors agree and refuses if they do not, multiplication adds them, and taking a square root fails unless every one of them is even. None of this is approximate -- the exponents are integers and the checks are exact.  # The gram is the prefixable unit, not the kilogram  The SI base unit of mass is the kilogram, which is the only base unit whose name already contains a prefix. The prefix system therefore attaches to the *gram*: `mg` is a milligram and not a milli-kilogram, and `kg` parses here as kilo applied to gram. The unit table stores the gram at `1e-3`, which makes `kg` come out at exactly one and the oddity disappear.  # Parsing a unit is ambiguous and the rule has to be stated  `m` is both the metre and the milli prefix, `T` is both the tesla and tera, `min` starts with the milli prefix followed by `in`. The rule used is: try the whole token as a unit name first, and only if that fails split off a prefix. So `m` is a metre, `mm` is a millimetre, `min` is a minute, and `T` is a tesla. It is a rule rather than a deduction, and any other rule would give different answers for the same strings.")?;
         m_units__quantity::register(py, &sub)?;
         mods["units"].add("quantity", &sub)?;
         mods.insert("units::quantity", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.attractors.presets")?;
+        let sub = PyModule::new(py, "numeria.fractals.attractors.presets")?;
         sub.setattr("__doc__", "Named systems: 3-D flows with customary parameters and time")?;
         m_fractals__attractors__presets::register(py, &sub)?;
         mods["fractals::attractors"].add("presets", &sub)?;
         mods.insert("fractals::attractors::presets", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.automata.patterns")?;
+        let sub = PyModule::new(py, "numeria.fractals.automata.patterns")?;
         sub.setattr("__doc__", "Classic Game of Life patterns in `.O` rows.")?;
         m_fractals__automata__patterns::register(py, &sub)?;
         mods["fractals::automata"].add("patterns", &sub)?;
         mods.insert("fractals::automata::patterns", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.ifs.presets")?;
+        let sub = PyModule::new(py, "numeria.fractals.ifs.presets")?;
         sub.setattr("__doc__", "Classic IFS attractors. 2-D maps are written x' = ax + by + e,")?;
         m_fractals__ifs__presets::register(py, &sub)?;
         mods["fractals::ifs"].add("presets", &sub)?;
         mods.insert("fractals::ifs::presets", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.fractals.lsystem.presets")?;
+        let sub = PyModule::new(py, "numeria.fractals.lsystem.presets")?;
         sub.setattr("__doc__", "Classic L-systems, mostly from ABOP. Angles are the turtle turn")?;
         m_fractals__lsystem__presets::register(py, &sub)?;
         mods["fractals::lsystem"].add("presets", &sub)?;
         mods.insert("fractals::lsystem::presets", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.clifford.cga3")?;
+        let sub = PyModule::new(py, "numeria.manifold.clifford.cga3")?;
         sub.setattr("__doc__", "Conformal geometric algebra Cl(4, 1): points, spheres, circles, lines")?;
         m_manifold__clifford__cga3::register(py, &sub)?;
         mods["manifold::clifford"].add("cga3", &sub)?;
         mods.insert("manifold::clifford::cga3", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.clifford.cl3")?;
+        let sub = PyModule::new(py, "numeria.manifold.clifford.cl3")?;
         sub.setattr("__doc__", "Euclidean 3D geometric algebra Cl(3, 0).")?;
         m_manifold__clifford__cl3::register(py, &sub)?;
         mods["manifold::clifford"].add("cl3", &sub)?;
         mods.insert("manifold::clifford::cl3", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.clifford.pga3")?;
+        let sub = PyModule::new(py, "numeria.manifold.clifford.pga3")?;
         sub.setattr("__doc__", "Plane-based projective geometric algebra Cl(3, 0, 1): planes are")?;
         m_manifold__clifford__pga3::register(py, &sub)?;
         mods["manifold::clifford"].add("pga3", &sub)?;
         mods.insert("manifold::clifford::pga3", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.manifold.clifford.sta")?;
+        let sub = PyModule::new(py, "numeria.manifold.clifford.sta")?;
         sub.setattr("__doc__", "Spacetime algebra Cl(1, 3): gamma_0 squares to +1 (bit 0), the spatial")?;
         m_manifold__clifford__sta::register(py, &sub)?;
         mods["manifold::clifford"].add("sta", &sub)?;
         mods.insert("manifold::clifford::sta", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.ode.adaptive")?;
+        let sub = PyModule::new(py, "numeria.numerical.ode.adaptive")?;
         sub.setattr("__doc__", "Adaptive Runge-Kutta integration: Dormand-Prince 5(4).  Reference: Dormand & Prince, \"A family of embedded Runge-Kutta formulae\" (1980); Hairer, Nørsett & Wanner, *Solving ODEs I*, §II.4. The embedded 4th-order solution provides the error estimate; steps use the FSAL (first-same-as-last) property.")?;
         m_numerical__ode__adaptive::register(py, &sub)?;
         mods["numerical::ode"].add("adaptive", &sub)?;
         mods.insert("numerical::ode::adaptive", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.ode.explicit")?;
+        let sub = PyModule::new(py, "numeria.numerical.ode.explicit")?;
         sub.setattr("__doc__", "Explicit fixed-step ODE integrators.")?;
         m_numerical__ode__explicit::register(py, &sub)?;
         mods["numerical::ode"].add("explicit", &sub)?;
         mods.insert("numerical::ode::explicit", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.ode.implicit")?;
+        let sub = PyModule::new(py, "numeria.numerical.ode.implicit")?;
         sub.setattr("__doc__", "Implicit (stiff-stable) ODE steps: backward Euler and BDF2.  Both solve their implicit update equation with damped-free Newton iteration; the Jacobian of f is user-supplied or, when `None`, approximated by forward finite differences (an opaque `f64` closure cannot be differentiated with `core::dual`, so finite differences stand in for it here).")?;
         m_numerical__ode__implicit::register(py, &sub)?;
         mods["numerical::ode"].add("implicit", &sub)?;
         mods.insert("numerical::ode::implicit", sub);
     }
     {
-        let sub = PyModule::new(py, "rust_physics_engine.numerical.ode.symplectic")?;
+        let sub = PyModule::new(py, "numeria.numerical.ode.symplectic")?;
         sub.setattr("__doc__", "Symplectic integrators for second-order systems x'' = a(x).  These preserve phase-space volume, so energy errors stay bounded instead of drifting. References: Verlet (1967); Yoshida, \"Construction of higher order symplectic integrators\", Phys. Lett. A 150 (1990).")?;
         m_numerical__ode__symplectic::register(py, &sub)?;
         mods["numerical::ode"].add("symplectic", &sub)?;

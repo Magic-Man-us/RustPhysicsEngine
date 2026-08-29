@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Linear congruential pseudo-random number generator.
 ///
 /// Rust: `monte_carlo::Rng`
-#[pyclass(name = "Rng", module = "rust_physics_engine.monte_carlo")]
+#[pyclass(name = "Rng", module = "numeria.monte_carlo")]
 pub struct PyRng { pub inner: rust_physics_engine::monte_carlo::Rng }
 #[pymethods]
 impl PyRng {
@@ -107,7 +107,7 @@ impl PyRng {
 /// inverse in the d-th prime.
 ///
 /// Rust: `monte_carlo::quasi::Halton`
-#[pyclass(name = "Halton", module = "rust_physics_engine.monte_carlo.quasi")]
+#[pyclass(name = "Halton", module = "numeria.monte_carlo.quasi")]
 pub struct PyHalton { pub inner: rust_physics_engine::monte_carlo::quasi::Halton }
 #[pymethods]
 impl PyHalton {
@@ -146,7 +146,7 @@ impl PyHalton {
 /// [0, 1)^dim (the origin point x₀ = 0 is skipped).
 ///
 /// Rust: `monte_carlo::quasi::Sobol`
-#[pyclass(name = "Sobol", module = "rust_physics_engine.monte_carlo.quasi")]
+#[pyclass(name = "Sobol", module = "numeria.monte_carlo.quasi")]
 pub struct PySobol { pub inner: rust_physics_engine::monte_carlo::quasi::Sobol }
 #[pymethods]
 impl PySobol {

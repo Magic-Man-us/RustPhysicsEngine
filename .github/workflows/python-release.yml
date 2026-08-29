@@ -16,23 +16,25 @@ name: Python release
 # is there so that anyone who later adds a second event to this file has
 # to walk past it before these runners start answering to it.
 #
-# ── One-time setup, without which the publish job fails ──────────────
+# ── How the upload is authorised ─────────────────────────────────────
 #
-# Publishing uses PyPI Trusted Publishing, so there is no API token in
-# this repository's secrets and nothing to leak or rotate. PyPI has to be
-# told to trust this workflow first. On https://pypi.org, under Publishing
-# for the `rust-physics-engine` project (or "pending publisher" if it has
-# never been released), add a GitHub publisher with:
+# PyPI Trusted Publishing, so there is no API token in this repository's
+# secrets and nothing to leak or rotate. The publisher registered on PyPI
+# for `numeria` names three things, and all three have to keep matching or
+# the upload is refused:
 #
-#     owner        Magic-Man-us
-#     repository   RustPhysicsEngine
-#     workflow     python-release.yml
-#     environment  pypi
+#     repository   Magic-Man-us/RustPhysicsEngine
+#     workflow     python-release.yml   <- this file's name
+#     environment  pypi                 <- the publish job's environment
 #
-# Then create an Environment named `pypi` in this repository's settings.
-# Adding a required reviewer to it makes every publish wait for a human,
-# which is worth doing: a version can never be re-uploaded to PyPI, even
-# after deleting it.
+# So renaming this file, moving the publish step into another one, or
+# changing that environment name breaks the release until PyPI is told.
+#
+# The environment is worth having for its own sake as well: a required
+# reviewer on it, set in the repository's settings, makes every publish
+# wait for a human. A version can never be re-uploaded to PyPI, even after
+# deleting it, so the one irreversible step in this file is the one worth
+# putting a person in front of.
 #
 # Every `run:` is quoted, for the reason given in verify.yml: an unquoted
 # value containing a colon followed by a space parses as a nested mapping
@@ -148,7 +150,7 @@ jobs:
     # cannot be undone.
     environment:
       name: pypi
-      url: "https://pypi.org/p/rust-physics-engine"
+      url: "https://pypi.org/p/numeria"
     permissions:
       # The OIDC token Trusted Publishing exchanges for an upload. This is
       # the only elevated permission in the file, and it is scoped to this

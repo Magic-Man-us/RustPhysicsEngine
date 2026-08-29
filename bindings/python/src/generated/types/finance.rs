@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Which barrier a knock-out or knock-in option watches.
 ///
 /// Rust: `finance::options::Barrier`
-#[pyclass(name = "Barrier", module = "rust_physics_engine.finance.options", from_py_object, eq, eq_int)]
+#[pyclass(name = "Barrier", module = "numeria.finance.options", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyBarrier {
     UpAndOut,
@@ -59,7 +59,7 @@ impl PyBarrier {
 /// The first-order sensitivities of an option price.
 ///
 /// Rust: `finance::options::Greeks`
-#[pyclass(name = "Greeks", module = "rust_physics_engine.finance.options", from_py_object, eq)]
+#[pyclass(name = "Greeks", module = "numeria.finance.options", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGreeks { pub inner: rust_physics_engine::finance::options::Greeks }
 #[pymethods]
@@ -139,7 +139,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyGreeksArg {
 /// The raw SVI parameterisation of a volatility smile.
 ///
 /// Rust: `finance::options::Svi`
-#[pyclass(name = "Svi", module = "rust_physics_engine.finance.options", from_py_object, eq)]
+#[pyclass(name = "Svi", module = "numeria.finance.options", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PySvi { pub inner: rust_physics_engine::finance::options::Svi }
 #[pymethods]
@@ -219,7 +219,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PySviArg {
 /// How often a quoted rate compounds.
 ///
 /// Rust: `finance::rates::Compounding`
-#[pyclass(name = "Compounding", module = "rust_physics_engine.finance.rates", from_py_object, eq, eq_int)]
+#[pyclass(name = "Compounding", module = "numeria.finance.rates", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCompounding {
     Annual,
@@ -276,7 +276,7 @@ impl PyCompounding {
 /// One instrument on the curve to bootstrap: a bond quoted by price.
 ///
 /// Rust: `finance::rates::CurveBond`
-#[pyclass(name = "CurveBond", module = "rust_physics_engine.finance.rates", from_py_object, eq)]
+#[pyclass(name = "CurveBond", module = "numeria.finance.rates", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyCurveBond { pub inner: rust_physics_engine::finance::rates::CurveBond }
 #[pymethods]
@@ -348,7 +348,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyCurveBondArg {
 /// What a backtest reports.
 ///
 /// Rust: `finance::risk::BacktestStats`
-#[pyclass(name = "BacktestStats", module = "rust_physics_engine.finance.risk", from_py_object, eq)]
+#[pyclass(name = "BacktestStats", module = "numeria.finance.risk", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyBacktestStats { pub inner: rust_physics_engine::finance::risk::BacktestStats }
 #[pymethods]

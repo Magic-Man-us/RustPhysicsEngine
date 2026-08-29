@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// A fitted Gaussian mixture.
 ///
 /// Rust: `learn::cluster::Gmm`
-#[pyclass(name = "Gmm", module = "rust_physics_engine.learn.cluster", from_py_object, eq)]
+#[pyclass(name = "Gmm", module = "numeria.learn.cluster", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGmm { pub inner: rust_physics_engine::learn::cluster::Gmm }
 #[pymethods]
@@ -68,7 +68,7 @@ impl PyGmm {
 /// The outcome of a k-means run.
 ///
 /// Rust: `learn::cluster::KMeans`
-#[pyclass(name = "KMeans", module = "rust_physics_engine.learn.cluster", from_py_object, eq)]
+#[pyclass(name = "KMeans", module = "numeria.learn.cluster", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyKMeans { pub inner: rust_physics_engine::learn::cluster::KMeans }
 #[pymethods]
@@ -123,7 +123,7 @@ impl PyKMeans {
 /// How the distance between two merged clusters is defined.
 ///
 /// Rust: `learn::cluster::Linkage`
-#[pyclass(name = "Linkage", module = "rust_physics_engine.learn.cluster", from_py_object, eq, eq_int)]
+#[pyclass(name = "Linkage", module = "numeria.learn.cluster", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyLinkage {
     Single,
@@ -165,7 +165,7 @@ impl PyLinkage {
 /// A fitted Gaussian process.
 ///
 /// Rust: `learn::gp::Gp`
-#[pyclass(name = "Gp", module = "rust_physics_engine.learn.gp", from_py_object, eq)]
+#[pyclass(name = "Gp", module = "numeria.learn.gp", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGp { pub inner: rust_physics_engine::learn::gp::Gp }
 #[pymethods]
@@ -365,7 +365,7 @@ impl PyGp {
 /// A covariance function.
 ///
 /// Rust: `learn::gp::KernelFn`
-#[pyclass(name = "KernelFn", module = "rust_physics_engine.learn.gp", from_py_object, eq)]
+#[pyclass(name = "KernelFn", module = "numeria.learn.gp", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyKernelFn { pub inner: rust_physics_engine::learn::gp::KernelFn }
 #[pymethods]
@@ -432,7 +432,7 @@ impl PyKernelFn {
 /// The activation applied after a layer's affine map.
 ///
 /// Rust: `learn::nn::Act`
-#[pyclass(name = "Act", module = "rust_physics_engine.learn.nn", from_py_object, eq, eq_int)]
+#[pyclass(name = "Act", module = "numeria.learn.nn", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyAct {
     Relu,
@@ -479,7 +479,7 @@ impl PyAct {
 /// like the network itself.
 ///
 /// Rust: `learn::nn::Gradients`
-#[pyclass(name = "Gradients", module = "rust_physics_engine.learn.nn", from_py_object, eq)]
+#[pyclass(name = "Gradients", module = "numeria.learn.nn", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGradients { pub inner: rust_physics_engine::learn::nn::Gradients }
 #[pymethods]
@@ -519,7 +519,7 @@ impl PyGradients {
 /// What the network is asked to minimise.
 ///
 /// Rust: `learn::nn::Loss`
-#[pyclass(name = "Loss", module = "rust_physics_engine.learn.nn", from_py_object, eq, eq_int)]
+#[pyclass(name = "Loss", module = "numeria.learn.nn", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyLoss {
     Mse,
@@ -553,7 +553,7 @@ impl PyLoss {
 /// A fully connected feed-forward network.
 ///
 /// Rust: `learn::nn::Mlp`
-#[pyclass(name = "Mlp", module = "rust_physics_engine.learn.nn", from_py_object, eq)]
+#[pyclass(name = "Mlp", module = "numeria.learn.nn", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMlp { pub inner: rust_physics_engine::learn::nn::Mlp }
 #[pymethods]
@@ -826,7 +826,7 @@ impl PyMlp {
 /// An ensemble of trees grown on bootstrap samples.
 ///
 /// Rust: `learn::tree::Forest`
-#[pyclass(name = "Forest", module = "rust_physics_engine.learn.tree", from_py_object, eq)]
+#[pyclass(name = "Forest", module = "numeria.learn.tree", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyForest { pub inner: rust_physics_engine::learn::tree::Forest }
 #[pymethods]
@@ -859,7 +859,7 @@ impl PyForest {
 /// trees.
 ///
 /// Rust: `learn::tree::Gbm`
-#[pyclass(name = "Gbm", module = "rust_physics_engine.learn.tree", from_py_object, eq)]
+#[pyclass(name = "Gbm", module = "numeria.learn.tree", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGbm { pub inner: rust_physics_engine::learn::tree::Gbm }
 #[pymethods]
@@ -907,7 +907,7 @@ impl PyGbm {
 /// A fitted decision tree. Node zero is the root.
 ///
 /// Rust: `learn::tree::Tree`
-#[pyclass(name = "Tree", module = "rust_physics_engine.learn.tree", from_py_object, eq)]
+#[pyclass(name = "Tree", module = "numeria.learn.tree", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTree { pub inner: rust_physics_engine::learn::tree::Tree }
 #[pymethods]
@@ -943,7 +943,7 @@ impl PyTree {
 /// A node of a fitted tree.
 ///
 /// Rust: `learn::tree::TreeNode`
-#[pyclass(name = "TreeNode", module = "rust_physics_engine.learn.tree", from_py_object, eq)]
+#[pyclass(name = "TreeNode", module = "numeria.learn.tree", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyTreeNode { pub inner: rust_physics_engine::learn::tree::TreeNode }
 #[pymethods]

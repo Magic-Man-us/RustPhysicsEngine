@@ -31,7 +31,7 @@ use pyo3::prelude::*;
 /// - `melting_point`: K
 ///
 /// Rust: `materials::common::Material`
-#[pyclass(name = "Material", module = "rust_physics_engine.materials.common", from_py_object)]
+#[pyclass(name = "Material", module = "numeria.materials.common", from_py_object)]
 #[derive(Clone)]
 pub struct PyMaterial { pub inner: rust_physics_engine::materials::common::Material }
 #[pymethods]
@@ -131,7 +131,7 @@ impl PyMaterial {
 /// - `atomic_radius`: pm (picometers)
 ///
 /// Rust: `materials::elements::Element`
-#[pyclass(name = "Element", module = "rust_physics_engine.materials.elements", from_py_object)]
+#[pyclass(name = "Element", module = "numeria.materials.elements", from_py_object)]
 #[derive(Clone)]
 pub struct PyElementsElement { pub inner: rust_physics_engine::materials::elements::Element }
 #[pymethods]
@@ -269,7 +269,7 @@ impl PyElementsElement {
 /// Classification of an element within the periodic table.
 ///
 /// Rust: `materials::elements::ElementCategory`
-#[pyclass(name = "ElementCategory", module = "rust_physics_engine.materials.elements", from_py_object, eq, eq_int)]
+#[pyclass(name = "ElementCategory", module = "numeria.materials.elements", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyElementCategory {
     Nonmetal,
@@ -335,7 +335,7 @@ impl PyElementCategory {
 /// The standard state of an element at room temperature and pressure (STP).
 ///
 /// Rust: `materials::elements::StandardState`
-#[pyclass(name = "StandardState", module = "rust_physics_engine.materials.elements", from_py_object, eq, eq_int)]
+#[pyclass(name = "StandardState", module = "numeria.materials.elements", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyStandardState {
     Solid,
@@ -396,7 +396,7 @@ impl PyStandardState {
 /// - `boiling_point`, `freezing_point`: K
 ///
 /// Rust: `materials::fluids::Fluid`
-#[pyclass(name = "Fluid", module = "rust_physics_engine.materials.fluids", from_py_object)]
+#[pyclass(name = "Fluid", module = "numeria.materials.fluids", from_py_object)]
 #[derive(Clone)]
 pub struct PyFluid { pub inner: rust_physics_engine::materials::fluids::Fluid }
 #[pymethods]
@@ -496,7 +496,7 @@ impl PyFluid {
 /// - `thermal_conductivity`: W/(m*K)
 ///
 /// Rust: `materials::gases::Gas`
-#[pyclass(name = "Gas", module = "rust_physics_engine.materials.gases", from_py_object)]
+#[pyclass(name = "Gas", module = "numeria.materials.gases", from_py_object)]
 #[derive(Clone)]
 pub struct PyGas { pub inner: rust_physics_engine::materials::gases::Gas }
 #[pymethods]

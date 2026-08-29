@@ -17,7 +17,7 @@ use pyo3::prelude::*;
 /// Dual number: `re` carries the value, `eps` the derivative.
 ///
 /// Rust: `core::dual::Dual`
-#[pyclass(name = "Dual", module = "rust_physics_engine.core.dual", from_py_object, eq)]
+#[pyclass(name = "Dual", module = "numeria.core.dual", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyDual { pub inner: rust_physics_engine::core::dual::Dual }
 #[pymethods]
@@ -274,7 +274,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyDualArg {
 /// Closed interval [lo, hi].
 ///
 /// Rust: `core::interval::Interval`
-#[pyclass(name = "Interval", module = "rust_physics_engine.core.interval", from_py_object, eq)]
+#[pyclass(name = "Interval", module = "numeria.core.interval", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyInterval { pub inner: rust_physics_engine::core::interval::Interval }
 #[pymethods]

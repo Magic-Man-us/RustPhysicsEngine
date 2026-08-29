@@ -20,7 +20,7 @@ use pyo3::prelude::*;
 /// of them the same way.
 ///
 /// Rust: `biophysics::epidemiology::EpidemicSample`
-#[pyclass(name = "EpidemicSample", module = "rust_physics_engine.biophysics.epidemiology", from_py_object, eq)]
+#[pyclass(name = "EpidemicSample", module = "numeria.biophysics.epidemiology", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyEpidemicSample { pub inner: rust_physics_engine::biophysics::epidemiology::EpidemicSample }
 #[pymethods]
@@ -111,7 +111,7 @@ impl<'a, 'py> pyo3::FromPyObject<'a, 'py> for PyEpidemicSampleArg {
 /// Morris-Lecar's parameters, in the squid axon's units.
 ///
 /// Rust: `biophysics::neuro::MorrisLecar`
-#[pyclass(name = "MorrisLecar", module = "rust_physics_engine.biophysics.neuro", from_py_object, eq)]
+#[pyclass(name = "MorrisLecar", module = "numeria.biophysics.neuro", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyMorrisLecar { pub inner: rust_physics_engine::biophysics::neuro::MorrisLecar }
 #[pymethods]
@@ -258,7 +258,7 @@ impl PyMorrisLecar {
 /// Which distance method a bootstrap replicate should use.
 ///
 /// Rust: `biophysics::phylo::DistanceMethod`
-#[pyclass(name = "DistanceMethod", module = "rust_physics_engine.biophysics.phylo", from_py_object, eq, eq_int)]
+#[pyclass(name = "DistanceMethod", module = "numeria.biophysics.phylo", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyDistanceMethod {
     Upgma,
@@ -295,7 +295,7 @@ impl PyDistanceMethod {
 /// unique node whose parent is `None`.
 ///
 /// Rust: `biophysics::phylo::PhyloTree`
-#[pyclass(name = "PhyloTree", module = "rust_physics_engine.biophysics.phylo", from_py_object, eq)]
+#[pyclass(name = "PhyloTree", module = "numeria.biophysics.phylo", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyPhyloTree { pub inner: rust_physics_engine::biophysics::phylo::PhyloTree }
 #[pymethods]
@@ -593,7 +593,7 @@ impl PyPhyloTree {
 /// Which of the four outcomes a two-species Lotka-Volterra competition has.
 ///
 /// Rust: `biophysics::population::Competition`
-#[pyclass(name = "Competition", module = "rust_physics_engine.biophysics.population", from_py_object, eq, eq_int)]
+#[pyclass(name = "Competition", module = "numeria.biophysics.population", from_py_object, eq, eq_int)]
 #[derive(Clone, Copy, PartialEq)]
 pub enum PyCompetition {
     Coexistence,
@@ -635,7 +635,7 @@ impl PyCompetition {
 /// A substitution and gap scoring scheme.
 ///
 /// Rust: `biophysics::seq_align::Scoring`
-#[pyclass(name = "Scoring", module = "rust_physics_engine.biophysics.seq_align", from_py_object)]
+#[pyclass(name = "Scoring", module = "numeria.biophysics.seq_align", from_py_object)]
 #[derive(Clone)]
 pub struct PyScoring { pub inner: rust_physics_engine::biophysics::seq_align::Scoring }
 #[pymethods]
@@ -710,7 +710,7 @@ impl PyScoring {
 /// A named substitution matrix over an alphabet.
 ///
 /// Rust: `biophysics::seq_align::SubstitutionMatrix`
-#[pyclass(name = "SubstitutionMatrix", module = "rust_physics_engine.biophysics.seq_align", from_py_object)]
+#[pyclass(name = "SubstitutionMatrix", module = "numeria.biophysics.seq_align", from_py_object)]
 #[derive(Clone)]
 pub struct PySubstitutionMatrix { pub inner: rust_physics_engine::biophysics::seq_align::SubstitutionMatrix }
 #[pymethods]

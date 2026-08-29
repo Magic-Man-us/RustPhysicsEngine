@@ -14,12 +14,12 @@ import sys
 
 import pytest
 
-import rust_physics_engine as rpe
+import numeria as nm
 
 
 def _all_modules():
     return [
-        sys.modules[f"rust_physics_engine.{d}"] for d in rpe._core.__submodules__
+        sys.modules[f"numeria.{d}"] for d in nm._core.__submodules__
     ]
 
 
@@ -31,12 +31,12 @@ def test_the_tree_is_large_and_complete():
 
 
 def test_every_module_is_attached_under_the_right_parent():
-    for dotted in rpe._core.__submodules__:
+    for dotted in nm._core.__submodules__:
         parent_name, _, leaf = dotted.rpartition(".")
         parent = (
-            sys.modules[f"rust_physics_engine.{parent_name}"] if parent_name else rpe
+            sys.modules[f"numeria.{parent_name}"] if parent_name else nm
         )
-        assert getattr(parent, leaf) is sys.modules[f"rust_physics_engine.{dotted}"]
+        assert getattr(parent, leaf) is sys.modules[f"numeria.{dotted}"]
 
 
 def test_no_public_name_raises_on_access():
@@ -107,7 +107,7 @@ def test_hundreds_of_classes_are_bound_and_printable():
                 continue
             obj = getattr(mod, name)
             if isinstance(obj, type) and getattr(obj, "__module__", "").startswith(
-                "rust_physics_engine"
+                "numeria"
             ):
                 classes.append(obj)
     # Aliases mean a class can appear twice; count the distinct ones.
@@ -118,16 +118,16 @@ def test_hundreds_of_classes_are_bound_and_printable():
 
 def test_no_name_collides_with_a_submodule():
     """A function and a submodule of the same name would shadow each other."""
-    for dotted in rpe._core.__submodules__:
-        mod = sys.modules[f"rust_physics_engine.{dotted}"]
+    for dotted in nm._core.__submodules__:
+        mod = sys.modules[f"numeria.{dotted}"]
         children = {
             d.rsplit(".", 1)[1]
-            for d in rpe._core.__submodules__
+            for d in nm._core.__submodules__
             if d.startswith(dotted + ".") and d.count(".") == dotted.count(".") + 1
         }
         for child in children:
             attr = getattr(mod, child)
-            assert attr is sys.modules[f"rust_physics_engine.{dotted}.{child}"], (
+            assert attr is sys.modules[f"numeria.{dotted}.{child}"], (
                 f"{dotted}.{child} is shadowed"
             )
 
@@ -137,21 +137,21 @@ def test_calling_a_representative_function_from_every_top_level_module():
     import math
 
     checks = {
-        "acoustics": lambda: rpe.acoustics.sabine_reverberation(100.0, 20.0),
-        "chemistry": lambda: rpe.chemistry.half_life_first_order(0.1),
-        "classical": lambda: rpe.classical.force(2.0, 3.0),
-        "electromagnetism": lambda: rpe.electromagnetism.coulomb_force(1e-6, 1e-6, 1.0),
-        "gravitation": lambda: rpe.gravitation.escape_velocity(5.972e24, 6.371e6),
-        "information_theory": lambda: rpe.information_theory.shannon_entropy([0.5, 0.5]),
-        "linalg": lambda: rpe.linalg.lu.solve([[1.0, 0.0], [0.0, 1.0]], [1.0, 2.0]),
-        "math": lambda: rpe.math.Vec3(1.0, 0.0, 0.0).magnitude(),
-        "numerical": lambda: rpe.numerical.integrate.simpson(math.sin, 0.0, 1.0, 100),
-        "optics": lambda: rpe.optics.snells_law(1.0, 0.5, 1.5),
-        "quantum": lambda: rpe.quantum.photon_energy(5e14),
-        "relativity": lambda: rpe.relativity.lorentz_factor(0.5 * 299_792_458.0),
-        "statistics": lambda: rpe.statistics.descriptive.mean([1.0, 2.0, 3.0]),
-        "thermodynamics": lambda: rpe.thermodynamics.carnot_efficiency(300.0, 600.0),
-        "transforms": lambda: rpe.transforms.fft.fft([1.0, 0.0]),
+        "acoustics": lambda: nm.acoustics.sabine_reverberation(100.0, 20.0),
+        "chemistry": lambda: nm.chemistry.half_life_first_order(0.1),
+        "classical": lambda: nm.classical.force(2.0, 3.0),
+        "electromagnetism": lambda: nm.electromagnetism.coulomb_force(1e-6, 1e-6, 1.0),
+        "gravitation": lambda: nm.gravitation.escape_velocity(5.972e24, 6.371e6),
+        "information_theory": lambda: nm.information_theory.shannon_entropy([0.5, 0.5]),
+        "linalg": lambda: nm.linalg.lu.solve([[1.0, 0.0], [0.0, 1.0]], [1.0, 2.0]),
+        "math": lambda: nm.math.Vec3(1.0, 0.0, 0.0).magnitude(),
+        "numerical": lambda: nm.numerical.integrate.simpson(math.sin, 0.0, 1.0, 100),
+        "optics": lambda: nm.optics.snells_law(1.0, 0.5, 1.5),
+        "quantum": lambda: nm.quantum.photon_energy(5e14),
+        "relativity": lambda: nm.relativity.lorentz_factor(0.5 * 299_792_458.0),
+        "statistics": lambda: nm.statistics.descriptive.mean([1.0, 2.0, 3.0]),
+        "thermodynamics": lambda: nm.thermodynamics.carnot_efficiency(300.0, 600.0),
+        "transforms": lambda: nm.transforms.fft.fft([1.0, 0.0]),
     }
     for name, call in checks.items():
         value = call()

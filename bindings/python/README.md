@@ -1,12 +1,13 @@
-# rust_physics_engine, from Python
+# Numeria
 
-Python bindings for [rust_physics_engine][crate] — 4,086 functions, 2,254
-methods, 416 classes and 106 constants across 71 domains, from Newtonian
-mechanics to Reed–Solomon codes, with no runtime dependencies on either
-side.
+The [rust_physics_engine][crate] library, from Python.
+
+4,086 functions, 2,254 methods, 416 classes and 106 constants across 71
+domains, from Newtonian mechanics to Reed–Solomon codes, with no runtime
+dependencies on either side.
 
 ```console
-$ pip install rust-physics-engine
+$ pip install numeria
 ```
 
 Wheels are published for Linux, macOS (universal2, so both Apple Silicon
@@ -29,13 +30,14 @@ $ maturin develop --release -m bindings/python/Cargo.toml
 
 ```python
 >>> import math
->>> import rust_physics_engine as rpe
->>> rpe.classical.projectile_range(speed=20.0, angle_rad=math.pi / 4, g=9.80665)
+>>> import numeria as nm
+>>> nm.classical.projectile_range(speed=20.0, angle_rad=math.pi / 4, g=9.80665)
 40.78864851911713
 ```
 
 Every Python module mirrors a Rust module of the same name, and every
-function keeps the name, the argument order and the units it has in Rust.
+function keeps the name, the argument order and the units it has in Rust,
+so `rust_physics_engine::linalg::lu::solve` is `numeria.linalg.lu.solve`.
 If you can read `docs/MODULE_MAP.md`, you can find your way around here.
 
 ## What the bindings add
@@ -48,8 +50,8 @@ and a raise; the variants that carry data carry it onto the exception.
 
 ```python
 >>> try:
-...     rpe.linalg.lu.solve([[1.0, 2.0], [2.0, 4.0]], [1.0, 2.0])
-... except rpe.SingularMatrixError as e:
+...     nm.linalg.lu.solve([[1.0, 2.0], [2.0, 4.0]], [1.0, 2.0])
+... except nm.SingularMatrixError as e:
 ...     print(e)
 matrix is singular or pivot below threshold
 ```
@@ -78,9 +80,9 @@ condition. Those become `InvalidArgumentError` carrying the assertion's
 own message, rather than aborting the interpreter:
 
 ```python
->>> rpe.classical.acceleration(force=10.0, mass=-1.0)
+>>> nm.classical.acceleration(force=10.0, mass=-1.0)
 Traceback (most recent call last):
-rust_physics_engine.InvalidArgumentError: mass must be positive
+numeria.InvalidArgumentError: mass must be positive
 ```
 
 **Small value types accept literals.** Anywhere a `Vec2`, `Vec3`, `Vec4`,
@@ -90,9 +92,9 @@ classes still exist, with their methods, their operators and their
 `tolist()`.
 
 ```python
->>> rpe.classical.position_3d((0, 0, 100), (5, 0, 0), (0, 0, -9.81), 2.0).tolist()
+>>> nm.classical.position_3d((0, 0, 100), (5, 0, 0), (0, 0, -9.81), 2.0).tolist()
 [10.0, 0.0, 80.38]
->>> v = rpe.math.Vec3(1, 2, 2)
+>>> v = nm.math.Vec3(1, 2, 2)
 >>> v.magnitude(), (v + (1, 0, 0)).tolist(), v[0], list(v)
 (3.0, [2.0, 2.0, 2.0], 1.0, [1.0, 2.0, 2.0])
 ```
@@ -107,9 +109,9 @@ they are translated rather than wrapped, and the round trip loses nothing:
 | `exact::rational::Rational` | `fractions.Fraction` |
 
 ```python
->>> rpe.exact.bigint.factorial(30)
+>>> nm.exact.bigint.factorial(30)
 265252859812191058636308480000000
->>> rpe.transforms.fft.fft([1, 0, 0, 0])
+>>> nm.transforms.fft.fft([1, 0, 0, 0])
 [(1+0j), (1+0j), (1+0j), (1+0j)]
 ```
 
@@ -118,9 +120,9 @@ they are translated rather than wrapped, and the round trip loses nothing:
 it does in Rust:
 
 ```python
->>> c = rpe.quantum.circuit.Circuit(2)
+>>> c = nm.quantum.circuit.Circuit(2)
 >>> c.h(0).cx(0, 1)                                  # a Bell pair
->>> state = c.run(rpe.quantum.circuit.QState.zero(2))
+>>> state = c.run(nm.quantum.circuit.QState.zero(2))
 >>> [round(abs(z) ** 2, 3) for z in state.amps]
 [0.5, 0.0, 0.0, 0.5]
 ```
@@ -131,9 +133,9 @@ of the call with its own traceback, rather than turning into a NaN:
 
 ```python
 >>> import math
->>> rpe.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
+>>> nm.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
 2.0000000000010805
->>> rpe.numerical.roots.newton_raphson(lambda x: x*x - 2, lambda x: 2*x, 1.0, 1e-12, 50)
+>>> nm.numerical.roots.newton_raphson(lambda x: x*x - 2, lambda x: 2*x, 1.0, 1e-12, 50)
 1.414213562373095
 ```
 
@@ -203,11 +205,12 @@ PyPI will not let a version be re-uploaded even after it is deleted — so
 tagging `v0.2.0` against a `Cargo.toml` that still says `0.1.0` is a
 mistake with no undo.
 
-Before the first release, PyPI has to be told to trust the workflow, and
-the repository needs an Environment named `pypi`; the header of that
-workflow file says exactly what to enter where. Putting a required
-reviewer on that environment makes every publish wait for a human, which
-is worth doing for the same reason.
+PyPI's trusted publisher for `numeria` is pinned to this repository, to
+the file name `python-release.yml`, and to the `pypi` environment. Renaming
+any of those three breaks the release until PyPI is told about it — the
+header of that workflow file spells them out. Putting a required reviewer
+on the `pypi` environment makes every publish wait for a human, which is
+worth doing for the same reason the version check exists.
 
 ## Performance notes
 

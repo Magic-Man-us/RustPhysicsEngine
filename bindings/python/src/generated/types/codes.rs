@@ -22,7 +22,7 @@ use pyo3::prelude::*;
 /// smaller would.
 ///
 /// Rust: `codes::block::Gf2Matrix`
-#[pyclass(name = "Gf2Matrix", module = "rust_physics_engine.codes.block", from_py_object, eq)]
+#[pyclass(name = "Gf2Matrix", module = "numeria.codes.block", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGf2Matrix { pub inner: rust_physics_engine::codes::block::Gf2Matrix }
 #[pymethods]
@@ -287,7 +287,7 @@ impl PyGf2Matrix {
 /// a codeword exactly when its syndrome vanishes.
 ///
 /// Rust: `codes::block::LinearCode`
-#[pyclass(name = "LinearCode", module = "rust_physics_engine.codes.block", from_py_object)]
+#[pyclass(name = "LinearCode", module = "numeria.codes.block", from_py_object)]
 #[derive(Clone)]
 pub struct PyLinearCode { pub inner: rust_physics_engine::codes::block::LinearCode }
 #[pymethods]
@@ -670,7 +670,7 @@ impl PyLinearCode {
 /// Packs bits into bytes, most significant bit first.
 ///
 /// Rust: `codes::compression::BitWriter`
-#[pyclass(name = "BitWriter", module = "rust_physics_engine.codes.compression", from_py_object)]
+#[pyclass(name = "BitWriter", module = "numeria.codes.compression", from_py_object)]
 #[derive(Clone)]
 pub struct PyBitWriter { pub inner: rust_physics_engine::codes::compression::BitWriter }
 #[pymethods]
@@ -741,7 +741,7 @@ impl PyBitWriter {
 /// One LZ77 token: a back reference and the literal that follows it.
 ///
 /// Rust: `codes::compression::Lz77Token`
-#[pyclass(name = "Lz77Token", module = "rust_physics_engine.codes.compression", from_py_object, eq)]
+#[pyclass(name = "Lz77Token", module = "numeria.codes.compression", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyLz77Token { pub inner: rust_physics_engine::codes::compression::Lz77Token }
 #[pymethods]
@@ -795,7 +795,7 @@ impl PyLz77Token {
 /// generator is the current input and bit zero the oldest bit in memory.
 ///
 /// Rust: `codes::convolutional::ConvolutionalCode`
-#[pyclass(name = "ConvolutionalCode", module = "rust_physics_engine.codes.convolutional", from_py_object, eq)]
+#[pyclass(name = "ConvolutionalCode", module = "numeria.codes.convolutional", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyConvolutionalCode { pub inner: rust_physics_engine::codes::convolutional::ConvolutionalCode }
 #[pymethods]
@@ -1013,7 +1013,7 @@ impl PyConvolutionalCode {
 /// the first encoder.
 ///
 /// Rust: `codes::convolutional::RscCode`
-#[pyclass(name = "RscCode", module = "rust_physics_engine.codes.convolutional", from_py_object, eq)]
+#[pyclass(name = "RscCode", module = "numeria.codes.convolutional", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyRscCode { pub inner: rust_physics_engine::codes::convolutional::RscCode }
 #[pymethods]
@@ -1189,7 +1189,7 @@ impl PyRscCode {
 /// second seeing it through an interleaver.
 ///
 /// Rust: `codes::convolutional::TurboCode`
-#[pyclass(name = "TurboCode", module = "rust_physics_engine.codes.convolutional", from_py_object)]
+#[pyclass(name = "TurboCode", module = "numeria.codes.convolutional", from_py_object)]
 #[derive(Clone)]
 pub struct PyTurboCode { pub inner: rust_physics_engine::codes::convolutional::TurboCode }
 #[pymethods]
@@ -1297,7 +1297,7 @@ impl PyTurboCode {
 /// is what makes the whole subject possible.
 ///
 /// Rust: `codes::crypto_math::EcCurve`
-#[pyclass(name = "EcCurve", module = "rust_physics_engine.codes.crypto_math", from_py_object, eq)]
+#[pyclass(name = "EcCurve", module = "numeria.codes.crypto_math", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyEcCurve { pub inner: rust_physics_engine::codes::crypto_math::EcCurve }
 #[pymethods]
@@ -1538,7 +1538,7 @@ impl PyEcCurve {
 /// A point on a short Weierstrass curve, or the point at infinity.
 ///
 /// Rust: `codes::crypto_math::EcPoint`
-#[pyclass(name = "EcPoint", module = "rust_physics_engine.codes.crypto_math", from_py_object, eq)]
+#[pyclass(name = "EcPoint", module = "numeria.codes.crypto_math", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyEcPoint { pub inner: rust_physics_engine::codes::crypto_math::EcPoint }
 #[pymethods]
@@ -1559,7 +1559,7 @@ impl PyEcPoint {
 /// distance" means -- the true distance can be larger, and often is.
 ///
 /// Rust: `codes::reed_solomon::BchCode`
-#[pyclass(name = "BchCode", module = "rust_physics_engine.codes.reed_solomon", from_py_object)]
+#[pyclass(name = "BchCode", module = "numeria.codes.reed_solomon", from_py_object)]
 #[derive(Clone)]
 pub struct PyBchCode { pub inner: rust_physics_engine::codes::reed_solomon::BchCode }
 #[pymethods]
@@ -1666,7 +1666,7 @@ impl PyBchCode {
 /// exponents never needs reducing modulo 255 at the point of use.
 ///
 /// Rust: `codes::reed_solomon::Gf256`
-#[pyclass(name = "Gf256", module = "rust_physics_engine.codes.reed_solomon", from_py_object)]
+#[pyclass(name = "Gf256", module = "numeria.codes.reed_solomon", from_py_object)]
 #[derive(Clone)]
 pub struct PyGf256 { pub inner: rust_physics_engine::codes::reed_solomon::Gf256 }
 #[pymethods]
@@ -1819,7 +1819,7 @@ impl PyGf256 {
 /// A general binary extension field `GF(2^m)`, elements held as bit patterns.
 ///
 /// Rust: `codes::reed_solomon::Gf2m`
-#[pyclass(name = "Gf2m", module = "rust_physics_engine.codes.reed_solomon", from_py_object, eq)]
+#[pyclass(name = "Gf2m", module = "numeria.codes.reed_solomon", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGf2m { pub inner: rust_physics_engine::codes::reed_solomon::Gf2m }
 #[pymethods]
@@ -1982,7 +1982,7 @@ impl PyGf2m {
 /// A prime field `GF(p)`, for the places a power of two is the wrong shape.
 ///
 /// Rust: `codes::reed_solomon::GfP`
-#[pyclass(name = "GfP", module = "rust_physics_engine.codes.reed_solomon", from_py_object, eq)]
+#[pyclass(name = "GfP", module = "numeria.codes.reed_solomon", from_py_object, eq)]
 #[derive(Clone, PartialEq)]
 pub struct PyGfP { pub inner: rust_physics_engine::codes::reed_solomon::GfP }
 #[pymethods]
@@ -2079,7 +2079,7 @@ impl PyGfP {
 /// appended.
 ///
 /// Rust: `codes::reed_solomon::ReedSolomon`
-#[pyclass(name = "ReedSolomon", module = "rust_physics_engine.codes.reed_solomon", from_py_object)]
+#[pyclass(name = "ReedSolomon", module = "numeria.codes.reed_solomon", from_py_object)]
 #[derive(Clone)]
 pub struct PyReedSolomon { pub inner: rust_physics_engine::codes::reed_solomon::ReedSolomon }
 #[pymethods]

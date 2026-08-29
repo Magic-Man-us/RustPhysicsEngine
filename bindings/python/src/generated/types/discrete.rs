@@ -22,7 +22,7 @@ use pyo3::prelude::*;
 /// Disjoint-set forest over the elements `0..n`.
 ///
 /// Rust: `discrete::disjoint_set::DisjointSet`
-#[pyclass(name = "DisjointSet", module = "rust_physics_engine.discrete.disjoint_set", from_py_object)]
+#[pyclass(name = "DisjointSet", module = "numeria.discrete.disjoint_set", from_py_object)]
 #[derive(Clone)]
 pub struct PyDisjointSet { pub inner: rust_physics_engine::discrete::disjoint_set::DisjointSet }
 #[pymethods]
