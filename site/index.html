@@ -54,7 +54,7 @@ try { var t = localStorage.getItem('rpe-theme');
       mathematics and engineering computation</h1>
     <p class="lede">
       The aim is not breadth for its own sake. Every routine here is written so that
-      something about it can be <em>checked</em> &mdash; against a closed form, against a
+      something about it can be <em>checked</em>: against a closed form, against a
       conservation law, against an independent implementation of the same quantity, or
       against an exact identity over integers. A test that only asserts a function ran
       is not evidence, and the test suite is built around that distinction. Where a
@@ -98,8 +98,8 @@ try { var t = localStorage.getItem('rpe-theme');
           <tr><th>Public types</th>
               <td>431 structs, enums and traits</td></tr>
           <tr><th>Top-level modules</th>
-              <td>71 public, across 296 source files &mdash; see the
-                  <a href="module-map.html">module map</a></td></tr>
+              <td>71 public, across 296 source files (see the
+                  <a href="module-map.html">module map</a>)</td></tr>
           <tr><th>Source</th><td>266,122 lines of Rust</td></tr>
           <tr><th>Unit tests</th><td>4,193</td></tr>
           <tr><th>Property tests</th><td>577, across 49 files</td></tr>
@@ -113,7 +113,7 @@ try { var t = localStorage.getItem('rpe-theme');
               <td>every module carries a <code>//!</code> summary; <code>cargo doc</code> is
                   warning-free, and CI denies rustdoc warnings</td></tr>
           <tr><th>Dependencies</th>
-              <td>none &mdash; <code>Cargo.lock</code> holds exactly one package</td></tr>
+              <td>none. <code>Cargo.lock</code> holds exactly one package</td></tr>
           <tr><th>Edition</th><td>2021, <code>f64</code> throughout</td></tr>
         </tbody>
       </table>
@@ -206,7 +206,7 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
 
     <div class="filters">
       <input class="search" id="module-search" type="search" autocomplete="off"
-             placeholder="Filter modules &mdash; wavelet, orbit, prime, tensor&hellip;"
+             placeholder="Filter modules: wavelet, orbit, prime, tensor&hellip;"
              aria-label="Filter modules">
       <span class="count" id="module-count"></span>
     </div>
@@ -214,7 +214,7 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
 
     <div class="grid-modules" id="module-grid">
       <p class="empty">
-        Module data is generated at build time &mdash; see
+        Module data is generated at build time. See
         <a href="module-map.html">the module map</a>.
       </p>
     </div>
@@ -261,9 +261,9 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
         <h3>Miri <span class="tag">no unsafe</span></h3>
         <p>
           The crate contains no <code>unsafe</code>, so Miri is a backstop rather than
-          the primary check. It runs against <code>core::</code> &mdash; the interval and
-          dual-number arithmetic, where index and slice reasoning is densest &mdash; under
-          <code>-Zmiri-strict-provenance</code>.
+          the primary check. It runs under <code>-Zmiri-strict-provenance</code> against
+          <code>core::</code>, the interval and dual-number arithmetic, where index and
+          slice reasoning is densest.
         </p>
       </div>
     </div>
@@ -276,8 +276,8 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
       </p>
       <ul class="checklist">
         <li><span class="dot"></span><span>
-          <b>The strong Lucas test</b> &mdash; the second half of Baillie&ndash;PSW &mdash;
-          was replaced wholesale with <code>return true</code>, and the entire suite
+          <b>The strong Lucas test</b>, the second half of Baillie&ndash;PSW, was
+          replaced wholesale with <code>return true</code>, and the entire suite
           stayed green. Composites are rejected by Miller&ndash;Rabin first, so the Lucas
           branch is essentially never reached in practice. It is now tested directly
           against the strong Lucas pseudoprimes below 20,000 (5459, 5777, 10877, 16109,
@@ -310,7 +310,7 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
         this crate.
       </span></li>
       <li><span class="dot"></span><span>
-        <b><code>f64</code> throughout</b>, except where exactness is the point &mdash;
+        <b><code>f64</code> throughout</b>, except where exactness is the point:
         <code>exact</code> works over arbitrary-precision integers and rationals, and
         <code>units::dimensional</code> computes null spaces over <code>Rational</code>
         because a group is exactly dimensionless or it is not.
@@ -329,9 +329,9 @@ assert_eq!(one, Rational::one());                // not 0.9999999999999999</code
       </span></li>
       <li><span class="dot"></span><span>
         <b>Documented specification choices.</b> Where a definition is genuinely
-        ambiguous &mdash; the Frobenius number with a unit coin, Stern&ndash;Brocot
-        indexing, which parenthesization a unit string means &mdash; the reading is
-        stated in the doc comment rather than left implicit.
+        ambiguous (the Frobenius number with a unit coin, Stern&ndash;Brocot indexing,
+        which parenthesization a unit string means), the reading is stated in the doc
+        comment rather than left implicit.
       </span></li>
     </ul>
   </div>

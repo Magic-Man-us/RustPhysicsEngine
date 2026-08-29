@@ -1,4 +1,4 @@
-/* rust_physics_engine — site styles.
+/* rust_physics_engine site styles.
    No webfonts and no framework: the crate has no dependencies and the site
    loads nothing it does not serve itself. Everything below is driven by the
    tokens in :root, which is also how the light theme is a re-declaration

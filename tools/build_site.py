@@ -70,7 +70,7 @@ def module_rows() -> tuple[list[dict], dict]:
     for top in sorted({m.split("::")[0] for m in mods if m != "lib"} & public):
         files = [m for name, m in mods.items()
                  if name == top or name.startswith(f"{top}::")]
-        summary = mods.get(top, {}).get("summary", "—").replace(r"\|", "|")
+        summary = mods.get(top, {}).get("summary", "-").replace(r"\|", "|")
         rows.append({
             "name": top,
             "area": area_of.get(top, "Other"),
@@ -401,7 +401,7 @@ def build_doc_pages(out: str) -> None:
   </article>
 </div>"""
         with open(os.path.join(out, page), "w", encoding="utf-8") as fh:
-            fh.write(shell(f"{title} — rust_physics_engine", description,
+            fh.write(shell(f"{title} \u00b7 rust_physics_engine", description,
                            article, page.replace(".html", "")))
 
 

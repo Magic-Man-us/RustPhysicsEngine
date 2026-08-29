@@ -16,7 +16,7 @@
 
 A zero-dependency Rust library for physics, mathematics and engineering computation.
 
-**[rust-physics-engine.mimsec.com](https://rust-physics-engine.mimsec.com)** — the
+**[rust-physics-engine.mimsec.com](https://rust-physics-engine.mimsec.com)** has the
 guide, a searchable index of all 71 modules, and the full API documentation built
 from the current commit.
 
@@ -982,7 +982,7 @@ python3 -m http.server --directory _site
 ```
 
 That builds everything except `/api`, which is `cargo doc --no-deps` output
-copied to `_site/api` — the workflow does it in one more step.
+copied to `_site/api`. The workflow does it in one more step.
 
 ## License
 
