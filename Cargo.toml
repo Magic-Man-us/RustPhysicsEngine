@@ -2,7 +2,7 @@
 name = "rust_physics_engine"
 version = "0.2.0"
 edition = "2021"
-description = "A zero-dependency Rust library for physics, mathematics and engineering computation — 6,365 public functions across 71 modules"
+description = "A zero-dependency Rust library for physics, mathematics and engineering computation — 4,124 public functions across 295 modules"
 license = "MIT"
 repository = "https://github.com/Magic-Man-us/RustPhysicsEngine"
 homepage = "https://github.com/Magic-Man-us/RustPhysicsEngine"
