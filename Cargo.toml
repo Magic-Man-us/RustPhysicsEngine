@@ -1,8 +1,8 @@
 [package]
 name = "rust_physics_engine"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "A comprehensive, zero-dependency Rust library for physics, mathematics, and engineering computation — 1,600+ validated functions covering 50+ domains"
+description = "A zero-dependency Rust library for physics, mathematics and engineering computation — 6,365 public functions across 71 modules"
 license = "MIT"
 repository = "https://github.com/Magic-Man-us/RustPhysicsEngine"
 homepage = "https://github.com/Magic-Man-us/RustPhysicsEngine"
