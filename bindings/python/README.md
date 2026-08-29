@@ -9,7 +9,12 @@ side.
 $ pip install ./bindings/python
 ```
 
-or, to work on the bindings themselves, from an activated virtualenv:
+That builds from source, so it needs a Rust toolchain. Pushing a `v*` tag
+builds a wheel for Linux, macOS (universal2, so both Apple Silicon and
+Intel) and Windows, which need no toolchain to install; they are attached
+to that workflow run as artefacts.
+
+To work on the bindings themselves, from an activated virtualenv:
 
 ```console
 $ pip install maturin

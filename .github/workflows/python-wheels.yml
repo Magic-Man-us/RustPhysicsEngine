@@ -1,0 +1,85 @@
+name: Python wheels
+
+# Release artefacts for the Python bindings: one wheel per platform.
+#
+# This is a file of its own rather than a job in python.yml, and that is
+# the point. python.yml runs on every push and every pull request; this
+# one has a single trigger, `push: tags`, and no `branches` and no
+# `pull_request` key at all. It is not possible for a branch push or a
+# pull request to reach these runners -- not because a condition says so
+# and could be edited away, but because there is no event wired to them.
+#
+# That matters because of what they cost. macOS runners bill at ten times
+# the ubuntu rate and Windows at twice, so on a private repository these
+# three jobs are worth roughly fourteen ubuntu-minutes per platform-build.
+# Once per release is a fair price. Once per pull request is not, which is
+# why the two workflows are kept apart.
+#
+# The `if:` on each job is redundant with the trigger. It is there so that
+# anyone who later adds a second event to this file has to notice these
+# jobs before they start running on it.
+#
+# Every `run:` is quoted, for the reason given in verify.yml: an unquoted
+# value containing a colon followed by a space parses as a nested mapping
+# and invalidates the file.
+
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  linux:
+    name: "Wheel (Linux x86_64)"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # `manylinux: auto` builds inside a manylinux container, so the
+      # wheel is not pinned to whatever glibc this runner happens to
+      # carry. Building with plain `maturin build` here produces a
+      # manylinux_2_35 tag that will not install on an older distribution.
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          manylinux: auto
+          args: "--release --out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-linux-x86_64
+          path: dist
+
+  macos:
+    name: "Wheel (macOS universal2)"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      # One universal2 wheel covers both Apple Silicon and Intel, so this
+      # is a single mac runner rather than two. At ten times the ubuntu
+      # rate that halving is the whole reason for the target choice.
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: universal2-apple-darwin
+          args: "--release --out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-macos-universal2
+          path: dist
+
+  windows:
+    name: "Wheel (Windows x64)"
+    if: "startsWith(github.ref, 'refs/tags/v')"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: x64
+          args: "--release --out dist --manifest-path bindings/python/Cargo.toml"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-windows-x64
+          path: dist
