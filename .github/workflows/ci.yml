@@ -90,6 +90,14 @@ jobs:
       - name: Every module is documented
         run: python3 tools/check_module_docs.py
 
+      # The counts quoted in Cargo.toml, pyproject.toml and the READMEs are
+      # written by hand from the two generated files above. This pins them
+      # to those files, so a library that grows fails the build instead of
+      # shipping a stale figure to a registry, where the description of a
+      # published version cannot be edited.
+      - name: Quoted counts match the generated figures
+        run: python3 tools/check_counts.py
+
   coverage:
     name: Coverage
     runs-on: ubuntu-latest

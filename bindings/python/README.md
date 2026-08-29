@@ -148,7 +148,7 @@ extension.
 ## What is not bound
 
 4,086 of the library's 4,149 free functions, 2,254 of its 2,277 methods,
-416 of its 426 types and all 106 of its constants, across 296 modules.
+416 of its 426 types and all 106 of its constants, across 295 modules.
 
 The rest is mostly three things: functions generic over a type parameter,
 which cannot be monomorphised without knowing what to monomorphise to;
