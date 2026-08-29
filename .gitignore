@@ -2,4 +2,5 @@
 *.profraw
 /bindings/python/target
 /bindings/python/**/__pycache__
-*.so
+# Where `maturin develop` drops the built extension.
+/bindings/python/python/rust_physics_engine/*.so
