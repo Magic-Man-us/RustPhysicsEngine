@@ -6,13 +6,19 @@ mechanics to Reed–Solomon codes, with no runtime dependencies on either
 side.
 
 ```console
-$ pip install ./bindings/python
+$ pip install rust-physics-engine
 ```
 
-That builds from source, so it needs a Rust toolchain. Pushing a `v*` tag
-builds a wheel for Linux, macOS (universal2, so both Apple Silicon and
-Intel) and Windows, which need no toolchain to install; they are attached
-to that workflow run as artefacts.
+Wheels are published for Linux, macOS (universal2, so both Apple Silicon
+and Intel) and Windows, and need no Rust toolchain. Anywhere else, pip
+falls back to the source distribution, which carries the library with it
+and builds against that copy — a Rust toolchain is the only requirement.
+
+To build from a checkout instead:
+
+```console
+$ pip install ./bindings/python
+```
 
 To work on the bindings themselves, from an activated virtualenv:
 
@@ -179,6 +185,29 @@ three type identifications (`coerce.rs`), and the callable adapter
 like `__getitem__`, a method defined by a `macro_rules!` the scanner
 cannot see — is declared in a table at the top of `generate.py` and
 spliced in, so there is one place to look.
+
+## Releasing
+
+`.github/workflows/python-release.yml` runs on a `v*` tag and nothing
+else, and publishes to PyPI by Trusted Publishing — there is no API token
+in the repository to leak or rotate.
+
+```console
+$ # bump the version in Cargo.toml and bindings/python/Cargo.toml together
+$ python3 bindings/python/check_version.py v0.2.0
+$ git tag v0.2.0 && git push origin v0.2.0
+```
+
+The tag check runs first, before any runner minutes are spent, because
+PyPI will not let a version be re-uploaded even after it is deleted — so
+tagging `v0.2.0` against a `Cargo.toml` that still says `0.1.0` is a
+mistake with no undo.
+
+Before the first release, PyPI has to be told to trust the workflow, and
+the repository needs an Environment named `pypi`; the header of that
+workflow file says exactly what to enter where. Putting a required
+reviewer on that environment makes every publish wait for a human, which
+is worth doing for the same reason.
 
 ## Performance notes
 

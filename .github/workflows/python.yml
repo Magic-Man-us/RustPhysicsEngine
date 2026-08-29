@@ -54,6 +54,13 @@ jobs:
       - name: The committed bindings match the source
         run: "python3 bindings/python/generate.py --check"
 
+      # Checked here as well as at release time, because a mismatch
+      # introduced now is cheapest to fix now. At release time the same
+      # check is the last thing standing between a wrong version number
+      # and a PyPI upload that cannot be taken back.
+      - name: The crate and the bindings claim one version
+        run: "python3 bindings/python/check_version.py"
+
       # `pip install` rather than `maturin develop`: develop wants a
       # virtualenv to install into, and setup-python does not make one.
       - name: Build and install
