@@ -10,10 +10,15 @@
   <a href="https://github.com/Magic-Man-us/RustPhysicsEngine/actions/workflows/verify.yml"><img src="https://img.shields.io/badge/kani-20_harnesses-blueviolet" alt="Kani"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License: MIT"></a>
   <a href="https://www.rust-lang.org/"><img src="https://img.shields.io/badge/rust-stable-orange.svg" alt="Rust"></a>
+  <a href="https://rust-physics-engine.mimsec.com"><img src="https://img.shields.io/badge/website-rust--physics--engine.mimsec.com-58a6ff" alt="Website"></a>
   <a href="https://github.com/Magic-Man-us/RustPhysicsEngine"><img src="https://img.shields.io/badge/dependencies-zero-blue" alt="Zero Dependencies"></a>
 </p>
 
 A zero-dependency Rust library for physics, mathematics and engineering computation.
+
+**[rust-physics-engine.mimsec.com](https://rust-physics-engine.mimsec.com)** — the
+guide, a searchable index of all 71 modules, and the full API documentation built
+from the current commit.
 
 The aim is not breadth for its own sake. Every routine here is written so that
 something about it can be *checked* — against a closed form, against a
@@ -957,7 +962,27 @@ strict Clippy pass.
   recent tranche of work was built against, with the function signatures and
   the property each module had to satisfy. Marked complete.
 - `cargo doc --no-deps --open` — the API documentation. The crate root carries
-  an orientation page; every module has a summary.
+  an orientation page; every module has a summary. The same output is published
+  at [rust-physics-engine.mimsec.com/api](https://rust-physics-engine.mimsec.com/api/rust_physics_engine/index.html),
+  rebuilt from `main` on every push.
+
+## The website
+
+[rust-physics-engine.mimsec.com](https://rust-physics-engine.mimsec.com) is
+assembled by [`tools/build_site.py`](tools/build_site.py) and published by
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml). The static files
+live in [`site/`](site); the guide and the module map are converted from the
+markdown in [`docs/`](docs) at build time, and the per-module figures come from
+the same scanner that generates `docs/MODULE_MAP.md`, so the front page cannot
+quote a number the map disagrees with. Nothing generated is committed.
+
+```bash
+python3 tools/build_site.py            # assemble into _site/
+python3 -m http.server --directory _site
+```
+
+That builds everything except `/api`, which is `cargo doc --no-deps` output
+copied to `_site/api` — the workflow does it in one more step.
 
 ## License
 

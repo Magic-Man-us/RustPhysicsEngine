@@ -5,13 +5,13 @@ edition = "2021"
 description = "A zero-dependency Rust library for physics, mathematics and engineering computation — 6,365 public functions across 71 modules"
 license = "MIT"
 repository = "https://github.com/Magic-Man-us/RustPhysicsEngine"
-homepage = "https://github.com/Magic-Man-us/RustPhysicsEngine"
+homepage = "https://rust-physics-engine.mimsec.com"
 documentation = "https://docs.rs/rust_physics_engine"
 readme = "README.md"
 keywords = ["physics", "mathematics", "simulation", "science", "engineering"]
 categories = ["science", "mathematics", "simulation"]
 authors = ["Magic-Man <mimsec-contact@mimsec.com>"]
-exclude = ["assets/", ".github/", "*.profraw"]
+exclude = ["assets/", ".github/", "site/", "*.profraw"]
 
 [dependencies]
 

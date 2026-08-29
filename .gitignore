@@ -4,3 +4,8 @@
 /bindings/python/**/__pycache__
 # Where `maturin develop` drops the built extension.
 /bindings/python/python/rust_physics_engine/*.so
+
+# The assembled site. Built by tools/build_site.py, published by the Pages
+# workflow; nothing in it is committed.
+/_site
+/tools/__pycache__

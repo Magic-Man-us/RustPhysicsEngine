@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rust_physics_engine — checkable physics, mathematics and engineering in Rust</title>
+<meta name="description" content="A zero-dependency Rust library for physics, mathematics and engineering computation. 6,365 public functions across 71 modules, every one written so that something about it can be checked.">
+<link rel="canonical" href="https://rust-physics-engine.mimsec.com/">
+<meta property="og:title" content="rust_physics_engine">
+<meta property="og:description" content="A zero-dependency Rust library for physics, mathematics and engineering computation — 6,365 public functions across 71 modules, each written so that something about it can be checked.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rust-physics-engine.mimsec.com/">
+<meta property="og:image" content="https://rust-physics-engine.mimsec.com/assets/banner.svg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+<script>
+// Applied before first paint so a light-theme reader never sees a dark flash.
+try { var t = localStorage.getItem('rpe-theme');
+      if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="bar">
+    <a class="wordmark" href="index.html">
+      <span class="mark" aria-hidden="true"></span>
+      rust_physics_engine
+    </a>
+    <nav class="nav">
+      <a href="#modules">Modules</a>
+      <a href="guide.html">Guide</a>
+      <a href="module-map.html">Module map</a>
+      <a href="api/rust_physics_engine/index.html">API</a>
+      <a href="#python">Python</a>
+    </nav>
+    <div class="header-actions">
+      <a class="ghost" href="https://github.com/Magic-Man-us/RustPhysicsEngine">GitHub</a>
+      <button class="theme" type="button" id="theme-toggle"
+              aria-label="Switch between light and dark theme"></button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ------------------------------------------------------------- hero -->
+<section class="hero">
+  <div class="inner">
+    <p class="eyebrow">Zero dependencies · Rust 2021 · MIT</p>
+    <h1>Physics and mathematics that<br><span class="grad">check their own answers</span></h1>
+    <p class="lede">
+      <strong data-total="fns">6,365</strong> public functions and methods across
+      <strong data-total="modules">71</strong> modules, and not one of them ships on
+      the strength of having run without panicking. Every routine here is written so
+      that something about it can be <em>checked</em> — against a closed form, a
+      conservation law, an independent implementation, or an exact identity over
+      integers.
+    </p>
+
+    <div class="cta">
+      <a class="btn btn-primary" href="guide.html">Read the guide</a>
+      <a class="btn btn-secondary" href="api/rust_physics_engine/index.html">API documentation</a>
+      <a class="btn btn-secondary" href="https://github.com/Magic-Man-us/RustPhysicsEngine">Source</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat rust">
+        <b data-total="fns">6,365</b><span>public functions &amp; methods</span>
+      </div>
+      <div class="stat blue">
+        <b data-total="modules">71</b><span>top-level modules</span>
+      </div>
+      <div class="stat green"><b>4,770</b><span>tests passing</span></div>
+      <div class="stat green"><b>97.89%</b><span>line coverage</span></div>
+      <div class="stat violet"><b>20</b><span>Kani proof harnesses</span></div>
+      <div class="stat rust"><b>0</b><span>dependencies</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------- the premise -->
+<section>
+  <div class="inner">
+    <div class="section-head">
+      <h2>A test that only asserts a function ran is not evidence</h2>
+      <p>
+        The aim is not breadth for its own sake. Breadth is what you get when the
+        thing you actually insist on — that every result has something to be
+        measured against — turns out to be possible in one field after another.
+      </p>
+    </div>
+
+    <div class="cols cols-3">
+      <div class="card">
+        <h3>Stated error bounds</h3>
+        <p>
+          Where a result is approximate the tolerance comes from the method's own
+          error term, not from a number tuned until the test went green. Where it is
+          exact the assertion uses <code>==</code>.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Failure you can tell apart</h3>
+        <p>
+          Solvers return <code>Result</code> rather than panicking on
+          non-convergence, so a caller can distinguish “did not converge” from
+          “converged, to this”.
+        </p>
+      </div>
+      <div class="card">
+        <h3>NaN is rejected, not ignored</h3>
+        <p>
+          Argument guards are written <code>!(x &gt; 0.0)</code> rather than
+          <code>x &lt;= 0.0</code>, so a NaN fails the check instead of sliding
+          through it.
+        </p>
+      </div>
+      <div class="card">
+        <h3>One table per constant</h3>
+        <p>
+          Physical constants come from <code>math::constants</code>; anything
+          elsewhere is a re-export, and a test enforces the agreement. The values
+          fixed by the 2019 SI redefinition are exact.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Dimensions in the type</h3>
+        <p>
+          <code>units::quantity</code> carries dimensions alongside the number, so
+          adding a velocity to a time is a compile-time-shaped error rather than a
+          plausible-looking float.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Exactness where it matters</h3>
+        <p>
+          <code>f64</code> throughout, except where it would be wrong to be:
+          <code>exact</code> works over arbitrary-precision integers and rationals,
+          and dimensional null spaces are computed over <code>Rational</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ install -->
+<section class="alt">
+  <div class="inner">
+    <div class="section-head">
+      <h2>Install and run something</h2>
+      <p>
+        The Rust snippet below is <code>examples/readme_quickstart.rs</code>,
+        compiled and run by CI on every push, so it cannot drift out of date.
+      </p>
+    </div>
+
+    <div class="cols cols-2">
+      <div>
+        <div class="tabs" data-tabs role="tablist" aria-label="Language">
+          <button class="tab" type="button" role="tab" id="tab-rust"
+                  aria-controls="panel-rust" aria-selected="true">Rust</button>
+          <button class="tab" type="button" role="tab" id="tab-python"
+                  aria-controls="panel-python" aria-selected="false">Python</button>
+        </div>
+
+        <div id="panel-rust" role="tabpanel" aria-labelledby="tab-rust" class="panel">
+          <div class="code">
+            <button class="copy" type="button" aria-label="Copy code">Copy</button>
+<pre><code class="lang-toml">[dependencies]
+rust_physics_engine = { git = "https://github.com/Magic-Man-us/RustPhysicsEngine" }</code></pre>
+          </div>
+        </div>
+
+        <div id="panel-python" role="tabpanel" aria-labelledby="tab-python" class="panel" hidden>
+          <div class="code">
+            <button class="copy" type="button" aria-label="Copy code">Copy</button>
+<pre><code class="lang-console">$ pip install numeria</code></pre>
+          </div>
+        </div>
+
+        <div class="note">
+          <h3>Nothing else comes with it</h3>
+          <p>
+            <code>Cargo.lock</code> holds exactly one package: this crate. No
+            transitive tree to audit, no version resolution to lose an afternoon to,
+            and no build script.
+          </p>
+        </div>
+      </div>
+
+      <div class="code">
+        <button class="copy" type="button" aria-label="Copy code">Copy</button>
+<pre><code class="lang-rust">use rust_physics_engine::classical::projectile_range;
+use rust_physics_engine::exact::rational::Rational;
+use rust_physics_engine::math::constants::{C, G};
+use rust_physics_engine::units::quantity::{Dim, Quantity};
+
+// Ballistics: v0 = 50 m/s, theta = 45 degrees, g = 9.81 m/s^2
+let range = projectile_range(50.0, std::f64::consts::FRAC_PI_4, 9.81);
+assert!((range - 254.841_997_961).abs() &lt; 1e-9);
+
+// Constants come from one table. A black hole's Schwarzschild radius:
+let solar_mass = 1.989e30;
+let r_s = 2.0 * G * solar_mass / (C * C);        // about 2.95 km
+
+// Quantities carry their dimensions, and addition checks them.
+let v = Quantity::new(3.0, Dim::new(1, 0, -1, 0, 0, 0, 0)); // m/s
+let t = Quantity::new(2.0, Dim::TIME);
+let d = v.mul(&amp;t).unwrap();                      // 6 m — a length, exactly
+assert!(v.add(&amp;t).is_err());                     // a velocity is not a time
+
+// Exact rational arithmetic over arbitrary-precision integers.
+let third = Rational::from_i64(1, 3);
+let one = third.mul(&amp;Rational::from_i64(3, 1));
+assert_eq!(one, Rational::one());                // not 0.9999999999999999</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------ modules -->
+<section id="modules">
+  <div class="inner">
+    <div class="section-head">
+      <h2>What's in it</h2>
+      <p>
+        <span data-total="modules">71</span> public modules across
+        <span data-total="files">296</span> source files. Search by name or by
+        subject — the summaries are the first line of each module's own
+        documentation, and the figures are parsed from the sources rather than
+        written down. Press <code>/</code> to jump to the filter.
+      </p>
+    </div>
+
+    <div class="filters">
+      <input class="search" id="module-search" type="search" autocomplete="off"
+             placeholder="Filter modules — wavelet, orbit, prime, tensor…"
+             aria-label="Filter modules">
+      <span class="count" id="module-count"></span>
+    </div>
+    <div class="chips" id="module-chips" style="margin-bottom:22px"></div>
+
+    <div class="grid-modules" id="module-grid">
+      <p class="empty">
+        Module data is generated at build time — see
+        <a href="module-map.html">the module map</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ------------------------------------------------------------- tested -->
+<section class="alt">
+  <div class="inner">
+    <div class="section-head">
+      <h2>How it's tested</h2>
+      <p>Four independent mechanisms, because they fail in different ways.</p>
+    </div>
+
+    <div class="cols cols-4">
+      <div class="card">
+        <h3>Unit tests <span class="tag">4,193</span></h3>
+        <p>
+          Every one asserts something checkable: a closed form, a conservation law, a
+          known reference value, or an exact identity — with a tolerance derived from
+          the method's error term.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Property tests <span class="tag">577</span></h3>
+        <p>
+          Randomised tests over invariants that must hold for <em>every</em> input:
+          transform round-trips, algebraic laws, leapfrog FDTD energy conservation,
+          and agreement between two independent implementations.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Kani <span class="tag">20 harnesses</span></h3>
+        <p>
+          Model checking with CBMC: over a bounded input domain it <em>proves</em>
+          absence of panics, overflow and division by zero rather than sampling for
+          them. Thirteen run in CI; seven slower ones sit behind a feature flag.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Miri <span class="tag">strict provenance</span></h3>
+        <p>
+          The crate contains no <code>unsafe</code>, so Miri is a backstop rather
+          than the primary check. It runs against <code>core::</code>, where index
+          and slice reasoning is densest.
+        </p>
+      </div>
+    </div>
+
+    <div class="note">
+      <h3>Why 97.89% coverage is not the point</h3>
+      <p>
+        Coverage says a line ran, not that anything checked what it did. Some of the
+        worst gaps this project has found were in lines with full coverage:
+      </p>
+      <ul class="checklist">
+        <li><span class="dot"></span><span>
+          <b>The strong Lucas test</b> — the second half of Baillie–PSW — was replaced
+          wholesale with <code>return true</code> and the entire suite stayed green.
+          Composites are rejected by Miller–Rabin first, so the Lucas branch is
+          essentially never reached. It is now tested directly against the strong
+          Lucas pseudoprimes below 20,000, computed independently rather than read
+          off the implementation.
+        </span></li>
+        <li><span class="dot"></span><span>
+          <b>Knuth's add-back correction</b> in <code>BigInt</code> division, taken
+          for roughly two divisions in a billion.
+        </span></li>
+        <li><span class="dot"></span><span>
+          <b>The Lentz convergence threshold</b> in the continued-fraction
+          evaluators.
+        </span></li>
+      </ul>
+      <p style="margin-top:14px">
+        Each was found by mutating the code and observing that no test noticed.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- -------------------------------------------------------------- python -->
+<section id="python">
+  <div class="inner">
+    <div class="section-head">
+      <h2>From Python</h2>
+      <p>
+        Published to PyPI as <strong>numeria</strong>: 4,086 of the crate's 4,149
+        free functions, 2,254 of its 2,277 methods, 416 of its 426 types and every
+        constant. The bindings are generated from this crate's source, so they cannot
+        fall behind it.
+      </p>
+    </div>
+
+    <div class="cols cols-2 cols-split">
+      <div class="code">
+        <button class="copy" type="button" aria-label="Copy code">Copy</button>
+<pre><code class="lang-python">import math
+import numeria as nm
+
+nm.classical.projectile_range(50.0, math.pi / 4, 9.81)  # 254.8419...
+nm.linalg.lu.solve([[2, 1], [1, 3]], [5, 10])           # [1.0, 3.0]
+nm.numerical.integrate.simpson(math.sin, 0.0, math.pi, 1000)
+nm.exact.bigint.factorial(100)                          # a Python int</code></pre>
+      </div>
+
+      <ul class="checklist">
+        <li><span class="dot"></span><span>
+          Every Python module mirrors a Rust module of the same name beneath
+          <b>numeria</b>.
+        </span></li>
+        <li><span class="dot"></span><span>
+          <code>Result</code> errors become exceptions under one
+          <b>PhysicsError</b> root.
+        </span></li>
+        <li><span class="dot"></span><span>
+          A <code>Vec3</code> argument accepts a plain <code>(x, y, z)</code> tuple.
+        </span></li>
+        <li><span class="dot"></span><span>
+          <code>Complex</code>, <code>BigInt</code> and <code>Rational</code> cross
+          over as Python's own <code>complex</code>, <code>int</code> and
+          <code>fractions.Fraction</code>.
+        </span></li>
+        <li><span class="dot"></span><span>
+          Anywhere the library takes a <code>&amp;dyn Fn</code>, a Python callable
+          will do.
+        </span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- --------------------------------------------------------------- next -->
+<section class="alt">
+  <div class="inner">
+    <div class="section-head">
+      <h2>Where to go next</h2>
+      <p>Three doors, depending on what you came for.</p>
+    </div>
+    <div class="cols cols-3">
+      <a class="card" href="guide.html">
+        <h3>The guide →</h3>
+        <p>
+          A walk through the library by doing things with it: putting a spacecraft in
+          orbit, pulling a tone out of noise, solving a differential equation and
+          proving the answer converges at the predicted rate. Every code block is a
+          file CI compiles and runs.
+        </p>
+      </a>
+      <a class="card" href="module-map.html">
+        <h3>The module map →</h3>
+        <p>
+          A generated map of all <span data-total="modules">71</span> public modules
+          and every file beneath them, with line counts, public-item counts and
+          summaries. Produced from the sources; CI fails if it is out of date.
+        </p>
+      </a>
+      <a class="card" href="api/rust_physics_engine/index.html">
+        <h3>The API →</h3>
+        <p>
+          Full rustdoc, built from this commit. Every module carries a summary, and
+          CI builds the documentation with <code>-D warnings</code>, so a broken
+          intra-doc link fails the build rather than shipping.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <strong>rust_physics_engine</strong>
+      <p>Zero-dependency physics, mathematics and engineering computation in Rust.
+         MIT licensed.</p>
+    </div>
+    <nav>
+      <a href="https://github.com/Magic-Man-us/RustPhysicsEngine">Repository</a>
+      <a href="https://docs.rs/rust_physics_engine">docs.rs</a>
+      <a href="https://pypi.org/project/numeria/">numeria on PyPI</a>
+      <a href="https://github.com/Magic-Man-us/RustPhysicsEngine/blob/main/LICENSE">License</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="modules.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

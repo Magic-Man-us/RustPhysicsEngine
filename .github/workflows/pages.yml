@@ -1,0 +1,105 @@
+name: Pages
+
+# Builds the site at https://rust-physics-engine.mimsec.com and deploys it.
+#
+# The site is two things stitched together. `tools/build_site.py` produces the
+# front page, the guide and the module map -- deriving the module figures from
+# the source tree with the same scanner behind `docs/MODULE_MAP.md`, so the
+# counts on the front page cannot disagree with the ones in the map. Then
+# `cargo doc` output is dropped in at `/api`, so the published rustdoc is
+# always the documentation for the commit that is live rather than whatever
+# docs.rs last managed to build.
+#
+# Nothing generated is committed, which is why there is no `--check` step here
+# the way there is for the module map: a generated page that only exists inside
+# this job cannot go stale.
+#
+# One-time setup, outside this file:
+#   * Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+#   * A DNS CNAME record for rust-physics-engine pointing at
+#     magic-man-us.github.io. The CNAME file the site ships (site/CNAME) is
+#     what tells Pages to answer on that name; the DNS record is what points
+#     the name here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Queue deployments rather than cancelling them: a half-finished deploy that
+# loses to a newer one leaves the live site mid-swap.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # Same flags as the CI job that guards the documentation, so a broken
+      # intra-doc link fails here too rather than shipping to the site.
+      - name: Build the API documentation
+        run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+
+      - name: Build the site
+        run: python3 tools/build_site.py --out _site
+
+      - name: Add the API documentation
+        run: |
+          cp -r target/doc _site/api
+          # cargo leaves no entry point at the root of its output directory,
+          # so /api on its own would be a 404.
+          cat > _site/api/index.html <<'HTML'
+          <!DOCTYPE html>
+          <meta charset="utf-8">
+          <title>Redirecting to the crate documentation</title>
+          <meta http-equiv="refresh" content="0; url=rust_physics_engine/index.html">
+          <link rel="canonical" href="rust_physics_engine/index.html">
+          <p><a href="rust_physics_engine/index.html">Continue to the documentation</a>.</p>
+          HTML
+
+      # A pull request builds the site to prove the build still works, but it
+      # neither claims the Pages configuration nor uploads an artifact -- those
+      # need write permission the fork of a contributor does not have.
+      - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  # Split from the build so a pull request gets the same build without the
+  # permission to publish it. `deploy-pages` is what needs `pages: write`, and
+  # the `github-pages` environment is where the URL is recorded.
+  deploy:
+    name: deploy
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
