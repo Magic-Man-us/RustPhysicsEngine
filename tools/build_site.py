@@ -2,8 +2,7 @@
 """Assemble the static site published to GitHub Pages.
 
 Nothing this produces is committed. The workflow in
-`.github/workflows/pages.yml` runs it into a scratch directory and then
-drops the rustdoc output alongside, so no generated page can be stale --
+`.github/workflows/pages.yml` passes the rustdoc output and a scratch directory, so no generated page can be stale --
 the same reason `docs/MODULE_MAP.md` is checked rather than hand-written.
 
 Three things happen here:
@@ -23,12 +22,16 @@ Three things happen here:
 
 from __future__ import annotations
 
+import argparse
 import html
 import json
 import os
 import re
 import shutil
 import sys
+from pathlib import Path
+from urllib.parse import quote
+from xml.etree import ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -405,13 +408,62 @@ def build_doc_pages(out: str) -> None:
                            article, page.replace(".html", "")))
 
 
+def publish_index(out: Path, api_docs: Path | None) -> None:
+    origin = "https://" + (out / "CNAME").read_text().strip()
+    pages = [out / "index.html", *(out / filename for _, filename, _, _ in PAGES)]
+    source_pages: list[Path] = []
+    if api_docs is not None:
+        api = out / "api"
+        crate = api / "rust_physics_engine"
+        shutil.copytree(api_docs, api)
+        if not (crate / "index.html").is_file():
+            raise ValueError("Missing rust_physics_engine documentation")
+        target = "rust_physics_engine/index.html"
+        (api / "index.html").write_text(
+            f'<!doctype html><meta charset="utf-8"><title>API documentation</title>'
+            f'<link rel="canonical" href="{origin}/api/{target}">'
+            f'<meta http-equiv="refresh" content="0;url={target}">'
+            f'<a href="{target}">API documentation</a>', encoding="utf-8"
+        )
+        pages.extend(sorted(crate.rglob("*.html")))
+        source_pages = sorted((api / "src").rglob("*.html"))
+
+    sitemap = ET.Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
+    listed = set(pages)
+    for page in pages + source_pages:
+        path = page.relative_to(out).as_posix()
+        source = page.read_text(encoding="utf-8")
+        if re.search(r'<meta\s+http-equiv=["\']?refresh\b', source, re.I):
+            continue
+        url = origin + "/" + ("" if path == "index.html" else quote(path))
+        if "</head>" not in source:
+            raise ValueError(f"Missing HTML head in {page}")
+        canonical = f'<link rel="canonical" href="{html.escape(url, quote=True)}">'
+        if path.startswith("api/"):
+            # An empty rustdoc search otherwise renders an empty results screen at a valid item URL.
+            metadata = canonical + (
+                "<script>{const u=new URL(location.href);"
+                "if(u.searchParams.has('search') && u.searchParams.get('search')===''){"
+                "u.searchParams.delete('search');history.replaceState(history.state,'',u);}}</script>"
+            )
+        else:
+            metadata = canonical
+        page.write_text(source.replace("</head>", metadata + "</head>", 1), encoding="utf-8")
+        if page in listed:
+            ET.SubElement(ET.SubElement(sitemap, "url"), "loc").text = url
+    ET.indent(sitemap)
+    ET.ElementTree(sitemap).write(out / "sitemap.xml", encoding="utf-8", xml_declaration=True)
+
+
 def main() -> int:
     if not os.path.isdir(SITE):
         print("run from the repository root", file=sys.stderr)
         return 2
-    out = OUT
-    if "--out" in sys.argv:
-        out = sys.argv[sys.argv.index("--out") + 1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out", default=OUT)
+    parser.add_argument("--api-docs", type=Path)
+    args = parser.parse_args()
+    out = args.out
 
     if os.path.isdir(out):
         shutil.rmtree(out)
@@ -422,6 +474,7 @@ def main() -> int:
 
     totals = write_module_data(out)
     build_doc_pages(out)
+    publish_index(Path(out), args.api_docs)
     print(f"built {out}: {totals['modules']} modules, "
           f"{totals['fns']:,} public functions and methods")
     return 0

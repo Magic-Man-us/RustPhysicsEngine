@@ -62,21 +62,7 @@ jobs:
           RUSTDOCFLAGS: "-D warnings"
 
       - name: Build the site
-        run: python3 tools/build_site.py --out _site
-
-      - name: Add the API documentation
-        run: |
-          cp -r target/doc _site/api
-          # cargo leaves no entry point at the root of its output directory,
-          # so /api on its own would be a 404.
-          cat > _site/api/index.html <<'HTML'
-          <!DOCTYPE html>
-          <meta charset="utf-8">
-          <title>Redirecting to the crate documentation</title>
-          <meta http-equiv="refresh" content="0; url=rust_physics_engine/index.html">
-          <link rel="canonical" href="rust_physics_engine/index.html">
-          <p><a href="rust_physics_engine/index.html">Continue to the documentation</a>.</p>
-          HTML
+        run: python3 tools/build_site.py --out _site --api-docs target/doc
 
       # A pull request builds the site to prove the build still works, but it
       # neither claims the Pages configuration nor uploads an artifact -- those
